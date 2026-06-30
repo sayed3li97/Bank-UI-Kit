@@ -58,6 +58,59 @@ MaterialApp(
 
 ---
 
+## Custom themes
+
+Beyond the three built-in presets you can build a fully custom `BankThemeData`
+from any brand colour — only `primary` and `brightness` are required, every
+other token has a sensible default:
+
+```dart
+final myTheme = BankThemeData.custom(
+  primary: const Color(0xFF0052CC),
+  brightness: Brightness.light,
+  // optionally override any token
+  cardRadius: const BorderRadius.all(Radius.circular(20)),
+  useGlow: true,
+  glowColor: const Color(0x440052CC),
+  fontFamily: 'MyBrandFont',
+  accentGradient: const LinearGradient(
+    colors: [Color(0xFF0052CC), Color(0xFF00B8D9)],
+  ),
+);
+
+MaterialApp(
+  theme: ThemeData.light(useMaterial3: true).withBankTheme(myTheme),
+  darkTheme: ThemeData.dark(useMaterial3: true).withBankTheme(
+    BankThemeData.custom(
+      primary: const Color(0xFF4D9DFF),
+      brightness: Brightness.dark,
+    ),
+  ),
+);
+```
+
+`withBankTheme()` is an extension on `ThemeData` — it registers the extension
+**and** synchronises the Material `ColorScheme` to your palette so Material
+widgets and Bank UI Kit widgets stay consistent.
+
+You can also start from a preset and `copyWith` just the fields that differ:
+
+```dart
+final tweaked = BankPreset.bloom
+    .apply(ThemeData.light(useMaterial3: true))
+    .extension<BankThemeData>()!
+    .copyWith(
+      primary: const Color(0xFFE91E63),
+      cardRadius: const BorderRadius.all(Radius.circular(24)),
+    );
+
+MaterialApp(
+  theme: ThemeData.light(useMaterial3: true).withBankTheme(tweaked),
+);
+```
+
+---
+
 ## Design presets
 
 Three runtime-switchable `ThemeExtension` presets:
