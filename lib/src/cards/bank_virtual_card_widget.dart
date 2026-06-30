@@ -3,6 +3,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
+import '../../src/cards/bank_flip_card.dart';
 import '../../src/models/bank_account.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
@@ -31,6 +32,19 @@ enum BankCardState { normal, frozen }
 /// [isFlipped] + [onFlip]; the internal [AnimationController] responds to
 /// changes in [isFlipped] and plays the animation accordingly.
 ///
+/// ## New in this version
+///
+/// - **[backgroundImage]** — supply any [ImageProvider] (asset, network,
+///   memory) to use as the card background instead of the [surface] colour.
+///   A dark overlay is applied automatically for readability; override it
+///   with [backgroundImageOverlay].
+///
+/// - **[flipTrigger]** — choose how the flip is triggered:
+///   - [BankFlipTrigger.tapToFlip] (default) — tap anywhere on the card.
+///   - [BankFlipTrigger.builtInButton] — overlaid icon button in the card
+///     corner; provide [flipButtonBuilder] to customise it.
+///   - [BankFlipTrigger.external] — host app drives the flip entirely.
+///
 /// Card corner radius is fixed at 16 px per the card-material specification.
 class BankVirtualCardWidget extends StatefulWidget {
   final BankAccount account;
@@ -44,6 +58,17 @@ class BankVirtualCardWidget extends StatefulWidget {
   /// Second gradient stop for [BankCardSurface.gradient].
   /// Falls back to [BankThemeData.primaryVariant].
   final Color? secondaryColor;
+
+  /// When set, the card's [surface] decoration is replaced by this image.
+  /// Accepts any [ImageProvider]: [AssetImage], [NetworkImage], [MemoryImage].
+  final ImageProvider? backgroundImage;
+
+  /// How the [backgroundImage] is fitted within the card.
+  final BoxFit backgroundImageFit;
+
+  /// Colour blended over [backgroundImage] to keep text legible.
+  /// Defaults to a 30 % black darken filter.
+  final Color? backgroundImageOverlay;
 
   /// Asset path for the card-network logo (e.g. `'assets/visa.png'`).
   /// Rendered as an [Image.asset] — must be registered in the host-app
@@ -61,8 +86,20 @@ class BankVirtualCardWidget extends StatefulWidget {
   /// Whether the card is currently showing its back face.
   final bool isFlipped;
 
-  /// Invoked when the user taps the card — host app should toggle [isFlipped].
+  /// Invoked when the flip trigger fires. For [BankFlipTrigger.tapToFlip]
+  /// and [BankFlipTrigger.builtInButton] the host should toggle [isFlipped]
+  /// here.
   final VoidCallback? onFlip;
+
+  /// How the flip is triggered. Defaults to [BankFlipTrigger.tapToFlip]
+  /// (tap anywhere on the card).
+  final BankFlipTrigger flipTrigger;
+
+  /// Replaces the default icon-button when `flipTrigger` is `builtInButton`.
+  /// The builder receives the [BuildContext] and a `flip` callback to invoke
+  /// on interaction.
+  final Widget Function(BuildContext context, VoidCallback flip)?
+      flipButtonBuilder;
 
   final double width;
   final double height;
@@ -74,12 +111,17 @@ class BankVirtualCardWidget extends StatefulWidget {
     this.cardState = BankCardState.normal,
     this.primaryColor,
     this.secondaryColor,
+    this.backgroundImage,
+    this.backgroundImageFit = BoxFit.cover,
+    this.backgroundImageOverlay,
     this.networkLogoAsset,
     this.bankLogoAsset,
     this.cardholderName,
     this.expiryDate,
     this.isFlipped = false,
     this.onFlip,
+    this.flipTrigger = BankFlipTrigger.tapToFlip,
+    this.flipButtonBuilder,
     this.width = 340,
     this.height = 200,
   });
@@ -158,11 +200,40 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   // Surface wrapper
   // ---------------------------------------------------------------------------
 
+  BoxDecoration _buildImageDecoration(BankThemeData bankTheme) => BoxDecoration(
+        color: widget.primaryColor ?? bankTheme.primary,
+        borderRadius: BorderRadius.circular(_cardRadius),
+        image: DecorationImage(
+          image: widget.backgroundImage!,
+          fit: widget.backgroundImageFit,
+          colorFilter: widget.backgroundImageOverlay != null
+              ? ColorFilter.mode(
+                  widget.backgroundImageOverlay!,
+                  BlendMode.srcATop,
+                )
+              : const ColorFilter.mode(
+                  Color(0x4D000000), // 30 % black darken
+                  BlendMode.darken,
+                ),
+        ),
+      );
+
   Widget _wrapSurface({
     required Widget child,
     required BankThemeData bankTheme,
   }) {
     final borderRadius = BorderRadius.circular(_cardRadius);
+
+    // Image background overrides the surface enum.
+    if (widget.backgroundImage != null) {
+      return Container(
+        width: widget.width,
+        height: widget.height,
+        decoration: _buildImageDecoration(bankTheme),
+        clipBehavior: Clip.antiAlias,
+        child: child,
+      );
+    }
 
     switch (widget.surface) {
       case BankCardSurface.flatColor:
@@ -501,68 +572,89 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
     final bankTheme = BankThemeData.of(context);
     final isFrozen = widget.cardState == BankCardState.frozen;
 
+    final Widget animated = AnimatedBuilder(
+      animation: _flipAnimation,
+      builder: (context, _) {
+        final angle = _flipAnimation.value;
+        final showBack = angle > pi / 2;
+
+        // Front: 0 → π. Back: counter-rotate so at π it appears upright;
+        // scaleX(-1) prevents mirroring.
+        Widget face;
+        if (!showBack) {
+          face = Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.001) // perspective
+              ..rotateY(angle),
+            child: _buildFaceStack(
+              context: context,
+              bankTheme: bankTheme,
+              isFront: true,
+              isFrozen: isFrozen,
+            ),
+          );
+        } else {
+          face = Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.001)
+              ..rotateY(angle - pi),
+            child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()..scale(-1.0, 1, 1),
+              child: _buildFaceStack(
+                context: context,
+                bankTheme: bankTheme,
+                isFront: false,
+                isFrozen: isFrozen,
+              ),
+            ),
+          );
+        }
+
+        return SizedBox(
+          width: widget.width,
+          height: widget.height,
+          child: face,
+        );
+      },
+    );
+
+    // ── Wrap with flip trigger ────────────────────────────────────────
+    Widget card;
+    switch (widget.flipTrigger) {
+      case BankFlipTrigger.tapToFlip:
+        card = GestureDetector(
+          onTap: widget.onFlip,
+          behavior: HitTestBehavior.opaque,
+          child: animated,
+        );
+      case BankFlipTrigger.builtInButton:
+        card = Stack(
+          clipBehavior: Clip.none,
+          children: [
+            animated,
+            Positioned(
+              top: BankTokens.space2,
+              right: BankTokens.space2,
+              child: widget.flipButtonBuilder != null
+                  ? widget.flipButtonBuilder!(context, widget.onFlip ?? () {})
+                  : _VirtualCardFlipButton(
+                      onFlip: widget.onFlip ?? () {},
+                    ),
+            ),
+          ],
+        );
+      case BankFlipTrigger.external:
+        card = animated;
+    }
+
     return Semantics(
       label: 'Card ending ${widget.account.maskedNumber}, '
           '${widget.cardState.name}',
-      button: widget.onFlip != null,
-      child: GestureDetector(
-        onTap: widget.onFlip,
-        child: AnimatedBuilder(
-          animation: _flipAnimation,
-          builder: (context, _) {
-            final angle = _flipAnimation.value;
-            final showBack = angle > pi / 2;
-
-            // The front card rotates from 0 → π.
-            // When angle > π/2 (back side visible) we hide the front to avoid
-            // rendering cost and z-fighting.
-            //
-            // The back card starts mirrored (counter-rotated by π) so that
-            // at the animation end value of π it is upright. We also apply
-            // scaleX(-1) so its text is not mirrored.
-
-            Widget face;
-            if (!showBack) {
-              face = Transform(
-                alignment: Alignment.center,
-                transform: Matrix4.identity()
-                  ..setEntry(3, 2, 0.001) // perspective
-                  ..rotateY(angle),
-                child: _buildFaceStack(
-                  context: context,
-                  bankTheme: bankTheme,
-                  isFront: true,
-                  isFrozen: isFrozen,
-                ),
-              );
-            } else {
-              // Counter-rotate so that when angle==π the card appears upright.
-              face = Transform(
-                alignment: Alignment.center,
-                transform: Matrix4.identity()
-                  ..setEntry(3, 2, 0.001) // perspective
-                  ..rotateY(angle - pi),
-                child: Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.identity()..scale(-1.0, 1, 1),
-                  child: _buildFaceStack(
-                    context: context,
-                    bankTheme: bankTheme,
-                    isFront: false,
-                    isFrozen: isFrozen,
-                  ),
-                ),
-              );
-            }
-
-            return SizedBox(
-              width: widget.width,
-              height: widget.height,
-              child: face,
-            );
-          },
-        ),
-      ),
+      button: widget.flipTrigger != BankFlipTrigger.external,
+      child: card,
     );
   }
 
@@ -585,6 +677,40 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
     }
 
     return face;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Built-in flip button for BankVirtualCardWidget
+// ---------------------------------------------------------------------------
+
+class _VirtualCardFlipButton extends StatelessWidget {
+  const _VirtualCardFlipButton({required this.onFlip});
+
+  final VoidCallback onFlip;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Show card details',
+      child: Material(
+        color: Colors.black.withValues(alpha: 0.30),
+        borderRadius: BorderRadius.circular(BankTokens.radiusFull),
+        child: InkWell(
+          onTap: onFlip,
+          borderRadius: BorderRadius.circular(BankTokens.radiusFull),
+          child: const Padding(
+            padding: EdgeInsets.all(BankTokens.space2),
+            child: Icon(
+              Icons.flip_outlined,
+              size: 18,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

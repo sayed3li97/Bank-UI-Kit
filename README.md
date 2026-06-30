@@ -216,7 +216,97 @@ showcase screen (Studio preset, light mode) from the example app.
 
 **Transfers & payments** — `BankAmountKeypad` · `BankBeneficiaryPicker` · `BankTransferReviewCard` · `BankTransactionPinSheet` · `BankScheduledTransferToggle` · `BankPaymentRequestCard` · `BankTransferResultScreen` · `BankContactPaymentSheet`
 
-**Cards** — `BankVirtualCardWidget` (flat / gradient / mesh / metallic) · `BankCardControlsPanel` · `BankCardPinManager` · `BankPhysicalCardMaterialPicker`
+**Cards** — `BankFlipCard` · `BankHorizontalAccountCard` · `BankVirtualCardWidget` (flat / gradient / mesh / metallic / image) · `BankCardControlsPanel` · `BankCardPinManager` · `BankPhysicalCardMaterialPicker`
+
+### Flip cards
+
+Smooth 3-D perspective flip animation revealing the account details on the back face.
+Three trigger modes, two flip axes, three front-face layouts, and three background modes
+ship in the box — all backward-compatible and opt-in.
+
+<table>
+  <tr>
+    <td align="center">Cards · Studio</td>
+    <td align="center">Cards · Voltage</td>
+    <td align="center">Cards · Bloom</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/cards-studio-light.png" width="230" /></td>
+    <td><img src="docs/screenshots/cards-voltage-dark.png" width="230" /></td>
+    <td><img src="docs/screenshots/cards-bloom-light.png" width="230" /></td>
+  </tr>
+</table>
+
+#### `BankFlipCard` — generic flip container
+
+Wraps any two widgets in a perspective flip. Use it for any two-sided surface.
+
+```dart
+BankFlipCard(
+  trigger: BankFlipTrigger.tapToFlip,  // tapToFlip · builtInButton · external
+  flipAxis: BankFlipAxis.horizontal,   // horizontal (Y-axis) · vertical (X-axis)
+  flipDuration: const Duration(milliseconds: 400),
+  flipCurve: Curves.easeInOutCubic,
+  frontBuilder: (ctx, _) => MyFront(),
+  backBuilder:  (ctx, _) => MyBack(),
+)
+```
+
+#### `BankHorizontalAccountCard` — landscape account card with flip
+
+A landscape-format bank card showing balance, masked number, and account-type icon on
+the front. The back reveals the full IBAN / account number and sort code / BIC with
+tap-to-copy actions.
+
+```dart
+BankHorizontalAccountCard(
+  account: myAccount,
+  cardholderName: 'Alice Johnson',
+  // Front-face layout
+  layout: BankHorizontalCardLayout.centred,        // balanceLeft · centred · balanceBottom
+  // Background
+  background: BankHorizontalCardBackground.image,  // themeGradient · solidColor · image
+  backgroundImage: const AssetImage('assets/card_bg.jpg'),
+  backgroundImageOverlay: Colors.black54,
+  // Flip
+  trigger: BankFlipTrigger.builtInButton,
+  flipAxis: BankFlipAxis.horizontal,
+)
+```
+
+External (host-controlled) flip — pair `isFlipped` with `onFlip`:
+
+```dart
+bool _flipped = false;
+
+BankHorizontalAccountCard(
+  account: myAccount,
+  trigger: BankFlipTrigger.external,
+  isFlipped: _flipped,
+  onFlip: () => setState(() => _flipped = !_flipped),
+)
+```
+
+#### Enhanced `BankVirtualCardWidget`
+
+The existing virtual-card widget now accepts an image background and an explicit flip
+trigger. All new parameters are optional — existing code compiles unchanged.
+
+```dart
+BankVirtualCardWidget(
+  account: account,
+  cardholderName: 'ALEX MORGAN',
+  // new: image background
+  backgroundImage: const NetworkImage('https://example.com/card.jpg'),
+  // new: flip trigger (default: tapToFlip — same as before)
+  flipTrigger: BankFlipTrigger.builtInButton,
+  // new: optional custom flip button
+  flipButtonBuilder: (ctx, flip) => IconButton(
+    icon: const Icon(Icons.flip),
+    onPressed: flip,
+  ),
+)
+```
 
 | Auth & security | Onboarding & KYC | Saving |
 |---|---|---|
