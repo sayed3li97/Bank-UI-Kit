@@ -6,6 +6,7 @@ import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/numeral_style.dart';
 import '../../src/theme/tokens.dart';
 
 // ---------------------------------------------------------------------------

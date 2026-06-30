@@ -2,8 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 // ---------------------------------------------------------------------------
 // Framing state enum

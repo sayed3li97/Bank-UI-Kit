@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../common/money_formatter.dart';
-import '../../models/transaction.dart';
-import '../../scope/bank_ui_scope.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/common/money_formatter.dart';
+import '../../src/models/transaction.dart';
+import '../../src/scope/bank_ui_scope.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// A transaction tile that shows which joint account owner initiated it.
 class BankJointTransactionListTile extends StatelessWidget {

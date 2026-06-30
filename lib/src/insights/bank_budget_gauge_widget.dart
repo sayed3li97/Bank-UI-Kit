@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../common/money_formatter.dart';
-import '../../models/budget.dart';
-import '../../scope/bank_ui_scope.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/common/money_formatter.dart';
+import '../../src/models/budget.dart';
+import '../../src/scope/bank_ui_scope.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// Shows a budget's progress with an animated bar and over-budget warning.
 class BankBudgetGaugeWidget extends StatelessWidget {
@@ -105,7 +105,7 @@ class BankBudgetGaugeWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 child: TweenAnimationBuilder<double>(
                   tween: Tween<double>(begin: 0, end: fraction),
-                  duration: BankTokens.durationMedium,
+                  duration: BankTokens.durationBase,
                   curve: BankTokens.curveEmphasized,
                   builder: (_, value, __) => LinearProgressIndicator(
                     value: value,

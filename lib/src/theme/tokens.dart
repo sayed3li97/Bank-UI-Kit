@@ -1,4 +1,4 @@
-import 'package:flutter/painting.dart';
+import 'package:flutter/widgets.dart';
 
 /// Design tokens for the Bank UI Kit design system.
 ///

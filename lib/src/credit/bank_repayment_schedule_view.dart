@@ -1,11 +1,11 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 
-import '../../common/money_formatter.dart';
-import '../../models/installment_plan.dart';
-import '../../scope/bank_ui_scope.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/common/money_formatter.dart';
+import '../../src/models/installment_plan.dart';
+import '../../src/scope/bank_ui_scope.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// Vertical list of monthly repayment rows generated from an [InstallmentPlan].
 class BankRepaymentScheduleView extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// Inline chip indicating a transaction is eligible for flexible installments.
 class BankFlexEligibleBadge extends StatelessWidget {

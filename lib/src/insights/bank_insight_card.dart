@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../models/bank_insight.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/models/bank_insight.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// A swipeable AI-generated insight card with confidence indicator.
 class BankInsightCard extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// Numbered step progress indicator. RTL-aware: steps flow right-to-left
 /// when [Directionality] is RTL.

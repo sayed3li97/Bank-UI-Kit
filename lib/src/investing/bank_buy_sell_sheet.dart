@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../common/money_formatter.dart';
-import '../../models/asset_quote.dart';
-import '../../models/money.dart';
-import '../../scope/bank_ui_scope.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/common/money_formatter.dart';
+import '../../src/models/asset_quote.dart';
+import '../../src/models/money.dart';
+import '../../src/scope/bank_ui_scope.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 enum BankOrderSide { buy, sell }
 

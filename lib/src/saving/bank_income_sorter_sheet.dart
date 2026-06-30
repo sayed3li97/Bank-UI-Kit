@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../common/money_formatter.dart';
-import '../../controllers/bank_income_sorter_controller.dart';
-import '../../models/savings_pot.dart';
-import '../../scope/bank_ui_scope.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/common/money_formatter.dart';
+import '../../src/controllers/bank_income_sorter_controller.dart';
+import '../../src/models/savings_pot.dart';
+import '../../src/scope/bank_ui_scope.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// Triggered on a large incoming payment. Splits across pots by percentage
 /// or fixed amount. Backed by [BankIncomeSorterController].

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../models/savings_pot.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/models/savings_pot.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// A member of a shared pot.
 class BankPotMember {

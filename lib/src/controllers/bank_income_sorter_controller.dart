@@ -149,8 +149,7 @@ class BankIncomeSorterController extends ChangeNotifier {
         final factor =
             Decimal.parse((entry.fractionOrFixed / 100).toStringAsFixed(10));
         entryAmount = Money(
-          amount: (incomingAmount.amount * factor)
-              .toDecimal(scaleOnInfinitePrecision: 2),
+          amount: (incomingAmount.amount * factor).round(scale: 2),
           currencyCode: incomingAmount.currencyCode,
         );
       } else {

@@ -1,8 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 enum BankChartTimeRange { oneDay, oneWeek, oneMonth, threeMonths, oneYear, allTime }
 

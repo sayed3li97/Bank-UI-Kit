@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../models/bank_notification.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/models/bank_notification.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// A scrollable notification feed with read/unread states and swipe-to-dismiss.
 class BankInAppNotificationCenter extends StatelessWidget {

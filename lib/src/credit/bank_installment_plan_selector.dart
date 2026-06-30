@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../models/installment_plan.dart';
-import '../../scope/bank_ui_scope.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
-import '../../common/money_formatter.dart';
+import '../../src/models/installment_plan.dart';
+import '../../src/scope/bank_ui_scope.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
+import '../../src/common/money_formatter.dart';
 
 /// Lets the user choose an installment plan from a list.
 class BankInstallmentPlanSelector extends StatelessWidget {
@@ -55,7 +55,7 @@ class BankInstallmentPlanSelector extends StatelessWidget {
             onTap: () => onPlanSelected?.call(plan),
             borderRadius: theme.cardRadius,
             child: AnimatedContainer(
-              duration: BankTokens.durationMedium,
+              duration: BankTokens.durationBase,
               curve: BankTokens.curveStandard,
               decoration: BoxDecoration(
                 borderRadius: theme.cardRadius,
@@ -115,7 +115,7 @@ class BankInstallmentPlanSelector extends StatelessWidget {
                   ),
                   const SizedBox(width: BankTokens.space2),
                   AnimatedContainer(
-                    duration: BankTokens.durationShort,
+                    duration: BankTokens.durationFast,
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
