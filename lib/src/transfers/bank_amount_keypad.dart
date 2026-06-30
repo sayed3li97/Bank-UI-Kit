@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../src/accounts/bank_balance_text.dart';
-import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/numeral_style.dart';
@@ -24,7 +22,9 @@ import '../../src/theme/tokens.dart';
 ///   currencyCode: 'GBP',
 ///   onDigit: (d) => setState(() => _amount += d),
 ///   onDelete: () => setState(() {
-///     if (_amount.isNotEmpty) _amount = _amount.substring(0, _amount.length - 1);
+///     if (_amount.isNotEmpty) {
+///       _amount = _amount.substring(0, _amount.length - 1);
+///     }
 ///   }),
 ///   onDecimalPoint: () => setState(() {
 ///     if (!_amount.contains('.')) _amount += '.';
@@ -68,11 +68,11 @@ class BankAmountKeypad extends StatelessWidget {
   ];
 
   const BankAmountKeypad({
-    super.key,
     required this.amountText,
     required this.currencyCode,
     required this.onDigit,
     required this.onDelete,
+    super.key,
     this.onDecimalPoint,
     this.numeralStyle = NumeralStyle.western,
     this.maxAmount,
@@ -85,12 +85,11 @@ class BankAmountKeypad extends StatelessWidget {
 
   /// Parses [amountText] to a double for the max-amount comparison.
   double get _parsedAmount {
-    final cleaned = amountText.replaceAll(RegExp(r'[^0-9.]'), '');
+    final cleaned = amountText.replaceAll(RegExp('[^0-9.]'), '');
     return double.tryParse(cleaned) ?? 0;
   }
 
-  bool get _atMax =>
-      maxAmount != null && _parsedAmount >= maxAmount!;
+  bool get _atMax => maxAmount != null && _parsedAmount >= maxAmount!;
 
   // ---------------------------------------------------------------------------
   // Build
@@ -114,15 +113,17 @@ class BankAmountKeypad extends StatelessWidget {
         // Digit rows 1–9
         for (final row in _rows) ...[
           _KeyRow(
-            keys: row.map(
-              (d) => _DigitKey(
-                digit: d,
-                bankTheme: bankTheme,
-                dimmed: _atMax,
-                enabled: enabled,
-                onTap: enabled && !_atMax ? () => _handleDigit(d) : null,
-              ),
-            ).toList(),
+            keys: row
+                .map(
+                  (d) => _DigitKey(
+                    digit: d,
+                    bankTheme: bankTheme,
+                    dimmed: _atMax,
+                    enabled: enabled,
+                    onTap: enabled && !_atMax ? () => _handleDigit(d) : null,
+                  ),
+                )
+                .toList(),
           ),
           const SizedBox(height: BankTokens.space2),
         ],
@@ -276,8 +277,8 @@ class _DigitKey extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             borderRadius: bankTheme.buttonRadius,
-            splashColor: bankTheme.primary.withOpacity(0.12),
-            highlightColor: bankTheme.primary.withOpacity(0.08),
+            splashColor: bankTheme.primary.withValues(alpha: 0.12),
+            highlightColor: bankTheme.primary.withValues(alpha: 0.08),
             child: Container(
               width: 88,
               height: 56,
@@ -333,8 +334,8 @@ class _DecimalKey extends StatelessWidget {
             onTap?.call();
           },
           borderRadius: bankTheme.buttonRadius,
-          splashColor: bankTheme.primary.withOpacity(0.12),
-          highlightColor: bankTheme.primary.withOpacity(0.08),
+          splashColor: bankTheme.primary.withValues(alpha: 0.12),
+          highlightColor: bankTheme.primary.withValues(alpha: 0.08),
           child: Container(
             width: 88,
             height: 56,
@@ -387,8 +388,8 @@ class _DeleteKey extends StatelessWidget {
             }
           },
           borderRadius: bankTheme.buttonRadius,
-          splashColor: bankTheme.primary.withOpacity(0.12),
-          highlightColor: bankTheme.primary.withOpacity(0.08),
+          splashColor: bankTheme.primary.withValues(alpha: 0.12),
+          highlightColor: bankTheme.primary.withValues(alpha: 0.08),
           child: Container(
             width: 88,
             height: 56,

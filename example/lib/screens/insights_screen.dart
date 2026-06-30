@@ -34,7 +34,8 @@ class InsightsScreen extends StatelessWidget {
     ];
 
     final periodStart = DateTime(now.year, now.month, 1);
-    final periodEnd = DateTime(now.year, now.month + 1, 1).subtract(const Duration(days: 1));
+    final periodEnd =
+        DateTime(now.year, now.month + 1, 1).subtract(const Duration(days: 1));
 
     final budgets = [
       BankBudget(
@@ -74,7 +75,7 @@ class InsightsScreen extends StatelessWidget {
         confidence: InsightConfidence.high,
         generatedAt: now.subtract(const Duration(hours: 2)),
         isDismissed: false,
-        relatedCategory: TransactionCategory.food,
+        relatedCategory: TransactionCategory.dining,
       ),
       BankInsight(
         id: 'i2',
@@ -105,24 +106,26 @@ class InsightsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(BankTokens.space4),
         children: [
-          Text('Spending Breakdown', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Spending Breakdown',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           BankSpendingBreakdownChart(categories: categories),
           const SizedBox(height: BankTokens.space4),
-          Text('Budget Gauges', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Budget Gauges',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           Card(
             shape: RoundedRectangleBorder(borderRadius: theme.cardRadius),
             color: theme.surface,
             elevation: theme.elevationLow,
             child: Column(
-              children: budgets
-                  .map((b) => BankBudgetGaugeWidget(budget: b))
-                  .toList(),
+              children:
+                  budgets.map((b) => BankBudgetGaugeWidget(budget: b)).toList(),
             ),
           ),
           const SizedBox(height: BankTokens.space4),
-          Text('AI Insights', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('AI Insights',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           ...insights.map(
             (insight) => Padding(

@@ -17,10 +17,10 @@ class BankSharedGoalProgressCard extends StatelessWidget {
   final VoidCallback? onContribute;
 
   const BankSharedGoalProgressCard({
-    super.key,
     required this.goalName,
     required this.targetAmount,
     required this.savedAmount,
+    super.key,
     this.contributors = const [],
     this.illustration,
     this.onTap,
@@ -51,6 +51,10 @@ class BankSharedGoalProgressCard extends StatelessWidget {
 
     final fraction = _fraction;
     final percentStr = '${(fraction * 100).toStringAsFixed(0)}%';
+
+    final contributorSuffix = contributors.length == 1 ? '' : 's';
+    final contributorLabel =
+        '${contributors.length} contributor$contributorSuffix';
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: theme.cardRadius),
@@ -91,8 +95,8 @@ class BankSharedGoalProgressCard extends StatelessWidget {
                   ),
                   Text(
                     percentStr,
-                    style: BankTokens.numeralSmall
-                        .copyWith(color: theme.primary),
+                    style:
+                        BankTokens.numeralSmall.copyWith(color: theme.primary),
                   ),
                 ],
               ),
@@ -102,7 +106,7 @@ class BankSharedGoalProgressCard extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: fraction,
                   minHeight: 8,
-                  backgroundColor: theme.outline.withOpacity(0.2),
+                  backgroundColor: theme.outline.withValues(alpha: 0.2),
                   valueColor: AlwaysStoppedAnimation<Color>(theme.primary),
                 ),
               ),
@@ -116,7 +120,7 @@ class BankSharedGoalProgressCard extends StatelessWidget {
                     ),
                     const SizedBox(width: BankTokens.space2),
                     Text(
-                      '${contributors.length} contributor${contributors.length == 1 ? '' : 's'}',
+                      contributorLabel,
                       style: BankTokens.bodySmall
                           .copyWith(color: theme.onSurfaceVariant),
                     ),
@@ -187,7 +191,7 @@ class _ContributorStack extends StatelessWidget {
               backgroundColor: theme.surface,
               child: CircleAvatar(
                 radius: avatarRadius - 1.5,
-                backgroundColor: theme.primary.withOpacity(0.2),
+                backgroundColor: theme.primary.withValues(alpha: 0.2),
                 backgroundImage:
                     c.avatarUrl != null ? NetworkImage(c.avatarUrl!) : null,
                 child: c.avatarUrl == null

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../src/theme/bank_theme_data.dart';
-import '../../src/theme/tokens.dart';
+import '../../bank_ui_kit.dart';
+import '../../core.dart';
 
 // ---------------------------------------------------------------------------
 // Shake animation helper
@@ -141,9 +141,9 @@ class BankPinDots extends StatelessWidget {
   final double dotSize;
 
   const BankPinDots({
+    required this.filled,
     super.key,
     this.length = 6,
-    required this.filled,
     this.obscure = true,
     this.error = false,
     this.filledColor,
@@ -153,16 +153,16 @@ class BankPinDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = BankThemeData.of(context);
-    final int clampedFilled = filled.clamp(0, length);
+    final bankTheme = BankThemeData.of(context);
+    final clampedFilled = filled.clamp(0, length);
 
-    final Color resolvedFilled = filledColor ?? bankTheme.primary;
-    final Color resolvedEmpty = emptyColor ?? bankTheme.outline;
+    final resolvedFilled = filledColor ?? bankTheme.primary;
+    final resolvedEmpty = emptyColor ?? bankTheme.outline;
 
     final Widget dots = Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(length, (index) {
-        final bool isFilled = index < clampedFilled;
+        final isFilled = index < clampedFilled;
         return Padding(
           padding: EdgeInsets.only(
             left: index == 0 ? 0 : BankTokens.space2,

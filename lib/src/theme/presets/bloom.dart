@@ -20,26 +20,25 @@ class BankBloomTheme {
   // Light
   // ---------------------------------------------------------------------------
 
-  static BankThemeData light() => BankThemeData(
-        primary: const Color(0xFFFF6B6B),
-        primaryVariant: const Color(0xFF1A3557),
-        onPrimary: const Color(0xFFFFFFFF),
-        surface: const Color(0xFFFFFFFF),
-        surfaceVariant: const Color(0xFFFFF3EE),
-        onSurface: const Color(0xFF1A2030),
-        onSurfaceVariant: const Color(0xFF6B7280),
-        background: const Color(0xFFFFF9F5),
-        onBackground: const Color(0xFF1A2030),
-        outline: const Color(0xFFF0E8E4),
+  static BankThemeData light() => const BankThemeData(
+        primary: Color(0xFFFF6B6B),
+        primaryVariant: Color(0xFF1A3557),
+        onPrimary: Color(0xFFFFFFFF),
+        surface: Color(0xFFFFFFFF),
+        surfaceVariant: Color(0xFFFFF3EE),
+        onSurface: Color(0xFF1A2030),
+        onSurfaceVariant: Color(0xFF6B7280),
+        background: Color(0xFFFFF9F5),
+        onBackground: Color(0xFF1A2030),
+        outline: Color(0xFFF0E8E4),
         positiveBalance: BankTokens.positiveBalance,
         negativeBalance: BankTokens.negativeBalance,
         pending: BankTokens.pending,
         frozen: BankTokens.frozen,
-        accentGradient: null,
-        cardRadius: const BorderRadius.all(Radius.circular(20)),
-        buttonRadius: const BorderRadius.all(Radius.circular(999)),
-        sheetRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        chipRadius: const BorderRadius.all(Radius.circular(999)),
+        cardRadius: BorderRadius.all(Radius.circular(20)),
+        buttonRadius: BorderRadius.all(Radius.circular(999)),
+        sheetRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        chipRadius: BorderRadius.all(Radius.circular(999)),
         // 0.02 signals a warm-tinted shadow at very low opacity.
         // Consumers map this to a BoxShadow with a warm colour.
         elevationLow: 0.02,
@@ -49,35 +48,33 @@ class BankBloomTheme {
         numeralLarge: BankTokens.numeralLarge,
         numeralMedium: BankTokens.numeralMedium,
         numeralSmall: BankTokens.numeralSmall,
-        fontFamily: 'Nunito',
+        fontFamily: 'packages/bank_ui_kit/Nunito',
         useGlow: false,
-        glowColor: null,
       );
 
   // ---------------------------------------------------------------------------
   // Dark
   // ---------------------------------------------------------------------------
 
-  static BankThemeData dark() => BankThemeData(
-        primary: const Color(0xFFFF8585),
-        primaryVariant: const Color(0xFF4A7FBF),
-        onPrimary: const Color(0xFF1A2030),
-        surface: const Color(0xFF243344),
-        surfaceVariant: const Color(0xFF2C3E50),
-        onSurface: const Color(0xFFF5F0EC),
-        onSurfaceVariant: const Color(0xFFB0B8C4),
-        background: const Color(0xFF1C2A3A),
-        onBackground: const Color(0xFFF5F0EC),
-        outline: const Color(0xFF2C3A4A),
+  static BankThemeData dark() => const BankThemeData(
+        primary: Color(0xFFFF8585),
+        primaryVariant: Color(0xFF4A7FBF),
+        onPrimary: Color(0xFF1A2030),
+        surface: Color(0xFF243344),
+        surfaceVariant: Color(0xFF2C3E50),
+        onSurface: Color(0xFFF5F0EC),
+        onSurfaceVariant: Color(0xFFB0B8C4),
+        background: Color(0xFF1C2A3A),
+        onBackground: Color(0xFFF5F0EC),
+        outline: Color(0xFF2C3A4A),
         positiveBalance: BankTokens.positiveBalance,
         negativeBalance: BankTokens.negativeBalance,
         pending: BankTokens.pending,
         frozen: BankTokens.frozen,
-        accentGradient: null,
-        cardRadius: const BorderRadius.all(Radius.circular(20)),
-        buttonRadius: const BorderRadius.all(Radius.circular(999)),
-        sheetRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        chipRadius: const BorderRadius.all(Radius.circular(999)),
+        cardRadius: BorderRadius.all(Radius.circular(20)),
+        buttonRadius: BorderRadius.all(Radius.circular(999)),
+        sheetRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        chipRadius: BorderRadius.all(Radius.circular(999)),
         elevationLow: 1,
         elevationMedium: 4,
         elevationHigh: 8,
@@ -85,9 +82,8 @@ class BankBloomTheme {
         numeralLarge: BankTokens.numeralLarge,
         numeralMedium: BankTokens.numeralMedium,
         numeralSmall: BankTokens.numeralSmall,
-        fontFamily: 'Nunito',
+        fontFamily: 'packages/bank_ui_kit/Nunito',
         useGlow: false,
-        glowColor: null,
       );
 
   // ---------------------------------------------------------------------------
@@ -98,10 +94,10 @@ class BankBloomTheme {
   /// applied as a [ThemeExtension] and the Material 3 [ColorScheme] wired to
   /// the preset's coral primary colour.
   static ThemeData applyTo(ThemeData base) {
-    final bool isDark = base.brightness == Brightness.dark;
-    final BankThemeData bank = isDark ? dark() : light();
+    final isDark = base.brightness == Brightness.dark;
+    final bank = isDark ? dark() : light();
 
-    final ColorScheme colorScheme = ColorScheme.fromSeed(
+    final colorScheme = ColorScheme.fromSeed(
       seedColor: bank.primary,
       brightness: base.brightness,
       primary: bank.primary,
@@ -110,11 +106,22 @@ class BankBloomTheme {
       onSurface: bank.onSurface,
     );
 
-    return base.copyWith(
+    final themed = base.copyWith(
       colorScheme: colorScheme,
       scaffoldBackgroundColor: bank.background,
       cardColor: bank.surface,
       extensions: <ThemeExtension<dynamic>>[bank],
     );
+
+    // Wire the preset's brand font into the Material text themes so every
+    // descendant Text inherits it (the kit's own styles intentionally omit
+    // a family and inherit this default).
+    return bank.fontFamily == null
+        ? themed
+        : themed.copyWith(
+            textTheme: themed.textTheme.apply(fontFamily: bank.fontFamily),
+            primaryTextTheme:
+                themed.primaryTextTheme.apply(fontFamily: bank.fontFamily),
+          );
   }
 }

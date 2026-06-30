@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../src/common/money_formatter.dart';
-import '../../src/models/exchange_rate.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
@@ -56,9 +55,9 @@ class BankTransferReviewCard extends StatelessWidget {
   final Widget? additionalInfo;
 
   const BankTransferReviewCard({
-    super.key,
     required this.amount,
     required this.beneficiary,
+    super.key,
     this.fee,
     this.exchangeRate,
     this.estimatedArrival,
@@ -89,9 +88,11 @@ class BankTransferReviewCard extends StatelessWidget {
 
   String _formatRate() {
     if (exchangeRate == null) return '';
-    final rate = exchangeRate!.rate.toDouble();
+    final rate = exchangeRate!.rate.toDouble().toStringAsFixed(4);
+    final from = exchangeRate!.fromCurrency;
+    final to = exchangeRate!.toCurrency;
     // Show 4 decimal places for the rate.
-    return '1 ${exchangeRate!.fromCurrency} = ${rate.toStringAsFixed(4)} ${exchangeRate!.toCurrency}';
+    return '1 $from = $rate $to';
   }
 
   String get _initials {
@@ -133,7 +134,7 @@ class BankTransferReviewCard extends StatelessWidget {
               bankTheme: bankTheme,
             ),
             const SizedBox(height: BankTokens.space4),
-            Divider(color: bankTheme.outline.withOpacity(0.4), height: 1),
+            Divider(color: bankTheme.outline.withValues(alpha: 0.4), height: 1),
             const SizedBox(height: BankTokens.space4),
             // ----------------------------------------------------------------
             // Amount row
@@ -197,7 +198,10 @@ class BankTransferReviewCard extends StatelessWidget {
             // ----------------------------------------------------------------
             if (additionalInfo != null) ...[
               const SizedBox(height: BankTokens.space4),
-              Divider(color: bankTheme.outline.withOpacity(0.4), height: 1),
+              Divider(
+                color: bankTheme.outline.withValues(alpha: 0.4),
+                height: 1,
+              ),
               const SizedBox(height: BankTokens.space4),
               additionalInfo!,
             ],
@@ -228,22 +232,23 @@ class _BeneficiaryHeader extends StatelessWidget {
     return Row(
       children: [
         // Avatar
-        beneficiary.avatarUrl != null
-            ? CircleAvatar(
-                radius: 24,
-                backgroundImage: NetworkImage(beneficiary.avatarUrl!),
-                backgroundColor: bankTheme.surfaceVariant,
-              )
-            : CircleAvatar(
-                radius: 24,
-                backgroundColor: bankTheme.primary.withOpacity(0.15),
-                child: Text(
-                  initials,
-                  style: BankTokens.labelLarge.copyWith(
-                    color: bankTheme.primary,
-                  ),
-                ),
+        if (beneficiary.avatarUrl != null)
+          CircleAvatar(
+            radius: 24,
+            backgroundImage: NetworkImage(beneficiary.avatarUrl!),
+            backgroundColor: bankTheme.surfaceVariant,
+          )
+        else
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: bankTheme.primary.withValues(alpha: 0.15),
+            child: Text(
+              initials,
+              style: BankTokens.labelLarge.copyWith(
+                color: bankTheme.primary,
               ),
+            ),
+          ),
         const SizedBox(width: BankTokens.space3),
         Expanded(
           child: Column(

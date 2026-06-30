@@ -17,7 +17,8 @@ import '../../src/theme/tokens.dart';
 /// ```dart
 /// BankErrorStateView(
 ///   title: 'Transfer failed',
-///   message: 'We could not reach the recipient's bank. Please try again later.',
+///   message: "We could not reach the recipient's bank. "
+///       'Please try again later.',
 ///   onRetry: () => bloc.add(RetryTransferEvent()),
 ///   onContactSupport: () => launchSupportChat(),
 /// )
@@ -46,9 +47,9 @@ class BankErrorStateView extends StatelessWidget {
   final Widget? icon;
 
   const BankErrorStateView({
-    super.key,
     required this.title,
     required this.message,
+    super.key,
     this.retryLabel = 'Retry',
     this.supportLabel,
     this.onRetry,
@@ -60,8 +61,8 @@ class BankErrorStateView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
 
-    final Widget resolvedIcon = icon ??
-        Icon(
+    final resolvedIcon = icon ??
+        const Icon(
           Icons.error_outline,
           size: 48,
           color: BankTokens.danger,
@@ -72,7 +73,6 @@ class BankErrorStateView extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: BankTokens.space8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             resolvedIcon,
             const SizedBox(height: BankTokens.space4),

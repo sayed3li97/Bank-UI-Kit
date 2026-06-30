@@ -20,14 +20,13 @@ class _ProgressRingPainter extends CustomPainter {
     required this.trackColor,
     required this.progressColor,
     this.gradient,
-    this.strokeWidth = 4.0,
   });
 
   final double progress;
   final Color trackColor;
   final Color progressColor;
   final Gradient? gradient;
-  final double strokeWidth;
+  final double strokeWidth = 4;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -92,8 +91,6 @@ class _BadgeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bankTheme = BankThemeData.of(context);
-
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: BankTokens.space2,
@@ -119,6 +116,18 @@ class _BadgeChip extends StatelessWidget {
       ),
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Interest-rate badge helper
+// ---------------------------------------------------------------------------
+
+Widget _interestRateBadge(double rate) {
+  final pct = rate.toStringAsFixed(1);
+  return Semantics(
+    label: '$pct% AER interest rate',
+    child: _BadgeChip(label: '$pct% AER', color: BankTokens.success),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -152,8 +161,8 @@ class BankSavingsPotCard extends StatelessWidget {
   final Widget Function(BuildContext, SavingsPot)? itemBuilder;
 
   const BankSavingsPotCard({
-    super.key,
     required this.pot,
+    super.key,
     this.onTap,
     this.onAddMoney,
     this.onWithdraw,
@@ -161,8 +170,7 @@ class BankSavingsPotCard extends StatelessWidget {
   });
 
   // Diameter of the progress ring.
-  static const double _ringDiameter = 56.0;
-  static const double _ringStrokeWidth = 4.0;
+  static const double _ringDiameter = 56;
 
   @override
   Widget build(BuildContext context) {
@@ -184,13 +192,13 @@ class BankSavingsPotCard extends StatelessWidget {
       numeralStyle: scope.numeralStyle,
     );
 
-    final bool showActions = onAddMoney != null || onWithdraw != null;
-    final bool isShared = pot.memberIds.length > 1;
-    final String semanticLabel =
+    final showActions = onAddMoney != null || onWithdraw != null;
+    final isShared = pot.memberIds.length > 1;
+    final semanticLabel =
         'Pot: ${pot.name}, $formattedCurrent of $formattedTarget goal, '
         '${(pot.progressFraction * 100).round()}% complete';
 
-    Widget card = Container(
+    final Widget card = Container(
       constraints: const BoxConstraints(minHeight: 120),
       decoration: BoxDecoration(
         color: bankTheme.surface,
@@ -227,7 +235,6 @@ class BankSavingsPotCard extends StatelessWidget {
               children: [
                 // ── Top row: ring + info ──────────────────────────────────
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Progress ring
                     SizedBox(
@@ -239,7 +246,6 @@ class BankSavingsPotCard extends StatelessWidget {
                           trackColor: bankTheme.surfaceVariant,
                           progressColor: bankTheme.primary,
                           gradient: bankTheme.accentGradient,
-                          strokeWidth: _ringStrokeWidth,
                         ),
                         child: Center(
                           child: Text(
@@ -302,15 +308,7 @@ class BankSavingsPotCard extends StatelessWidget {
                               runSpacing: BankTokens.space1,
                               children: [
                                 if (pot.interestRate != null)
-                                  Semantics(
-                                    label:
-                                        '${pot.interestRate!.toStringAsFixed(1)}% AER interest rate',
-                                    child: _BadgeChip(
-                                      label:
-                                          '${pot.interestRate!.toStringAsFixed(1)}% AER',
-                                      color: BankTokens.success,
-                                    ),
-                                  ),
+                                  _interestRateBadge(pot.interestRate!),
                                 if (pot.hasOwnAccountNumber)
                                   Semantics(
                                     label: 'Has own account number',
@@ -322,11 +320,10 @@ class BankSavingsPotCard extends StatelessWidget {
                                   ),
                                 if (isShared)
                                   Semantics(
-                                    label:
-                                        'Shared pot with ${pot.memberIds.length} members',
+                                    label: 'Shared pot with '
+                                        '${pot.memberIds.length} members',
                                     child: _BadgeChip(
-                                      label:
-                                          '${pot.memberIds.length} members',
+                                      label: '${pot.memberIds.length} members',
                                       color: bankTheme.onSurfaceVariant,
                                       icon: BankIcons.accountJoint,
                                     ),

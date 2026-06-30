@@ -31,7 +31,8 @@ class ExchangeRate {
   Money convert(Money from) {
     assert(
       from.currencyCode == fromCurrency,
-      'Cannot convert ${from.currencyCode} using a rate from $fromCurrency to $toCurrency',
+      'Cannot convert ${from.currencyCode} using a rate '
+      'from $fromCurrency to $toCurrency',
     );
     return Money(amount: from.amount * rate, currencyCode: toCurrency);
   }

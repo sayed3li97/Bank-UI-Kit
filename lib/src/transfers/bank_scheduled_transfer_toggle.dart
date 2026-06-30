@@ -52,7 +52,7 @@ class BankScheduledTransferToggle extends StatelessWidget {
   final ValueChanged<BankTransferTiming> onChanged;
 
   /// The currently selected scheduled date for [BankTransferTiming.later].
-  /// Displayed in the date-picker row when [later] is active.
+  /// Displayed in the date-picker row when later timing is active.
   final DateTime? scheduledDate;
 
   /// When non-null and [BankTransferTiming.later] is selected, a date-and-time
@@ -76,9 +76,9 @@ class BankScheduledTransferToggle extends StatelessWidget {
   ];
 
   const BankScheduledTransferToggle({
-    super.key,
     required this.selected,
     required this.onChanged,
+    super.key,
     this.scheduledDate,
     this.onDateChanged,
     this.recurringPattern,
@@ -134,7 +134,7 @@ class BankScheduledTransferToggle extends StatelessWidget {
                     : bankTheme.onSurface,
               ),
               side: WidgetStateProperty.all(
-                BorderSide(color: bankTheme.outline.withOpacity(0.5)),
+                BorderSide(color: bankTheme.outline.withValues(alpha: 0.5)),
               ),
               shape: WidgetStateProperty.all(
                 RoundedRectangleBorder(borderRadius: bankTheme.chipRadius),
@@ -148,8 +148,7 @@ class BankScheduledTransferToggle extends StatelessWidget {
         // ----------------------------------------------------------------
         // "Later" — date + time picker row
         // ----------------------------------------------------------------
-        if (selected == BankTransferTiming.later &&
-            onDateChanged != null) ...[
+        if (selected == BankTransferTiming.later && onDateChanged != null) ...[
           const SizedBox(height: BankTokens.space3),
           _DatePickerRow(
             scheduledDate: scheduledDate,
@@ -196,8 +195,7 @@ class _DatePickerRow extends StatelessWidget {
 
   Future<void> _pick(BuildContext context) async {
     final now = DateTime.now();
-    final initialDate = scheduledDate != null &&
-            scheduledDate!.isAfter(now)
+    final initialDate = scheduledDate != null && scheduledDate!.isAfter(now)
         ? scheduledDate!
         : now.add(const Duration(hours: 1));
 
@@ -265,7 +263,7 @@ class _DatePickerRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: BankTokens.space4),
           decoration: BoxDecoration(
             borderRadius: bankTheme.chipRadius,
-            border: Border.all(color: bankTheme.outline.withOpacity(0.5)),
+            border: Border.all(color: bankTheme.outline.withValues(alpha: 0.5)),
             color: bankTheme.surfaceVariant,
           ),
           child: Row(
@@ -332,7 +330,7 @@ class _RecurringPatternDropdown extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: BankTokens.space4),
         decoration: BoxDecoration(
           borderRadius: bankTheme.chipRadius,
-          border: Border.all(color: bankTheme.outline.withOpacity(0.5)),
+          border: Border.all(color: bankTheme.outline.withValues(alpha: 0.5)),
           color: bankTheme.surfaceVariant,
         ),
         child: DropdownButton<String>(

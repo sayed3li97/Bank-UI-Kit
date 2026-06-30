@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../src/theme/bank_theme_data.dart';
-import '../../src/theme/tokens.dart';
+import '../../bank_ui_kit.dart';
+import '../../core.dart';
 
 // ---------------------------------------------------------------------------
 // Enums & Data Models
@@ -60,10 +60,10 @@ class BankPhysicalCardMaterialPicker extends StatelessWidget {
   final ValueChanged<BankCardDesignOption> onSelected;
 
   const BankPhysicalCardMaterialPicker({
-    super.key,
     required this.options,
-    this.selectedId,
     required this.onSelected,
+    super.key,
+    this.selectedId,
   });
 
   @override
@@ -103,8 +103,8 @@ class BankPhysicalCardMaterialPicker extends StatelessWidget {
 class _CardOptionTile extends StatelessWidget {
   static const double _previewWidth = 80;
   static const double _previewHeight = 50;
-  static const double _cardRadius = 6.0;
-  static const double _selectionBorderWidth = 2.0;
+  static const double _cardRadius = 6;
+  static const double _selectionBorderWidth = 2;
   static const double _labelHeight = 36;
   static const double _totalHeight =
       _previewHeight + BankTokens.space2 + _labelHeight;
@@ -165,7 +165,8 @@ class _CardOptionTile extends StatelessWidget {
     if (isSelected) {
       preview = Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(_cardRadius + _selectionBorderWidth),
+          borderRadius:
+              BorderRadius.circular(_cardRadius + _selectionBorderWidth),
           border: Border.all(
             color: bankTheme.primary,
             width: _selectionBorderWidth,
@@ -203,7 +204,7 @@ class _CardOptionTile extends StatelessWidget {
             width: 18,
             height: 14,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.45),
+              color: Colors.white.withValues(alpha: 0.45),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -243,8 +244,7 @@ class _CardOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String semanticLabel =
-        '${option.label}, ${option.material.name} card'
+    final semanticLabel = '${option.label}, ${option.material.name} card'
         '${isSelected ? ', selected' : ''}';
 
     return Semantics(
@@ -256,7 +256,6 @@ class _CardOptionTile extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // ── Preview ──────────────────────────────────────────────────────
             _buildCardPreview(),
@@ -277,8 +276,7 @@ class _CardOptionTile extends StatelessWidget {
                   color: isSelected
                       ? bankTheme.primary
                       : bankTheme.onSurfaceVariant,
-                  fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.w400,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,
@@ -320,7 +318,7 @@ class _MetalShimmerOverlay extends StatelessWidget {
       blendMode: BlendMode.srcATop,
       shaderCallback: (bounds) => const LinearGradient(
         begin: Alignment(-1.2, -1.2),
-        end: Alignment(0.0, 0.0),
+        end: Alignment.center,
         colors: [
           Colors.transparent,
           Color(0x55FFFFFF),

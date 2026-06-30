@@ -27,8 +27,8 @@ class BankSpendingBreakdownChart extends StatefulWidget {
   final String? centerLabel;
 
   const BankSpendingBreakdownChart({
-    super.key,
     required this.categories,
+    super.key,
     this.centerLabel,
   });
 
@@ -86,8 +86,10 @@ class _BankSpendingBreakdownChartState
                       setState(() => _touchedIndex = -1);
                       return;
                     }
-                    setState(() => _touchedIndex =
-                        response.touchedSection!.touchedSectionIndex);
+                    setState(
+                      () => _touchedIndex =
+                          response.touchedSection!.touchedSectionIndex,
+                    );
                   },
                 ),
                 centerSpaceRadius: 60,
@@ -96,7 +98,8 @@ class _BankSpendingBreakdownChartState
                   final i = entry.key;
                   final cat = entry.value;
                   final isTouched = i == _touchedIndex;
-                  final color = cat.color ?? _defaultColors[i % _defaultColors.length];
+                  final color =
+                      cat.color ?? _defaultColors[i % _defaultColors.length];
                   final value = cat.amount.amount.toDouble().abs();
                   final pct = total > 0 ? (value / total * 100) : 0.0;
 
@@ -106,8 +109,8 @@ class _BankSpendingBreakdownChartState
                     radius: isTouched ? 60 : 50,
                     showTitle: isTouched,
                     title: '${pct.toStringAsFixed(0)}%',
-                    titleStyle: BankTokens.labelSmall
-                        .copyWith(color: Colors.white),
+                    titleStyle:
+                        BankTokens.labelSmall.copyWith(color: Colors.white),
                   );
                 }).toList(),
               ),
@@ -120,7 +123,8 @@ class _BankSpendingBreakdownChartState
             children: widget.categories.asMap().entries.map((entry) {
               final i = entry.key;
               final cat = entry.value;
-              final color = cat.color ?? _defaultColors[i % _defaultColors.length];
+              final color =
+                  cat.color ?? _defaultColors[i % _defaultColors.length];
               final amountStr = BankMoneyFormatter.format(
                 amount: cat.amount.amount,
                 currencyCode: cat.amount.currencyCode,

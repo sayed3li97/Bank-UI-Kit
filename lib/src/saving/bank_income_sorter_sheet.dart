@@ -15,8 +15,8 @@ class BankIncomeSorterSheet extends StatefulWidget {
   final VoidCallback? onDismiss;
 
   const BankIncomeSorterSheet({
-    super.key,
     required this.controller,
+    super.key,
     this.onDismiss,
   });
 
@@ -54,7 +54,7 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
     super.dispose();
   }
 
-  void _onControllerChanged() => setState(() => _syncControllers());
+  void _onControllerChanged() => setState(_syncControllers);
 
   void _syncControllers() {
     final entries = widget.controller.entries;
@@ -77,7 +77,6 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
         potId: pot.id,
         potName: pot.name,
         fractionOrFixed: 10,
-        isPercentage: true,
       ),
     );
   }
@@ -89,9 +88,8 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
     final ctrl = widget.controller;
 
     final usedPotIds = ctrl.entries.map((e) => e.potId).toSet();
-    final availablePots = ctrl.availablePots
-        .where((p) => !usedPotIds.contains(p.id))
-        .toList();
+    final availablePots =
+        ctrl.availablePots.where((p) => !usedPotIds.contains(p.id)).toList();
 
     final incomingFormatted = BankMoneyFormatter.format(
       amount: ctrl.incomingAmount.amount,
@@ -136,8 +134,8 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
                   const SizedBox(height: BankTokens.space1),
                   Text(
                     incomingFormatted,
-                    style: BankTokens.numeralHero
-                        .copyWith(color: theme.primary),
+                    style:
+                        BankTokens.numeralHero.copyWith(color: theme.primary),
                   ),
                   const SizedBox(height: BankTokens.space4),
                   ...List.generate(ctrl.entries.length, (i) {
@@ -254,13 +252,13 @@ class _EntryRow extends StatelessWidget {
   final BankUiScopeData scope;
 
   const _EntryRow({
-    super.key,
     required this.entry,
     required this.amountController,
     required this.onChanged,
     required this.onDelete,
     required this.theme,
     required this.scope,
+    super.key,
   });
 
   @override
@@ -282,11 +280,10 @@ class _EntryRow extends StatelessWidget {
                   decimal: true,
                 ),
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
                 ],
                 textAlign: TextAlign.end,
-                style:
-                    BankTokens.numeralSmall.copyWith(color: theme.onSurface),
+                style: BankTokens.numeralSmall.copyWith(color: theme.onSurface),
                 decoration: InputDecoration(
                   suffixText: entry.isPercentage ? '%' : '',
                   isDense: true,
@@ -333,8 +330,8 @@ class _RemainingRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: BankTokens.labelMedium
-                .copyWith(color: theme.onSurfaceVariant),
+            style:
+                BankTokens.labelMedium.copyWith(color: theme.onSurfaceVariant),
           ),
           Text(
             amount,

@@ -15,11 +15,11 @@ class BankBudget {
   const BankBudget({
     required this.id,
     required this.name,
-    this.category,
     required this.limit,
     required this.spent,
     required this.periodStart,
     required this.periodEnd,
+    this.category,
   });
 
   BankBudget copyWith({
@@ -41,10 +41,9 @@ class BankBudget {
         periodEnd: periodEnd ?? this.periodEnd,
       );
 
-  double get spentFraction =>
-      limit.amount == Decimal.zero
-          ? 0
-          : (spent.amount / limit.amount).toDouble().clamp(0.0, double.infinity);
+  double get spentFraction => limit.amount == Decimal.zero
+      ? 0
+      : (spent.amount / limit.amount).toDouble().clamp(0.0, double.infinity);
 
   bool get isOverBudget => spent.amount > limit.amount;
 

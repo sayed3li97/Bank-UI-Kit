@@ -12,7 +12,7 @@ import '../../src/theme/tokens.dart';
 ///
 /// Visual treatment:
 /// - A 4 px [BankTokens.danger]-coloured left border on a
-///   `danger.withOpacity(0.08)` background.
+///   `danger.withValues(alpha: 0.08)` background.
 /// - A [Icons.gpp_bad_outlined] fraud icon at the top-left.
 /// - [title] in [BankTokens.labelLarge] (danger colour).
 /// - [body] in [BankTokens.bodySmall] ([BankThemeData.onSurface]).
@@ -25,7 +25,8 @@ import '../../src/theme/tokens.dart';
 /// ```dart
 /// BankFraudAlertBanner(
 ///   title: 'Suspicious transaction detected',
-///   body: 'A payment of £420 to an unknown recipient was attempted on your account. Did you authorise this?',
+///   body: 'A payment of £420 to an unknown recipient was attempted '
+///       'on your account. Did you authorise this?',
 ///   primaryActionLabel: 'Secure My Account',
 ///   dismissLabel: 'Not me — dismiss',
 ///   onPrimaryAction: () => navigator.push(SecureAccountRoute()),
@@ -52,29 +53,29 @@ class BankFraudAlertBanner extends StatelessWidget {
   final VoidCallback onDismiss;
 
   const BankFraudAlertBanner({
-    super.key,
     required this.title,
     required this.body,
     required this.primaryActionLabel,
     required this.dismissLabel,
     required this.onPrimaryAction,
     required this.onDismiss,
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final Color dangerColor = BankTokens.danger;
-    final Color dangerBg = dangerColor.withOpacity(0.08);
+    const dangerColor = BankTokens.danger;
+    final dangerBg = dangerColor.withValues(alpha: 0.08);
 
     return Semantics(
       label: 'Fraud alert: $title',
       container: true,
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: dangerBg,
           borderRadius: theme.cardRadius,
-          border: Border(
+          border: const Border(
             left: BorderSide(
               color: dangerColor,
               width: 4,
@@ -90,7 +91,7 @@ class BankFraudAlertBanner extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.gpp_bad_outlined,
                     color: dangerColor,
                     size: 24,

@@ -47,9 +47,9 @@ class BankLivenessCheckOverlay extends StatefulWidget {
   final VoidCallback? onRetry;
 
   const BankLivenessCheckOverlay({
-    super.key,
     required this.state,
     required this.cameraChild,
+    super.key,
     this.instruction,
     this.detectionProgress = 0,
     this.onRetry,
@@ -110,8 +110,11 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
-    _pulseOpacity = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: BankTokens.curveStandard),
+    _pulseOpacity = Tween<double>(begin: 0.5, end: 1).animate(
+      CurvedAnimation(
+        parent: _pulseController,
+        curve: BankTokens.curveStandard,
+      ),
     );
 
     if (widget.state == BankLivenessState.success) {
@@ -303,7 +306,7 @@ class _LivenessOverlayPainter extends CustomPainter {
   final bool showFullRing;
 
   static const double _overlayOpacity = 0.55;
-  static const double _ringStroke = 4.0;
+  static const double _ringStroke = 4;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -316,7 +319,7 @@ class _LivenessOverlayPainter extends CustomPainter {
 
     // ── Dark overlay with oval cutout ──
     final overlayPaint = Paint()
-      ..color = Colors.black.withOpacity(_overlayOpacity);
+      ..color = Colors.black.withValues(alpha: _overlayOpacity);
 
     final bgPath = Path()
       ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -331,16 +334,15 @@ class _LivenessOverlayPainter extends CustomPainter {
 
     // ── Progress ring around the oval ──
     final ringPaint = Paint()
-      ..color = isDetecting
-          ? ringColor.withOpacity(pulseOpacity)
-          : ringColor
+      ..color =
+          isDetecting ? ringColor.withValues(alpha: pulseOpacity) : ringColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = _ringStroke
       ..strokeCap = StrokeCap.round;
 
     // Background track.
     final trackPaint = Paint()
-      ..color = Colors.white.withOpacity(0.25)
+      ..color = Colors.white.withValues(alpha: 0.25)
       ..style = PaintingStyle.stroke
       ..strokeWidth = _ringStroke;
 
@@ -349,9 +351,8 @@ class _LivenessOverlayPainter extends CustomPainter {
 
     canvas.drawOval(ringRect, trackPaint);
 
-    final sweepAngle = showFullRing
-        ? 2 * math.pi
-        : 2 * math.pi * progress.clamp(0.0, 1.0);
+    final sweepAngle =
+        showFullRing ? 2 * math.pi : 2 * math.pi * progress.clamp(0.0, 1.0);
 
     if (sweepAngle > 0) {
       canvas.drawArc(

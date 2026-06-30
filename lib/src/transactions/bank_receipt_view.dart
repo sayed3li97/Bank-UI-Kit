@@ -22,8 +22,8 @@ class BankReceiptView extends StatelessWidget {
   final Widget? logoSlot;
 
   const BankReceiptView({
-    super.key,
     required this.transaction,
+    super.key,
     this.fromAccountName,
     this.toName,
     this.referenceNumber,
@@ -60,24 +60,23 @@ class BankReceiptView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = BankThemeData.of(context);
-    final BankUiScopeData scope = BankUiScope.of(context);
+    final bankTheme = BankThemeData.of(context);
+    final scope = BankUiScope.of(context);
 
-    final bool isCredit = !transaction.amount.isNegative;
-    final String formattedAmount = BankMoneyFormatter.format(
+    final isCredit = !transaction.amount.isNegative;
+    final formattedAmount = BankMoneyFormatter.format(
       amount: transaction.amount.amount,
       currencyCode: transaction.amount.currencyCode,
       numeralStyle: scope.numeralStyle,
       showSign: isCredit,
     );
 
-    final Color amountColor = isCredit
-        ? bankTheme.positiveBalance
-        : bankTheme.onSurface;
+    final amountColor =
+        isCredit ? bankTheme.positiveBalance : bankTheme.onSurface;
 
     return Semantics(
       label: 'Receipt for ${transaction.merchantName}, $formattedAmount',
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(BankTokens.radiusMedium),
@@ -137,7 +136,7 @@ class BankReceiptView extends StatelessWidget {
             ),
 
             // ---- Dashed divider (perforated edge effect) ----
-            _DashedDivider(color: const Color(0xFFE5E7EB)),
+            const _DashedDivider(color: Color(0xFFE5E7EB)),
 
             // ---- Receipt body ----
             Padding(
@@ -177,7 +176,7 @@ class BankReceiptView extends StatelessWidget {
             ),
 
             // ---- Dashed divider ----
-            _DashedDivider(color: const Color(0xFFE5E7EB)),
+            const _DashedDivider(color: Color(0xFFE5E7EB)),
 
             // ---- QR code placeholder ----
             Padding(
@@ -191,8 +190,6 @@ class BankReceiptView extends StatelessWidget {
                       border: Border.all(
                         color: const Color(0xFFD1D5DB),
                         width: 1.5,
-                        strokeAlign: BorderSide.strokeAlignInside,
-                        style: BorderStyle.solid,
                       ),
                       borderRadius:
                           BorderRadius.circular(BankTokens.radiusSmall),
@@ -200,10 +197,10 @@ class BankReceiptView extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           BankIcons.scan,
                           size: 32,
-                          color: const Color(0xFF9CA3AF),
+                          color: Color(0xFF9CA3AF),
                         ),
                         const SizedBox(height: BankTokens.space1),
                         Text(
@@ -324,7 +321,7 @@ class _DashedLinePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     const double dashWidth = 8;
     const double dashGap = 4;
-    final Paint paint = Paint()
+    final paint = Paint()
       ..color = color
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;

@@ -44,17 +44,17 @@ class BankCardControlsPanel extends StatelessWidget {
   final VoidCallback? onReportLostOrStolen;
 
   const BankCardControlsPanel({
-    super.key,
     required this.isFrozen,
     required this.isOnlinePaymentsEnabled,
     required this.isContactlessEnabled,
     required this.isInternationalEnabled,
-    this.spendLimit,
-    this.maxSpendLimit = 10000,
     required this.onFreezeChanged,
     required this.onOnlinePaymentsChanged,
     required this.onContactlessChanged,
     required this.onInternationalChanged,
+    super.key,
+    this.spendLimit,
+    this.maxSpendLimit = 10000,
     this.onSpendLimitChanged,
     this.onChangePinTap,
     this.onReportLostOrStolen,
@@ -261,9 +261,9 @@ class _SpendLimitRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double sliderValue = (currentLimit ?? 0).clamp(0.0, maxLimit);
-    final bool hasLimit = currentLimit != null && currentLimit! > 0;
-    final String limitLabel = hasLimit
+    final sliderValue = (currentLimit ?? 0).clamp(0.0, maxLimit);
+    final hasLimit = currentLimit != null && currentLimit! > 0;
+    final limitLabel = hasLimit
         ? '${currentLimit!.toStringAsFixed(0)} / ${maxLimit.toStringAsFixed(0)}'
         : 'No limit';
 
@@ -310,14 +310,12 @@ class _SpendLimitRow extends StatelessWidget {
             ),
             Slider(
               value: sliderValue,
-              min: 0,
               max: maxLimit,
               divisions: maxLimit > 0 ? maxLimit.toInt() ~/ 100 : null,
               activeColor: bankTheme.primary,
               inactiveColor: bankTheme.outline,
-              label: sliderValue > 0
-                  ? sliderValue.toStringAsFixed(0)
-                  : 'No limit',
+              label:
+                  sliderValue > 0 ? sliderValue.toStringAsFixed(0) : 'No limit',
               onChanged: onChanged,
             ),
           ],

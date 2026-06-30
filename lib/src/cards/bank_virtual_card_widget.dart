@@ -68,8 +68,8 @@ class BankVirtualCardWidget extends StatefulWidget {
   final double height;
 
   const BankVirtualCardWidget({
-    super.key,
     required this.account,
+    super.key,
     this.surface = BankCardSurface.gradient,
     this.cardState = BankCardState.normal,
     this.primaryColor,
@@ -93,7 +93,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   late final AnimationController _flipController;
   late final Animation<double> _flipAnimation;
 
-  static const double _cardRadius = 16.0;
+  static const double _cardRadius = 16;
   static const Duration _flipDuration = Duration(milliseconds: 500);
 
   @override
@@ -218,8 +218,8 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
           borderRadius: BorderRadius.circular(_cardRadius),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-            child: Container(
-              color: Colors.blueGrey.withOpacity(0.35),
+            child: ColoredBox(
+              color: Colors.blueGrey.withValues(alpha: 0.35),
               child: const Center(
                 child: Icon(
                   Icons.ac_unit_outlined,
@@ -238,8 +238,8 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   // ---------------------------------------------------------------------------
 
   Widget _buildFrontFace(BankThemeData bankTheme) {
-    const Color textPrimary = Colors.white;
-    final Color textSecondary = Colors.white.withOpacity(0.75);
+    const textPrimary = Colors.white;
+    final textSecondary = Colors.white.withValues(alpha: 0.75);
 
     return _wrapSurface(
       bankTheme: bankTheme,
@@ -257,7 +257,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
                   width: 36,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD4AF37).withOpacity(0.85),
+                    color: const Color(0xFFD4AF37).withValues(alpha: 0.85),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -360,8 +360,8 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   // ---------------------------------------------------------------------------
 
   Widget _buildBackFace(BankThemeData bankTheme) {
-    const Color textPrimary = Colors.white;
-    final Color textSecondary = Colors.white.withOpacity(0.75);
+    const textPrimary = Colors.white;
+    final textSecondary = Colors.white.withValues(alpha: 0.75);
 
     return _wrapSurface(
       bankTheme: bankTheme,
@@ -391,7 +391,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
                       child: Container(
                         height: 36,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(2),
                         ),
                         padding: const EdgeInsets.symmetric(
@@ -418,7 +418,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
                       width: 56,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(2),
                       ),
                       alignment: Alignment.center,
@@ -511,7 +511,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
           animation: _flipAnimation,
           builder: (context, _) {
             final angle = _flipAnimation.value;
-            final bool showBack = angle > pi / 2;
+            final showBack = angle > pi / 2;
 
             // The front card rotates from 0 → π.
             // When angle > π/2 (back side visible) we hide the front to avoid
@@ -544,7 +544,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
                   ..rotateY(angle - pi),
                 child: Transform(
                   alignment: Alignment.center,
-                  transform: Matrix4.identity()..scale(-1.0, 1.0, 1.0),
+                  transform: Matrix4.identity()..scale(-1.0, 1, 1),
                   child: _buildFaceStack(
                     context: context,
                     bankTheme: bankTheme,
@@ -640,12 +640,12 @@ class _AnimatedMeshCardState extends State<_AnimatedMeshCard>
     )..repeat(reverse: true);
 
     _anim1 = AlignmentTween(
-      begin: const Alignment(-1.0, -1.0),
+      begin: Alignment.topLeft,
       end: const Alignment(0.6, 0.8),
     ).animate(CurvedAnimation(parent: _ctrl1, curve: Curves.easeInOut));
 
     _anim2 = AlignmentTween(
-      begin: const Alignment(1.0, 1.0),
+      begin: Alignment.bottomRight,
       end: const Alignment(-0.6, -0.8),
     ).animate(CurvedAnimation(parent: _ctrl2, curve: Curves.easeInOut));
   }
@@ -667,7 +667,7 @@ class _AnimatedMeshCardState extends State<_AnimatedMeshCard>
           height: widget.height,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: widget.primaryColor.withOpacity(0.85),
+            color: widget.primaryColor.withValues(alpha: 0.85),
             borderRadius: widget.borderRadius,
           ),
           child: Stack(
@@ -683,8 +683,8 @@ class _AnimatedMeshCardState extends State<_AnimatedMeshCard>
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        widget.secondaryColor.withOpacity(0.7),
-                        widget.secondaryColor.withOpacity(0.0),
+                        widget.secondaryColor.withValues(alpha: 0.7),
+                        widget.secondaryColor.withValues(alpha: 0),
                       ],
                     ),
                   ),
@@ -702,8 +702,8 @@ class _AnimatedMeshCardState extends State<_AnimatedMeshCard>
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        Colors.white.withOpacity(0.25),
-                        Colors.white.withOpacity(0.0),
+                        Colors.white.withValues(alpha: 0.25),
+                        Colors.white.withValues(alpha: 0),
                       ],
                     ),
                   ),
@@ -780,7 +780,7 @@ class _MetallicSweepCardState extends State<_MetallicSweepCard>
       animation: _sweep,
       builder: (context, child) {
         // Sweep moves a narrow white highlight band from left to right.
-        final double dx = _sweep.value;
+        final dx = _sweep.value;
         final shader = LinearGradient(
           begin: Alignment(dx - 0.25, -0.5),
           end: Alignment(dx + 0.25, 0.5),
@@ -809,7 +809,7 @@ class _MetallicSweepCardState extends State<_MetallicSweepCard>
           ),
           child: ShaderMask(
             blendMode: BlendMode.srcATop,
-            shaderCallback: (bounds) => shader.createShader(bounds),
+            shaderCallback: shader.createShader,
             child: child,
           ),
         );

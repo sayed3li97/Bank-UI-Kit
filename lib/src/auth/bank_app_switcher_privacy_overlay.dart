@@ -43,8 +43,8 @@ class BankAppSwitcherPrivacyOverlay extends StatefulWidget {
   final Widget? placeholder;
 
   const BankAppSwitcherPrivacyOverlay({
-    super.key,
     required this.child,
+    super.key,
     this.enabled = true,
     this.placeholder,
   });
@@ -73,8 +73,7 @@ class _BankAppSwitcherPrivacyOverlayState
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!widget.enabled) return;
-    final bool shouldObscure =
-        state == AppLifecycleState.inactive ||
+    final shouldObscure = state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused;
     if (shouldObscure != _obscured) {
       setState(() => _obscured = shouldObscure);
@@ -83,7 +82,7 @@ class _BankAppSwitcherPrivacyOverlayState
 
   @override
   Widget build(BuildContext context) {
-    final bool active = widget.enabled && _obscured;
+    final active = widget.enabled && _obscured;
 
     if (widget.placeholder != null) {
       // Placeholder mode: cross-fade between child and placeholder.

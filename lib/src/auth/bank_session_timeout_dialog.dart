@@ -34,7 +34,7 @@ import '../../src/theme/tokens.dart';
 /// ```
 ///
 /// The countdown text is marked as a `liveRegion` so screen readers announce
-/// the changing value. The timer is automatically cancelled on [dispose].
+/// the changing value. The timer is automatically cancelled on `dispose`.
 class BankSessionTimeoutDialog extends StatefulWidget {
   /// How much time remains before the session expires. The countdown starts
   /// from this value and decrements by one second every tick.
@@ -64,10 +64,10 @@ class BankSessionTimeoutDialog extends StatefulWidget {
   final String logoutLabel;
 
   const BankSessionTimeoutDialog({
-    super.key,
     required this.remainingTime,
     required this.onExtend,
     required this.onLogout,
+    super.key,
     this.title = 'Session Expiring',
     this.body = 'Your session will expire soon. Stay logged in?',
     this.extendLabel = 'Stay Logged In',
@@ -122,14 +122,14 @@ class _BankSessionTimeoutDialogState extends State<BankSessionTimeoutDialog> {
 
   /// Formats seconds as `M:SS` (e.g. `0:30`, `1:05`).
   String _formatTime(int totalSeconds) {
-    final int minutes = totalSeconds ~/ 60;
-    final int seconds = totalSeconds % 60;
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = BankThemeData.of(context);
+    final bankTheme = BankThemeData.of(context);
 
     return Dialog(
       backgroundColor: bankTheme.surface,
@@ -166,9 +166,8 @@ class _BankSessionTimeoutDialogState extends State<BankSessionTimeoutDialog> {
               child: Text(
                 _formatTime(_secondsRemaining),
                 style: BankTokens.displayMedium.copyWith(
-                  color: _expired
-                      ? bankTheme.negativeBalance
-                      : bankTheme.primary,
+                  color:
+                      _expired ? bankTheme.negativeBalance : bankTheme.primary,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
                 textAlign: TextAlign.center,

@@ -79,7 +79,8 @@ class _InvestingScreenState extends State<InvestingScreen> {
       body: ListView(
         padding: const EdgeInsets.all(BankTokens.space4),
         children: [
-          Text('Portfolio Chart', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Portfolio Chart',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           BankPortfolioPerformanceChart(
             dataPoints: _chartData,
@@ -87,13 +88,15 @@ class _InvestingScreenState extends State<InvestingScreen> {
             onRangeChanged: (r) => setState(() => _range = r),
           ),
           const SizedBox(height: BankTokens.space4),
-          Text('Holdings', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Holdings',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           ..._holdings.map(
             (h) => BankHoldingsListTile(holding: h),
           ),
           const SizedBox(height: BankTokens.space4),
-          Text('Watchlist', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Watchlist',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           ..._quotes.map(
             (q) => Padding(
@@ -117,21 +120,31 @@ class _InvestingScreenState extends State<InvestingScreen> {
             ),
           ),
           const SizedBox(height: BankTokens.space4),
-          Text('Price Ticker', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Price Ticker',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
-          BankAssetPriceTicker(quotes: _quotes),
+          ..._quotes.map(
+            (q) => Padding(
+              padding: const EdgeInsets.only(bottom: BankTokens.space2),
+              child: BankAssetPriceTicker(
+                quote: q,
+                onTap: () {},
+              ),
+            ),
+          ),
           const SizedBox(height: BankTokens.space4),
-          Text('Currency Converter', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Currency Converter',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           BankLiveExchangeConverter(
-            fromCurrency: 'GBP',
-            toCurrency: 'USD',
             rate: ExchangeRate(
               fromCurrency: 'GBP',
               toCurrency: 'USD',
               rate: Decimal.parse('1.27'),
-              updatedAt: DateTime.now(),
+              fetchedAt: DateTime.now(),
             ),
+            onConvert: () {},
+            onAmountChanged: (_) {},
           ),
         ],
       ),

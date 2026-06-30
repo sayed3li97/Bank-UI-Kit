@@ -95,7 +95,8 @@ abstract final class BankIcons {
 
   // Notifications
   static const IconData notification = Icons.notifications_outlined;
-  static const IconData notificationUnread = Icons.notifications_active_outlined;
+  static const IconData notificationUnread =
+      Icons.notifications_active_outlined;
   static const IconData fraud = Icons.gpp_bad_outlined;
 
   // Misc
@@ -110,20 +111,20 @@ abstract final class BankIcons {
 
   // Returns the icon for a given [TransactionCategory] by name
   static IconData forCategoryName(String name) => switch (name) {
-    'groceries' => groceries,
-    'dining' => dining,
-    'transport' => transport,
-    'entertainment' => entertainment,
-    'utilities' => utilities,
-    'health' => health,
-    'shopping' => shopping,
-    'travel' => travel,
-    'education' => education,
-    'subscription' => subscription,
-    'transfer' => transfer,
-    'income' => income,
-    'investment' => investment,
-    'creditPayment' => creditPayment,
-    _ => other,
-  };
+        'groceries' => groceries,
+        'dining' => dining,
+        'transport' => transport,
+        'entertainment' => entertainment,
+        'utilities' => utilities,
+        'health' => health,
+        'shopping' => shopping,
+        'travel' => travel,
+        'education' => education,
+        'subscription' => subscription,
+        'transfer' => transfer,
+        'income' => income,
+        'investment' => investment,
+        'creditPayment' => creditPayment,
+        _ => other,
+      };
 }

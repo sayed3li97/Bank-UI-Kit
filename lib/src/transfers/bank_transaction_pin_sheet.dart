@@ -48,9 +48,9 @@ class BankTransactionPinSheet extends StatefulWidget {
   final String subtitle;
 
   const BankTransactionPinSheet({
+    required this.onSubmit,
     super.key,
     this.pinLength = 6,
-    required this.onSubmit,
     this.onCancel,
     this.title = 'Enter PIN',
     this.subtitle = 'Enter your PIN to confirm this transfer',
@@ -183,7 +183,7 @@ class _BankTransactionPinSheetState extends State<BankTransactionPinSheet> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: bankTheme.outline.withOpacity(0.4),
+                color: bankTheme.outline.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(BankTokens.radiusFull),
               ),
             ),

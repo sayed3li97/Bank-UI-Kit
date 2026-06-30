@@ -88,9 +88,9 @@ class BankUiScope extends StatefulWidget {
   final Widget child;
 
   const BankUiScope({
+    required this.child,
     super.key,
     this.initialData = const BankUiScopeData(),
-    required this.child,
   });
 
   // ---------------------------------------------------------------------------
@@ -114,11 +114,11 @@ class BankUiScope extends StatefulWidget {
     return inherited!.data;
   }
 
-  /// Returns the [_BankUiScopeController] that allows callers to mutate the
+  /// Returns the [BankUiScopeController] that allows callers to mutate the
   /// scope data without a full rebuild of the [BankUiScope] itself.
   ///
   /// Throws a [FlutterError] if no [BankUiScope] ancestor is found.
-  static _BankUiScopeController controllerOf(BuildContext context) {
+  static BankUiScopeController controllerOf(BuildContext context) {
     final inherited =
         context.getInheritedWidgetOfExactType<_BankUiScopeInherited>();
     assert(
@@ -140,15 +140,37 @@ class BankUiScope extends StatefulWidget {
 
 /// Provides mutation methods for [BankUiScopeData].
 ///
+/// Obtain an instance with [BankUiScope.controllerOf].
+abstract class BankUiScopeController {
+  /// Flips [BankUiScopeData.privacyEnabled].
+  void togglePrivacy();
+
+  /// Sets [BankUiScopeData.privacyEnabled] to [enabled].
+  void setPrivacy(bool enabled);
+
+  /// Switches the active [BankPreset].
+  void setPreset(BankPreset preset);
+
+  /// Switches the active [NumeralStyle].
+  void setNumeralStyle(NumeralStyle style);
+
+  /// Enables or disables Islamic finance mode (swaps APR labels for
+  /// profit-rate labels throughout the kit).
+  void setIslamicFinanceMode(bool enabled);
+}
+
+/// Concrete [BankUiScopeController] backed by a [_BankUiScopeState].
+///
 /// Obtain an instance with [BankUiScope.controllerOf]. The controller holds a
 /// direct reference to [_BankUiScopeState] and triggers rebuilds via
-/// [setState] so only [_BankUiScopeInherited] and its dependents rebuild.
-class _BankUiScopeController {
+/// `setState` so only [_BankUiScopeInherited] and its dependents rebuild.
+class _BankUiScopeController implements BankUiScopeController {
   _BankUiScopeController(this._state);
 
   final _BankUiScopeState _state;
 
   /// Flips [BankUiScopeData.privacyEnabled].
+  @override
   void togglePrivacy() => _state._updateData(
         _state._data.copyWith(
           privacyEnabled: !_state._data.privacyEnabled,
@@ -156,19 +178,23 @@ class _BankUiScopeController {
       );
 
   /// Sets [BankUiScopeData.privacyEnabled] to [enabled].
+  @override
   void setPrivacy(bool enabled) =>
       _state._updateData(_state._data.copyWith(privacyEnabled: enabled));
 
   /// Switches the active [BankPreset].
+  @override
   void setPreset(BankPreset preset) =>
       _state._updateData(_state._data.copyWith(preset: preset));
 
   /// Switches the active [NumeralStyle].
+  @override
   void setNumeralStyle(NumeralStyle style) =>
       _state._updateData(_state._data.copyWith(numeralStyle: style));
 
   /// Enables or disables Islamic finance mode (swaps APR labels for
   /// profit-rate labels throughout the kit).
+  @override
   void setIslamicFinanceMode(bool enabled) =>
       _state._updateData(_state._data.copyWith(islamicFinanceMode: enabled));
 }

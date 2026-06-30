@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/money_formatter.dart';
 import '../../src/models/installment_plan.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
-import '../../src/common/money_formatter.dart';
 
 /// Lets the user choose an installment plan from a list.
 class BankInstallmentPlanSelector extends StatelessWidget {
@@ -14,8 +14,8 @@ class BankInstallmentPlanSelector extends StatelessWidget {
   final bool islamicFinanceMode;
 
   const BankInstallmentPlanSelector({
-    super.key,
     required this.plans,
+    super.key,
     this.selectedPlan,
     this.onPlanSelected,
     this.islamicFinanceMode = false,
@@ -47,6 +47,8 @@ class BankInstallmentPlanSelector extends StatelessWidget {
           numeralStyle: scope.numeralStyle,
         );
 
+        final rateStr = plan.annualRate?.toStringAsFixed(2) ?? '0.00';
+
         return Semantics(
           selected: isSelected,
           button: true,
@@ -64,7 +66,7 @@ class BankInstallmentPlanSelector extends StatelessWidget {
                   width: isSelected ? 2 : 1,
                 ),
                 color: isSelected
-                    ? theme.primary.withOpacity(0.06)
+                    ? theme.primary.withValues(alpha: 0.06)
                     : theme.surface,
               ),
               padding: const EdgeInsets.all(BankTokens.space3),
@@ -85,8 +87,8 @@ class BankInstallmentPlanSelector extends StatelessWidget {
                           plan.isInterestFree
                               ? 'Interest free'
                               : isIslamic
-                                  ? 'Profit rate ${plan.annualRate?.toStringAsFixed(2) ?? '0.00'}%'
-                                  : 'APR ${plan.annualRate?.toStringAsFixed(2) ?? '0.00'}%',
+                                  ? 'Profit rate $rateStr%'
+                                  : 'APR $rateStr%',
                           style: BankTokens.bodySmall.copyWith(
                             color: plan.isInterestFree
                                 ? BankTokens.investmentGain

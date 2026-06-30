@@ -13,8 +13,8 @@ class BankHoldingsListTile extends StatelessWidget {
   final Widget Function(BuildContext, Holding)? itemBuilder;
 
   const BankHoldingsListTile({
-    super.key,
     required this.holding,
+    super.key,
     this.onTap,
     this.itemBuilder,
   });
@@ -35,14 +35,14 @@ class BankHoldingsListTile extends StatelessWidget {
       currencyCode: holding.gainLoss.currencyCode,
       numeralStyle: scope.numeralStyle,
     );
-    final pctStr =
-        '${holding.gainLossPercent >= 0 ? '+' : ''}${holding.gainLossPercent.toStringAsFixed(2)}%';
+    final pctStr = '${holding.gainLossPercent >= 0 ? '+' : ''}'
+        '${holding.gainLossPercent.toStringAsFixed(2)}%';
     final gainColor =
         holding.isGain ? BankTokens.investmentGain : BankTokens.investmentLoss;
 
     return Semantics(
-      label:
-          '${holding.name}, ${holding.quantity} units, value $valueStr, $pctStr',
+      label: '${holding.name}, ${holding.quantity} units, '
+          'value $valueStr, $pctStr',
       child: InkWell(
         onTap: onTap,
         child: ConstrainedBox(
@@ -62,9 +62,7 @@ class BankHoldingsListTile extends StatelessWidget {
                       : null,
                   child: holding.logoUrl == null
                       ? Text(
-                          holding.symbol.isNotEmpty
-                              ? holding.symbol[0]
-                              : '?',
+                          holding.symbol.isNotEmpty ? holding.symbol[0] : '?',
                           style: BankTokens.labelMedium
                               .copyWith(color: theme.primary),
                         )
@@ -84,7 +82,7 @@ class BankHoldingsListTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        '${holding.quantity.toString()} ${holding.symbol}',
+                        '${holding.quantity} ${holding.symbol}',
                         style: BankTokens.bodySmall
                             .copyWith(color: theme.onSurfaceVariant),
                       ),
@@ -102,8 +100,7 @@ class BankHoldingsListTile extends StatelessWidget {
                     ),
                     Text(
                       '$gainLossStr ($pctStr)',
-                      style:
-                          BankTokens.bodySmall.copyWith(color: gainColor),
+                      style: BankTokens.bodySmall.copyWith(color: gainColor),
                     ),
                   ],
                 ),

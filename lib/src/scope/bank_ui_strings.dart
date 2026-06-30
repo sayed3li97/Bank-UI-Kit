@@ -1,3 +1,8 @@
+import '../../bank_ui_kit.dart';
+import '../../core.dart';
+import 'bank_ui_scope.dart';
+import 'scope.dart';
+
 /// All user-visible strings rendered by the Bank UI Kit.
 ///
 /// Every field carries an English default. Host apps that need a different
@@ -118,14 +123,14 @@ class BankUiStrings {
     this.dispute = 'Dispute',
     this.report = 'Report',
     this.newDevice = 'New Device Detected',
-    this.newDeviceBody =
-        'We noticed a login from a new device. If this was you, no action is needed.',
+    this.newDeviceBody = 'We noticed a login from a new device. '
+        'If this was you, no action is needed.',
     this.compromisedDevice = 'Security Warning',
-    this.compromisedDeviceBody =
-        'This device may be compromised. For your safety, some features have been limited.',
+    this.compromisedDeviceBody = 'This device may be compromised. '
+        'For your safety, some features have been limited.',
     this.verificationUnderReview = 'Verification Under Review',
-    this.verificationUnderReviewBody =
-        'We\'re reviewing your documents. This usually takes 1–2 business days.',
+    this.verificationUnderReviewBody = 'We\'re reviewing your documents. '
+        'This usually takes 1–2 business days.',
     this.installmentMonths = '{n} months',
     this.interestFree = 'Interest Free',
     this.perMonth = '/month',

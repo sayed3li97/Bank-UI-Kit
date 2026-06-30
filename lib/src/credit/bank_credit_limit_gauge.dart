@@ -15,9 +15,9 @@ class BankCreditLimitGauge extends StatelessWidget {
   final String? label;
 
   const BankCreditLimitGauge({
-    super.key,
     required this.creditLimit,
     required this.usedAmount,
+    super.key,
     this.label,
   });
 
@@ -59,8 +59,8 @@ class BankCreditLimitGauge extends StatelessWidget {
             : theme.primary;
 
     return Semantics(
-      label:
-          '${label ?? 'Credit limit'}: $usedStr used of $limitStr, $availableStr available',
+      label: '${label ?? 'Credit limit'}: $usedStr used of $limitStr, '
+          '$availableStr available',
       child: Column(
         children: [
           SizedBox(
@@ -70,7 +70,7 @@ class BankCreditLimitGauge extends StatelessWidget {
               painter: _GaugePainter(
                 fraction: fraction,
                 gaugeColor: gaugeColor,
-                trackColor: theme.outline.withOpacity(0.3),
+                trackColor: theme.outline.withValues(alpha: 0.3),
                 strokeWidth: 14,
               ),
               child: Center(
@@ -104,7 +104,7 @@ class BankCreditLimitGauge extends StatelessWidget {
                 theme: theme,
               ),
               _LegendItem(
-                color: theme.outline.withOpacity(0.5),
+                color: theme.outline.withValues(alpha: 0.5),
                 label: 'Limit',
                 value: limitStr,
                 theme: theme,
@@ -143,11 +143,15 @@ class _LegendItem extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label,
-                style:
-                    BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant)),
-            Text(value,
-                style: BankTokens.labelSmall.copyWith(color: theme.onSurface)),
+            Text(
+              label,
+              style:
+                  BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+            ),
+            Text(
+              value,
+              style: BankTokens.labelSmall.copyWith(color: theme.onSurface),
+            ),
           ],
         ),
       ],

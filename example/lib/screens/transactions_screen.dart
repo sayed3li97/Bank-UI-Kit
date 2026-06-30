@@ -58,9 +58,10 @@ class TransactionsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.all(BankTokens.space4),
         children: [
-          BankTransactionGroupHeader(label: 'Today'),
+          BankTransactionGroupHeader(date: _now),
           ..._transactions.take(1).map(
                 (t) => BankTransactionListTile(
                   transaction: t,
@@ -68,7 +69,10 @@ class TransactionsScreen extends StatelessWidget {
                       BankTransactionDetailSheet.show(context, transaction: t),
                 ),
               ),
-          BankTransactionGroupHeader(label: 'Yesterday'),
+          const SizedBox(height: BankTokens.space4),
+          BankTransactionGroupHeader(
+            date: _now.subtract(const Duration(days: 1)),
+          ),
           ..._transactions.skip(1).take(1).map(
                 (t) => BankTransactionListTile(
                   transaction: t,
@@ -76,7 +80,10 @@ class TransactionsScreen extends StatelessWidget {
                       BankTransactionDetailSheet.show(context, transaction: t),
                 ),
               ),
-          BankTransactionGroupHeader(label: 'Earlier'),
+          const SizedBox(height: BankTokens.space4),
+          BankTransactionGroupHeader(
+            date: _now.subtract(const Duration(days: 3)),
+          ),
           ..._transactions.skip(2).map(
                 (t) => BankTransactionListTile(
                   transaction: t,

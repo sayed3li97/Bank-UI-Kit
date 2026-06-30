@@ -57,24 +57,18 @@ class BankPinKeypad extends StatelessWidget {
   /// biometric cells are not affected.
   final Widget Function(BuildContext context, String digit)? digitBuilder;
 
-  static const List<String> _digits = [
-    '1', '2', '3',
-    '4', '5', '6',
-    '7', '8', '9',
-  ];
-
   const BankPinKeypad({
-    super.key,
-    this.onBiometric,
     required this.onDigit,
     required this.onDelete,
+    super.key,
+    this.onBiometric,
     this.enabled = true,
     this.digitBuilder,
   });
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = BankThemeData.of(context);
+    final bankTheme = BankThemeData.of(context);
 
     Widget keypad = Column(
       mainAxisSize: MainAxisSize.min,
@@ -106,8 +100,8 @@ class BankPinKeypad extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: digits.asMap().entries.map((entry) {
-        final int index = entry.key;
-        final String digit = entry.value;
+        final index = entry.key;
+        final digit = entry.value;
         return Padding(
           padding: EdgeInsets.only(left: index == 0 ? 0 : BankTokens.space3),
           child: _DigitKey(
@@ -126,14 +120,15 @@ class BankPinKeypad extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Left: biometric or empty placeholder
-        onBiometric != null
-            ? _ActionKey(
-                semanticLabel: 'Use biometrics',
-                icon: BankIcons.biometric,
-                bankTheme: bankTheme,
-                onTap: enabled ? onBiometric : null,
-              )
-            : const SizedBox(width: 64, height: 64),
+        if (onBiometric != null)
+          _ActionKey(
+            semanticLabel: 'Use biometrics',
+            icon: BankIcons.biometric,
+            bankTheme: bankTheme,
+            onTap: enabled ? onBiometric : null,
+          )
+        else
+          const SizedBox(width: 64, height: 64),
         const SizedBox(width: BankTokens.space3),
         // Centre: digit 0
         _DigitKey(
@@ -179,7 +174,7 @@ class _DigitKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Widget label = builder != null
+    final label = builder != null
         ? builder!(context, digit)
         : Text(
             digit,
@@ -197,8 +192,8 @@ class _DigitKey extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          splashColor: bankTheme.primary.withOpacity(0.12),
-          highlightColor: bankTheme.primary.withOpacity(0.08),
+          splashColor: bankTheme.primary.withValues(alpha: 0.12),
+          highlightColor: bankTheme.primary.withValues(alpha: 0.08),
           child: Container(
             width: 64,
             height: 64,
@@ -243,8 +238,8 @@ class _ActionKey extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          splashColor: bankTheme.primary.withOpacity(0.12),
-          highlightColor: bankTheme.primary.withOpacity(0.08),
+          splashColor: bankTheme.primary.withValues(alpha: 0.12),
+          highlightColor: bankTheme.primary.withValues(alpha: 0.08),
           child: SizedBox(
             width: 64,
             height: 64,

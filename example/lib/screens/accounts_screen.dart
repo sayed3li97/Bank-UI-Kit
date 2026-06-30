@@ -57,19 +57,21 @@ class _AccountsScreenState extends State<AccountsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(BankTokens.space4),
         children: [
-          Text('Balance Text', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Balance Text',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           BankBalanceText(
-            balance: Money(amount: Decimal.parse('4250.00'), currencyCode: 'GBP'),
+            money: Money(amount: Decimal.parse('4250.00'), currencyCode: 'GBP'),
             size: BankBalanceSize.hero,
           ),
           const SizedBox(height: BankTokens.space2),
           BankBalanceText(
-            balance: Money(amount: Decimal.parse('4250.00'), currencyCode: 'GBP'),
+            money: Money(amount: Decimal.parse('4250.00'), currencyCode: 'GBP'),
             size: BankBalanceSize.large,
           ),
           const SizedBox(height: BankTokens.space4),
-          Text('Account Cards', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Account Cards',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           ..._accounts.map(
             (a) => Padding(
@@ -78,17 +80,23 @@ class _AccountsScreenState extends State<AccountsScreen> {
             ),
           ),
           const SizedBox(height: BankTokens.space4),
-          Text('Account Switcher', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Account Switcher',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           FilledButton(
-            onPressed: () => BankAccountSwitcher.show(
-              context,
-              accounts: _accounts,
-              selectedAccountId: _accounts[_activeIndex].id,
-              onAccountSelected: (a) => setState(
-                () => _activeIndex = _accounts.indexWhere((x) => x.id == a.id),
-              ),
-            ),
+            onPressed: () async {
+              final selected = await BankAccountSwitcher.show(
+                context,
+                accounts: _accounts,
+                selectedAccountId: _accounts[_activeIndex].id,
+              );
+              if (selected != null) {
+                setState(
+                  () => _activeIndex =
+                      _accounts.indexWhere((x) => x.id == selected.id),
+                );
+              }
+            },
             child: Text('Switch account (${_accounts[_activeIndex].name})'),
           ),
         ],

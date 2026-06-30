@@ -63,7 +63,7 @@ extension BankPresetApply on BankPreset {
 /// );
 /// ```
 ///
-/// [withBankTheme] registers [bankTheme] as a [ThemeExtension] **and**
+/// `withBankTheme` registers `bankTheme` as a [ThemeExtension] **and**
 /// synchronises the Material [ColorScheme] to the bank theme's palette, so
 /// Material widgets and Bank UI Kit widgets stay visually consistent.
 extension BankThemeDataApply on ThemeData {
@@ -79,11 +79,18 @@ extension BankThemeDataApply on ThemeData {
       surface: bankTheme.surface,
       onSurface: bankTheme.onSurface,
     );
-    return copyWith(
+    final themed = copyWith(
       colorScheme: colorScheme,
       scaffoldBackgroundColor: bankTheme.background,
       cardColor: bankTheme.surface,
       extensions: <ThemeExtension<dynamic>>[bankTheme],
     );
+    return bankTheme.fontFamily == null
+        ? themed
+        : themed.copyWith(
+            textTheme: themed.textTheme.apply(fontFamily: bankTheme.fontFamily),
+            primaryTextTheme:
+                themed.primaryTextTheme.apply(fontFamily: bankTheme.fontFamily),
+          );
   }
 }

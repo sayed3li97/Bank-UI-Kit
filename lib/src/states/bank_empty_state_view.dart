@@ -42,9 +42,9 @@ class BankEmptyStateView extends StatelessWidget {
   final VoidCallback? onAction;
 
   const BankEmptyStateView({
+    required this.title,
     super.key,
     this.illustration,
-    required this.title,
     this.subtitle,
     this.actionLabel,
     this.onAction,
@@ -53,19 +53,18 @@ class BankEmptyStateView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final bool showAction = actionLabel != null && onAction != null;
+    final showAction = actionLabel != null && onAction != null;
 
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: BankTokens.space8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (illustration != null) ...[
               ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 180),
-                child: illustration!,
+                child: illustration,
               ),
               const SizedBox(height: BankTokens.space6),
             ],

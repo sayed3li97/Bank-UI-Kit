@@ -8,7 +8,8 @@ import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 
 /// A single transaction row, designed for use inside [ListView.builder].
-/// Shows category icon (with optional merchant logo), signed amount, and status.
+/// Shows category icon (with optional merchant logo), signed amount, and
+/// status.
 class BankTransactionListTile extends StatelessWidget {
   final Transaction transaction;
   final VoidCallback? onTap;
@@ -17,8 +18,8 @@ class BankTransactionListTile extends StatelessWidget {
   final Widget Function(BuildContext, Transaction)? itemBuilder;
 
   const BankTransactionListTile({
-    super.key,
     required this.transaction,
+    super.key,
     this.onTap,
     this.itemBuilder,
   });
@@ -51,34 +52,34 @@ class BankTransactionListTile extends StatelessWidget {
       return itemBuilder!(context, transaction);
     }
 
-    final BankThemeData bankTheme = BankThemeData.of(context);
-    final BankUiScopeData scope = BankUiScope.of(context);
+    final bankTheme = BankThemeData.of(context);
+    final scope = BankUiScope.of(context);
 
-    final bool isDeclined = transaction.status == TransactionStatus.declined;
-    final bool isCredit = !transaction.amount.isNegative;
-    final String statusLabel = _statusLabel(transaction.status, scope);
+    final isDeclined = transaction.status == TransactionStatus.declined;
+    final isCredit = !transaction.amount.isNegative;
+    final statusLabel = _statusLabel(transaction.status, scope);
 
-    final String formattedAmount = BankMoneyFormatter.format(
+    final formattedAmount = BankMoneyFormatter.format(
       amount: transaction.amount.amount,
       currencyCode: transaction.amount.currencyCode,
       numeralStyle: scope.numeralStyle,
       showSign: isCredit,
     );
 
-    final Color amountColor = isDeclined
+    final amountColor = isDeclined
         ? bankTheme.onSurfaceVariant
         : isCredit
             ? bankTheme.positiveBalance
             : bankTheme.onSurface;
 
-    final TextStyle amountStyle = bankTheme.numeralSmall.copyWith(
+    final amountStyle = bankTheme.numeralSmall.copyWith(
       color: amountColor,
       decoration: isDeclined ? TextDecoration.lineThrough : TextDecoration.none,
       decorationColor: bankTheme.onSurfaceVariant,
     );
 
-    final String semanticLabel =
-        '${transaction.merchantName}, $formattedAmount, ${transaction.status.name}';
+    final semanticLabel = '${transaction.merchantName}, $formattedAmount, '
+        '${transaction.status.name}';
 
     return Semantics(
       label: semanticLabel,
@@ -95,7 +96,6 @@ class BankTransactionListTile extends StatelessWidget {
               vertical: BankTokens.space2,
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _LeadingAvatar(
                   transaction: transaction,
@@ -176,8 +176,8 @@ class _LeadingAvatarState extends State<_LeadingAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = widget.bankTheme;
-    final String? logoUrl = widget.transaction.merchantLogoUrl;
+    final bankTheme = widget.bankTheme;
+    final logoUrl = widget.transaction.merchantLogoUrl;
 
     if (logoUrl != null && !_logoFailed) {
       return CircleAvatar(

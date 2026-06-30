@@ -60,8 +60,8 @@ class BankDeviceTrustBanner extends StatelessWidget {
   final BankUiStrings? strings;
 
   const BankDeviceTrustBanner({
-    super.key,
     required this.state,
+    super.key,
     this.onDismiss,
     this.onLearnMore,
     this.strings,
@@ -69,13 +69,12 @@ class BankDeviceTrustBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = BankThemeData.of(context);
-    final BankUiStrings resolvedStrings =
-        strings ?? BankUiScope.of(context).strings;
+    final bankTheme = BankThemeData.of(context);
+    final resolvedStrings = strings ?? BankUiScope.of(context).strings;
 
-    final _BannerConfig config = _configForState(state, resolvedStrings);
+    final config = _configForState(state, resolvedStrings);
 
-    final String semanticLabel = '${config.title}. ${config.body}';
+    final semanticLabel = '${config.title}. ${config.body}';
 
     return Semantics(
       liveRegion: true,

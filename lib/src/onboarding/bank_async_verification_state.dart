@@ -21,7 +21,8 @@ class BankAsyncVerificationState extends StatefulWidget {
   /// Body message describing the review process.
   final String message;
 
-  /// If provided, rendered in a chip below the message (e.g. `'1-2 business days'`).
+  /// If provided, rendered in a chip below the message
+  /// (e.g. `'1-2 business days'`).
   final String? estimatedTime;
 
   /// Slot for a custom illustration. When `null`, an animated document icon
@@ -37,8 +38,8 @@ class BankAsyncVerificationState extends StatefulWidget {
   const BankAsyncVerificationState({
     super.key,
     this.title = 'Verification Under Review',
-    this.message =
-        'We\'re reviewing your documents. This usually takes 1–2 business days.',
+    this.message = 'We\'re reviewing your documents. '
+        'This usually takes 1–2 business days.',
     this.estimatedTime,
     this.customIllustration,
     this.onCheckStatus,
@@ -61,8 +62,8 @@ class _BankAsyncVerificationStateState extends State<BankAsyncVerificationState>
 
   static const int _dotCount = 3;
   static const Duration _dotCycleDuration = Duration(milliseconds: 1200);
-  static const double _dotSize = 8.0;
-  static const double _dotActiveOpacity = 1.0;
+  static const double _dotSize = 8;
+  static const double _dotActiveOpacity = 1;
   static const double _dotIdleOpacity = 0.25;
 
   @override
@@ -74,7 +75,7 @@ class _BankAsyncVerificationStateState extends State<BankAsyncVerificationState>
       duration: const Duration(milliseconds: 1600),
     )..repeat(reverse: true);
 
-    _iconScale = Tween<double>(begin: 0.90, end: 1.0).animate(
+    _iconScale = Tween<double>(begin: 0.90, end: 1).animate(
       CurvedAnimation(
         parent: _iconPulseController,
         curve: BankTokens.curveStandard,
@@ -98,7 +99,7 @@ class _BankAsyncVerificationStateState extends State<BankAsyncVerificationState>
   // The three dots are offset by 1/3 of the cycle each.
   double _dotOpacity(int index) {
     // Each dot has a window of 0.5 (50% of the cycle) where it peaks.
-    const double window = 0.5;
+    const window = 0.5;
     final offset = index / _dotCount;
     final t = (_dotsController.value - offset) % 1.0;
     // Use a triangle wave within the window.
@@ -188,7 +189,7 @@ class _BankAsyncVerificationStateState extends State<BankAsyncVerificationState>
           width: 96,
           height: 96,
           decoration: BoxDecoration(
-            color: bankTheme.primary.withOpacity(0.1),
+            color: bankTheme.primary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(

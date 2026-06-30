@@ -21,8 +21,8 @@ import 'tokens.dart';
 /// );
 /// ```
 ///
-/// Available presets: [BankPreset.studio], [BankPreset.voltage],
-/// [BankPreset.bloom].
+/// Available presets: `BankPreset.studio`, `BankPreset.voltage`,
+/// `BankPreset.bloom`.
 ///
 /// ---
 ///
@@ -46,7 +46,7 @@ import 'tokens.dart';
 /// );
 /// ```
 ///
-/// The [withBankTheme] extension (on [ThemeData]) wires the extension into
+/// The `withBankTheme` extension (on [ThemeData]) wires the extension into
 /// Flutter's theme system and synchronises the Material [ColorScheme] to
 /// your palette.
 ///
@@ -91,7 +91,6 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
     required this.negativeBalance,
     required this.pending,
     required this.frozen,
-    this.accentGradient,
     required this.cardRadius,
     required this.buttonRadius,
     required this.sheetRadius,
@@ -103,8 +102,9 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
     required this.numeralLarge,
     required this.numeralMedium,
     required this.numeralSmall,
-    this.fontFamily,
     required this.useGlow,
+    this.accentGradient,
+    this.fontFamily,
     this.glowColor,
   });
 
@@ -219,8 +219,8 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
       accentGradient: accentGradient,
       cardRadius: cardRadius ?? const BorderRadius.all(Radius.circular(12)),
       buttonRadius: buttonRadius ?? const BorderRadius.all(Radius.circular(12)),
-      sheetRadius: sheetRadius ??
-          const BorderRadius.vertical(top: Radius.circular(20)),
+      sheetRadius:
+          sheetRadius ?? const BorderRadius.vertical(top: Radius.circular(20)),
       chipRadius: chipRadius ?? const BorderRadius.all(Radius.circular(8)),
       elevationLow: elevationLow,
       elevationMedium: elevationMedium,
@@ -407,10 +407,8 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
       background: Color.lerp(background, other.background, t)!,
       onBackground: Color.lerp(onBackground, other.onBackground, t)!,
       outline: Color.lerp(outline, other.outline, t)!,
-      positiveBalance:
-          Color.lerp(positiveBalance, other.positiveBalance, t)!,
-      negativeBalance:
-          Color.lerp(negativeBalance, other.negativeBalance, t)!,
+      positiveBalance: Color.lerp(positiveBalance, other.positiveBalance, t)!,
+      negativeBalance: Color.lerp(negativeBalance, other.negativeBalance, t)!,
       pending: Color.lerp(pending, other.pending, t)!,
       frozen: Color.lerp(frozen, other.frozen, t)!,
       // Gradients do not have a built-in lerp; snap at the midpoint.

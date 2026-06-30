@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../../src/theme/bank_theme_data.dart';
@@ -32,7 +30,8 @@ enum BankDocumentFramingState {
 /// - L-shaped corner guides that animate between idle and aligned colours.
 /// - An optional rule-of-thirds grid inside the cutout ([showGrid]).
 /// - A status pill at the bottom edge of the cutout.
-/// - A capture button when [framingState] is [BankDocumentFramingState.aligned].
+/// - A capture button when [framingState] is
+///   [BankDocumentFramingState.aligned].
 class BankDocumentCaptureOverlay extends StatelessWidget {
   /// The detected framing state — drives corner colour, status message, and
   /// whether the capture button is shown.
@@ -55,9 +54,9 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
   final bool showGrid;
 
   const BankDocumentCaptureOverlay({
-    super.key,
     required this.framingState,
     required this.cameraChild,
+    super.key,
     this.statusMessage,
     this.onCapture,
     this.showGrid = false,
@@ -140,13 +139,13 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: bankTheme.primary.withOpacity(0.4),
+                            color: bankTheme.primary.withValues(alpha: 0.4),
                             blurRadius: 16,
                             spreadRadius: 2,
                           ),
                         ],
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.camera_alt_outlined,
                         color: Colors.white,
                         size: 32,
@@ -219,10 +218,9 @@ class _DocumentOverlayPainterWidgetState
   }
 
   void _updateColorTween() {
-    final targetColor =
-        widget.framingState == BankDocumentFramingState.aligned
-            ? widget.bankTheme.primary
-            : widget.bankTheme.outline;
+    final targetColor = widget.framingState == BankDocumentFramingState.aligned
+        ? widget.bankTheme.primary
+        : widget.bankTheme.outline;
 
     _cornerColor = ColorTween(
       begin: _cornerColor.value ?? widget.bankTheme.outline,
@@ -273,8 +271,8 @@ class _DocumentOverlayPainter extends CustomPainter {
 
   static const double _widthFraction = 0.85;
   static const double _heightFraction = 0.55;
-  static const double _cornerLength = 24.0;
-  static const double _cornerStroke = 4.0;
+  static const double _cornerLength = 24;
+  static const double _cornerStroke = 4;
   static const double _overlayOpacity = 0.6;
 
   Rect _cutoutRect(Size size) {
@@ -290,7 +288,8 @@ class _DocumentOverlayPainter extends CustomPainter {
     final cutout = _cutoutRect(size);
 
     // ── Dark overlay with rectangular cutout ──
-    final overlayPaint = Paint()..color = Colors.black.withOpacity(_overlayOpacity);
+    final overlayPaint = Paint()
+      ..color = Colors.black.withValues(alpha: _overlayOpacity);
 
     final overlayPath = Path()
       ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -324,7 +323,7 @@ class _DocumentOverlayPainter extends CustomPainter {
     final t = rect.top;
     final r = rect.right;
     final b = rect.bottom;
-    final cl = _cornerLength;
+    const cl = _cornerLength;
 
     // Top-left
     canvas.drawLine(Offset(l, t + cl), Offset(l, t), paint);
@@ -345,20 +344,20 @@ class _DocumentOverlayPainter extends CustomPainter {
 
   void _drawGrid(Canvas canvas, Rect rect) {
     final gridPaint = Paint()
-      ..color = Colors.white.withOpacity(0.25)
+      ..color = Colors.white.withValues(alpha: 0.25)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
 
     // Vertical thirds.
     final thirdW = rect.width / 3;
-    for (int i = 1; i <= 2; i++) {
+    for (var i = 1; i <= 2; i++) {
       final x = rect.left + thirdW * i;
       canvas.drawLine(Offset(x, rect.top), Offset(x, rect.bottom), gridPaint);
     }
 
     // Horizontal thirds.
     final thirdH = rect.height / 3;
-    for (int i = 1; i <= 2; i++) {
+    for (var i = 1; i <= 2; i++) {
       final y = rect.top + thirdH * i;
       canvas.drawLine(Offset(rect.left, y), Offset(rect.right, y), gridPaint);
     }
@@ -399,12 +398,12 @@ class _StatusPill extends StatelessWidget {
           vertical: BankTokens.space2,
         ),
         decoration: BoxDecoration(
-          color: color.withOpacity(color == Colors.white ? 0.9 : 1.0),
+          color: color.withValues(alpha: color == Colors.white ? 0.9 : 1.0),
           borderRadius:
               const BorderRadius.all(Radius.circular(BankTokens.radiusFull)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 8,
             ),
           ],

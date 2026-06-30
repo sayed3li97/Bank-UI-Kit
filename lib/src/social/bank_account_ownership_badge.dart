@@ -11,8 +11,8 @@ class BankAccountOwnershipBadge extends StatelessWidget {
   final String? customLabel;
 
   const BankAccountOwnershipBadge({
-    super.key,
     required this.role,
+    super.key,
     this.customLabel,
   });
 
@@ -35,15 +35,15 @@ class BankAccountOwnershipBadge extends StatelessWidget {
 
     final (bgColor, fgColor) = switch (role) {
       BankOwnershipRole.primary => (
-          theme.primary.withOpacity(0.12),
+          theme.primary.withValues(alpha: 0.12),
           theme.primary
         ),
       BankOwnershipRole.joint => (
-          Colors.purple.withOpacity(0.12),
+          Colors.purple.withValues(alpha: 0.12),
           Colors.purple
         ),
       BankOwnershipRole.beneficiary => (
-          theme.outline.withOpacity(0.12),
+          theme.outline.withValues(alpha: 0.12),
           theme.onSurfaceVariant
         ),
     };
@@ -51,7 +51,10 @@ class BankAccountOwnershipBadge extends StatelessWidget {
     return Semantics(
       label: 'Account role: $label',
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: BankTokens.space2, vertical: 3),
+        padding: const EdgeInsets.symmetric(
+          horizontal: BankTokens.space2,
+          vertical: 3,
+        ),
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: theme.chipRadius,

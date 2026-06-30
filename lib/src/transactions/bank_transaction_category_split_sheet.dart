@@ -15,9 +15,9 @@ class BankTransactionCategorySplitSheet extends StatefulWidget {
   final ValueChanged<List<TransactionSplit>> onConfirm;
 
   const BankTransactionCategorySplitSheet({
-    super.key,
     required this.transaction,
     required this.onConfirm,
+    super.key,
   });
 
   /// Convenience helper to push the sheet.
@@ -71,7 +71,7 @@ class _BankTransactionCategorySplitSheetState
   String get _currencyCode => widget.transaction.amount.currencyCode;
 
   Decimal get _allocatedTotal {
-    Decimal sum = Decimal.zero;
+    var sum = Decimal.zero;
     for (final e in _entries) {
       final v = Decimal.tryParse(e.controller.text) ?? Decimal.zero;
       sum += v;
@@ -146,21 +146,21 @@ class _BankTransactionCategorySplitSheetState
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = BankThemeData.of(context);
-    final BankUiScopeData scope = BankUiScope.of(context);
+    final bankTheme = BankThemeData.of(context);
+    final scope = BankUiScope.of(context);
     final s = scope.strings;
 
-    final double bottomPadding = MediaQuery.of(context).viewInsets.bottom +
+    final bottomPadding = MediaQuery.of(context).viewInsets.bottom +
         MediaQuery.of(context).padding.bottom;
-    final double maxHeight = MediaQuery.of(context).size.height * 0.88;
+    final maxHeight = MediaQuery.of(context).size.height * 0.88;
 
-    final String formattedTotal = BankMoneyFormatter.format(
+    final formattedTotal = BankMoneyFormatter.format(
       amount: _totalAmount,
       currencyCode: _currencyCode,
       numeralStyle: scope.numeralStyle,
     );
 
-    final String formattedAllocated = BankMoneyFormatter.format(
+    final formattedAllocated = BankMoneyFormatter.format(
       amount: _allocatedTotal,
       currencyCode: _currencyCode,
       numeralStyle: scope.numeralStyle,
@@ -186,8 +186,7 @@ class _BankTransactionCategorySplitSheetState
                   height: 4,
                   decoration: BoxDecoration(
                     color: bankTheme.outline,
-                    borderRadius:
-                        BorderRadius.circular(BankTokens.radiusFull),
+                    borderRadius: BorderRadius.circular(BankTokens.radiusFull),
                   ),
                 ),
               ),
@@ -294,10 +293,12 @@ class _BankTransactionCategorySplitSheetState
                     bankTheme: bankTheme,
                     categoryLabel: _categoryLabel,
                     onCategoryChanged: (cat) {
-                      setState(() => _entries[i] = _SplitEntry(
-                            category: cat,
-                            controller: entry.controller,
-                          ));
+                      setState(
+                        () => _entries[i] = _SplitEntry(
+                          category: cat,
+                          controller: entry.controller,
+                        ),
+                      );
                     },
                     onDelete: () => _removeEntry(i),
                     onAmountChanged: (_) => setState(() {}),
@@ -354,7 +355,7 @@ class _BankTransactionCategorySplitSheetState
             const Divider(height: 1),
             // Confirm button
             Padding(
-              padding: EdgeInsets.fromLTRB(
+              padding: const EdgeInsets.fromLTRB(
                 BankTokens.space4,
                 BankTokens.space3,
                 BankTokens.space4,
@@ -439,7 +440,6 @@ class _CategorySplitRow extends StatelessWidget {
         vertical: BankTokens.space2,
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Category icon
           CircleAvatar(

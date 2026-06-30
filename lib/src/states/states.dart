@@ -2,6 +2,8 @@
 ///
 /// Includes shimmer placeholders, empty/error states, success animations,
 /// toast banners, and fraud alert banners.
+library;
+
 export 'bank_empty_state_view.dart';
 export 'bank_error_state_view.dart';
 export 'bank_fraud_alert_banner.dart';

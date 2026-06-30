@@ -4,7 +4,14 @@ import 'package:flutter/material.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 
-enum BankChartTimeRange { oneDay, oneWeek, oneMonth, threeMonths, oneYear, allTime }
+enum BankChartTimeRange {
+  oneDay,
+  oneWeek,
+  oneMonth,
+  threeMonths,
+  oneYear,
+  allTime
+}
 
 /// A data point for the portfolio performance chart.
 class BankChartDataPoint {
@@ -24,8 +31,8 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
   final ValueChanged<BankChartTimeRange>? onRangeChanged;
 
   const BankPortfolioPerformanceChart({
-    super.key,
     required this.dataPoints,
+    super.key,
     this.showGrid = true,
     this.lineColor,
     this.selectedRange = BankChartTimeRange.oneMonth,
@@ -83,8 +90,7 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
                         .map(
                           (s) => LineTooltipItem(
                             '\$${s.y.toStringAsFixed(2)}',
-                            BankTokens.labelSmall
-                                .copyWith(color: Colors.white),
+                            BankTokens.labelSmall.copyWith(color: Colors.white),
                           ),
                         )
                         .toList(),
@@ -100,21 +106,16 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: const FlTitlesData(
-                  leftTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  bottomTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: AxisTitles(),
+                  rightTitles: AxisTitles(),
+                  topTitles: AxisTitles(),
+                  bottomTitles: AxisTitles(),
                 ),
                 lineBarsData: [
                   LineChartBarData(
                     spots: spots,
                     isCurved: true,
                     color: color,
-                    barWidth: 2,
                     dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
@@ -122,8 +123,8 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          color.withOpacity(0.24),
-                          color.withOpacity(0),
+                          color.withValues(alpha: 0.24),
+                          color.withValues(alpha: 0),
                         ],
                       ),
                     ),
@@ -144,7 +145,7 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
                     onPressed: () => onRangeChanged?.call(range),
                     style: TextButton.styleFrom(
                       backgroundColor: isSelected
-                          ? theme.primary.withOpacity(0.12)
+                          ? theme.primary.withValues(alpha: 0.12)
                           : Colors.transparent,
                       foregroundColor:
                           isSelected ? theme.primary : theme.onSurfaceVariant,

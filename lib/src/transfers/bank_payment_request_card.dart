@@ -18,15 +18,15 @@ class BankPaymentRequestCard extends StatelessWidget {
   final VoidCallback onDecline;
 
   const BankPaymentRequestCard({
-    super.key,
     required this.requesterId,
     required this.requesterName,
-    this.requesterAvatarUrl,
     required this.amount,
-    this.note,
     required this.requestedAt,
     required this.onAccept,
     required this.onDecline,
+    super.key,
+    this.requesterAvatarUrl,
+    this.note,
   });
 
   @override

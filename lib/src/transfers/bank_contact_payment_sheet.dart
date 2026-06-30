@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../src/common/bank_icon_spec.dart';
-import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
-import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 import '../../src/transactions/bank_transaction_cost_split_sheet.dart'
@@ -28,8 +26,8 @@ import 'bank_amount_keypad.dart';
 /// await BankContactPaymentSheet.show(
 ///   context,
 ///   contacts: myContacts,
-///   onSend: (id, amount, note) async { await api.send(id, amount, note); },
-///   onRequest: (id, amount, note) async { await api.request(id, amount, note); },
+///   onSend: (id, amount, note) async => api.send(id, amount, note),
+///   onRequest: (id, amount, note) async => api.request(id, amount, note),
 /// );
 /// ```
 class BankContactPaymentSheet extends StatefulWidget {
@@ -50,8 +48,8 @@ class BankContactPaymentSheet extends StatefulWidget {
       onRequest;
 
   const BankContactPaymentSheet({
-    super.key,
     required this.contacts,
+    super.key,
     this.onClose,
     this.onSend,
     this.onRequest,
@@ -138,7 +136,7 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
   }
 
   Money get _parsedAmount {
-    final raw = _amountText.replaceAll(RegExp(r'[^0-9.]'), '');
+    final raw = _amountText.replaceAll(RegExp('[^0-9.]'), '');
     final val = double.tryParse(raw) ?? 0.0;
     return Money.fromDouble(val, 'USD');
   }
@@ -239,7 +237,7 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: bankTheme.outline.withOpacity(0.4),
+                color: bankTheme.outline.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(BankTokens.radiusFull),
               ),
             ),
@@ -344,14 +342,14 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
   }
 
   String _stepTitle() => switch (_step) {
-    0 => 'Select Contact',
-    1 => _mode == _PaymentMode.send ? 'Send Money' : 'Request Money',
-    _ => _loading
-        ? 'Processing…'
-        : _success
-            ? 'Done'
-            : 'Something went wrong',
-  };
+        0 => 'Select Contact',
+        1 => _mode == _PaymentMode.send ? 'Send Money' : 'Request Money',
+        _ => _loading
+            ? 'Processing…'
+            : _success
+                ? 'Done'
+                : 'Something went wrong',
+      };
 }
 
 // ---------------------------------------------------------------------------
@@ -386,14 +384,16 @@ class _ContactPickerStep extends StatelessWidget {
           child: TextField(
             controller: searchController,
             textInputAction: TextInputAction.search,
-            style:
-                BankTokens.bodyLarge.copyWith(color: bankTheme.onSurface),
+            style: BankTokens.bodyLarge.copyWith(color: bankTheme.onSurface),
             decoration: InputDecoration(
               hintText: 'Search contacts',
               hintStyle: BankTokens.bodyLarge
                   .copyWith(color: bankTheme.onSurfaceVariant),
-              prefixIcon: Icon(BankIcons.search,
-                  color: bankTheme.onSurfaceVariant, size: 20),
+              prefixIcon: Icon(
+                BankIcons.search,
+                color: bankTheme.onSurfaceVariant,
+                size: 20,
+              ),
               filled: true,
               fillColor: bankTheme.surfaceVariant,
               contentPadding: const EdgeInsets.symmetric(
@@ -428,8 +428,7 @@ class _ContactPickerStep extends StatelessWidget {
                 )
               : GridView.builder(
                   padding: const EdgeInsets.all(BankTokens.space4),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
                     mainAxisSpacing: BankTokens.space4,
                     crossAxisSpacing: BankTokens.space3,
@@ -481,22 +480,23 @@ class _ContactCell extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            contact.avatarUrl != null
-                ? CircleAvatar(
-                    radius: 28,
-                    backgroundImage: NetworkImage(contact.avatarUrl!),
-                    backgroundColor: bankTheme.surfaceVariant,
-                  )
-                : CircleAvatar(
-                    radius: 28,
-                    backgroundColor: bankTheme.primary.withOpacity(0.15),
-                    child: Text(
-                      _initials,
-                      style: BankTokens.labelMedium.copyWith(
-                        color: bankTheme.primary,
-                      ),
-                    ),
+            if (contact.avatarUrl != null)
+              CircleAvatar(
+                radius: 28,
+                backgroundImage: NetworkImage(contact.avatarUrl!),
+                backgroundColor: bankTheme.surfaceVariant,
+              )
+            else
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: bankTheme.primary.withValues(alpha: 0.15),
+                child: Text(
+                  _initials,
+                  style: BankTokens.labelMedium.copyWith(
+                    color: bankTheme.primary,
                   ),
+                ),
+              ),
             const SizedBox(height: BankTokens.space2),
             Text(
               contact.name.split(' ').first,
@@ -577,22 +577,23 @@ class _AmountStep extends StatelessWidget {
           Center(
             child: Column(
               children: [
-                selected.avatarUrl != null
-                    ? CircleAvatar(
-                        radius: 28,
-                        backgroundImage: NetworkImage(selected.avatarUrl!),
-                        backgroundColor: bankTheme.surfaceVariant,
-                      )
-                    : CircleAvatar(
-                        radius: 28,
-                        backgroundColor: bankTheme.primary.withOpacity(0.15),
-                        child: Text(
-                          _initials,
-                          style: BankTokens.labelLarge.copyWith(
-                            color: bankTheme.primary,
-                          ),
-                        ),
+                if (selected.avatarUrl != null)
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundImage: NetworkImage(selected.avatarUrl!),
+                    backgroundColor: bankTheme.surfaceVariant,
+                  )
+                else
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: bankTheme.primary.withValues(alpha: 0.15),
+                    child: Text(
+                      _initials,
+                      style: BankTokens.labelLarge.copyWith(
+                        color: bankTheme.primary,
                       ),
+                    ),
+                  ),
                 const SizedBox(height: BankTokens.space2),
                 Text(
                   selected.name,
@@ -636,7 +637,7 @@ class _AmountStep extends StatelessWidget {
                       : bankTheme.onSurface,
                 ),
                 side: WidgetStateProperty.all(
-                  BorderSide(color: bankTheme.outline.withOpacity(0.5)),
+                  BorderSide(color: bankTheme.outline.withValues(alpha: 0.5)),
                 ),
                 minimumSize: WidgetStateProperty.all(
                   const Size(0, BankTokens.minTapTarget),
@@ -659,16 +660,18 @@ class _AmountStep extends StatelessWidget {
             controller: noteController,
             onChanged: onNoteChanged,
             maxLength: 100,
-            style:
-                BankTokens.bodyMedium.copyWith(color: bankTheme.onSurface),
+            style: BankTokens.bodyMedium.copyWith(color: bankTheme.onSurface),
             decoration: InputDecoration(
               hintText: 'Add a note (optional)',
               hintStyle: BankTokens.bodyMedium
                   .copyWith(color: bankTheme.onSurfaceVariant),
               filled: true,
               fillColor: bankTheme.surfaceVariant,
-              prefixIcon: Icon(Icons.edit_note,
-                  size: 20, color: bankTheme.onSurfaceVariant),
+              prefixIcon: Icon(
+                Icons.edit_note,
+                size: 20,
+                color: bankTheme.onSurfaceVariant,
+              ),
               counterStyle: BankTokens.bodySmall
                   .copyWith(color: bankTheme.onSurfaceVariant),
               border: OutlineInputBorder(
@@ -695,7 +698,8 @@ class _AmountStep extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: bankTheme.primary,
                 foregroundColor: bankTheme.onPrimary,
-                disabledBackgroundColor: bankTheme.outline.withOpacity(0.3),
+                disabledBackgroundColor:
+                    bankTheme.outline.withValues(alpha: 0.3),
                 minimumSize: const Size(
                   double.infinity,
                   BankTokens.minTapTarget,
@@ -749,13 +753,12 @@ class _ResultStep extends StatelessWidget {
       );
     }
 
-    final bool isError = error != null;
+    final isError = error != null;
 
     return Padding(
       padding: const EdgeInsets.all(BankTokens.space6),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(
             isError ? Icons.error_outline : Icons.check_circle_outline,

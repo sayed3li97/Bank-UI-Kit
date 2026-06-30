@@ -15,8 +15,8 @@ class BankJointTransactionListTile extends StatelessWidget {
   final Widget Function(BuildContext, Transaction)? itemBuilder;
 
   const BankJointTransactionListTile({
-    super.key,
     required this.transaction,
+    super.key,
     this.initiatorName,
     this.initiatorAvatarUrl,
     this.onTap,
@@ -40,9 +40,10 @@ class BankJointTransactionListTile extends StatelessWidget {
       numeralStyle: scope.numeralStyle,
     );
 
+    final initiatorSuffix = initiatorName != null ? ', by $initiatorName' : '';
+
     return Semantics(
-      label:
-          '${transaction.merchantName}, $amountStr${initiatorName != null ? ', by $initiatorName' : ''}',
+      label: '${transaction.merchantName}, $amountStr$initiatorSuffix',
       child: InkWell(
         onTap: onTap,
         child: ConstrainedBox(
@@ -82,7 +83,8 @@ class BankJointTransactionListTile extends StatelessWidget {
                           backgroundColor: theme.surface,
                           child: CircleAvatar(
                             radius: 9,
-                            backgroundColor: theme.primary.withOpacity(0.2),
+                            backgroundColor:
+                                theme.primary.withValues(alpha: 0.2),
                             backgroundImage: initiatorAvatarUrl != null
                                 ? NetworkImage(initiatorAvatarUrl!)
                                 : null,

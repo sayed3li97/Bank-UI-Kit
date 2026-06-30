@@ -26,8 +26,8 @@ class BankBuySellSheet extends StatefulWidget {
   )? onSubmit;
 
   const BankBuySellSheet({
-    super.key,
     required this.quote,
+    super.key,
     this.initialSide = BankOrderSide.buy,
     this.allowLimitOrder = false,
     this.availableBalance,
@@ -186,7 +186,7 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
                   decimal: true,
                 ),
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
                 ],
                 decoration: InputDecoration(
                   labelText: 'Amount (${widget.quote.price.currencyCode})',
@@ -202,7 +202,7 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
                     decimal: true,
                   ),
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                    FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
                   ],
                   decoration: const InputDecoration(
                     labelText: 'Limit Price',
@@ -214,7 +214,8 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
               const SizedBox(height: BankTokens.space2),
               if (_enteredAmount > 0)
                 Text(
-                  '≈ ${_estimatedUnits.toStringAsFixed(4)} ${widget.quote.symbol}',
+                  '≈ ${_estimatedUnits.toStringAsFixed(4)} '
+                  '${widget.quote.symbol}',
                   style: BankTokens.bodySmall
                       .copyWith(color: theme.onSurfaceVariant),
                   textAlign: TextAlign.end,
@@ -223,7 +224,10 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
                 Padding(
                   padding: const EdgeInsets.only(top: BankTokens.space1),
                   child: Text(
-                    'Available: ${BankMoneyFormatter.format(amount: widget.availableBalance!.amount, currencyCode: widget.availableBalance!.currencyCode)}',
+                    'Available: ${BankMoneyFormatter.format(
+                      amount: widget.availableBalance!.amount,
+                      currencyCode: widget.availableBalance!.currencyCode,
+                    )}',
                     style: BankTokens.bodySmall
                         .copyWith(color: theme.onSurfaceVariant),
                     textAlign: TextAlign.end,
@@ -257,7 +261,9 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
                           ),
                         )
                       : Text(
-                          _side == BankOrderSide.buy ? 'Review Buy' : 'Review Sell',
+                          _side == BankOrderSide.buy
+                              ? 'Review Buy'
+                              : 'Review Sell',
                         ),
                 ),
               ),

@@ -15,10 +15,10 @@ class BankBeneficiary {
     required this.name,
     required this.maskedAccount,
     required this.type,
+    required this.isVerified,
     this.avatarUrl,
     this.bankName,
     this.currencyCode,
-    required this.isVerified,
   });
 
   BankBeneficiary copyWith({

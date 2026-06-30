@@ -45,16 +45,16 @@ class BankBeneficiaryPicker extends StatefulWidget {
 
   /// Optional builder for individual beneficiary rows. When provided, it
   /// completely replaces the default row for each [BankBeneficiary]. The
-  /// [isSelected] flag indicates whether this beneficiary is the currently
+  /// `isSelected` flag indicates whether this beneficiary is the currently
   /// selected one.
   final Widget Function(BuildContext, BankBeneficiary, bool isSelected)?
       itemBuilder;
 
   const BankBeneficiaryPicker({
-    super.key,
     required this.beneficiaries,
-    this.selectedId,
     required this.onSelected,
+    super.key,
+    this.selectedId,
     this.onAddNew,
     this.itemBuilder,
   });
@@ -133,9 +133,7 @@ class _BankBeneficiaryPickerState extends State<BankBeneficiaryPicker> {
                           size: 20,
                         ),
                         tooltip: 'Clear search',
-                        onPressed: () {
-                          _searchController.clear();
-                        },
+                        onPressed: _searchController.clear,
                       )
                     : null,
                 filled: true,
@@ -292,8 +290,8 @@ class _BeneficiaryRow extends StatelessWidget {
     return Semantics(
       button: true,
       selected: isSelected,
-      label:
-          '${beneficiary.name}, ${beneficiary.maskedAccount}${isSelected ? ', selected' : ''}',
+      label: '${beneficiary.name}, ${beneficiary.maskedAccount}'
+          '${isSelected ? ', selected' : ''}',
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
@@ -404,7 +402,7 @@ class _BeneficiaryAvatar extends StatelessWidget {
 
     return CircleAvatar(
       radius: 22,
-      backgroundColor: bankTheme.primary.withOpacity(0.15),
+      backgroundColor: bankTheme.primary.withValues(alpha: 0.15),
       child: Text(
         initials,
         style: BankTokens.labelMedium.copyWith(color: bankTheme.primary),

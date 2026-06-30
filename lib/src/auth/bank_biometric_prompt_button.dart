@@ -8,7 +8,8 @@ import '../../src/theme/tokens.dart';
 // BankBiometricType
 // ---------------------------------------------------------------------------
 
-/// The type of biometric authenticator to present in [BankBiometricPromptButton].
+/// The type of biometric authenticator to present in
+/// [BankBiometricPromptButton].
 enum BankBiometricType {
   /// Fingerprint sensor (shows a fingerprint icon).
   fingerprint,
@@ -68,12 +69,13 @@ class BankBiometricPromptButton extends StatefulWidget {
   /// Button label displayed below the icon. Defaults to `'Use Biometrics'`.
   final String label;
 
-  /// Determines the icon displayed. Defaults to [BankBiometricType.fingerprint].
+  /// Determines the icon displayed. Defaults to
+  /// [BankBiometricType.fingerprint].
   final BankBiometricType type;
 
   const BankBiometricPromptButton({
-    super.key,
     required this.onAuthenticate,
+    super.key,
     this.onSuccess,
     this.onError,
     this.label = 'Use Biometrics',
@@ -98,10 +100,13 @@ class _BankBiometricPromptButtonState extends State<BankBiometricPromptButton>
     _scaleController = AnimationController(
       vsync: this,
       duration: BankTokens.durationFast,
-      value: 1.0,
+      value: 1,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.92).animate(
-      CurvedAnimation(parent: _scaleController, curve: BankTokens.curveStandard),
+    _scaleAnimation = Tween<double>(begin: 1, end: 0.92).animate(
+      CurvedAnimation(
+        parent: _scaleController,
+        curve: BankTokens.curveStandard,
+      ),
     );
   }
 
@@ -121,7 +126,7 @@ class _BankBiometricPromptButtonState extends State<BankBiometricPromptButton>
     if (!mounted) return;
     setState(() => _state = _ButtonState.loading);
 
-    bool success = false;
+    var success = false;
     try {
       success = await widget.onAuthenticate();
     } catch (_) {
@@ -147,7 +152,7 @@ class _BankBiometricPromptButtonState extends State<BankBiometricPromptButton>
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = BankThemeData.of(context);
+    final bankTheme = BankThemeData.of(context);
 
     return Semantics(
       button: true,
