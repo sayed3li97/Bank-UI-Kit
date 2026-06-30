@@ -2,11 +2,78 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 
+import 'tokens.dart';
+
 /// A [ThemeExtension] that carries every Bank UI Kit design decision:
 /// brand colours, semantic colours, shape radii, elevation levels,
 /// numeral typography, and optional glow / gradient decorations.
 ///
-/// Retrieve from the nearest [BuildContext] with [BankThemeData.of].
+/// ---
+///
+/// ## Using a built-in preset (recommended starting point)
+///
+/// ```dart
+/// import 'package:bank_ui_kit/core.dart';
+///
+/// MaterialApp(
+///   theme: BankPreset.studio.apply(ThemeData.light(useMaterial3: true)),
+///   darkTheme: BankPreset.studio.apply(ThemeData.dark(useMaterial3: true)),
+/// );
+/// ```
+///
+/// Available presets: [BankPreset.studio], [BankPreset.voltage],
+/// [BankPreset.bloom].
+///
+/// ---
+///
+/// ## Creating a fully custom theme
+///
+/// Use [BankThemeData.custom] — supply your brand colour and brightness;
+/// every other field is optional with sensible neutral defaults:
+///
+/// ```dart
+/// final myBankTheme = BankThemeData.custom(
+///   primary: const Color(0xFF6750A4),
+///   brightness: Brightness.light,
+///   // optionally override individual tokens:
+///   cardRadius: const BorderRadius.all(Radius.circular(20)),
+///   useGlow: true,
+///   glowColor: const Color(0x336750A4),
+/// );
+///
+/// MaterialApp(
+///   theme: ThemeData.light(useMaterial3: true).withBankTheme(myBankTheme),
+/// );
+/// ```
+///
+/// The [withBankTheme] extension (on [ThemeData]) wires the extension into
+/// Flutter's theme system and synchronises the Material [ColorScheme] to
+/// your palette.
+///
+/// ---
+///
+/// ## Tweaking a preset
+///
+/// Start from any preset and override individual fields with [copyWith]:
+///
+/// ```dart
+/// final tweaked = BankPreset.bloom
+///     .apply(ThemeData.light(useMaterial3: true))
+///     .extension<BankThemeData>()!
+///     .copyWith(
+///       primary: const Color(0xFFE91E63),
+///       cardRadius: const BorderRadius.all(Radius.circular(24)),
+///     );
+///
+/// MaterialApp(
+///   theme: ThemeData.light(useMaterial3: true).withBankTheme(tweaked),
+/// );
+/// ```
+///
+/// ---
+///
+/// Retrieve from the nearest [BuildContext] inside any widget with
+/// [BankThemeData.of].
 @immutable
 class BankThemeData extends ThemeExtension<BankThemeData> {
   const BankThemeData({
@@ -40,6 +107,133 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
     required this.useGlow,
     this.glowColor,
   });
+
+  // ---------------------------------------------------------------------------
+  // Custom-theme factory
+  // ---------------------------------------------------------------------------
+
+  /// Creates a [BankThemeData] from a brand [primary] colour and [brightness],
+  /// with every other token derived automatically.
+  ///
+  /// Override any individual field to match your brand — fields you omit
+  /// receive sensible neutral defaults that work for both light and dark modes.
+  ///
+  /// ### Minimal example
+  ///
+  /// ```dart
+  /// final myTheme = BankThemeData.custom(
+  ///   primary: const Color(0xFF0052CC),
+  ///   brightness: Brightness.light,
+  /// );
+  ///
+  /// MaterialApp(
+  ///   theme: ThemeData.light(useMaterial3: true).withBankTheme(myTheme),
+  /// );
+  /// ```
+  ///
+  /// ### Full override example
+  ///
+  /// ```dart
+  /// final myTheme = BankThemeData.custom(
+  ///   primary: const Color(0xFF0052CC),
+  ///   brightness: Brightness.dark,
+  ///   cardRadius: const BorderRadius.all(Radius.circular(20)),
+  ///   buttonRadius: const BorderRadius.all(Radius.circular(30)),
+  ///   useGlow: true,
+  ///   glowColor: const Color(0x440052CC),
+  ///   fontFamily: 'MyBrandFont',
+  ///   accentGradient: const LinearGradient(
+  ///     colors: [Color(0xFF0052CC), Color(0xFF00B8D9)],
+  ///   ),
+  /// );
+  /// ```
+  factory BankThemeData.custom({
+    required Color primary,
+    required Brightness brightness,
+    Color? primaryVariant,
+    Color? onPrimary,
+    Color? surface,
+    Color? surfaceVariant,
+    Color? onSurface,
+    Color? onSurfaceVariant,
+    Color? background,
+    Color? onBackground,
+    Color? outline,
+    Color? positiveBalance,
+    Color? negativeBalance,
+    Color? pending,
+    Color? frozen,
+    Gradient? accentGradient,
+    BorderRadius? cardRadius,
+    BorderRadius? buttonRadius,
+    BorderRadius? sheetRadius,
+    BorderRadius? chipRadius,
+    double elevationLow = 1,
+    double elevationMedium = 4,
+    double elevationHigh = 8,
+    TextStyle? numeralHero,
+    TextStyle? numeralLarge,
+    TextStyle? numeralMedium,
+    TextStyle? numeralSmall,
+    String? fontFamily,
+    bool useGlow = false,
+    Color? glowColor,
+  }) {
+    final isDark = brightness == Brightness.dark;
+
+    // Derive a slightly lighter/darker variant of the primary colour.
+    final derivedPrimaryVariant = Color.lerp(
+      primary,
+      isDark ? Colors.white : Colors.black,
+      0.18,
+    )!;
+
+    // Pick a legible on-primary based on perceived luminance.
+    final derivedOnPrimary =
+        ThemeData.estimateBrightnessForColor(primary) == Brightness.dark
+            ? Colors.white
+            : Colors.black;
+
+    return BankThemeData(
+      primary: primary,
+      primaryVariant: primaryVariant ?? derivedPrimaryVariant,
+      onPrimary: onPrimary ?? derivedOnPrimary,
+      surface: surface ??
+          (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFFFFFF)),
+      surfaceVariant: surfaceVariant ??
+          (isDark ? const Color(0xFF3A3A3C) : const Color(0xFFF2F2F7)),
+      onSurface: onSurface ??
+          (isDark ? const Color(0xFFF5F5F5) : const Color(0xFF1C1C1E)),
+      onSurfaceVariant: onSurfaceVariant ??
+          (isDark ? const Color(0xFFAEAEB2) : const Color(0xFF636366)),
+      background: background ??
+          (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7)),
+      onBackground: onBackground ??
+          (isDark ? const Color(0xFFF5F5F5) : const Color(0xFF1C1C1E)),
+      outline: outline ??
+          (isDark ? const Color(0xFF48484A) : const Color(0xFFE5E5EA)),
+      positiveBalance: positiveBalance ?? BankTokens.positiveBalance,
+      negativeBalance: negativeBalance ?? BankTokens.negativeBalance,
+      pending: pending ?? BankTokens.pending,
+      frozen: frozen ?? BankTokens.frozen,
+      accentGradient: accentGradient,
+      cardRadius: cardRadius ?? const BorderRadius.all(Radius.circular(12)),
+      buttonRadius: buttonRadius ?? const BorderRadius.all(Radius.circular(12)),
+      sheetRadius: sheetRadius ??
+          const BorderRadius.vertical(top: Radius.circular(20)),
+      chipRadius: chipRadius ?? const BorderRadius.all(Radius.circular(8)),
+      elevationLow: elevationLow,
+      elevationMedium: elevationMedium,
+      elevationHigh: elevationHigh,
+      numeralHero: numeralHero ?? BankTokens.numeralHero,
+      numeralLarge: numeralLarge ?? BankTokens.numeralLarge,
+      numeralMedium: numeralMedium ?? BankTokens.numeralMedium,
+      numeralSmall: numeralSmall ?? BankTokens.numeralSmall,
+      fontFamily: fontFamily,
+      useGlow: useGlow,
+      glowColor: glowColor,
+    );
+  }
 
   // ---------------------------------------------------------------------------
   // Brand & surface colours

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'bank_theme_data.dart';
 import 'presets/bloom.dart';
 import 'presets/studio.dart';
 import 'presets/voltage.dart';
@@ -14,6 +15,9 @@ import 'presets/voltage.dart';
 ///   theme: BankPreset.studio.apply(ThemeData.light(useMaterial3: true)),
 /// );
 /// ```
+///
+/// To build a fully custom theme instead of using a preset, see
+/// [BankThemeData.custom] and [BankThemeDataApply.withBankTheme].
 enum BankPreset {
   /// Electric dark-native preset with violet/cyan gradient and glow effects.
   voltage,
@@ -34,4 +38,52 @@ extension BankPresetApply on BankPreset {
         BankPreset.studio => BankStudioTheme.applyTo(base),
         BankPreset.bloom => BankBloomTheme.applyTo(base),
       };
+}
+
+/// Extension on [ThemeData] for wiring a [BankThemeData] without a preset.
+///
+/// Use this together with [BankThemeData.custom] when you want full control
+/// over every token without starting from a built-in preset:
+///
+/// ```dart
+/// final myBankTheme = BankThemeData.custom(
+///   primary: const Color(0xFF0052CC),
+///   brightness: Brightness.light,
+///   cardRadius: const BorderRadius.all(Radius.circular(20)),
+/// );
+///
+/// MaterialApp(
+///   theme: ThemeData.light(useMaterial3: true).withBankTheme(myBankTheme),
+///   darkTheme: ThemeData.dark(useMaterial3: true).withBankTheme(
+///     BankThemeData.custom(
+///       primary: const Color(0xFF4D9DFF),
+///       brightness: Brightness.dark,
+///     ),
+///   ),
+/// );
+/// ```
+///
+/// [withBankTheme] registers [bankTheme] as a [ThemeExtension] **and**
+/// synchronises the Material [ColorScheme] to the bank theme's palette, so
+/// Material widgets and Bank UI Kit widgets stay visually consistent.
+extension BankThemeDataApply on ThemeData {
+  /// Returns a copy of this [ThemeData] with [bankTheme] registered as a
+  /// [ThemeExtension] and the [ColorScheme] aligned to the bank theme's
+  /// primary, surface and on-surface colours.
+  ThemeData withBankTheme(BankThemeData bankTheme) {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: bankTheme.primary,
+      brightness: brightness,
+      primary: bankTheme.primary,
+      onPrimary: bankTheme.onPrimary,
+      surface: bankTheme.surface,
+      onSurface: bankTheme.onSurface,
+    );
+    return copyWith(
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: bankTheme.background,
+      cardColor: bankTheme.surface,
+      extensions: <ThemeExtension<dynamic>>[bankTheme],
+    );
+  }
 }
