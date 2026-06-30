@@ -38,10 +38,10 @@ class BankTransactionCostSplitSheet extends StatefulWidget {
   final ValueChanged<Map<String, Money>> onConfirm;
 
   const BankTransactionCostSplitSheet({
-    super.key,
     required this.transaction,
     required this.participants,
     required this.onConfirm,
+    super.key,
   });
 
   /// Convenience helper to push the sheet.
@@ -101,7 +101,7 @@ class _BankTransactionCostSplitSheetState
   }
 
   Decimal get _customTotal {
-    Decimal sum = Decimal.zero;
+    var sum = Decimal.zero;
     for (final c in _controllers.values) {
       final v = Decimal.tryParse(c.text) ?? Decimal.zero;
       sum += v;
@@ -117,9 +117,9 @@ class _BankTransactionCostSplitSheetState
   }
 
   void _confirm() {
-    final Map<String, Money> result = {};
+    final result = <String, Money>{};
     for (final p in widget.participants) {
-      final Decimal amount = _equalSplit
+      final amount = _equalSplit
           ? _equalShare
           : (Decimal.tryParse(_controllers[p.id]!.text) ?? Decimal.zero);
       result[p.id] = Money(amount: amount, currencyCode: _currencyCode);
@@ -129,15 +129,15 @@ class _BankTransactionCostSplitSheetState
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = BankThemeData.of(context);
-    final BankUiScopeData scope = BankUiScope.of(context);
+    final bankTheme = BankThemeData.of(context);
+    final scope = BankUiScope.of(context);
     final s = scope.strings;
 
-    final double bottomPadding = MediaQuery.of(context).viewInsets.bottom +
+    final bottomPadding = MediaQuery.of(context).viewInsets.bottom +
         MediaQuery.of(context).padding.bottom;
-    final double maxHeight = MediaQuery.of(context).size.height * 0.88;
+    final maxHeight = MediaQuery.of(context).size.height * 0.88;
 
-    final String formattedTotal = BankMoneyFormatter.format(
+    final formattedTotal = BankMoneyFormatter.format(
       amount: _totalAmount,
       currencyCode: _currencyCode,
       numeralStyle: scope.numeralStyle,
@@ -163,8 +163,7 @@ class _BankTransactionCostSplitSheetState
                   height: 4,
                   decoration: BoxDecoration(
                     color: bankTheme.outline,
-                    borderRadius:
-                        BorderRadius.circular(BankTokens.radiusFull),
+                    borderRadius: BorderRadius.circular(BankTokens.radiusFull),
                   ),
                 ),
               ),
@@ -324,7 +323,7 @@ class _BankTransactionCostSplitSheetState
             const Divider(height: 1),
             // Confirm button
             Padding(
-              padding: EdgeInsets.fromLTRB(
+              padding: const EdgeInsets.fromLTRB(
                 BankTokens.space4,
                 BankTokens.space3,
                 BankTokens.space4,
@@ -393,9 +392,7 @@ class _ToggleButton extends StatelessWidget {
         curve: BankTokens.curveStandard,
         height: BankTokens.minTapTarget,
         decoration: BoxDecoration(
-          color: active
-              ? bankTheme.primary
-              : bankTheme.surfaceVariant,
+          color: active ? bankTheme.primary : bankTheme.surfaceVariant,
           borderRadius: isLeading
               ? BorderRadius.only(
                   topLeft: bankTheme.buttonRadius.topLeft,
@@ -405,7 +402,7 @@ class _ToggleButton extends StatelessWidget {
                   topRight: bankTheme.buttonRadius.topRight,
                   bottomRight: bankTheme.buttonRadius.bottomRight,
                 ),
-          border: Border.all(color: bankTheme.outline, width: 1),
+          border: Border.all(color: bankTheme.outline),
         ),
         alignment: Alignment.center,
         child: Text(
@@ -445,8 +442,8 @@ class _ParticipantRowState extends State<_ParticipantRow> {
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = widget.bankTheme;
-    final BankSplitParticipant p = widget.participant;
+    final bankTheme = widget.bankTheme;
+    final p = widget.participant;
 
     Widget avatar;
     if (p.avatarUrl != null && !_avatarFailed) {

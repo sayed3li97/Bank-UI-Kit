@@ -54,9 +54,7 @@ class _MultiplierChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
 
-    final bgColor = selected
-        ? bankTheme.primary
-        : bankTheme.surfaceVariant;
+    final bgColor = selected ? bankTheme.primary : bankTheme.surfaceVariant;
     final fgColor = selected
         ? bankTheme.onPrimary
         : (enabled ? bankTheme.onSurface : bankTheme.onSurfaceVariant);
@@ -87,7 +85,7 @@ class _MultiplierChip extends StatelessWidget {
             ),
           ),
           child: Text(
-            '${value}×',
+            '$value×',
             style: BankTokens.labelLarge.copyWith(color: fgColor),
           ),
         ),
@@ -134,14 +132,14 @@ class BankRoundUpSettingsSheet extends StatefulWidget {
   static const List<int> _multiplierOptions = [1, 2, 5, 10];
 
   const BankRoundUpSettingsSheet({
-    super.key,
     required this.isEnabled,
     required this.multiplier,
     required this.availablePots,
-    this.selectedPotId,
     required this.onEnabledChanged,
     required this.onMultiplierChanged,
     required this.onPotSelected,
+    super.key,
+    this.selectedPotId,
   }) : assert(
           multiplier == 1 ||
               multiplier == 2 ||
@@ -156,10 +154,10 @@ class BankRoundUpSettingsSheet extends StatefulWidget {
     required bool isEnabled,
     required int multiplier,
     required List<SavingsPot> availablePots,
-    String? selectedPotId,
     required ValueChanged<bool> onEnabledChanged,
     required ValueChanged<int> onMultiplierChanged,
     required ValueChanged<String?> onPotSelected,
+    String? selectedPotId,
   }) =>
       showModalBottomSheet<void>(
         context: context,
@@ -181,8 +179,7 @@ class BankRoundUpSettingsSheet extends StatefulWidget {
       _BankRoundUpSettingsSheetState();
 }
 
-class _BankRoundUpSettingsSheetState
-    extends State<BankRoundUpSettingsSheet> {
+class _BankRoundUpSettingsSheetState extends State<BankRoundUpSettingsSheet> {
   late bool _isEnabled;
   late int _multiplier;
   late String? _selectedPotId;
@@ -228,7 +225,7 @@ class _BankRoundUpSettingsSheetState
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: bankTheme.surface,
           borderRadius: bankTheme.sheetRadius,
@@ -282,8 +279,7 @@ class _BankRoundUpSettingsSheetState
                   BankTokens.space4,
                   BankTokens.space4,
                   BankTokens.space4,
-                  BankTokens.space4 +
-                      MediaQuery.of(context).padding.bottom,
+                  BankTokens.space4 + MediaQuery.of(context).padding.bottom,
                 ),
                 child: AnimatedOpacity(
                   opacity: _isEnabled ? 1.0 : 0.38,
@@ -304,18 +300,19 @@ class _BankRoundUpSettingsSheetState
                         const SizedBox(height: BankTokens.space3),
                         Row(
                           children: BankRoundUpSettingsSheet._multiplierOptions
-                              .map((v) => Padding(
-                                    padding: const EdgeInsetsDirectional.only(
-                                      end: BankTokens.space2,
-                                    ),
-                                    child: _MultiplierChip(
-                                      value: v,
-                                      selected: _multiplier == v,
-                                      enabled: _isEnabled,
-                                      onSelected: () =>
-                                          _handleMultiplier(v),
-                                    ),
-                                  ))
+                              .map(
+                                (v) => Padding(
+                                  padding: const EdgeInsetsDirectional.only(
+                                    end: BankTokens.space2,
+                                  ),
+                                  child: _MultiplierChip(
+                                    value: v,
+                                    selected: _multiplier == v,
+                                    enabled: _isEnabled,
+                                    onSelected: () => _handleMultiplier(v),
+                                  ),
+                                ),
+                              )
                               .toList(),
                         ),
 
@@ -344,17 +341,14 @@ class _BankRoundUpSettingsSheetState
                           )
                         else
                           ...widget.availablePots.map((pot) {
-                            final isSelected =
-                                _selectedPotId == pot.id;
-                            final formattedTarget =
-                                BankMoneyFormatter.format(
+                            final isSelected = _selectedPotId == pot.id;
+                            final formattedTarget = BankMoneyFormatter.format(
                               amount: pot.target.amount,
                               currencyCode: pot.target.currencyCode,
                               numeralStyle: scope.numeralStyle,
                             );
                             return Semantics(
-                              label:
-                                  '${pot.name}, goal $formattedTarget',
+                              label: '${pot.name}, goal $formattedTarget',
                               selected: isSelected,
                               button: true,
                               child: InkWell(
@@ -405,26 +399,21 @@ class _BankRoundUpSettingsSheetState
                                           children: [
                                             Text(
                                               pot.name,
-                                              style: BankTokens
-                                                  .labelLarge
+                                              style: BankTokens.labelLarge
                                                   .copyWith(
                                                 color: isSelected
-                                                    ? bankTheme
-                                                        .primary
-                                                    : bankTheme
-                                                        .onSurface,
+                                                    ? bankTheme.primary
+                                                    : bankTheme.onSurface,
                                               ),
                                               maxLines: 1,
-                                              overflow:
-                                                  TextOverflow.ellipsis,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                             Text(
                                               'Goal: $formattedTarget',
-                                              style: BankTokens
-                                                  .bodySmall
-                                                  .copyWith(
-                                                color: bankTheme
-                                                    .onSurfaceVariant,
+                                              style:
+                                                  BankTokens.bodySmall.copyWith(
+                                                color:
+                                                    bankTheme.onSurfaceVariant,
                                               ),
                                             ),
                                           ],

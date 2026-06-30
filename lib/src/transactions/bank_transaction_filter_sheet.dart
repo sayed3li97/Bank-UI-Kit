@@ -80,9 +80,9 @@ class BankTransactionFilterSheet extends StatefulWidget {
   final VoidCallback? onClear;
 
   const BankTransactionFilterSheet({
+    required this.onApply,
     super.key,
     this.initial,
-    required this.onApply,
     this.onClear,
   });
 
@@ -182,8 +182,8 @@ class _BankTransactionFilterSheetState
   }
 
   void _apply() {
-    final double? minAmount = double.tryParse(_minController.text);
-    final double? maxAmount = double.tryParse(_maxController.text);
+    final minAmount = double.tryParse(_minController.text);
+    final maxAmount = double.tryParse(_maxController.text);
     widget.onApply(
       BankTransactionFilter(
         categories: Set.unmodifiable(_categories),
@@ -204,8 +204,7 @@ class _BankTransactionFilterSheetState
     widget.onClear?.call();
   }
 
-  String _formatDate(DateTime dt) =>
-      '${dt.day.toString().padLeft(2, '0')}/'
+  String _formatDate(DateTime dt) => '${dt.day.toString().padLeft(2, '0')}/'
       '${dt.month.toString().padLeft(2, '0')}/'
       '${dt.year}';
 
@@ -229,15 +228,21 @@ class _BankTransactionFilterSheetState
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = BankThemeData.of(context);
-    final BankUiScopeData scope = BankUiScope.of(context);
+    final bankTheme = BankThemeData.of(context);
+    final scope = BankUiScope.of(context);
     final s = scope.strings;
 
-    final double bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+
+    final range = _dateRange;
+    final fromLabel = 'From date'
+        '${range != null ? ': ${_formatDate(range.start)}' : ''}';
+    final toLabel = 'To date'
+        '${range != null ? ': ${_formatDate(range.end)}' : ''}';
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomPadding),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: bankTheme.surface,
           borderRadius: bankTheme.sheetRadius,
@@ -346,7 +351,7 @@ class _BankTransactionFilterSheetState
                       children: [
                         Expanded(
                           child: Semantics(
-                            label: 'From date${_dateRange != null ? ': ${_formatDate(_dateRange!.start)}' : ''}',
+                            label: fromLabel,
                             button: true,
                             child: OutlinedButton(
                               onPressed: _pickFrom,
@@ -377,7 +382,7 @@ class _BankTransactionFilterSheetState
                         const SizedBox(width: BankTokens.space2),
                         Expanded(
                           child: Semantics(
-                            label: 'To date${_dateRange != null ? ': ${_formatDate(_dateRange!.end)}' : ''}',
+                            label: toLabel,
                             button: true,
                             child: OutlinedButton(
                               onPressed: _pickTo,

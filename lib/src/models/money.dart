@@ -17,7 +17,8 @@ class Money {
   Money operator +(Money other) {
     assert(
       currencyCode == other.currencyCode,
-      'Cannot add Money with different currencies: $currencyCode and ${other.currencyCode}',
+      'Cannot add Money with different currencies: '
+      '$currencyCode and ${other.currencyCode}',
     );
     return Money(amount: amount + other.amount, currencyCode: currencyCode);
   }
@@ -25,7 +26,8 @@ class Money {
   Money operator -(Money other) {
     assert(
       currencyCode == other.currencyCode,
-      'Cannot subtract Money with different currencies: $currencyCode and ${other.currencyCode}',
+      'Cannot subtract Money with different currencies: '
+      '$currencyCode and ${other.currencyCode}',
     );
     return Money(amount: amount - other.amount, currencyCode: currencyCode);
   }

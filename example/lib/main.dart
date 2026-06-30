@@ -1,10 +1,7 @@
 import 'package:bank_ui_kit/core.dart';
-import 'package:bank_ui_kit/credit.dart';
-import 'package:bank_ui_kit/investing.dart';
-import 'package:bank_ui_kit/saving.dart';
-import 'package:bank_ui_kit/social.dart';
 import 'package:flutter/material.dart';
 
+import 'demo/home_dashboard.dart';
 import 'screens/accounts_screen.dart';
 import 'screens/auth_screen.dart';
 import 'screens/cards_screen.dart';
@@ -85,7 +82,13 @@ class _ExampleShell extends StatefulWidget {
 }
 
 class _ExampleShellState extends State<_ExampleShell> {
-  static const _modules = <({String label, IconData icon, Widget Function() screen})>[
+  static const _modules =
+      <({String label, IconData icon, Widget Function() screen})>[
+    (
+      label: 'Home (full-app demo)',
+      icon: Icons.home_outlined,
+      screen: HomeDashboard.new,
+    ),
     (
       label: 'States',
       icon: Icons.widgets_outlined,
@@ -177,7 +180,9 @@ class _ExampleShellState extends State<_ExampleShell> {
           ),
           IconButton(
             icon: Icon(
-              widget.darkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+              widget.darkMode
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined,
               color: theme.onSurface,
             ),
             onPressed: () => widget.onDarkModeChanged(!widget.darkMode),
@@ -185,13 +190,19 @@ class _ExampleShellState extends State<_ExampleShell> {
           ),
           IconButton(
             icon: Icon(
-              widget.direction == TextDirection.ltr ? Icons.format_textdirection_r_to_l : Icons.format_textdirection_l_to_r,
+              widget.direction == TextDirection.ltr
+                  ? Icons.format_textdirection_r_to_l
+                  : Icons.format_textdirection_l_to_r,
               color: theme.onSurface,
             ),
             onPressed: () => widget.onDirectionChanged(
-              widget.direction == TextDirection.ltr ? TextDirection.rtl : TextDirection.ltr,
+              widget.direction == TextDirection.ltr
+                  ? TextDirection.rtl
+                  : TextDirection.ltr,
             ),
-            tooltip: widget.direction == TextDirection.ltr ? 'Switch to RTL' : 'Switch to LTR',
+            tooltip: widget.direction == TextDirection.ltr
+                ? 'Switch to RTL'
+                : 'Switch to LTR',
           ),
           const BankPrivacyToggle(),
           const SizedBox(width: 8),

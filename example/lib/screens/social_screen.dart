@@ -19,6 +19,12 @@ class SocialScreen extends StatelessWidget {
       settledAt: DateTime.now().subtract(const Duration(hours: 4)),
     );
 
+    const contacts = [
+      BankSplitParticipant(id: 'c_alice', name: 'Alice Johnson'),
+      BankSplitParticipant(id: 'c_bob', name: 'Bob Smith'),
+      BankSplitParticipant(id: 'c_charlie', name: 'Charlie Adams'),
+    ];
+
     return Scaffold(
       backgroundColor: theme.background,
       appBar: AppBar(
@@ -56,7 +62,7 @@ class SocialScreen extends StatelessWidget {
                 Money(amount: Decimal.parse('5000.00'), currencyCode: 'GBP'),
             savedAmount:
                 Money(amount: Decimal.parse('2350.00'), currencyCode: 'GBP'),
-            contributors: [
+            contributors: const [
               BankGoalContributor(name: 'Alice'),
               BankGoalContributor(name: 'Bob'),
               BankGoalContributor(name: 'Charlie'),
@@ -70,8 +76,9 @@ class SocialScreen extends StatelessWidget {
           FilledButton(
             onPressed: () => BankContactPaymentSheet.show(
               context,
-              contactName: 'Alice Johnson',
-              onSubmit: (amount, note) async {},
+              contacts: contacts,
+              onSend: (id, amount, note) async {},
+              onRequest: (id, amount, note) async {},
             ),
             child: const Text('Pay Contact'),
           ),

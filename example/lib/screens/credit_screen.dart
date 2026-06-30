@@ -54,10 +54,10 @@ class _CreditScreenState extends State<CreditScreen> {
           const SizedBox(height: BankTokens.space3),
           Center(
             child: BankCreditLimitGauge(
-              creditLimit: Money(
-                  amount: Decimal.parse('5000.00'), currencyCode: 'GBP'),
-              usedAmount: Money(
-                  amount: Decimal.parse('3200.00'), currencyCode: 'GBP'),
+              creditLimit:
+                  Money(amount: Decimal.parse('5000.00'), currencyCode: 'GBP'),
+              usedAmount:
+                  Money(amount: Decimal.parse('3200.00'), currencyCode: 'GBP'),
             ),
           ),
           const SizedBox(height: BankTokens.space4),
@@ -82,8 +82,7 @@ class _CreditScreenState extends State<CreditScreen> {
           if (_selected != null) ...[
             const SizedBox(height: BankTokens.space4),
             Text('Repayment Schedule',
-                style:
-                    BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+                style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
             const SizedBox(height: BankTokens.space3),
             BankRepaymentScheduleView(
               plan: _selected!,

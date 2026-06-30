@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 // ---------------------------------------------------------------------------
 // Public widget
@@ -41,15 +41,15 @@ class BankConsentModal extends StatefulWidget {
   final VoidCallback onDecline;
 
   const BankConsentModal({
-    super.key,
     required this.title,
     required this.termsContent,
+    required this.onAccept,
+    required this.onDecline,
+    super.key,
     this.richTermsContent,
     this.checkboxLabel = 'I have read and agree to the terms above',
     this.acceptLabel = 'Accept',
     this.declineLabel = 'Decline',
-    required this.onAccept,
-    required this.onDecline,
   });
 
   // ---------------------------------------------------------------------------
@@ -62,9 +62,9 @@ class BankConsentModal extends StatefulWidget {
     BuildContext context, {
     required String title,
     required String termsContent,
-    Widget? richContent,
     required VoidCallback onAccept,
     required VoidCallback onDecline,
+    Widget? richContent,
   }) =>
       showDialog<bool>(
         context: context,

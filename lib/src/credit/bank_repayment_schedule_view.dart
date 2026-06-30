@@ -1,11 +1,11 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 
-import '../../common/money_formatter.dart';
-import '../../models/installment_plan.dart';
-import '../../scope/bank_ui_scope.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/common/money_formatter.dart';
+import '../../src/models/installment_plan.dart';
+import '../../src/scope/bank_ui_scope.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// Vertical list of monthly repayment rows generated from an [InstallmentPlan].
 class BankRepaymentScheduleView extends StatelessWidget {
@@ -14,8 +14,8 @@ class BankRepaymentScheduleView extends StatelessWidget {
   final bool islamicFinanceMode;
 
   const BankRepaymentScheduleView({
-    super.key,
     required this.plan,
+    super.key,
     this.highlightMonthIndex,
     this.islamicFinanceMode = false,
   });
@@ -73,13 +73,12 @@ class BankRepaymentScheduleView extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           itemCount: plan.termMonths,
           separatorBuilder: (_, __) =>
-              Divider(height: 1, color: theme.outline.withOpacity(0.5)),
+              Divider(height: 1, color: theme.outline.withValues(alpha: 0.5)),
           itemBuilder: (context, index) {
             final monthNumber = index + 1;
             final isHighlighted = highlightMonthIndex == index;
 
-            final interestAmount =
-                plan.monthlyAmount.amount * monthlyRate;
+            final interestAmount = plan.monthlyAmount.amount * monthlyRate;
             final interestStr = BankMoneyFormatter.format(
               amount: interestAmount,
               currencyCode: plan.monthlyAmount.currencyCode,
@@ -90,7 +89,7 @@ class BankRepaymentScheduleView extends StatelessWidget {
               label: 'Month $monthNumber: $monthlyStr',
               child: Container(
                 color: isHighlighted
-                    ? theme.primary.withOpacity(0.06)
+                    ? theme.primary.withValues(alpha: 0.06)
                     : Colors.transparent,
                 padding: const EdgeInsets.symmetric(
                   horizontal: BankTokens.space4,
@@ -102,7 +101,8 @@ class BankRepaymentScheduleView extends StatelessWidget {
                       child: Text(
                         'Month $monthNumber',
                         style: BankTokens.bodyMedium.copyWith(
-                          color: isHighlighted ? theme.primary : theme.onSurface,
+                          color:
+                              isHighlighted ? theme.primary : theme.onSurface,
                           fontWeight: isHighlighted
                               ? FontWeight.w600
                               : FontWeight.normal,
@@ -139,7 +139,8 @@ class BankRepaymentScheduleView extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Total repayable',
-                  style: BankTokens.labelMedium.copyWith(color: theme.onSurface),
+                  style:
+                      BankTokens.labelMedium.copyWith(color: theme.onSurface),
                 ),
               ),
               Text(

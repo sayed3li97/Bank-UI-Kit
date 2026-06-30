@@ -28,8 +28,8 @@ class BankAssetPriceTicker extends StatelessWidget {
   final bool compact;
 
   const BankAssetPriceTicker({
-    super.key,
     required this.quote,
+    super.key,
     this.onTap,
     this.compact = false,
   });
@@ -45,14 +45,16 @@ class BankAssetPriceTicker extends StatelessWidget {
       numeralStyle: scope.numeralStyle,
     );
 
-    final bool positive = quote.isPositive;
-    final double absChange = quote.changePercent.abs();
-    final String changeStr = positive
+    final positive = quote.isPositive;
+    final absChange = quote.changePercent.abs();
+    final changeStr = positive
         ? '+${absChange.toStringAsFixed(2)}%'
         : '-${absChange.toStringAsFixed(2)}%';
 
-    final String semanticLabel =
-        '${quote.symbol}: $formattedPrice, ${quote.changePercent >= 0 ? '+' : ''}${quote.changePercent.toStringAsFixed(2)}% today';
+    final changeSign = quote.changePercent >= 0 ? '+' : '';
+    final changePercentStr = quote.changePercent.toStringAsFixed(2);
+    final semanticLabel = '${quote.symbol}: $formattedPrice, '
+        '$changeSign$changePercentStr% today';
 
     return Semantics(
       label: semanticLabel,
@@ -69,7 +71,6 @@ class BankAssetPriceTicker extends StatelessWidget {
               vertical: BankTokens.space2,
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // ── Logo / initials circle ─────────────────────────────────
                 _AssetLogo(
@@ -173,7 +174,7 @@ class _AssetLogoState extends State<_AssetLogo> {
 
   @override
   Widget build(BuildContext context) {
-    final String? url = widget.logoUrl;
+    final url = widget.logoUrl;
 
     if (url != null && !_logoFailed) {
       return CircleAvatar(
@@ -187,9 +188,8 @@ class _AssetLogoState extends State<_AssetLogo> {
     }
 
     // Fallback: first character of the symbol on a surface-variant circle.
-    final initial = widget.symbol.isNotEmpty
-        ? widget.symbol[0].toUpperCase()
-        : '?';
+    final initial =
+        widget.symbol.isNotEmpty ? widget.symbol[0].toUpperCase() : '?';
 
     return CircleAvatar(
       radius: 20,
@@ -219,12 +219,10 @@ class _ChangeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bg = positive
-        ? BankTokens.investmentGain.withOpacity(0.15)
-        : BankTokens.investmentLoss.withOpacity(0.15);
-    final Color fg = positive
-        ? BankTokens.investmentGain
-        : BankTokens.investmentLoss;
+    final bg = positive
+        ? BankTokens.investmentGain.withValues(alpha: 0.15)
+        : BankTokens.investmentLoss.withValues(alpha: 0.15);
+    final fg = positive ? BankTokens.investmentGain : BankTokens.investmentLoss;
 
     return Container(
       padding: const EdgeInsets.symmetric(

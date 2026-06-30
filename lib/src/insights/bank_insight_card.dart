@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../models/bank_insight.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/models/bank_insight.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// A swipeable AI-generated insight card with confidence indicator.
 class BankInsightCard extends StatelessWidget {
@@ -13,21 +13,25 @@ class BankInsightCard extends StatelessWidget {
   final String? actionLabel;
 
   const BankInsightCard({
-    super.key,
     required this.insight,
+    super.key,
     this.onTap,
     this.onDismiss,
     this.onAction,
     this.actionLabel,
   });
 
-  static IconData _iconFor(InsightConfidence confidence) => switch (confidence) {
+  static IconData _iconFor(InsightConfidence confidence) =>
+      switch (confidence) {
         InsightConfidence.high => Icons.insights_rounded,
         InsightConfidence.medium => Icons.lightbulb_outline_rounded,
         InsightConfidence.low => Icons.help_outline_rounded,
       };
 
-  static Color _confidenceColor(InsightConfidence confidence, BankThemeData theme) =>
+  static Color _confidenceColor(
+    InsightConfidence confidence,
+    BankThemeData theme,
+  ) =>
       switch (confidence) {
         InsightConfidence.high => theme.primary,
         InsightConfidence.medium => Colors.amber,
@@ -62,7 +66,7 @@ class BankInsightCard extends StatelessWidget {
                       height: 40,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: color.withOpacity(0.12),
+                        color: color.withValues(alpha: 0.12),
                       ),
                       child: Icon(
                         _iconFor(insight.confidence),
@@ -170,7 +174,7 @@ class _ConfidenceDots extends StatelessWidget {
           margin: const EdgeInsets.only(right: 3),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: filled ? color : color.withOpacity(0.25),
+            color: filled ? color : color.withValues(alpha: 0.25),
           ),
         );
       }),

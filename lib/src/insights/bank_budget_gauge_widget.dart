@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../common/money_formatter.dart';
-import '../../models/budget.dart';
-import '../../scope/bank_ui_scope.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/common/money_formatter.dart';
+import '../../src/models/budget.dart';
+import '../../src/scope/bank_ui_scope.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// Shows a budget's progress with an animated bar and over-budget warning.
 class BankBudgetGaugeWidget extends StatelessWidget {
@@ -12,8 +12,8 @@ class BankBudgetGaugeWidget extends StatelessWidget {
   final VoidCallback? onTap;
 
   const BankBudgetGaugeWidget({
-    super.key,
     required this.budget,
+    super.key,
     this.onTap,
   });
 
@@ -22,7 +22,7 @@ class BankBudgetGaugeWidget extends StatelessWidget {
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
 
-    final fraction = budget.spentFraction.toDouble().clamp(0.0, 1.0);
+    final fraction = budget.spentFraction.clamp(0.0, 1.0);
     final isOverBudget = budget.isOverBudget;
 
     final barColor = isOverBudget
@@ -43,8 +43,8 @@ class BankBudgetGaugeWidget extends StatelessWidget {
     );
 
     return Semantics(
-      label:
-          '${budget.name} budget: $spentStr of $limitStr${isOverBudget ? ', over budget' : ''}',
+      label: '${budget.name} budget: $spentStr of $limitStr'
+          '${isOverBudget ? ', over budget' : ''}',
       button: onTap != null,
       child: InkWell(
         onTap: onTap,
@@ -73,7 +73,8 @@ class BankBudgetGaugeWidget extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: BankTokens.investmentLoss.withOpacity(0.12),
+                        color:
+                            BankTokens.investmentLoss.withValues(alpha: 0.12),
                         borderRadius: theme.chipRadius,
                       ),
                       child: Text(
@@ -105,12 +106,12 @@ class BankBudgetGaugeWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 child: TweenAnimationBuilder<double>(
                   tween: Tween<double>(begin: 0, end: fraction),
-                  duration: BankTokens.durationMedium,
+                  duration: BankTokens.durationBase,
                   curve: BankTokens.curveEmphasized,
                   builder: (_, value, __) => LinearProgressIndicator(
                     value: value,
                     minHeight: 8,
-                    backgroundColor: theme.outline.withOpacity(0.2),
+                    backgroundColor: theme.outline.withValues(alpha: 0.2),
                     valueColor: AlwaysStoppedAnimation<Color>(barColor),
                   ),
                 ),

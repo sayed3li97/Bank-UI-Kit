@@ -28,7 +28,7 @@ import '../../src/theme/tokens.dart';
 ///   referenceNumber: 'TXN-20240101-001234',
 ///   onDone: () => Navigator.of(context).pop(),
 ///   onShareReceipt: () => shareReceipt(),
-///   onNewTransfer: () => Navigator.of(context).pushReplacement(newTransferRoute),
+///   onNewTransfer: () => Navigator.of(context).push(newTransferRoute),
 /// )
 /// ```
 class BankTransferResultScreen extends StatelessWidget {
@@ -57,13 +57,13 @@ class BankTransferResultScreen extends StatelessWidget {
   final VoidCallback? onNewTransfer;
 
   const BankTransferResultScreen({
-    super.key,
     required this.isSuccess,
+    required this.onDone,
+    super.key,
     this.amount,
     this.beneficiaryName,
     this.referenceNumber,
     this.failureReason,
-    required this.onDone,
     this.onShareReceipt,
     this.onNewTransfer,
   });
@@ -99,9 +99,7 @@ class BankTransferResultScreen extends StatelessWidget {
                       ),
               ),
               const SizedBox(height: BankTokens.space6),
-              // ----------------------------------------------------------------
               // Action buttons
-              // ----------------------------------------------------------------
               _ActionButtons(
                 bankTheme: bankTheme,
                 onDone: onDone,
@@ -147,11 +145,10 @@ class _SuccessContent extends StatelessWidget {
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Semantics(
           label: 'Transfer sent successfully',
-          child: BankSuccessAnimation(
+          child: const BankSuccessAnimation(
             size: 96,
             showConfetti: true,
           ),
@@ -237,11 +234,10 @@ class _FailureContent extends StatelessWidget {
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Semantics(
           label: 'Transfer failed',
-          child: Icon(
+          child: const Icon(
             Icons.error_outline,
             size: 80,
             color: BankTokens.danger,

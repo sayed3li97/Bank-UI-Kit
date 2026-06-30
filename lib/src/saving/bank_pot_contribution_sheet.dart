@@ -6,6 +6,7 @@ import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/numeral_style.dart';
 import '../../src/theme/tokens.dart';
 
 // ---------------------------------------------------------------------------
@@ -212,11 +213,11 @@ class BankPotContributionSheet extends StatefulWidget {
   final VoidCallback? onCancel;
 
   const BankPotContributionSheet({
-    super.key,
     required this.pot,
+    required this.onConfirm,
+    super.key,
     this.isWithdrawal = false,
     this.availableBalance,
-    required this.onConfirm,
     this.onCancel,
   });
 
@@ -224,9 +225,9 @@ class BankPotContributionSheet extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     required SavingsPot pot,
+    required Future<void> Function(Money) onConfirm,
     bool isWithdrawal = false,
     Money? availableBalance,
-    required Future<void> Function(Money) onConfirm,
     VoidCallback? onCancel,
   }) =>
       showModalBottomSheet<void>(
@@ -247,8 +248,7 @@ class BankPotContributionSheet extends StatefulWidget {
       _BankPotContributionSheetState();
 }
 
-class _BankPotContributionSheetState
-    extends State<BankPotContributionSheet> {
+class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
   /// Raw digit string, e.g. '12.50'.
   String _raw = '';
   bool _isLoading = false;
@@ -396,11 +396,13 @@ class _BankPotContributionSheetState
         ? 'Withdraw from ${widget.pot.name}'
         : 'Add to ${widget.pot.name}';
 
-    final String displayAmount = _raw.isEmpty ? '0' : _raw;
-    final String currencyCode = widget.pot.current.currencyCode;
+    final displayAmount = _raw.isEmpty ? '0' : _raw;
+    final currencyCode = widget.pot.current.currencyCode;
 
     final errorMsg = _errorMessage(bankTheme, scope);
-    final bool hasError = errorMsg.isNotEmpty;
+    final hasError = errorMsg.isNotEmpty;
+
+    final confirmAction = widget.isWithdrawal ? 'withdrawal' : 'contribution';
 
     final formattedBalance = BankMoneyFormatter.format(
       amount: widget.pot.current.amount,
@@ -415,7 +417,7 @@ class _BankPotContributionSheetState
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: bankTheme.surface,
           borderRadius: bankTheme.sheetRadius,
@@ -572,7 +574,7 @@ class _BankPotContributionSheetState
               child: Semantics(
                 button: true,
                 label: _canConfirm
-                    ? 'Confirm ${widget.isWithdrawal ? 'withdrawal' : 'contribution'}'
+                    ? 'Confirm $confirmAction'
                     : 'Enter a valid amount to continue',
                 child: FilledButton(
                   onPressed: _canConfirm ? _confirm : null,

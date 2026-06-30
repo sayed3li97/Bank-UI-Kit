@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../src/common/money_formatter.dart';
+import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
-import '../../src/models/models.dart';
 
 // ---------------------------------------------------------------------------
 // Local enum — avoids cross-module import
@@ -29,10 +29,10 @@ class BankPlanTier {
     required this.id,
     required this.name,
     required this.monthlyPrice,
+    required this.features,
     this.tagline,
     this.material,
     this.accentColor,
-    required this.features,
   });
 }
 
@@ -60,25 +60,25 @@ class BankPlanComparisonTable extends StatelessWidget {
   final ValueChanged<BankPlanTier>? onSelectTier;
 
   const BankPlanComparisonTable({
-    super.key,
     required this.tiers,
+    super.key,
     this.highlightedTierId,
     this.onSelectTier,
   });
 
-  static const double _columnWidth = 120.0;
-  static const double _labelColumnWidth = 140.0;
-  static const double _rowHeight = 44.0;
-  static const double _headerHeight = 120.0;
+  static const double _columnWidth = 120;
+  static const double _labelColumnWidth = 140;
+  static const double _rowHeight = 44;
+  static const double _headerHeight = 120;
 
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
-    final bool needsScroll = tiers.length > 3;
+    final needsScroll = tiers.length > 3;
 
     // Collect all unique feature labels preserving insertion order.
-    final List<BankPlanFeature> allFeatures = _collectFeatures();
+    final allFeatures = _collectFeatures();
 
     Widget table = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,15 +219,15 @@ class _TierColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color accent = tier.accentColor ?? bankTheme.primary;
-    final String formattedPrice = BankMoneyFormatter.format(
+    final accent = tier.accentColor ?? bankTheme.primary;
+    final formattedPrice = BankMoneyFormatter.format(
       amount: tier.monthlyPrice.amount,
       currencyCode: tier.monthlyPrice.currencyCode,
       numeralStyle: scope.numeralStyle,
       hideFraction: true,
     );
 
-    final BorderSide highlightSide = isHighlighted
+    final highlightSide = isHighlighted
         ? BorderSide(color: bankTheme.primary, width: 2)
         : BorderSide.none;
 
@@ -312,7 +312,7 @@ class _TierColumn extends StatelessWidget {
       children: [
         header,
         ...features.map((feature) {
-          final bool? support = feature.tierSupport[tier.id];
+          final support = feature.tierSupport[tier.id];
           return _FeatureCell(
             support: support,
             bankTheme: bankTheme,
@@ -371,9 +371,12 @@ class _FeatureCell extends StatelessWidget {
       semanticValue = 'partially included';
     }
 
-    final BorderSide highlightSide = isHighlighted
+    final highlightSide = isHighlighted
         ? BorderSide(color: bankTheme.primary, width: 2)
-        : BorderSide(color: bankTheme.outline.withValues(alpha: 0.3), width: 0.5);
+        : BorderSide(
+            color: bankTheme.outline.withValues(alpha: 0.3),
+            width: 0.5,
+          );
 
     return Semantics(
       label: '$featureLabel in $tierName: $semanticValue',

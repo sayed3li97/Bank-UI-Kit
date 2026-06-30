@@ -11,22 +11,23 @@ import '../../src/theme/tokens.dart';
 class BankTransactionGroupHeader extends StatelessWidget {
   final DateTime date;
 
-  /// Optional strings override; falls back to [BankUiScope.of(context).strings].
+  /// Optional strings override; falls back to
+  /// [BankUiScope.of(context).strings].
   final BankUiStrings? strings;
 
   const BankTransactionGroupHeader({
-    super.key,
     required this.date,
+    super.key,
     this.strings,
   });
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = BankThemeData.of(context);
-    final BankUiScopeData scope = BankUiScope.of(context);
-    final BankUiStrings s = strings ?? scope.strings;
+    final bankTheme = BankThemeData.of(context);
+    final scope = BankUiScope.of(context);
+    final s = strings ?? scope.strings;
 
-    final String label = BankDateFormatter.formatGroupHeader(
+    final label = BankDateFormatter.formatGroupHeader(
       date: date,
       todayLabel: s.today,
       yesterdayLabel: s.yesterday,

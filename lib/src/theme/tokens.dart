@@ -1,4 +1,4 @@
-import 'package:flutter/painting.dart';
+import 'package:flutter/widgets.dart';
 
 /// Design tokens for the Bank UI Kit design system.
 ///
@@ -110,7 +110,7 @@ class BankTokens {
   static const TextStyle displayMedium = TextStyle(
     fontSize: 36,
     fontWeight: FontWeight.w700,
-    letterSpacing: -1.0,
+    letterSpacing: -1,
   );
 
   static const TextStyle headlineLarge = TextStyle(
@@ -210,5 +210,5 @@ class BankTokens {
   // ---------------------------------------------------------------------------
 
   /// Minimum touch/tap target size in logical pixels (WCAG 2.5.5).
-  static const double minTapTarget = 44.0;
+  static const double minTapTarget = 44;
 }

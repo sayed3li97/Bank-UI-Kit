@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../src/common/money_formatter.dart';
-import '../../src/models/models.dart';
-import '../../src/scope/bank_ui_scope.dart';
-import '../../src/theme/bank_theme_data.dart';
-import '../../src/theme/tokens.dart';
+import '../../bank_ui_kit.dart';
+import '../../core.dart';
 
 /// The visual size tier for [BankBalanceText].
 ///
@@ -48,8 +45,8 @@ class BankBalanceText extends StatelessWidget {
   final bool compact;
 
   const BankBalanceText({
-    super.key,
     required this.money,
+    super.key,
     this.style,
     this.size = BankBalanceSize.large,
     this.showSign = false,
@@ -57,7 +54,7 @@ class BankBalanceText extends StatelessWidget {
   });
 
   TextStyle _baseStyleForSize(BankThemeData bankTheme) {
-    final TextStyle sizeStyle = switch (size) {
+    final sizeStyle = switch (size) {
       BankBalanceSize.hero => bankTheme.numeralHero,
       BankBalanceSize.large => bankTheme.numeralLarge,
       BankBalanceSize.medium => bankTheme.numeralMedium,
@@ -68,13 +65,13 @@ class BankBalanceText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BankUiScopeData data = BankUiScope.of(context);
-    final BankThemeData bankTheme = BankThemeData.of(context);
-    final TextStyle resolvedStyle = style ?? _baseStyleForSize(bankTheme);
+    final data = BankUiScope.of(context);
+    final bankTheme = BankThemeData.of(context);
+    final resolvedStyle = style ?? _baseStyleForSize(bankTheme);
 
-    final bool hidden = data.privacyEnabled;
+    final hidden = data.privacyEnabled;
 
-    final String formattedBalance = BankMoneyFormatter.format(
+    final formattedBalance = BankMoneyFormatter.format(
       amount: money.amount,
       currencyCode: money.currencyCode,
       numeralStyle: data.numeralStyle,
@@ -82,10 +79,9 @@ class BankBalanceText extends StatelessWidget {
       compact: compact,
     );
 
-    final String displayText = hidden ? data.strings.balanceHidden : formattedBalance;
-    final String semanticLabel = hidden
-        ? 'Balance hidden'
-        : 'Balance: $formattedBalance';
+    final displayText = hidden ? data.strings.balanceHidden : formattedBalance;
+    final semanticLabel =
+        hidden ? 'Balance hidden' : 'Balance: $formattedBalance';
 
     return Semantics(
       label: semanticLabel,

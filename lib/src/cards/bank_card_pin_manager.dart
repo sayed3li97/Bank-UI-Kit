@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -16,7 +18,8 @@ import '../../src/theme/tokens.dart';
 /// Step 1: User enters the **new** PIN.
 /// Step 2: User **confirms** the new PIN.
 ///
-/// On step 2 completion the widget calls [onSubmit] with `(currentPin, newPin)`.
+/// On step 2 completion the widget calls [onSubmit] with
+/// `(currentPin, newPin)`.
 /// If the two new PINs do not match, a shake animation is played and an error
 /// message is shown without advancing. On a successful [onSubmit] result
 /// ([Future<bool>] returning `true`) [onSuccess] is invoked.
@@ -37,9 +40,9 @@ class BankCardPinManager extends StatefulWidget {
   final VoidCallback? onSuccess;
 
   const BankCardPinManager({
+    required this.onSubmit,
     super.key,
     this.pinLength = 4,
-    required this.onSubmit,
     this.onCancel,
     this.onSuccess,
   });
@@ -171,7 +174,7 @@ class _BankCardPinManagerState extends State<BankCardPinManager> {
         _errorMessage = "PINs don't match. Please try again.";
         _confirmPin = '';
       });
-      HapticFeedback.heavyImpact();
+      unawaited(HapticFeedback.heavyImpact());
       return;
     }
 
@@ -198,7 +201,7 @@ class _BankCardPinManagerState extends State<BankCardPinManager> {
           _showError = true;
           _errorMessage = 'Incorrect current PIN. Please try again.';
         });
-        HapticFeedback.heavyImpact();
+        unawaited(HapticFeedback.heavyImpact());
       }
     } catch (_) {
       if (!mounted) return;
@@ -421,7 +424,7 @@ class _SuccessView extends StatelessWidget {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: BankTokens.success.withOpacity(0.12),
+              color: BankTokens.success.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: const Center(

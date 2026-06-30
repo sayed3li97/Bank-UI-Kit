@@ -55,10 +55,10 @@ class BankCurrencyWalletTabBar extends StatefulWidget {
   final ValueChanged<int> onSelected;
 
   const BankCurrencyWalletTabBar({
-    super.key,
     required this.wallets,
     required this.selectedIndex,
     required this.onSelected,
+    super.key,
   });
 
   @override
@@ -208,9 +208,7 @@ class _WalletTab extends StatelessWidget {
             vertical: BankTokens.space2,
           ),
           decoration: BoxDecoration(
-            color: isSelected
-                ? bankTheme.surfaceVariant
-                : Colors.transparent,
+            color: isSelected ? bankTheme.surfaceVariant : Colors.transparent,
             borderRadius: BorderRadius.circular(BankTokens.radiusSmall),
             border: Border(
               bottom: BorderSide(
@@ -221,7 +219,6 @@ class _WalletTab extends StatelessWidget {
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(

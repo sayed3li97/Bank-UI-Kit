@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../models/savings_pot.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/models/savings_pot.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// A member of a shared pot.
 class BankPotMember {
@@ -25,9 +25,9 @@ class BankSharedPotInvite extends StatelessWidget {
   final Future<void> Function(String memberId)? onRemoveMember;
 
   const BankSharedPotInvite({
-    super.key,
     required this.pot,
     required this.currentMembers,
+    super.key,
     this.onInvite,
     this.onRemoveMember,
   });
@@ -60,8 +60,9 @@ class BankSharedPotInvite extends StatelessWidget {
         if (onInvite != null)
           ListTile(
             leading: CircleAvatar(
-              backgroundColor: theme.primary.withOpacity(0.12),
-              child: Icon(Icons.person_add_alt_1_outlined, color: theme.primary),
+              backgroundColor: theme.primary.withValues(alpha: 0.12),
+              child:
+                  Icon(Icons.person_add_alt_1_outlined, color: theme.primary),
             ),
             title: Text(
               'Invite someone',
@@ -96,9 +97,7 @@ class _MemberRow extends StatelessWidget {
                 : null,
             child: member.avatarUrl == null
                 ? Text(
-                    member.name.isNotEmpty
-                        ? member.name[0].toUpperCase()
-                        : '?',
+                    member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
                     style:
                         BankTokens.labelMedium.copyWith(color: theme.primary),
                   )

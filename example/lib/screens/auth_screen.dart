@@ -10,7 +10,6 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   String _pin = '';
-  bool _showTimeout = false;
 
   @override
   Widget build(BuildContext context) {
@@ -25,59 +24,70 @@ class _AuthScreenState extends State<AuthScreen> {
       body: ListView(
         padding: const EdgeInsets.all(BankTokens.space4),
         children: [
-          Text('PIN Dots', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('PIN Dots',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           Center(
             child: BankPinDots(
-              filledCount: _pin.length,
-              totalCount: 6,
+              length: 6,
+              filled: _pin.length,
             ),
           ),
           const SizedBox(height: BankTokens.space4),
-          Text('PIN Keypad', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('PIN Keypad',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           BankPinKeypad(
-            onDigitPressed: (d) => setState(() {
+            onDigit: (d) => setState(() {
               if (_pin.length < 6) _pin += d;
             }),
-            onDeletePressed: () =>
-                setState(() => _pin = _pin.isEmpty ? '' : _pin.substring(0, _pin.length - 1)),
+            onDelete: () => setState(
+              () =>
+                  _pin = _pin.isEmpty ? '' : _pin.substring(0, _pin.length - 1),
+            ),
           ),
           const SizedBox(height: BankTokens.space4),
-          Text('Biometric Button', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Biometric Button',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           Center(
             child: BankBiometricPromptButton(
+              label: 'Log in with Face ID',
+              type: BankBiometricType.face,
               onAuthenticate: () async {
-                await Future.delayed(const Duration(seconds: 1));
+                await Future<void>.delayed(const Duration(seconds: 1));
                 return true;
               },
+              onSuccess: () {},
             ),
           ),
           const SizedBox(height: BankTokens.space4),
-          Text('Privacy Toggle', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Privacy Toggle',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           const Center(child: BankPrivacyToggle()),
           const SizedBox(height: BankTokens.space4),
-          Text('Device Trust Banner', style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
+          Text('Device Trust Banner',
+              style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           BankDeviceTrustBanner(
-            isNewDevice: true,
-            deviceName: 'iPhone 16 Pro',
-            onTrustDevice: () {},
+            state: BankDeviceTrustState.newDevice,
+            onLearnMore: () {},
             onDismiss: () {},
           ),
           const SizedBox(height: BankTokens.space4),
           FilledButton(
-            onPressed: () => setState(() => _showTimeout = !_showTimeout),
-            child: Text(_showTimeout ? 'Hide timeout dialog' : 'Show Session Timeout'),
-          ),
-          if (_showTimeout)
-            BankSessionTimeoutDialog(
-              remainingSeconds: 60,
-              onExtendSession: () => setState(() => _showTimeout = false),
-              onLogout: () => setState(() => _showTimeout = false),
+            onPressed: () => showDialog<void>(
+              context: context,
+              barrierDismissible: false,
+              builder: (dialogContext) => BankSessionTimeoutDialog(
+                remainingTime: const Duration(seconds: 60),
+                onExtend: () => Navigator.of(dialogContext).pop(),
+                onLogout: () => Navigator.of(dialogContext).pop(),
+              ),
             ),
+            child: const Text('Show Session Timeout'),
+          ),
         ],
       ),
     );

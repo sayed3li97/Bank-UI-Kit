@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../common/money_formatter.dart';
-import '../../models/transaction.dart';
-import '../../scope/bank_ui_scope.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/common/money_formatter.dart';
+import '../../src/models/transaction.dart';
+import '../../src/scope/bank_ui_scope.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// A transaction tile that shows which joint account owner initiated it.
 class BankJointTransactionListTile extends StatelessWidget {
@@ -15,8 +15,8 @@ class BankJointTransactionListTile extends StatelessWidget {
   final Widget Function(BuildContext, Transaction)? itemBuilder;
 
   const BankJointTransactionListTile({
-    super.key,
     required this.transaction,
+    super.key,
     this.initiatorName,
     this.initiatorAvatarUrl,
     this.onTap,
@@ -40,9 +40,10 @@ class BankJointTransactionListTile extends StatelessWidget {
       numeralStyle: scope.numeralStyle,
     );
 
+    final initiatorSuffix = initiatorName != null ? ', by $initiatorName' : '';
+
     return Semantics(
-      label:
-          '${transaction.merchantName}, $amountStr${initiatorName != null ? ', by $initiatorName' : ''}',
+      label: '${transaction.merchantName}, $amountStr$initiatorSuffix',
       child: InkWell(
         onTap: onTap,
         child: ConstrainedBox(
@@ -82,7 +83,8 @@ class BankJointTransactionListTile extends StatelessWidget {
                           backgroundColor: theme.surface,
                           child: CircleAvatar(
                             radius: 9,
-                            backgroundColor: theme.primary.withOpacity(0.2),
+                            backgroundColor:
+                                theme.primary.withValues(alpha: 0.2),
                             backgroundImage: initiatorAvatarUrl != null
                                 ? NetworkImage(initiatorAvatarUrl!)
                                 : null,

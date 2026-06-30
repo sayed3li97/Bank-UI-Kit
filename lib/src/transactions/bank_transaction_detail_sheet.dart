@@ -17,8 +17,8 @@ class BankTransactionDetailSheet extends StatelessWidget {
   final VoidCallback? onShare;
 
   const BankTransactionDetailSheet({
-    super.key,
     required this.transaction,
+    super.key,
     this.mapPreview,
     this.onDispute,
     this.onShare,
@@ -86,30 +86,28 @@ class BankTransactionDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = BankThemeData.of(context);
-    final BankUiScopeData scope = BankUiScope.of(context);
+    final bankTheme = BankThemeData.of(context);
+    final scope = BankUiScope.of(context);
     final s = scope.strings;
 
-    final bool isCredit = !transaction.amount.isNegative;
-    final bool isDeclined =
-        transaction.status == TransactionStatus.declined;
+    final isCredit = !transaction.amount.isNegative;
+    final isDeclined = transaction.status == TransactionStatus.declined;
 
-    final String formattedAmount = BankMoneyFormatter.format(
+    final formattedAmount = BankMoneyFormatter.format(
       amount: transaction.amount.amount,
       currencyCode: transaction.amount.currencyCode,
       numeralStyle: scope.numeralStyle,
       showSign: isCredit,
     );
 
-    final Color amountColor = isDeclined
+    final amountColor = isDeclined
         ? bankTheme.onSurfaceVariant
         : isCredit
             ? bankTheme.positiveBalance
             : bankTheme.onSurface;
 
-    final double bottomPadding = MediaQuery.of(context).padding.bottom;
-    final double maxHeight =
-        MediaQuery.of(context).size.height * 0.92;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final maxHeight = MediaQuery.of(context).size.height * 0.92;
 
     return Container(
       constraints: BoxConstraints(maxHeight: maxHeight),
@@ -129,8 +127,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                 height: 4,
                 decoration: BoxDecoration(
                   color: bankTheme.outline,
-                  borderRadius:
-                      BorderRadius.circular(BankTokens.radiusFull),
+                  borderRadius: BorderRadius.circular(BankTokens.radiusFull),
                 ),
               ),
             ),
@@ -196,8 +193,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                   _DetailRow(
                     label: 'Status',
                     value: _statusLabel(transaction.status, scope),
-                    valueColor:
-                        _statusColor(transaction.status, bankTheme),
+                    valueColor: _statusColor(transaction.status, bankTheme),
                     bankTheme: bankTheme,
                   ),
                   if (transaction.reference != null)
@@ -228,7 +224,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                       child: SizedBox(
                         height: 160,
                         width: double.infinity,
-                        child: mapPreview!,
+                        child: mapPreview,
                       ),
                     ),
                   ],
@@ -447,8 +443,8 @@ class _MerchantAvatarState extends State<_MerchantAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = widget.bankTheme;
-    final String? logoUrl = widget.transaction.merchantLogoUrl;
+    final bankTheme = widget.bankTheme;
+    final logoUrl = widget.transaction.merchantLogoUrl;
 
     if (logoUrl != null && !_failed) {
       return CircleAvatar(

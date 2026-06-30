@@ -19,12 +19,12 @@ class SavingsPot {
     required this.name,
     required this.target,
     required this.current,
-    this.interestRate,
     required this.hasOwnAccountNumber,
-    this.imageUrl,
     required this.memberIds,
-    this.targetDate,
     required this.isRoundUpDestination,
+    this.interestRate,
+    this.imageUrl,
+    this.targetDate,
   });
 
   SavingsPot copyWith({
@@ -52,10 +52,9 @@ class SavingsPot {
         isRoundUpDestination: isRoundUpDestination ?? this.isRoundUpDestination,
       );
 
-  double get progressFraction =>
-      target.amount == Decimal.zero
-          ? 0
-          : (current.amount / target.amount).toDouble().clamp(0.0, 1.0);
+  double get progressFraction => target.amount == Decimal.zero
+      ? 0
+      : (current.amount / target.amount).toDouble().clamp(0.0, 1.0);
 
   @override
   bool operator ==(Object other) =>

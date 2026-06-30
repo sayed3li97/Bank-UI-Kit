@@ -35,3 +35,10 @@ lcov.info
 
 # Golden test failures
 test/**/failures/
+
+# Lock files are not committed for a published library.
+pubspec.lock
+
+# Node tooling (screenshot generation)
+node_modules/
+node_modules

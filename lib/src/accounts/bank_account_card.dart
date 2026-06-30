@@ -61,8 +61,8 @@ class BankAccountCard extends StatelessWidget {
   final Widget? actions;
 
   const BankAccountCard({
-    super.key,
     required this.account,
+    super.key,
     this.onTap,
     this.onLongPress,
     this.itemBuilder,
@@ -76,12 +76,12 @@ class BankAccountCard extends StatelessWidget {
 
   /// Returns the icon appropriate for the account type.
   IconData _iconForType(BankAccountType type) => switch (type) {
-    BankAccountType.savings => BankIcons.accountSavings,
-    BankAccountType.joint => BankIcons.accountJoint,
-    BankAccountType.business => BankIcons.accountBusiness,
-    BankAccountType.crypto => BankIcons.accountCrypto,
-    BankAccountType.current || BankAccountType.isa => BankIcons.account,
-  };
+        BankAccountType.savings => BankIcons.accountSavings,
+        BankAccountType.joint => BankIcons.accountJoint,
+        BankAccountType.business => BankIcons.accountBusiness,
+        BankAccountType.crypto => BankIcons.accountCrypto,
+        BankAccountType.current || BankAccountType.isa => BankIcons.account,
+      };
 
   /// Builds the small status chip shown when the account is not active.
   Widget _buildStatusChip(
@@ -90,25 +90,25 @@ class BankAccountCard extends StatelessWidget {
     BankThemeData bankTheme,
     Color textColor,
   ) {
-    final BankUiScopeData data = BankUiScope.of(context);
+    final data = BankUiScope.of(context);
 
     final (Color chipBackground, String label) = switch (status) {
       BankAccountStatus.frozen => (
-        const Color(0xFFB3E5FC), // ice-blue
-        data.strings.frozen,
-      ),
+          const Color(0xFFB3E5FC), // ice-blue
+          data.strings.frozen,
+        ),
       BankAccountStatus.restricted => (
-        const Color(0xFFFFE082), // amber
-        data.strings.restricted,
-      ),
+          const Color(0xFFFFE082), // amber
+          data.strings.restricted,
+        ),
       BankAccountStatus.pending => (
-        const Color(0xFFFFF9C4), // pale yellow
-        data.strings.pending,
-      ),
+          const Color(0xFFFFF9C4), // pale yellow
+          data.strings.pending,
+        ),
       BankAccountStatus.closed => (
-        const Color(0xFFEEEEEE), // neutral grey
-        'Closed',
-      ),
+          const Color(0xFFEEEEEE), // neutral grey
+          'Closed',
+        ),
       BankAccountStatus.active => (Colors.transparent, ''),
     };
 
@@ -141,19 +141,19 @@ class BankAccountCard extends StatelessWidget {
       return itemBuilder!(context, account);
     }
 
-    final BankThemeData bankTheme = BankThemeData.of(context);
-    final bool isGradient = bankTheme.accentGradient != null;
-    final bool isFrozen = account.status == BankAccountStatus.frozen;
+    final bankTheme = BankThemeData.of(context);
+    final isGradient = bankTheme.accentGradient != null;
+    final isFrozen = account.status == BankAccountStatus.frozen;
 
     // Determine text colours based on surface treatment.
-    final Color primaryTextColor =
+    final primaryTextColor =
         isGradient ? const Color(0xFFFFFFFF) : bankTheme.onSurface;
-    final Color secondaryTextColor = isGradient
+    final secondaryTextColor = isGradient
         ? const Color(0xCCFFFFFF) // 80% white
         : bankTheme.onSurfaceVariant;
 
     // Compose background decoration.
-    final BoxDecoration backgroundDecoration = isGradient
+    final backgroundDecoration = isGradient
         ? BoxDecoration(
             gradient: bankTheme.accentGradient,
             borderRadius: bankTheme.cardRadius,
@@ -191,11 +191,12 @@ class BankAccountCard extends StatelessWidget {
           // ── Middle: balance ───────────────────────────────────────────────
           BankBalanceText(
             money: account.balance,
-            size: showFullBalance ? BankBalanceSize.hero : BankBalanceSize.large,
+            size:
+                showFullBalance ? BankBalanceSize.hero : BankBalanceSize.large,
             style: (showFullBalance
-                ? bankTheme.numeralHero
-                : bankTheme.numeralLarge
-            ).copyWith(color: primaryTextColor),
+                    ? bankTheme.numeralHero
+                    : bankTheme.numeralLarge)
+                .copyWith(color: primaryTextColor),
           ),
 
           const SizedBox(height: BankTokens.space2),
@@ -203,12 +204,12 @@ class BankAccountCard extends StatelessWidget {
           // ── Bottom row: account name + status chip ────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 child: Text(
                   account.name,
-                  style: BankTokens.labelLarge.copyWith(color: primaryTextColor),
+                  style:
+                      BankTokens.labelLarge.copyWith(color: primaryTextColor),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
@@ -240,9 +241,9 @@ class BankAccountCard extends StatelessWidget {
         children: [
           cardContent,
           Positioned.fill(
-            child: Container(
+            child: DecoratedBox(
               decoration: BoxDecoration(
-                color: Colors.blueGrey.withOpacity(0.30),
+                color: Colors.blueGrey.withValues(alpha: 0.30),
                 borderRadius: bankTheme.cardRadius,
               ),
               child: const Center(
@@ -286,8 +287,7 @@ class BankAccountCard extends StatelessWidget {
     }
 
     // Semantics wrapper.
-    final String semanticLabel =
-        'Account: ${account.name}, '
+    final semanticLabel = 'Account: ${account.name}, '
         'Balance: ${account.balance.amount} ${account.balance.currencyCode}, '
         'Status: ${account.status.name}';
 

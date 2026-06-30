@@ -32,7 +32,7 @@ extension NumeralStyleX on NumeralStyle {
 
       case NumeralStyle.easternArabicIndic:
         return input.replaceAllMapped(
-          RegExp(r'[0-9]'),
+          RegExp('[0-9]'),
           (Match m) => _easternArabicIndicDigits[m[0]]!,
         );
     }

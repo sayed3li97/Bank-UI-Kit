@@ -81,9 +81,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           () => _notifications.removeWhere((x) => x.id == n.id),
         ),
         onMarkAllRead: () => setState(() {
-          _notifications = _notifications
-              .map((n) => n.copyWith(isRead: true))
-              .toList();
+          _notifications =
+              _notifications.map((n) => n.copyWith(isRead: true)).toList();
         }),
       ),
     );

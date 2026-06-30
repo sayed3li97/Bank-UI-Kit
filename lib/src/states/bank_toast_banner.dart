@@ -59,13 +59,13 @@ class BankToastBanner extends StatefulWidget {
   final bool hapticFeedback;
 
   const BankToastBanner({
-    super.key,
     required this.variant,
     required this.message,
+    required this.isVisible,
+    super.key,
     this.actionLabel,
     this.onAction,
     this.onDismiss,
-    required this.isVisible,
     this.autoHideDuration = const Duration(seconds: 4),
     this.hapticFeedback = true,
   });
@@ -97,15 +97,17 @@ class _BankToastBannerState extends State<BankToastBanner>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, -1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: BankTokens.curveDecelerate,
-    ));
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: BankTokens.curveDecelerate,
+      ),
+    );
 
     _opacityAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.6),
+        curve: const Interval(0, 0.6),
       ),
     );
 
@@ -169,9 +171,9 @@ class _BankToastBannerState extends State<BankToastBanner>
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final Color bg = _backgroundColor(theme);
-    const Color fg = Color(0xFFFFFFFF);
-    final bool showAction = widget.actionLabel != null && widget.onAction != null;
+    final bg = _backgroundColor(theme);
+    const fg = Color(0xFFFFFFFF);
+    final showAction = widget.actionLabel != null && widget.onAction != null;
 
     return Semantics(
       liveRegion: widget.isVisible,

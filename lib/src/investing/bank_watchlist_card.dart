@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../common/money_formatter.dart';
-import '../../models/asset_quote.dart';
-import '../../scope/bank_ui_scope.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/common/money_formatter.dart';
+import '../../src/models/asset_quote.dart';
+import '../../src/scope/bank_ui_scope.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// A saved/watched asset card with quick-glance price and watchlist toggle.
 class BankWatchlistCard extends StatelessWidget {
@@ -14,8 +14,8 @@ class BankWatchlistCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const BankWatchlistCard({
-    super.key,
     required this.quote,
+    super.key,
     this.isWatched = true,
     this.onToggleWatch,
     this.onTap,
@@ -31,10 +31,11 @@ class BankWatchlistCard extends StatelessWidget {
       currencyCode: quote.price.currencyCode,
       numeralStyle: scope.numeralStyle,
     );
-    final changeStr =
-        '${quote.changePercent >= 0 ? '+' : ''}${quote.changePercent.toStringAsFixed(2)}%';
-    final changeColor =
-        quote.isPositive ? BankTokens.investmentGain : BankTokens.investmentLoss;
+    final changeSign = quote.changePercent >= 0 ? '+' : '';
+    final changeStr = '$changeSign${quote.changePercent.toStringAsFixed(2)}%';
+    final changeColor = quote.isPositive
+        ? BankTokens.investmentGain
+        : BankTokens.investmentLoss;
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: theme.cardRadius),
@@ -53,14 +54,13 @@ class BankWatchlistCard extends StatelessWidget {
               CircleAvatar(
                 radius: 20,
                 backgroundColor: theme.surfaceVariant,
-                backgroundImage: quote.logoUrl != null
-                    ? NetworkImage(quote.logoUrl!)
-                    : null,
+                backgroundImage:
+                    quote.logoUrl != null ? NetworkImage(quote.logoUrl!) : null,
                 child: quote.logoUrl == null
                     ? Text(
                         quote.symbol.isNotEmpty ? quote.symbol[0] : '?',
-                        style:
-                            BankTokens.labelMedium.copyWith(color: theme.primary),
+                        style: BankTokens.labelMedium
+                            .copyWith(color: theme.primary),
                       )
                     : null,
               ),
@@ -89,8 +89,8 @@ class BankWatchlistCard extends StatelessWidget {
                 children: [
                   Text(
                     priceStr,
-                    style:
-                        BankTokens.numeralSmall.copyWith(color: theme.onSurface),
+                    style: BankTokens.numeralSmall
+                        .copyWith(color: theme.onSurface),
                   ),
                   Text(
                     changeStr,

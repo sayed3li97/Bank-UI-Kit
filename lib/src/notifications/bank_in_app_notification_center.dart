@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../models/bank_notification.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/models/bank_notification.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// A scrollable notification feed with read/unread states and swipe-to-dismiss.
 class BankInAppNotificationCenter extends StatelessWidget {
@@ -13,8 +13,8 @@ class BankInAppNotificationCenter extends StatelessWidget {
   final Widget? emptyState;
 
   const BankInAppNotificationCenter({
-    super.key,
     required this.notifications,
+    super.key,
     this.onNotificationTap,
     this.onDismiss,
     this.onMarkAllRead,
@@ -32,13 +32,16 @@ class BankInAppNotificationCenter extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.notifications_none_rounded,
-                    size: 48, color: theme.onSurfaceVariant),
+                Icon(
+                  Icons.notifications_none_rounded,
+                  size: 48,
+                  color: theme.onSurfaceVariant,
+                ),
                 const SizedBox(height: BankTokens.space3),
                 Text(
                   'No notifications',
-                  style:
-                      BankTokens.bodyMedium.copyWith(color: theme.onSurfaceVariant),
+                  style: BankTokens.bodyMedium
+                      .copyWith(color: theme.onSurfaceVariant),
                 ),
               ],
             ),
@@ -79,16 +82,15 @@ class BankInAppNotificationCenter extends StatelessWidget {
           child: ListView.separated(
             itemCount: notifications.length,
             separatorBuilder: (_, __) =>
-                Divider(height: 1, color: theme.outline.withOpacity(0.5)),
+                Divider(height: 1, color: theme.outline.withValues(alpha: 0.5)),
             itemBuilder: (context, index) {
               final notification = notifications[index];
               return _NotificationTile(
                 notification: notification,
                 theme: theme,
                 onTap: () => onNotificationTap?.call(notification),
-                onDismiss: onDismiss != null
-                    ? () => onDismiss!(notification)
-                    : null,
+                onDismiss:
+                    onDismiss != null ? () => onDismiss!(notification) : null,
               );
             },
           ),
@@ -126,9 +128,11 @@ class _NotificationTile extends StatelessWidget {
 
   static Color _colorFor(BankNotificationType type, BankThemeData theme) =>
       switch (type) {
-        BankNotificationType.security || BankNotificationType.fraud =>
+        BankNotificationType.security ||
+        BankNotificationType.fraud =>
           BankTokens.investmentLoss,
-        BankNotificationType.payment || BankNotificationType.transfer =>
+        BankNotificationType.payment ||
+        BankNotificationType.transfer =>
           BankTokens.investmentGain,
         _ => theme.primary,
       };
@@ -136,15 +140,15 @@ class _NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget tile = Semantics(
-      label:
-          '${notification.isRead ? '' : 'Unread: '}${notification.title}. ${notification.body}',
+      label: '${notification.isRead ? '' : 'Unread: '}${notification.title}. '
+          '${notification.body}',
       button: true,
       child: InkWell(
         onTap: onTap,
         child: Container(
           color: notification.isRead
               ? Colors.transparent
-              : theme.primary.withOpacity(0.04),
+              : theme.primary.withValues(alpha: 0.04),
           padding: const EdgeInsets.symmetric(
             horizontal: BankTokens.space4,
             vertical: BankTokens.space3,
@@ -157,7 +161,8 @@ class _NotificationTile extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _colorFor(notification.type, theme).withOpacity(0.12),
+                  color: _colorFor(notification.type, theme)
+                      .withValues(alpha: 0.12),
                 ),
                 child: Icon(
                   _iconFor(notification.type),
@@ -228,10 +233,12 @@ class _NotificationTile extends StatelessWidget {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: AlignmentDirectional.centerEnd,
-        color: BankTokens.investmentLoss.withOpacity(0.12),
+        color: BankTokens.investmentLoss.withValues(alpha: 0.12),
         padding: const EdgeInsets.only(right: BankTokens.space4),
-        child: const Icon(Icons.delete_outline_rounded,
-            color: BankTokens.investmentLoss),
+        child: const Icon(
+          Icons.delete_outline_rounded,
+          color: BankTokens.investmentLoss,
+        ),
       ),
       onDismissed: (_) => onDismiss!(),
       child: tile,

@@ -1,12 +1,12 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../common/money_formatter.dart';
-import '../../models/money.dart';
-import '../../models/transaction.dart';
-import '../../scope/bank_ui_scope.dart';
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/common/money_formatter.dart';
+import '../../src/models/money.dart';
+import '../../src/models/transaction.dart';
+import '../../src/scope/bank_ui_scope.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// A category name + money pair for the spending breakdown.
 class BankSpendingCategory {
@@ -27,8 +27,8 @@ class BankSpendingBreakdownChart extends StatefulWidget {
   final String? centerLabel;
 
   const BankSpendingBreakdownChart({
-    super.key,
     required this.categories,
+    super.key,
     this.centerLabel,
   });
 
@@ -86,8 +86,10 @@ class _BankSpendingBreakdownChartState
                       setState(() => _touchedIndex = -1);
                       return;
                     }
-                    setState(() => _touchedIndex =
-                        response.touchedSection!.touchedSectionIndex);
+                    setState(
+                      () => _touchedIndex =
+                          response.touchedSection!.touchedSectionIndex,
+                    );
                   },
                 ),
                 centerSpaceRadius: 60,
@@ -96,7 +98,8 @@ class _BankSpendingBreakdownChartState
                   final i = entry.key;
                   final cat = entry.value;
                   final isTouched = i == _touchedIndex;
-                  final color = cat.color ?? _defaultColors[i % _defaultColors.length];
+                  final color =
+                      cat.color ?? _defaultColors[i % _defaultColors.length];
                   final value = cat.amount.amount.toDouble().abs();
                   final pct = total > 0 ? (value / total * 100) : 0.0;
 
@@ -106,8 +109,8 @@ class _BankSpendingBreakdownChartState
                     radius: isTouched ? 60 : 50,
                     showTitle: isTouched,
                     title: '${pct.toStringAsFixed(0)}%',
-                    titleStyle: BankTokens.labelSmall
-                        .copyWith(color: Colors.white),
+                    titleStyle:
+                        BankTokens.labelSmall.copyWith(color: Colors.white),
                   );
                 }).toList(),
               ),
@@ -120,7 +123,8 @@ class _BankSpendingBreakdownChartState
             children: widget.categories.asMap().entries.map((entry) {
               final i = entry.key;
               final cat = entry.value;
-              final color = cat.color ?? _defaultColors[i % _defaultColors.length];
+              final color =
+                  cat.color ?? _defaultColors[i % _defaultColors.length];
               final amountStr = BankMoneyFormatter.format(
                 amount: cat.amount.amount,
                 currencyCode: cat.amount.currencyCode,

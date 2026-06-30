@@ -20,10 +20,10 @@ class BankPaywallSheet extends StatelessWidget {
   final VoidCallback? onDismiss;
 
   const BankPaywallSheet({
-    super.key,
     required this.featureName,
     required this.description,
     required this.plans,
+    super.key,
     this.currentTierId,
     this.onUpgrade,
     this.onDismiss,
@@ -67,7 +67,7 @@ class BankPaywallSheet extends StatelessWidget {
 
     return Semantics(
       label: 'Upgrade required to access $featureName',
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: bankTheme.surface,
           borderRadius: bankTheme.sheetRadius,
@@ -93,7 +93,8 @@ class BankPaywallSheet extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: BankTokens.space6),
                     decoration: BoxDecoration(
                       color: bankTheme.outline.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(BankTokens.radiusFull),
+                      borderRadius:
+                          BorderRadius.circular(BankTokens.radiusFull),
                     ),
                   ),
                 ),
@@ -221,8 +222,8 @@ class _SinglePlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color accent = tier.accentColor ?? bankTheme.primary;
-    final String formattedPrice = BankMoneyFormatter.format(
+    final accent = tier.accentColor ?? bankTheme.primary;
+    final formattedPrice = BankMoneyFormatter.format(
       amount: tier.monthlyPrice.amount,
       currencyCode: tier.monthlyPrice.currencyCode,
       numeralStyle: scope.numeralStyle,
@@ -236,9 +237,7 @@ class _SinglePlanCard extends StatelessWidget {
         color: bankTheme.surface,
         borderRadius: bankTheme.cardRadius,
         border: Border.all(
-          color: isCurrent
-              ? bankTheme.outline.withValues(alpha: 0.5)
-              : accent,
+          color: isCurrent ? bankTheme.outline.withValues(alpha: 0.5) : accent,
           width: isCurrent ? 1 : 2,
         ),
         boxShadow: [
@@ -308,7 +307,7 @@ class _SinglePlanCard extends StatelessWidget {
           // Top 3 features
           ...tier.features.take(3).map(
             (f) {
-              final bool? supported = f.tierSupport[tier.id];
+              final supported = f.tierSupport[tier.id];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Row(

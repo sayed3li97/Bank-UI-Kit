@@ -41,13 +41,14 @@ class BankAccountSwitcher extends StatelessWidget {
 
   /// Optional full override for each row. When non-null, this builder is
   /// called instead of the default [_AccountRow] for every list item.
-  final Widget Function(BuildContext, BankAccount, bool isSelected)? itemBuilder;
+  final Widget Function(BuildContext, BankAccount, bool isSelected)?
+      itemBuilder;
 
   const BankAccountSwitcher({
-    super.key,
     required this.accounts,
-    this.selectedAccountId,
     required this.onSelected,
+    super.key,
+    this.selectedAccountId,
     this.itemBuilder,
   });
 
@@ -79,11 +80,11 @@ class BankAccountSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BankThemeData bankTheme = BankThemeData.of(context);
+    final bankTheme = BankThemeData.of(context);
 
     // Calculate an intrinsic max height: sheet fills up to 70 % of the screen.
-    final double screenHeight = MediaQuery.sizeOf(context).height;
-    final double maxSheetHeight = screenHeight * 0.70;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final maxSheetHeight = screenHeight * 0.70;
 
     // The drag-handle bar at the top of the sheet.
     final Widget handleBar = Center(
@@ -93,7 +94,8 @@ class BankAccountSwitcher extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: BankTokens.space3),
         decoration: BoxDecoration(
           color: bankTheme.outline,
-          borderRadius: const BorderRadius.all(Radius.circular(BankTokens.radiusFull)),
+          borderRadius:
+              const BorderRadius.all(Radius.circular(BankTokens.radiusFull)),
         ),
       ),
     );
@@ -114,13 +116,14 @@ class BankAccountSwitcher extends StatelessWidget {
           Flexible(
             child: ListView.builder(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.paddingOf(context).bottom + BankTokens.space4,
+                bottom:
+                    MediaQuery.paddingOf(context).bottom + BankTokens.space4,
               ),
               shrinkWrap: true,
               itemCount: accounts.length,
               itemBuilder: (BuildContext ctx, int index) {
-                final BankAccount account = accounts[index];
-                final bool isSelected = account.id == selectedAccountId;
+                final account = accounts[index];
+                final isSelected = account.id == selectedAccountId;
 
                 if (itemBuilder != null) {
                   return itemBuilder!(ctx, account, isSelected);
@@ -163,19 +166,19 @@ class _AccountRow extends StatelessWidget {
   });
 
   IconData _iconForType(BankAccountType type) => switch (type) {
-    BankAccountType.savings => BankIcons.accountSavings,
-    BankAccountType.joint => BankIcons.accountJoint,
-    BankAccountType.business => BankIcons.accountBusiness,
-    BankAccountType.crypto => BankIcons.accountCrypto,
-    BankAccountType.current || BankAccountType.isa => BankIcons.account,
-  };
+        BankAccountType.savings => BankIcons.accountSavings,
+        BankAccountType.joint => BankIcons.accountJoint,
+        BankAccountType.business => BankIcons.accountBusiness,
+        BankAccountType.crypto => BankIcons.accountCrypto,
+        BankAccountType.current || BankAccountType.isa => BankIcons.account,
+      };
 
   @override
   Widget build(BuildContext context) {
-    final BankUiScopeData scopeData = BankUiScope.of(context);
-    final bool privacyEnabled = scopeData.privacyEnabled;
+    final scopeData = BankUiScope.of(context);
+    final privacyEnabled = scopeData.privacyEnabled;
 
-    final String balanceText = privacyEnabled
+    final balanceText = privacyEnabled
         ? scopeData.strings.balanceHidden
         : BankMoneyFormatter.format(
             amount: account.balance.amount,
@@ -183,8 +186,7 @@ class _AccountRow extends StatelessWidget {
             numeralStyle: scopeData.numeralStyle,
           );
 
-    final String semanticLabel =
-        'Account: ${account.name}, '
+    final semanticLabel = 'Account: ${account.name}, '
         '${account.maskedNumber}, '
         '${privacyEnabled ? "Balance hidden" : "Balance: $balanceText"}'
         '${isSelected ? ", selected" : ""}';
@@ -195,8 +197,8 @@ class _AccountRow extends StatelessWidget {
       selected: isSelected,
       child: InkWell(
         onTap: onTap,
-        splashColor: bankTheme.primary.withOpacity(0.08),
-        highlightColor: bankTheme.primary.withOpacity(0.04),
+        splashColor: bankTheme.primary.withValues(alpha: 0.08),
+        highlightColor: bankTheme.primary.withValues(alpha: 0.04),
         child: ConstrainedBox(
           constraints: const BoxConstraints(
             minHeight: 72,
@@ -208,7 +210,6 @@ class _AccountRow extends StatelessWidget {
               vertical: BankTokens.space3,
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Leading: account type icon in a tinted circle.
                 Container(
@@ -274,7 +275,6 @@ class _AccountRow extends StatelessWidget {
                         Icons.check_circle,
                         color: bankTheme.primary,
                         size: 18,
-                        semanticLabel: null, // already in row semantics
                       ),
                     ],
                   ],

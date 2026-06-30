@@ -27,8 +27,8 @@ class BankReferralInviteCard extends StatelessWidget {
   final VoidCallback? onCopyCode;
 
   const BankReferralInviteCard({
-    super.key,
     required this.referralCode,
+    super.key,
     this.rewardDescription,
     this.referralCount = 0,
     this.maxReferrals,
@@ -43,12 +43,11 @@ class BankReferralInviteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
-    final Color cardBg = bankTheme.primary.withValues(alpha: 0.08);
-    final Color contentColor =
+    final cardBg = bankTheme.primary.withValues(alpha: 0.08);
+    final contentColor =
         _isExpired ? bankTheme.onSurfaceVariant : bankTheme.onSurface;
 
-    final String semanticLabel =
-        'Referral invite card. Code: $referralCode. '
+    final semanticLabel = 'Referral invite card. Code: $referralCode. '
         '${rewardDescription ?? ''}. '
         '$referralCount friend${referralCount == 1 ? '' : 's'} invited. '
         'Status: ${state.name}.';
@@ -65,7 +64,6 @@ class BankReferralInviteCard extends StatelessWidget {
                 color: _isExpired
                     ? bankTheme.outline.withValues(alpha: 0.3)
                     : bankTheme.primary.withValues(alpha: 0.2),
-                width: 1,
               ),
             ),
             padding: const EdgeInsets.all(BankTokens.space4),
@@ -187,9 +185,8 @@ class BankReferralInviteCard extends StatelessWidget {
   }
 
   String get _countLabel {
-    final String friendWord =
-        referralCount == 1 ? 'friend' : 'friends';
-    final String base = '$referralCount $friendWord invited';
+    final friendWord = referralCount == 1 ? 'friend' : 'friends';
+    final base = '$referralCount $friendWord invited';
     if (maxReferrals != null) {
       return '$base of $maxReferrals';
     }
@@ -226,7 +223,6 @@ class _ReferralCodeBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(BankTokens.radiusMedium),
         border: Border.all(
           color: bankTheme.outline.withValues(alpha: 0.4),
-          width: 1,
         ),
       ),
       child: Row(

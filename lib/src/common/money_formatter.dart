@@ -1,9 +1,11 @@
 import 'package:decimal/decimal.dart';
 import 'package:intl/intl.dart';
 
-import '../theme/numeral_style.dart';
+import '../../bank_ui_kit.dart';
+import '../../core.dart';
 
-/// Formats [Money]-like amount + currency for display, respecting [NumeralStyle].
+/// Formats [Money]-like amount + currency for display, respecting
+/// [NumeralStyle].
 abstract final class BankMoneyFormatter {
   static String format({
     required Decimal amount,
@@ -47,27 +49,28 @@ abstract final class BankMoneyFormatter {
       );
 
   static String _symbolFor(String code) => switch (code) {
-    'USD' => '\$',
-    'GBP' => '£',
-    'EUR' => '€',
-    'JPY' => '¥',
-    'AED' => 'AED ',
-    'SAR' => 'SAR ',
-    'KWD' => 'KWD ',
-    'BHD' => 'BHD ',
-    'QAR' => 'QAR ',
-    'CAD' => 'CA\$',
-    'AUD' => 'A\$',
-    'CHF' => 'CHF ',
-    'CNY' => '¥',
-    'INR' => '₹',
-    'BTC' => '₿',
-    'ETH' => 'Ξ',
-    _ => '$code ',
-  };
+        'USD' => r'$',
+        'GBP' => '£',
+        'EUR' => '€',
+        'JPY' => '¥',
+        'AED' => 'AED ',
+        'SAR' => 'SAR ',
+        'KWD' => 'KWD ',
+        'BHD' => 'BHD ',
+        'QAR' => 'QAR ',
+        'CAD' => r'CA$',
+        'AUD' => r'A$',
+        'CHF' => 'CHF ',
+        'CNY' => '¥',
+        'INR' => '₹',
+        'BTC' => '₿',
+        'ETH' => 'Ξ',
+        _ => '$code ',
+      };
 }
 
-/// Formats a [DateTime] relative to today using [BankUiStrings]-compatible labels.
+/// Formats a [DateTime] relative to today using [BankUiStrings]-compatible
+/// labels.
 abstract final class BankDateFormatter {
   static String formatGroupHeader({
     required DateTime date,

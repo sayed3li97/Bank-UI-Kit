@@ -2,7 +2,6 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
@@ -27,8 +26,8 @@ class BankLiveExchangeConverter extends StatefulWidget {
   final ValueChanged<Money>? onAmountChanged;
 
   const BankLiveExchangeConverter({
-    super.key,
     required this.rate,
+    super.key,
     this.onConvert,
     this.onAmountChanged,
   });
@@ -38,8 +37,7 @@ class BankLiveExchangeConverter extends StatefulWidget {
       _BankLiveExchangeConverterState();
 }
 
-class _BankLiveExchangeConverterState
-    extends State<BankLiveExchangeConverter> {
+class _BankLiveExchangeConverterState extends State<BankLiveExchangeConverter> {
   // Which currency is on the FROM side (top/left).
   late String _fromCurrency;
   late String _toCurrency;
@@ -97,7 +95,7 @@ class _BankLiveExchangeConverterState
   }
 
   double _parseInput(String text) =>
-      double.tryParse(text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+      double.tryParse(text.replaceAll(RegExp('[^0-9.]'), '')) ?? 0;
 
   void _onFromChanged() {
     if (_updating) return;
@@ -147,7 +145,8 @@ class _BankLiveExchangeConverterState
     try {
       final fromVal = _parseInput(_fromController.text);
       final rate = _effectiveRate.toDouble();
-      _toController.text = fromVal == 0 ? '' : (fromVal * rate).toStringAsFixed(2);
+      _toController.text =
+          fromVal == 0 ? '' : (fromVal * rate).toStringAsFixed(2);
     } finally {
       _updating = false;
     }
@@ -199,14 +198,14 @@ class _BankLiveExchangeConverterState
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── FROM field ────────────────────────────────────────────────────────
+        // ── FROM field ──
         _CurrencyInputField(
           label: _fromCurrency,
           controller: _fromController,
           bankTheme: bankTheme,
         ),
 
-        // ── Swap button ───────────────────────────────────────────────────────
+        // ── Swap button ──
         Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: BankTokens.space2),
@@ -229,7 +228,7 @@ class _BankLiveExchangeConverterState
           ),
         ),
 
-        // ── TO field ──────────────────────────────────────────────────────────
+        // ── TO field ──
         _CurrencyInputField(
           label: _toCurrency,
           controller: _toController,
@@ -238,7 +237,7 @@ class _BankLiveExchangeConverterState
 
         const SizedBox(height: BankTokens.space3),
 
-        // ── Exchange rate label ───────────────────────────────────────────────
+        // ── Exchange rate label ──
         Text(
           '${_rateLabel()} • ${_updatedLabel()}',
           style: BankTokens.bodySmall.copyWith(
@@ -249,7 +248,7 @@ class _BankLiveExchangeConverterState
 
         const SizedBox(height: BankTokens.space5),
 
-        // ── Convert button ────────────────────────────────────────────────────
+        // ── Convert button ──
         Semantics(
           button: true,
           enabled: _canConvert,
@@ -262,7 +261,8 @@ class _BankLiveExchangeConverterState
                 style: FilledButton.styleFrom(
                   backgroundColor: bankTheme.primary,
                   foregroundColor: bankTheme.onPrimary,
-                  minimumSize: const Size(double.infinity, BankTokens.minTapTarget),
+                  minimumSize:
+                      const Size(double.infinity, BankTokens.minTapTarget),
                   shape: RoundedRectangleBorder(
                     borderRadius: bankTheme.buttonRadius,
                   ),
@@ -314,7 +314,7 @@ class _CurrencyInputField extends StatelessWidget {
           controller: controller,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
           ],
           style: bankTheme.numeralSmall.copyWith(color: bankTheme.onSurface),
           decoration: InputDecoration(

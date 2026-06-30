@@ -111,7 +111,7 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
     _circleProgress = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _mainController,
-        curve: const Interval(0.0, 0.4, curve: BankTokens.curveEmphasized),
+        curve: const Interval(0, 0.4, curve: BankTokens.curveEmphasized),
       ),
     );
 
@@ -126,19 +126,19 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
     // Phase 3: scale bounce — 1.0 → 1.15 → 1.0 during progress 0.8 → 1.0.
     _bouncedScaleAnim = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.15)
+        tween: Tween<double>(begin: 1, end: 1.15)
             .chain(CurveTween(curve: Curves.easeOut)),
         weight: 50,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.15, end: 1.0)
+        tween: Tween<double>(begin: 1.15, end: 1)
             .chain(CurveTween(curve: Curves.easeIn)),
         weight: 50,
       ),
     ]).animate(
       CurvedAnimation(
         parent: _mainController,
-        curve: const Interval(0.8, 1.0),
+        curve: const Interval(0.8, 1),
       ),
     );
 
@@ -160,7 +160,8 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
   }
 
   void _maybeStartAnimation() {
-    final disableAnimations = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     if (disableAnimations) {
       // Jump to completed state immediately.
       _mainController.value = 1.0;
@@ -184,7 +185,7 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final Color strokeColor = widget.color ?? BankTokens.success;
+    final strokeColor = widget.color ?? BankTokens.success;
 
     return Semantics(
       label: 'Success',
@@ -193,7 +194,8 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
         children: [
           RepaintBoundary(
             child: AnimatedBuilder(
-              animation: Listenable.merge([_mainController, _confettiController]),
+              animation:
+                  Listenable.merge([_mainController, _confettiController]),
               builder: (context, _) {
                 return SizedBox(
                   width: widget.size + 60,
@@ -213,8 +215,8 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
                             circleProgress: _circleProgress.value,
                             checkProgress: _checkProgress.value,
                             color: strokeColor,
-                            fillColor: strokeColor.withOpacity(0.12),
-                            strokeWidth: math.max(2.0, widget.size * 0.04),
+                            fillColor: strokeColor.withValues(alpha: 0.12),
+                            strokeWidth: math.max(2, widget.size * 0.04),
                           ),
                         ),
                       ),
@@ -239,14 +241,15 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
   }
 
   List<Widget> _buildConfettiParticles(double size) {
-    final double radius = (size / 2) + (30 * _confettiController.value);
-    final double opacity =
-        _confettiController.value < 0.7 ? 1.0 : (1.0 - _confettiController.value) / 0.3;
+    final radius = (size / 2) + (30 * _confettiController.value);
+    final opacity = _confettiController.value < 0.7
+        ? 1.0
+        : (1.0 - _confettiController.value) / 0.3;
 
     return List.generate(_confettiCount, (i) {
-      final double angle = _confettiAngles[i];
-      final double dx = math.cos(angle) * radius;
-      final double dy = math.sin(angle) * radius;
+      final angle = _confettiAngles[i];
+      final dx = math.cos(angle) * radius;
+      final dy = math.sin(angle) * radius;
 
       return Positioned(
         left: (size + 60) / 2 + dx - 4,
@@ -289,9 +292,10 @@ class _SuccessPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double r = size.width / 2;
-    final Offset center = Offset(r, r);
-    final Rect circleRect = Rect.fromCircle(center: center, radius: r - strokeWidth / 2);
+    final r = size.width / 2;
+    final center = Offset(r, r);
+    final circleRect =
+        Rect.fromCircle(center: center, radius: r - strokeWidth / 2);
 
     // Background fill when circle is complete enough.
     if (circleProgress >= 1.0) {
@@ -308,7 +312,7 @@ class _SuccessPainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    final double sweepAngle = 2 * math.pi * circleProgress;
+    final sweepAngle = 2 * math.pi * circleProgress;
     // Start at top (−π/2) and sweep clockwise.
     canvas.drawArc(
       circleRect,
@@ -329,24 +333,24 @@ class _SuccessPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round;
 
     // Checkmark anchor points (relative to centre).
-    final double scale = r * 0.55;
-    final Offset p1 = center + Offset(-scale * 0.55, 0);
-    final Offset p2 = center + Offset(-scale * 0.1, scale * 0.45);
-    final Offset p3 = center + Offset(scale * 0.6, -scale * 0.45);
+    final scale = r * 0.55;
+    final p1 = center + Offset(-scale * 0.55, 0);
+    final p2 = center + Offset(-scale * 0.1, scale * 0.45);
+    final p3 = center + Offset(scale * 0.6, -scale * 0.45);
 
     // Total path length split: 40 % for first stroke, 60 % for second.
-    const double split = 0.4;
+    const split = 0.4;
 
-    final Path checkPath = Path();
+    final checkPath = Path();
 
     if (checkProgress <= split) {
-      final double t = checkProgress / split;
-      final Offset mid = Offset.lerp(p1, p2, t)!;
+      final t = checkProgress / split;
+      final mid = Offset.lerp(p1, p2, t)!;
       checkPath.moveTo(p1.dx, p1.dy);
       checkPath.lineTo(mid.dx, mid.dy);
     } else {
-      final double t = (checkProgress - split) / (1 - split);
-      final Offset mid = Offset.lerp(p2, p3, t)!;
+      final t = (checkProgress - split) / (1 - split);
+      final mid = Offset.lerp(p2, p3, t)!;
       checkPath.moveTo(p1.dx, p1.dy);
       checkPath.lineTo(p2.dx, p2.dy);
       checkPath.lineTo(mid.dx, mid.dy);

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/bank_theme_data.dart';
-import '../../theme/tokens.dart';
+import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/tokens.dart';
 
 /// Numbered step progress indicator. RTL-aware: steps flow right-to-left
 /// when [Directionality] is RTL.
@@ -12,9 +12,9 @@ class BankStepProgressIndicator extends StatelessWidget {
   final bool showLabels;
 
   const BankStepProgressIndicator({
-    super.key,
     required this.totalSteps,
     required this.currentStep,
+    super.key,
     this.labels,
     this.showLabels = false,
   })  : assert(totalSteps > 0, 'totalSteps must be positive'),
@@ -75,7 +75,7 @@ class _StepRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final children = <Widget>[];
 
-    for (int i = 0; i < displayIndices.length; i++) {
+    for (var i = 0; i < displayIndices.length; i++) {
       final stepIndex = displayIndices[i];
 
       // Connecting line before this bubble (skip for first item).
@@ -105,7 +105,6 @@ class _StepRow extends StatelessWidget {
     }
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: children,
     );
   }
@@ -130,7 +129,7 @@ class _LabelsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final children = <Widget>[];
 
-    for (int i = 0; i < displayIndices.length; i++) {
+    for (var i = 0; i < displayIndices.length; i++) {
       final stepIndex = displayIndices[i];
 
       if (i > 0) {

@@ -43,8 +43,8 @@ class BankPerksMarketplaceCard extends StatefulWidget {
   final VoidCallback? onTap;
 
   const BankPerksMarketplaceCard({
-    super.key,
     required this.perk,
+    super.key,
     this.onActivate,
     this.onTap,
   });
@@ -86,11 +86,11 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
-    final BankPerk perk = widget.perk;
+    final perk = widget.perk;
 
-    final String expiryText =
+    final expiryText =
         perk.expiresAt != null ? _formatExpiry(perk.expiresAt!) : '';
-    final bool isExpired =
+    final isExpired =
         perk.expiresAt != null && perk.expiresAt!.isBefore(DateTime.now());
 
     Widget logoWidget;
@@ -114,16 +114,15 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
       );
     }
 
-    final String semanticLabel =
-        '${perk.partnerName}: ${perk.title}. '
-        '${perk.discountLabel != null ? perk.discountLabel! + '. ' : ''}'
-        '${expiryText.isNotEmpty ? expiryText + '. ' : ''}'
+    final semanticLabel = '${perk.partnerName}: ${perk.title}. '
+        '${perk.discountLabel != null ? '${perk.discountLabel!}. ' : ''}'
+        '${expiryText.isNotEmpty ? '$expiryText. ' : ''}'
         '${perk.isActivated ? 'Activated.' : 'Not activated.'}';
 
     return Semantics(
       label: semanticLabel,
       button: widget.onTap != null,
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: bankTheme.surface,
           borderRadius: bankTheme.cardRadius,
@@ -289,7 +288,7 @@ class _ActionRow extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle, size: 16, color: BankTokens.success),
+            const Icon(Icons.check_circle, size: 16, color: BankTokens.success),
             const SizedBox(width: BankTokens.space1),
             Text(
               'Activated',

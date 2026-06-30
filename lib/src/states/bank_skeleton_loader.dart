@@ -1,9 +1,10 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
-import '../../src/theme/bank_theme_data.dart';
-import '../../src/theme/tokens.dart';
+import '../../bank_ui_kit.dart';
+import '../../core.dart';
+import '../../saving.dart';
+import '../saving/bank_savings_pot_card.dart';
+import '../saving/saving.dart';
 
 /// Describes the shape of the skeleton placeholder to render.
 ///
@@ -84,8 +85,8 @@ class _BankSkeletonLoaderState extends State<BankSkeletonLoader>
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
 
-    final Color base = theme.onSurface.withOpacity(0.06);
-    final Color highlight = theme.onSurface.withOpacity(0.14);
+    final base = theme.onSurface.withValues(alpha: 0.06);
+    final highlight = theme.onSurface.withValues(alpha: 0.14);
 
     return Semantics(
       label: 'Loading…',
@@ -178,13 +179,11 @@ class _ShimmerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Map progress [0, 1] → shimmer sweep from left-of-frame to right-of-frame.
-    final double sweep = -size.width + (size.width * 3 * progress);
+    final sweep = -size.width + (size.width * 3 * progress);
 
     final gradient = LinearGradient(
       colors: [base, base, highlight, base, base],
       stops: const [0.0, 0.35, 0.5, 0.65, 1.0],
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
       transform: _SweepGradientTransform(sweep),
     );
 
@@ -198,7 +197,9 @@ class _ShimmerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_ShimmerPainter old) =>
-      old.progress != progress || old.base != base || old.highlight != highlight;
+      old.progress != progress ||
+      old.base != base ||
+      old.highlight != highlight;
 }
 
 /// Applies a horizontal translation to the gradient shader so the highlight
@@ -360,16 +361,14 @@ class _TransactionTileSkeleton extends StatelessWidget {
                     width: double.infinity,
                     height: 14,
                     color: base,
-                    borderRadius:
-                        BorderRadius.circular(BankTokens.radiusSmall),
+                    borderRadius: BorderRadius.circular(BankTokens.radiusSmall),
                   ),
                   const SizedBox(height: BankTokens.space2),
                   _SkeletonBlock(
                     width: 100,
                     height: 12,
                     color: base,
-                    borderRadius:
-                        BorderRadius.circular(BankTokens.radiusSmall),
+                    borderRadius: BorderRadius.circular(BankTokens.radiusSmall),
                   ),
                 ],
               ),
@@ -435,24 +434,21 @@ class _PotCardSkeleton extends StatelessWidget {
                     width: 120,
                     height: 16,
                     color: base,
-                    borderRadius:
-                        BorderRadius.circular(BankTokens.radiusSmall),
+                    borderRadius: BorderRadius.circular(BankTokens.radiusSmall),
                   ),
                   const SizedBox(height: BankTokens.space2),
                   _SkeletonBlock(
                     width: 80,
                     height: 12,
                     color: base,
-                    borderRadius:
-                        BorderRadius.circular(BankTokens.radiusSmall),
+                    borderRadius: BorderRadius.circular(BankTokens.radiusSmall),
                   ),
                   const SizedBox(height: BankTokens.space3),
                   _SkeletonBlock(
                     width: double.infinity,
                     height: 6,
                     color: base,
-                    borderRadius:
-                        BorderRadius.circular(BankTokens.radiusFull),
+                    borderRadius: BorderRadius.circular(BankTokens.radiusFull),
                   ),
                 ],
               ),
@@ -504,7 +500,7 @@ class _GenericSkeleton extends StatelessWidget {
 /// A solid-coloured rounded rectangle used as a structural element inside
 /// skeleton variants. The shimmer gradient from the parent [Stack] bleeds
 /// through because this widget is painted on top of the shimmer layer and uses
-/// the same [base] colour — the two layers blend to produce the sweep effect.
+/// the same `base` colour — the two layers blend to produce the sweep effect.
 class _SkeletonBlock extends StatelessWidget {
   const _SkeletonBlock({
     required this.width,

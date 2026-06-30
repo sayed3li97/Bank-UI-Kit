@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../src/common/bank_icon_spec.dart';
-import '../../src/scope/bank_ui_scope.dart';
-import '../../src/theme/bank_theme_data.dart';
-import '../../src/theme/tokens.dart';
+import '../../bank_ui_kit.dart';
+import '../../core.dart';
 
 // ---------------------------------------------------------------------------
 // BankPrivacyToggle
@@ -50,14 +48,12 @@ class BankPrivacyToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BankUiScopeData scopeData = BankUiScope.of(context);
-    final BankThemeData bankTheme = BankThemeData.of(context);
+    final scopeData = BankUiScope.of(context);
+    final bankTheme = BankThemeData.of(context);
 
-    final bool privacyEnabled = overrideValue ?? scopeData.privacyEnabled;
+    final privacyEnabled = overrideValue ?? scopeData.privacyEnabled;
 
-    final String semanticLabel = privacyEnabled
-        ? 'Show balances'
-        : 'Hide balances';
+    final semanticLabel = privacyEnabled ? 'Show balances' : 'Hide balances';
 
     return Semantics(
       button: true,
@@ -85,9 +81,7 @@ class BankPrivacyToggle extends StatelessWidget {
               );
             },
             child: Icon(
-              privacyEnabled
-                  ? BankIcons.visibilityOff
-                  : BankIcons.visibility,
+              privacyEnabled ? BankIcons.visibilityOff : BankIcons.visibility,
               key: ValueKey<bool>(privacyEnabled),
               color: bankTheme.onSurface,
               size: 24,
