@@ -1,0 +1,22 @@
+name: bank_ui_kit_example
+description: Component gallery for bank_ui_kit.
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+  flutter: '>=3.27.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  bank_ui_kit:
+    path: ../
+  decimal: ^3.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

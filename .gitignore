@@ -1,0 +1,37 @@
+# Dart/Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+*.iml
+*.ipr
+*.iws
+
+# Gradle
+.gradle/
+**/android/gradle/
+**/android/.gradle/
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+
+# IntelliJ / Android Studio
+*.class
+*.log
+.idea/
+
+# macOS
+.DS_Store
+
+# Visual Studio Code
+.vscode/
+
+# Coverage
+coverage/
+lcov.info
+
+# Golden test failures
+test/**/failures/
