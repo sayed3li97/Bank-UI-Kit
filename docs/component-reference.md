@@ -6,6 +6,8 @@
 
 Currency-formatted text that automatically masks the balance when privacy mode is active, with a 150 ms cross-fade transition between hidden and visible states.
 
+![BankBalanceText](screenshots/components/BankBalanceText.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | money | `Money` | ✓ | — | The monetary value to display. |
@@ -17,6 +19,8 @@ Currency-formatted text that automatically masks the balance when privacy mode i
 #### BankAccountCard
 
 Swipeable card that visually represents a single bank account, rendering the balance, type icon, masked account number, account name, and an optional status chip or frozen overlay.
+
+![BankAccountCard](screenshots/components/BankAccountCard.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -30,6 +34,8 @@ Swipeable card that visually represents a single bank account, rendering the bal
 #### BankAccountSwitcher
 
 Bottom-sheet or inline widget for selecting among multiple bank accounts, respecting privacy mode and optionally presented as a modal via `BankAccountSwitcher.show`.
+
+![BankAccountSwitcher](screenshots/components/BankAccountSwitcher.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -45,6 +51,8 @@ Bottom-sheet or inline widget for selecting among multiple bank accounts, respec
 #### BankFlipCard
 
 A generic 3-D flip-card container that wraps any front/back widget pair in a smooth perspective-flip animation.
+
+![BankFlipCard](screenshots/components/BankFlipCard.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -63,6 +71,8 @@ A generic 3-D flip-card container that wraps any front/back widget pair in a smo
 #### BankHorizontalAccountCard
 
 A landscape-format bank account card with a built-in 3-D flip animation showing account name, balance, and masked number on the front and full account details on the back.
+
+![BankHorizontalAccountCard](screenshots/components/BankHorizontalAccountCard.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -90,6 +100,8 @@ A landscape-format bank account card with a built-in 3-D flip animation showing 
 
 Realistic virtual card with front/back flip animation, supporting multiple surface treatments and a frozen-state frost overlay.
 
+![BankVirtualCardWidget](screenshots/components/BankVirtualCardWidget.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | account | `BankAccount` | ✓ | — | The account whose data is displayed on the card. |
@@ -115,6 +127,8 @@ Realistic virtual card with front/back flip animation, supporting multiple surfa
 
 Panel of toggles and controls for managing a payment card, including freeze, online payments, contactless, international toggles, an optional spend-limit slider, and action rows for PIN change and reporting lost/stolen.
 
+![BankCardControlsPanel](screenshots/components/BankCardControlsPanel.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | isFrozen | `bool` | ✓ | — | Whether the card freeze toggle is currently enabled. |
@@ -135,6 +149,8 @@ Panel of toggles and controls for managing a payment card, including freeze, onl
 
 Three-step Change-PIN flow widget: verify current PIN, enter new PIN, and confirm new PIN, calling `onSubmit` with `(currentPin, newPin)` on completion.
 
+![BankCardPinManager](screenshots/components/BankCardPinManager.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | onSubmit | `Future<bool> Function(String currentPin, String newPin)` | ✓ | — | Async handler receiving the current and new PIN; return true on success, false on failure. |
@@ -145,6 +161,8 @@ Three-step Change-PIN flow widget: verify current PIN, enter new PIN, and confir
 #### BankPhysicalCardMaterialPicker
 
 Horizontal card-design picker for the order-a-card flow, displaying each `BankCardDesignOption` as a mini card preview with a material badge and selection ring.
+
+![BankPhysicalCardMaterialPicker](screenshots/components/BankPhysicalCardMaterialPicker.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -160,6 +178,8 @@ Horizontal card-design picker for the order-a-card flow, displaying each `BankCa
 
 A single transaction row, designed for use inside `ListView.builder`, showing category icon with optional merchant logo, signed amount, and status.
 
+![BankTransactionListTile](screenshots/components/BankTransactionListTile.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | transaction | `Transaction` | ✓ | — | The transaction data to display. |
@@ -170,6 +190,8 @@ A single transaction row, designed for use inside `ListView.builder`, showing ca
 
 Sticky date-grouped section header for transaction lists, with "Today" and "Yesterday" labels sourced from `BankUiStrings`.
 
+![BankTransactionGroupHeader](screenshots/components/BankTransactionGroupHeader.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | date | `DateTime` | ✓ | — | The date this group header represents. |
@@ -178,6 +200,8 @@ Sticky date-grouped section header for transaction lists, with "Today" and "Yest
 #### BankTransactionDetailSheet
 
 Full-detail bottom sheet for a single transaction, showing merchant info, amount, date, category, status, optional map preview, category splits, and action buttons.
+
+![BankTransactionDetailSheet](screenshots/components/BankTransactionDetailSheet.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -190,6 +214,8 @@ Full-detail bottom sheet for a single transaction, showing merchant info, amount
 
 Stateful bottom sheet with category chip filters, date-range pickers, and min/max amount inputs for filtering transaction lists.
 
+![BankTransactionFilterSheet](screenshots/components/BankTransactionFilterSheet.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | onApply | `ValueChanged<BankTransactionFilter>` | ✓ | — | Called with the resulting filter when the user taps Apply. |
@@ -199,6 +225,8 @@ Stateful bottom sheet with category chip filters, date-range pickers, and min/ma
 #### BankReceiptView
 
 Shareable receipt layout with merchant name, formatted amount, transaction metadata, a dashed-divider perforated-edge effect, QR placeholder, and optional export button; wrap in `RepaintBoundary` for PDF export.
+
+![BankReceiptView](screenshots/components/BankReceiptView.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -236,6 +264,8 @@ Stateful bottom sheet for splitting a single transaction's amount across multipl
 
 Large numeric keypad tuned for currency input where the host app owns the amount string and digit/delete events are surfaced via callbacks.
 
+![BankAmountKeypad](screenshots/components/BankAmountKeypad.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | amountText | `String` | ✓ | — | Current formatted amount string shown in the display area. |
@@ -251,6 +281,8 @@ Large numeric keypad tuned for currency input where the host app owns the amount
 
 Saved-beneficiaries list with a search bar, an optional add-new entry point, and a filtered list of `BankBeneficiary` rows with the selected one highlighted by a trailing checkmark.
 
+![BankBeneficiaryPicker](screenshots/components/BankBeneficiaryPicker.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | beneficiaries | `List<BankBeneficiary>` | ✓ | — | Full list of beneficiaries to display before any search query is applied. |
@@ -262,6 +294,8 @@ Saved-beneficiaries list with a search bar, an optional add-new entry point, and
 #### BankTransferReviewCard
 
 Confirm-before-send summary card displaying beneficiary, amount, fee, optional exchange rate, estimated arrival time, and an optional additional-info slot.
+
+![BankTransferReviewCard](screenshots/components/BankTransferReviewCard.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -278,6 +312,8 @@ Confirm-before-send summary card displaying beneficiary, amount, fee, optional e
 
 Incoming money-request card with accept or decline actions.
 
+![BankPaymentRequestCard](screenshots/components/BankPaymentRequestCard.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | requesterId | `String` | ✓ | — | Unique identifier of the requester. |
@@ -292,6 +328,8 @@ Incoming money-request card with accept or decline actions.
 #### BankScheduledTransferToggle
 
 Instant / Later / Recurring segmented selector for a transfer, with an optional date-and-time picker row for "Later" and a recurrence pattern dropdown for "Recurring".
+
+![BankScheduledTransferToggle](screenshots/components/BankScheduledTransferToggle.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -317,6 +355,8 @@ Transfer-specific authorisation PIN bottom sheet with a configurable title, subt
 #### BankTransferResultScreen
 
 Full-screen success or failure state shown after a transfer completes, playing a success animation with confetti on success or a red error icon on failure.
+
+![BankTransferResultScreen](screenshots/components/BankTransferResultScreen.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -348,6 +388,8 @@ Three-step modal sheet for picking a contact, entering an amount with an optiona
 
 Numeric keypad for PIN entry that exposes `onDigit` and `onDelete` callbacks so the host app fully owns the PIN string state.
 
+![BankPinKeypad](screenshots/components/BankPinKeypad.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | onDigit | `ValueChanged<String>` | ✓ | — | Called when the user taps a digit key; receives the digit as a string (`'0'`–`'9'`). |
@@ -359,6 +401,8 @@ Numeric keypad for PIN entry that exposes `onDigit` and `onDelete` callbacks so 
 #### BankPinDots
 
 Displays filled/empty dot indicators for a PIN entry sequence, and plays a shake animation when an error state is triggered.
+
+![BankPinDots](screenshots/components/BankPinDots.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -374,6 +418,8 @@ Displays filled/empty dot indicators for a PIN entry sequence, and plays a shake
 
 A tappable button that triggers an injected biometric authentication callback and reflects its outcome (idle, loading, success, error) visually.
 
+![BankBiometricPromptButton](screenshots/components/BankBiometricPromptButton.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | onAuthenticate | `Future<bool> Function()` | ✓ | — | Called when the button is tapped; must return true on success and false (or throw) on failure. |
@@ -386,6 +432,8 @@ A tappable button that triggers an injected biometric authentication callback an
 
 A tappable icon button that toggles the ambient `BankUiScope` privacy state, supporting both uncontrolled and controlled modes.
 
+![BankPrivacyToggle](screenshots/components/BankPrivacyToggle.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | overrideValue | `bool?` | — | — | When non-null, the widget operates in controlled mode and this value determines which icon is displayed. |
@@ -394,6 +442,8 @@ A tappable icon button that toggles the ambient `BankUiScope` privacy state, sup
 #### BankDeviceTrustBanner
 
 A contextual security banner driven by an externally-supplied state flag, rendering either a new-device (amber) or compromised-device (red) warning with optional dismiss and learn-more actions.
+
+![BankDeviceTrustBanner](screenshots/components/BankDeviceTrustBanner.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -405,6 +455,8 @@ A contextual security banner driven by an externally-supplied state flag, render
 #### BankSessionTimeoutDialog
 
 A modal dialog that counts down from `remainingTime` and fires `onLogout` when the countdown reaches zero, with a primary "stay logged in" action.
+
+![BankSessionTimeoutDialog](screenshots/components/BankSessionTimeoutDialog.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -434,6 +486,8 @@ Blurs or redacts sensitive content when the app loses foreground focus (e.g. whe
 
 Shimmer-effect placeholder that takes the shape of common Bank UI Kit cards while data loads.
 
+![BankSkeletonLoader](screenshots/components/BankSkeletonLoader.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | variant | `BankSkeletonVariant` (`accountCard` · `transactionTile` · `potCard` · `generic`) | — | `BankSkeletonVariant.generic` | Which card shape to mimic. |
@@ -444,6 +498,8 @@ Shimmer-effect placeholder that takes the shape of common Bank UI Kit cards whil
 #### BankEmptyStateView
 
 Full-viewport empty-state widget displaying an optional illustration, a required title, an optional subtitle, and an optional call-to-action button.
+
+![BankEmptyStateView](screenshots/components/BankEmptyStateView.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -456,6 +512,8 @@ Full-viewport empty-state widget displaying an optional illustration, a required
 #### BankErrorStateView
 
 Error state widget that requires a specific title and message and provides optional retry and contact-support action buttons.
+
+![BankErrorStateView](screenshots/components/BankErrorStateView.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -471,6 +529,8 @@ Error state widget that requires a specific title and message and provides optio
 
 Lightweight success micro-animation that plays a three-phase circle-draw, checkmark-draw, and scale-bounce sequence with optional confetti.
 
+![BankSuccessAnimation](screenshots/components/BankSuccessAnimation.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | size | `double` | — | `80` | Diameter of the circle and checkmark in logical pixels; must be positive. |
@@ -482,6 +542,8 @@ Lightweight success micro-animation that plays a three-phase circle-draw, checkm
 #### BankToastBanner
 
 A toast-style banner that slides in from the top of its parent, auto-hides after a configurable duration, and is controlled by the host via an `isVisible` flag.
+
+![BankToastBanner](screenshots/components/BankToastBanner.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -497,6 +559,8 @@ A toast-style banner that slides in from the top of its parent, auto-hides after
 #### BankFraudAlertBanner
 
 High-priority fraud warning banner with a danger-coloured left border that deliberately resists accidental dismissal by making the primary security action the prominent call to act.
+
+![BankFraudAlertBanner](screenshots/components/BankFraudAlertBanner.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -515,6 +579,8 @@ High-priority fraud warning banner with a danger-coloured left border that delib
 
 Donut chart showing spending split by category, with an animated entry and a tappable legend.
 
+![BankSpendingBreakdownChart](screenshots/components/BankSpendingBreakdownChart.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | categories | `List<BankSpendingCategory>` | ✓ | — | List of spending category entries, each with a `TransactionCategory`, `Money` amount, and optional colour. |
@@ -524,6 +590,8 @@ Donut chart showing spending split by category, with an animated entry and a tap
 
 Shows a budget's progress with an animated bar and over-budget warning.
 
+![BankBudgetGaugeWidget](screenshots/components/BankBudgetGaugeWidget.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | budget | `BankBudget` | ✓ | — | The budget model containing name, limit, spent amounts, and period dates. |
@@ -532,6 +600,8 @@ Shows a budget's progress with an animated bar and over-budget warning.
 #### BankInsightCard
 
 A swipeable AI-generated insight card with confidence indicator.
+
+![BankInsightCard](screenshots/components/BankInsightCard.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -548,6 +618,8 @@ A swipeable AI-generated insight card with confidence indicator.
 #### BankStepProgressIndicator
 
 Numbered step progress indicator that is RTL-aware, flowing steps right-to-left when `Directionality` is RTL.
+
+![BankStepProgressIndicator](screenshots/components/BankStepProgressIndicator.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -584,6 +656,8 @@ Face-guide overlay for liveness detection that stacks a dark overlay with an ova
 
 Under-review holding-state widget for manual KYC review that shows an animated pulsing document icon, sequentially-pulsing dots, a title, body message, optional estimated-time chip, and optional action buttons.
 
+![BankAsyncVerificationState](screenshots/components/BankAsyncVerificationState.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | title | `String` | — | `'Verification Under Review'` | Primary heading displayed in `headlineSmall` style. |
@@ -596,6 +670,8 @@ Under-review holding-state widget for manual KYC review that shows an animated p
 #### BankConsentModal
 
 Scrollable terms-acknowledgement modal that gates the Accept action behind the user scrolling to the bottom of the terms and explicitly checking the acknowledgement checkbox.
+
+![BankConsentModal](screenshots/components/BankConsentModal.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -615,6 +691,8 @@ Scrollable terms-acknowledgement modal that gates the Accept action behind the u
 #### BankSavingsPotCard
 
 Goal-based sub-account card with progress ring, target, and optional badges showing a `SavingsPot`'s name, balance, goal progress, interest rate, and shared-pot indicators.
+
+![BankSavingsPotCard](screenshots/components/BankSavingsPotCard.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -641,6 +719,8 @@ Round-up configuration bottom sheet with a toggle, multiplier chip row (1×, 2×
 #### BankPotContributionSheet
 
 Manual add-to-pot or withdraw-from-pot bottom sheet presenting a large amount display, inline number pad, real-time validation, and a confirm button that triggers an async callback.
+
+![BankPotContributionSheet](screenshots/components/BankPotContributionSheet.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -678,6 +758,8 @@ Invite another account holder to view or contribute to a pot, displaying the cur
 
 A transaction tile that shows which joint account owner initiated it.
 
+![BankJointTransactionListTile](screenshots/components/BankJointTransactionListTile.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | transaction | `Transaction` | ✓ | — | The transaction data to display, including merchant name, logo, and amount. |
@@ -690,6 +772,8 @@ A transaction tile that shows which joint account owner initiated it.
 
 Small inline badge indicating account ownership role.
 
+![BankAccountOwnershipBadge](screenshots/components/BankAccountOwnershipBadge.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | role | `BankOwnershipRole` (`primary` · `joint` · `beneficiary`) | ✓ | — | The ownership role; controls the icon, colours, and default label. |
@@ -698,6 +782,8 @@ Small inline badge indicating account ownership role.
 #### BankSharedGoalProgressCard
 
 A card showing a shared savings goal with contributor avatars and progress.
+
+![BankSharedGoalProgressCard](screenshots/components/BankSharedGoalProgressCard.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -717,6 +803,8 @@ A card showing a shared savings goal with contributor avatars and progress.
 
 Time-series chart wrapper sitting on top of `fl_chart` that wraps `fl_chart`'s `LineChart` with a range-selector button row.
 
+![BankPortfolioPerformanceChart](screenshots/components/BankPortfolioPerformanceChart.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | dataPoints | `List<BankChartDataPoint>` | ✓ | — | The time-series data points to plot on the chart. |
@@ -729,6 +817,8 @@ Time-series chart wrapper sitting on top of `fl_chart` that wraps `fl_chart`'s `
 
 A portfolio position row designed for use inside a `ListView.builder`.
 
+![BankHoldingsListTile](screenshots/components/BankHoldingsListTile.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | holding | `Holding` | ✓ | — | The portfolio holding data to display (name, symbol, quantity, value, gain/loss). |
@@ -738,6 +828,8 @@ A portfolio position row designed for use inside a `ListView.builder`.
 #### BankWatchlistCard
 
 A saved/watched asset card with quick-glance price and a watchlist toggle star button.
+
+![BankWatchlistCard](screenshots/components/BankWatchlistCard.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -761,6 +853,8 @@ Order-entry modal bottom sheet for buying or selling an asset, with market and o
 #### BankAssetPriceTicker
 
 Compact price and change-percentage row for a stock, ETF, or crypto asset with a logo circle and colour-coded change badge.
+
+![BankAssetPriceTicker](screenshots/components/BankAssetPriceTicker.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -796,6 +890,8 @@ Horizontal scrollable tab row showing one tab per currency wallet, with the sele
 
 270° arc gauge showing used credit vs total credit limit.
 
+![BankCreditLimitGauge](screenshots/components/BankCreditLimitGauge.png)
+
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | creditLimit | `Money` | ✓ | — | The total credit limit to display on the gauge. |
@@ -805,6 +901,8 @@ Horizontal scrollable tab row showing one tab per currency wallet, with the sele
 #### BankFlexEligibleBadge
 
 Inline chip indicating a transaction is eligible for flexible installments.
+
+![BankFlexEligibleBadge](screenshots/components/BankFlexEligibleBadge.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -839,6 +937,8 @@ Vertical list of monthly repayment rows generated from an `InstallmentPlan`.
 #### BankInAppNotificationCenter
 
 A scrollable notification feed with read/unread states and swipe-to-dismiss.
+
+![BankInAppNotificationCenter](screenshots/components/BankInAppNotificationCenter.png)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
