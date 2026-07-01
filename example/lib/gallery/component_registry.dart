@@ -282,7 +282,8 @@ final List<GalleryEntry> kGalleryEntries = [
 
   GalleryEntry(
     name: 'BankAccountCard',
-    description: 'Swipeable card showing balance, account type, and masked number.',
+    description:
+        'Swipeable card showing balance, account type, and masked number.',
     category: GalleryCategory.accounts,
     isFullScreen: true,
     codeExample: '''BankAccountCard(
@@ -546,7 +547,8 @@ final List<GalleryEntry> kGalleryEntries = [
 
   GalleryEntry(
     name: 'BankCardControlsPanel',
-    description: 'Toggle panel for freeze, online, contactless, and ATM controls.',
+    description:
+        'Toggle panel for freeze, online, contactless, and ATM controls.',
     category: GalleryCategory.cards,
     isFullScreen: true,
     codeExample: '''BankCardControlsPanel(
@@ -658,7 +660,8 @@ final List<GalleryEntry> kGalleryEntries = [
 
   GalleryEntry(
     name: 'BankTransactionListTile',
-    description: 'Single transaction row with category icon, amount, and status.',
+    description:
+        'Single transaction row with category icon, amount, and status.',
     category: GalleryCategory.transactions,
     isFullScreen: true,
     codeExample: '''BankTransactionListTile(
@@ -847,8 +850,7 @@ final List<GalleryEntry> kGalleryEntries = [
       fee: Money.fromDouble(p['fee'] as double, 'GBP'),
       estimatedArrival: (p['isScheduled'] as bool) ? null : 'Within 2 hours',
       isScheduled: p['isScheduled'] as bool,
-      scheduledDate:
-          (p['isScheduled'] as bool) ? DateTime(2026, 7, 5) : null,
+      scheduledDate: (p['isScheduled'] as bool) ? DateTime(2026, 7, 5) : null,
     ),
   ),
 
@@ -933,8 +935,9 @@ final List<GalleryEntry> kGalleryEntries = [
         amountText: amtText,
         currencyCode: p['currencyCode'] as String,
         onDigit: (d) => setAmt(amtText == '0' ? d : amtText + d),
-        onDelete: () =>
-            setAmt(amtText.length <= 1 ? '0' : amtText.substring(0, amtText.length - 1)),
+        onDelete: () => setAmt(amtText.length <= 1
+            ? '0'
+            : amtText.substring(0, amtText.length - 1)),
       ),
     ),
   ),
@@ -1119,12 +1122,14 @@ final List<GalleryEntry> kGalleryEntries = [
   onAuthenticated: () => proceed(),
 )''',
     params: [],
-    builder: (ctx, p) => BankBiometricPromptButton(onAuthenticate: () async => true),
+    builder: (ctx, p) =>
+        BankBiometricPromptButton(onAuthenticate: () async => true),
   ),
 
   GalleryEntry(
     name: 'BankSessionTimeoutDialog',
-    description: 'Countdown dialog warning the user of imminent session expiry.',
+    description:
+        'Countdown dialog warning the user of imminent session expiry.',
     category: GalleryCategory.auth,
     codeExample: '''BankSessionTimeoutDialog.show(
   context,
@@ -1211,9 +1216,8 @@ final List<GalleryEntry> kGalleryEntries = [
     ],
     builder: (ctx, p) => BankEmptyStateView(
       title: p['title'] as String,
-      subtitle: (p['subtitle'] as String).isEmpty
-          ? null
-          : p['subtitle'] as String,
+      subtitle:
+          (p['subtitle'] as String).isEmpty ? null : p['subtitle'] as String,
       actionLabel: (p['showAction'] as bool) ? 'Make a Payment' : null,
       onAction: (p['showAction'] as bool) ? () {} : null,
     ),
@@ -1514,10 +1518,16 @@ final List<GalleryEntry> kGalleryEntries = [
         totalSteps: total,
         currentStep: current,
         showLabels: p['showLabels'] as bool,
-        labels: const ['ID', 'Selfie', 'Address', 'Review', 'Phone',
-            'Terms', 'Code', 'Done']
-            .take(total)
-            .toList(),
+        labels: const [
+          'ID',
+          'Selfie',
+          'Address',
+          'Review',
+          'Phone',
+          'Terms',
+          'Code',
+          'Done'
+        ].take(total).toList(),
       );
     },
   ),
@@ -1570,7 +1580,8 @@ final List<GalleryEntry> kGalleryEntries = [
       onOpen: (c) => BankConsentModal.show(
         c,
         title: 'Terms & Conditions',
-        termsContent: 'By continuing you agree to our Terms of Service and Privacy '
+        termsContent:
+            'By continuing you agree to our Terms of Service and Privacy '
             'Policy. We will process your personal data in accordance with '
             'applicable data protection laws including GDPR. '
             'You may withdraw consent at any time by contacting support.',
@@ -1913,8 +1924,7 @@ final List<GalleryEntry> kGalleryEntries = [
             type: types[i % types.length],
             title: _notifTitle(types[i % types.length]),
             body: 'Notification body for item $i.',
-            receivedAt:
-                DateTime(2026, 6, 28).subtract(Duration(hours: i * 3)),
+            receivedAt: DateTime(2026, 6, 28).subtract(Duration(hours: i * 3)),
             isRead: i % 3 == 0,
           ),
         ),
@@ -1942,10 +1952,30 @@ String _notifTitle(BankNotificationType type) => switch (type) {
 List<BankChartDataPoint> _sampleChartData() {
   const baseValue = 12500.0;
   const values = [
-    12000.0, 12200.0, 11800.0, 12400.0, 12800.0, 12600.0,
-    13000.0, 13200.0, 12900.0, 13400.0, 13600.0, 13800.0,
-    14000.0, 13700.0, 14200.0, 14500.0, 14300.0, 14800.0,
-    15000.0, 14700.0, 15200.0, 15500.0, 15300.0, 15800.0,
+    12000.0,
+    12200.0,
+    11800.0,
+    12400.0,
+    12800.0,
+    12600.0,
+    13000.0,
+    13200.0,
+    12900.0,
+    13400.0,
+    13600.0,
+    13800.0,
+    14000.0,
+    13700.0,
+    14200.0,
+    14500.0,
+    14300.0,
+    14800.0,
+    15000.0,
+    14700.0,
+    15200.0,
+    15500.0,
+    15300.0,
+    15800.0,
     baseValue,
   ];
   return List.generate(

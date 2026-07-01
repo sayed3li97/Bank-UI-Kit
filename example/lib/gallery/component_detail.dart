@@ -58,8 +58,7 @@ class _ComponentDetailPageState extends State<ComponentDetailPage> {
                         entry: widget.entry,
                         params: _params,
                         isDark: _darkPreview,
-                        onToggleDark: (v) =>
-                            setState(() => _darkPreview = v),
+                        onToggleDark: (v) => setState(() => _darkPreview = v),
                       ),
                     ),
                     VerticalDivider(
@@ -83,8 +82,7 @@ class _ComponentDetailPageState extends State<ComponentDetailPage> {
                         entry: widget.entry,
                         params: _params,
                         isDark: _darkPreview,
-                        onToggleDark: (v) =>
-                            setState(() => _darkPreview = v),
+                        onToggleDark: (v) => setState(() => _darkPreview = v),
                       ),
                     ),
                     if (widget.entry.params.isNotEmpty)
@@ -466,9 +464,7 @@ class _ParamControl extends StatelessWidget {
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: c == Colors.transparent
-                            ? null
-                            : c,
+                        color: c == Colors.transparent ? null : c,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: selected

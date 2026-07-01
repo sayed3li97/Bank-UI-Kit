@@ -130,7 +130,9 @@ class _GalleryHomeState extends State<GalleryHome> {
             tooltip:
                 widget.isDark ? 'Switch to light mode' : 'Switch to dark mode',
             icon: Icon(
-              widget.isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+              widget.isDark
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined,
             ),
             onPressed: () => widget.onBrightnessChanged(!widget.isDark),
           ),
@@ -187,9 +189,8 @@ class _CategoryGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categories = GalleryCategory.values
-        .where((c) => byCategory.containsKey(c))
-        .toList();
+    final categories =
+        GalleryCategory.values.where((c) => byCategory.containsKey(c)).toList();
 
     return GridView.builder(
       padding: const EdgeInsets.all(16),

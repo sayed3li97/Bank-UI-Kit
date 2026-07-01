@@ -71,7 +71,8 @@ class _CardsScreenState extends State<CardsScreen> {
           // ── Section: Virtual card ─────────────────────────────────────────
           _SectionHeader(
             label: 'Virtual Card — Enhanced',
-            sublabel: 'Tap card to flip • Built-in flip button • Image background',
+            sublabel:
+                'Tap card to flip • Built-in flip button • Image background',
             theme: theme,
           ),
           const SizedBox(height: BankTokens.space3),
@@ -259,8 +260,7 @@ class _CardsScreenState extends State<CardsScreen> {
                 onPressed: () =>
                     setState(() => _horizontalFlipped = !_horizontalFlipped),
                 icon: const Icon(Icons.flip_outlined, size: 18),
-                label:
-                    Text(_horizontalFlipped ? 'Show front' : 'Show details'),
+                label: Text(_horizontalFlipped ? 'Show front' : 'Show details'),
                 style: FilledButton.styleFrom(
                   backgroundColor: theme.primary,
                   foregroundColor: theme.onPrimary,
