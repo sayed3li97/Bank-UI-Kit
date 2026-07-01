@@ -200,8 +200,7 @@ class _GalleryHomeState extends State<GalleryHome> {
             backgroundColor: colorScheme.surface,
             surfaceTintColor: colorScheme.surfaceTint,
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding:
-                  const EdgeInsetsDirectional.fromSTEB(16, 0, 0, 14),
+              titlePadding: const EdgeInsetsDirectional.fromSTEB(16, 0, 0, 14),
               title: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,8 +247,7 @@ class _GalleryHomeState extends State<GalleryHome> {
                     key: ValueKey(widget.isDark),
                   ),
                 ),
-                onPressed: () =>
-                    widget.onBrightnessChanged(!widget.isDark),
+                onPressed: () => widget.onBrightnessChanged(!widget.isDark),
               ),
               const SizedBox(width: 4),
             ],
@@ -385,8 +383,7 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
           ],
           onChanged: onChanged,
           elevation: WidgetStateProperty.resolveWith(
-            (states) =>
-                states.contains(WidgetState.focused) ? 4 : 1,
+            (states) => states.contains(WidgetState.focused) ? 4 : 1,
           ),
           backgroundColor: WidgetStatePropertyAll(
             colorScheme.surfaceContainerLow,
@@ -414,9 +411,8 @@ class _CategoryGridSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Preserve the canonical enum ordering.
-    final categories = GalleryCategory.values
-        .where((c) => byCategory.containsKey(c))
-        .toList();
+    final categories =
+        GalleryCategory.values.where((c) => byCategory.containsKey(c)).toList();
 
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -458,8 +454,7 @@ class _CategoryCard extends StatelessWidget {
 
   Color _accentColor(BuildContext context) {
     // Prefer a static per-category accent; fall back to the theme primary.
-    return _kCategoryAccents[category] ??
-        Theme.of(context).colorScheme.primary;
+    return _kCategoryAccents[category] ?? Theme.of(context).colorScheme.primary;
   }
 
   @override
@@ -517,8 +512,8 @@ class _CategoryCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 7, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
                       color: accent.withAlpha(isDark ? 40 : 22),
                       borderRadius: BorderRadius.circular(20),
@@ -701,8 +696,7 @@ class _ComponentListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final accent =
-        _kCategoryAccents[entry.category] ?? colorScheme.primary;
+    final accent = _kCategoryAccents[entry.category] ?? colorScheme.primary;
     final isDark = theme.brightness == Brightness.dark;
 
     return Card(
@@ -711,8 +705,7 @@ class _ComponentListTile extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color:
-              colorScheme.outlineVariant.withAlpha(isDark ? 80 : 60),
+          color: colorScheme.outlineVariant.withAlpha(isDark ? 80 : 60),
         ),
       ),
       child: InkWell(
@@ -720,8 +713,7 @@ class _ComponentListTile extends StatelessWidget {
         splashColor: accent.withAlpha(25),
         highlightColor: accent.withAlpha(12),
         child: Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
               // Category icon
@@ -861,12 +853,8 @@ class _PresetSelector extends StatelessWidget {
               Text(
                 preset.label,
                 style: TextStyle(
-                  fontWeight: isSelected
-                      ? FontWeight.w700
-                      : FontWeight.normal,
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : null,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+                  color: isSelected ? theme.colorScheme.primary : null,
                 ),
               ),
               if (isSelected) ...[

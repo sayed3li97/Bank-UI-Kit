@@ -143,8 +143,7 @@ class _PreviewPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor =
-        isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7);
+    final bgColor = isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7);
 
     Widget preview;
     try {
@@ -165,7 +164,9 @@ class _PreviewPanel extends StatelessWidget {
         ),
         const Spacer(),
         Tooltip(
-          message: isDark ? 'Switch to light background' : 'Switch to dark background',
+          message: isDark
+              ? 'Switch to light background'
+              : 'Switch to dark background',
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -450,7 +451,8 @@ class _ParamControl extends StatelessWidget {
         final current = ((value as double?) ?? min).clamp(min, max);
         final displayVal = current.abs() < 10
             ? current.toStringAsFixed(2)
-            : current.toStringAsFixed(current.truncateToDouble() == current ? 0 : 1);
+            : current
+                .toStringAsFixed(current.truncateToDouble() == current ? 0 : 1);
         control = Padding(
           padding: const EdgeInsets.only(top: 10, bottom: 2),
           child: Column(
@@ -559,9 +561,8 @@ class _ParamControl extends StatelessWidget {
                     label: Text(
                       opt,
                       style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: isSelected
-                            ? FontWeight.w700
-                            : FontWeight.normal,
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.normal,
                       ),
                     ),
                     selected: isSelected,
@@ -692,7 +693,8 @@ class _DefaultValueLabel extends StatelessWidget {
     return Text(
       'Default: $label',
       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(160),
+            color:
+                Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(160),
             fontFamily: 'monospace',
             fontSize: 10,
           ),
