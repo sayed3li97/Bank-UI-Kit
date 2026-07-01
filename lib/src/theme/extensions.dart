@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'bank_theme_data.dart';
 import 'presets/bloom.dart';
+import 'presets/heritage.dart';
 import 'presets/studio.dart';
 import 'presets/voltage.dart';
 
@@ -27,6 +28,9 @@ enum BankPreset {
 
   /// Warm consumer-friendly preset with coral primary and pill-shaped UI.
   bloom,
+
+  /// Institutional Islamic banking preset: deep forest-green + muted gold.
+  heritage,
 }
 
 /// Convenience extension that applies a [BankPreset] to a [ThemeData].
@@ -37,6 +41,7 @@ extension BankPresetApply on BankPreset {
         BankPreset.voltage => BankVoltageTheme.applyTo(base),
         BankPreset.studio => BankStudioTheme.applyTo(base),
         BankPreset.bloom => BankBloomTheme.applyTo(base),
+        BankPreset.heritage => BankHeritageTheme.applyTo(base),
       };
 }
 

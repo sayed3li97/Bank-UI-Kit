@@ -10,6 +10,7 @@
 import 'package:bank_ui_kit/core.dart';
 import 'package:flutter/material.dart';
 
+import 'demo/heritage_dashboard.dart';
 import 'demo/home_dashboard.dart';
 import 'screens/accounts_screen.dart';
 import 'screens/auth_screen.dart';
@@ -28,6 +29,7 @@ import 'screens/transfers_screen.dart';
 
 final Map<String, Widget Function()> _screens = {
   'home': HomeDashboard.new,
+  'heritage': HeritageDashboard.new,
   'states': StatesScreen.new,
   'accounts': AccountsScreen.new,
   'transactions': TransactionsScreen.new,
@@ -47,6 +49,7 @@ final Map<String, Widget Function()> _screens = {
 BankPreset _presetFromName(String? name) => switch (name) {
       'voltage' => BankPreset.voltage,
       'bloom' => BankPreset.bloom,
+      'heritage' => BankPreset.heritage,
       _ => BankPreset.studio,
     };
 

@@ -25,8 +25,12 @@ export 'src/cards/bank_card_pin_manager.dart';
 export 'src/cards/bank_physical_card_material_picker.dart';
 // Cards
 export 'src/cards/bank_virtual_card_widget.dart';
-// Common utilities
+// Common utilities & scaffolding
+export 'src/common/bank_app_bar.dart';
+export 'src/common/bank_bottom_nav_bar.dart';
 export 'src/common/bank_icon_spec.dart';
+export 'src/common/bank_shariah_badge.dart';
+export 'src/common/bank_text_field.dart';
 export 'src/common/money_formatter.dart';
 export 'src/controllers/bank_income_sorter_controller.dart';
 // Headless controllers
@@ -66,6 +70,7 @@ export 'src/theme/bank_theme_data.dart';
 export 'src/theme/extensions.dart';
 export 'src/theme/numeral_style.dart';
 export 'src/theme/presets/bloom.dart';
+export 'src/theme/presets/heritage.dart';
 export 'src/theme/presets/studio.dart';
 export 'src/theme/presets/voltage.dart';
 // Theme & design system

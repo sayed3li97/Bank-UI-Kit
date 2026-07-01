@@ -1,6 +1,7 @@
 import 'package:bank_ui_kit/core.dart';
 import 'package:flutter/material.dart';
 
+import 'demo/heritage_dashboard.dart';
 import 'demo/home_dashboard.dart';
 import 'screens/accounts_screen.dart';
 import 'screens/auth_screen.dart';
@@ -88,6 +89,11 @@ class _ExampleShellState extends State<_ExampleShell> {
       label: 'Home (full-app demo)',
       icon: Icons.home_outlined,
       screen: HomeDashboard.new,
+    ),
+    (
+      label: 'Heritage demo (green+gold)',
+      icon: Icons.account_balance_outlined,
+      screen: HeritageDashboard.new,
     ),
     (
       label: 'States',
