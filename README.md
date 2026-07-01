@@ -38,6 +38,7 @@ Independently themeable · RTL-aware · WCAG 2.1 AA · state-management agnostic
 - [Design presets](#design-presets)
 - [Custom themes](#custom-themes)
 - [Component catalogue](#component-catalogue)
+- [Full API reference](docs/component-reference.md)
 - [Cross-cutting features](#cross-cutting-features)
 - [Architecture & principles](#architecture--principles)
 - [Running the example](#running-the-example)
@@ -194,8 +195,10 @@ final tweaked = BankPreset.bloom
 
 ## Component catalogue
 
-65+ widgets across 14 modules. Each screenshot below is a live render of that module's
+69 widgets across 14 modules. Each screenshot below is a live render of that module's
 showcase screen (Studio preset, light mode) from the example app.
+
+For the full parameter-level API reference (every constructor argument, type, required/optional status, and default value) see **[docs/component-reference.md](docs/component-reference.md)**.
 
 ### States & feedback
 `BankSkeletonLoader` · `BankEmptyStateView` · `BankErrorStateView` · `BankSuccessAnimation` · `BankToastBanner` · `BankFraudAlertBanner`
@@ -401,14 +404,18 @@ lib/
 
 ## Running the example
 
-The example app is both an **interactive component gallery** and a **Revolut-style demo dashboard**,
-with live preset / dark-mode / RTL switches in the app bar.
+The example app ships two entry points:
+
+| Entry point | Launch command | What it shows |
+|---|---|---|
+| **Component gallery** | `flutter run -t lib/gallery_main.dart` | All 69 components with live parameter controls, preset/dark-mode switching, and search |
+| **Demo dashboard** | `flutter run` | Revolut-style demo app under the Studio preset |
 
 ```bash
 cd example
 flutter pub get
-flutter run         # mobile / desktop
-# or: flutter run -d chrome
+flutter run -t lib/gallery_main.dart    # interactive gallery
+flutter run                             # demo dashboard
 ```
 
 ### Regenerating the screenshots
