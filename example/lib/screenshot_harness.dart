@@ -71,7 +71,9 @@ void main() {
       (e) => e.name == componentName,
       orElse: () => kGalleryEntries.first,
     );
-    final defaultParams = {for (final p in entry.params) p.name: p.defaultValue};
+    final defaultParams = {
+      for (final p in entry.params) p.name: p.defaultValue
+    };
 
     runApp(
       BankUiScope(
