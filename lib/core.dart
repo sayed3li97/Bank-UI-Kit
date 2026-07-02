@@ -22,8 +22,10 @@ export 'src/auth/bank_privacy_toggle.dart';
 export 'src/auth/bank_session_timeout_dialog.dart';
 export 'src/cards/bank_card_controls_panel.dart';
 export 'src/cards/bank_card_pin_manager.dart';
-export 'src/cards/bank_physical_card_material_picker.dart';
 // Cards
+export 'src/cards/bank_flip_card.dart';
+export 'src/cards/bank_horizontal_account_card.dart';
+export 'src/cards/bank_physical_card_material_picker.dart';
 export 'src/cards/bank_virtual_card_widget.dart';
 // Common utilities & scaffolding
 export 'src/common/bank_app_bar.dart';
