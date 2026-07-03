@@ -70,6 +70,7 @@ export 'src/models/budget.dart';
 export 'src/models/money.dart';
 export 'src/models/transaction.dart';
 // Notifications
+export 'src/notifications/bank_alert_preferences_panel.dart';
 export 'src/notifications/bank_in_app_notification_center.dart';
 export 'src/onboarding/bank_async_verification_state.dart';
 export 'src/onboarding/bank_consent_modal.dart';
@@ -90,6 +91,8 @@ export 'src/states/bank_fraud_alert_banner.dart';
 export 'src/states/bank_skeleton_loader.dart';
 export 'src/states/bank_success_animation.dart';
 export 'src/states/bank_toast_banner.dart';
+// Support & servicing
+export 'src/support/bank_help_faq_list.dart';
 export 'src/theme/bank_theme_data.dart';
 export 'src/theme/extensions.dart';
 export 'src/theme/numeral_style.dart';
