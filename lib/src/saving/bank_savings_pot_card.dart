@@ -7,6 +7,7 @@ import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/numeral_style.dart';
 import '../../src/theme/tokens.dart';
 import '../accounts/bank_balance_text.dart';
 
@@ -119,14 +120,19 @@ class _BadgeChip extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Interest-rate badge helper
+// Rate badge helper
 // ---------------------------------------------------------------------------
 
-Widget _interestRateBadge(double rate) {
-  final pct = rate.toStringAsFixed(1);
+Widget _rateBadge(
+  double rate,
+  String suffix,
+  String semanticsSuffix,
+  NumeralStyle numeralStyle,
+) {
+  final pct = numeralStyle.convert(rate.toStringAsFixed(1));
   return Semantics(
-    label: '$pct% AER interest rate',
-    child: _BadgeChip(label: '$pct% AER', color: BankTokens.success),
+    label: '$pct% $semanticsSuffix',
+    child: _BadgeChip(label: '$pct% $suffix', color: BankTokens.success),
   );
 }
 
@@ -160,6 +166,13 @@ class BankSavingsPotCard extends StatelessWidget {
   /// fills the card.
   final Widget Function(BuildContext, SavingsPot)? itemBuilder;
 
+  /// Suffix on the rate badge in conventional mode. Defaults to 'AER'.
+  final String rateSuffix;
+
+  /// Suffix on the rate badge when `islamicFinanceMode` is on.
+  /// Defaults to 'expected profit'.
+  final String profitRateSuffix;
+
   const BankSavingsPotCard({
     required this.pot,
     super.key,
@@ -167,6 +180,8 @@ class BankSavingsPotCard extends StatelessWidget {
     this.onAddMoney,
     this.onWithdraw,
     this.itemBuilder,
+    this.rateSuffix = 'AER',
+    this.profitRateSuffix = 'expected profit',
   });
 
   // Diameter of the progress ring.
@@ -308,7 +323,16 @@ class BankSavingsPotCard extends StatelessWidget {
                               runSpacing: BankTokens.space1,
                               children: [
                                 if (pot.interestRate != null)
-                                  _interestRateBadge(pot.interestRate!),
+                                  _rateBadge(
+                                    pot.interestRate!,
+                                    scope.islamicFinanceMode
+                                        ? profitRateSuffix
+                                        : rateSuffix,
+                                    scope.islamicFinanceMode
+                                        ? profitRateSuffix
+                                        : '$rateSuffix interest rate',
+                                    scope.numeralStyle,
+                                  ),
                                 if (pot.hasOwnAccountNumber)
                                   Semantics(
                                     label: 'Has own account number',
