@@ -86,6 +86,11 @@ console.log(`Serving ${webRoot} on http://localhost:${PORT}`);
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium',
   args: ['--no-sandbox', '--force-color-profile=srgb'],
+  // Route through the environment proxy (when present) so the Flutter web
+  // engine can fetch Noto fallback fonts for Arabic and other scripts.
+  proxy: process.env.HTTPS_PROXY
+    ? { server: process.env.HTTPS_PROXY, bypass: 'localhost,127.0.0.1' }
+    : undefined,
 });
 
 // ── Helper: navigate an existing page to a Flutter URL and wait for render ───

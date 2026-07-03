@@ -65,7 +65,15 @@ void main() {
   final rtl = params['dir'] == 'rtl';
 
   final base = dark ? ThemeData.dark() : ThemeData.light();
-  final theme = preset.apply(base);
+  // Arabic glyph fallback: the capture browser cannot download the web
+  // engine's remote Noto fonts, so the bundled subset steps in for
+  // currency symbols and RTL sample text.
+  final themed = preset.apply(base);
+  final theme = themed.copyWith(
+    textTheme: themed.textTheme.apply(
+      fontFamilyFallback: const ['NotoSansArabic'],
+    ),
+  );
 
   // ── Component mode ─────────────────────────────────────────────────────────
   final componentName = params['component'];
