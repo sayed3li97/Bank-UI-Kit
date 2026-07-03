@@ -30,6 +30,7 @@ components.
 | 18 | DBS digibank | Singapore | Peek Balance pre-login swipe, intelligent nudges, NAV Planner net worth + retirement simulator, PayNow QR, multi-currency travel mode |
 | 19 | CommBank | Australia | Benefits Finder for government rebates, Bill Sense prediction, enriched transactions with maps, Goal Tracker, cardless cash ATM codes |
 | 20 | Al Rajhi | Saudi Arabia | Nafath eID onboarding, instant Murabaha financing calculator with schedule preview, Zakat calculator, Sadaqah hub, SADAD bill hub, Tahweel remittance, Mokafaa loyalty, family sub-accounts, Arabic-first RTL |
+| 21 | ila Bank | Bahrain | Hassala goal jars with earnings calculator, Jamiyah digitized saving circle (ROSCA), Al Kanz prize-linked savings with draw calendar and gifting, Ask Fatema assistant, multi-currency accounts on any card, eKYC in minutes, BenefitPay rails (full profile: docs/research/ila-bank.md) |
 
 ## Master UI capability list
 
@@ -78,6 +79,9 @@ Legend: [x] shipped in Bank UI Kit today, [ ] gap.
 - [x] save-when-paid (BankIncomeSorterSheet + controller)
 - [x] group savings (BankSharedPotInvite, BankSharedGoalProgressCard)
 - [x] gamified savings challenge with stamps/streaks (BankSavingsChallengeCard)
+- [x] rotating saving circle / Jamiyah / ROSCA (BankMoneyCircleCard)
+- [x] prize-linked savings with draw calendar and gifting (BankPrizeDrawCard)
+- [x] savings projection calculator, Islamic-mode aware (BankSavingsProjectionCard)
 - [x] yield-bearing balance tile (compose: BankProductItemTile rateLabel)
 - [x] early payday / earned wage access card (BankEarlyPaydayCard)
 
@@ -113,6 +117,7 @@ Legend: [x] shipped in Bank UI Kit today, [ ] gap.
 
 ### Support and assistant
 - [x] chat support (BankSecureMessageThread)
+- [x] named AI assistant entry surface (BankAssistantPanel)
 - [x] help center (BankHelpFaqList)
 - [x] disputes (BankDisputeWizardSheet)
 
