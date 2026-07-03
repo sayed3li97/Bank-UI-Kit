@@ -28,7 +28,9 @@ enum GalleryCategory {
   payments('Payments & Billing', Icons.request_page),
   business('Business Banking', Icons.business_center),
   documents('Documents & Deposits', Icons.description),
-  support('Support & Servicing', Icons.support_agent);
+  support('Support & Servicing', Icons.support_agent),
+  rewards('Rewards & Engagement', Icons.card_giftcard),
+  islamic('Islamic Banking', Icons.volunteer_activism);
 
   const GalleryCategory(this.label, this.icon);
   final String label;
@@ -2743,7 +2745,625 @@ final List<GalleryEntry> kGalleryEntries = [
       ),
     ),
   ),
+  // ── TOP-20 RESEARCH BATCH ─────────────────────────────────────────────────
+  GalleryEntry(
+    name: 'BankStoriesCarousel',
+    description: 'Promo and recap stories rail with full-screen viewer.',
+    category: GalleryCategory.rewards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankStoriesCarousel(
+      stories: [
+        BankStory(
+          id: 's1',
+          title: 'Your June recap',
+          thumbnail: _storyTile(const Color(0xFF5B4B8A)),
+          content: _storyContent(
+            const Color(0xFF5B4B8A),
+            'You saved 18% more than in May.',
+          ),
+        ),
+        BankStory(
+          id: 's2',
+          title: 'New: cashback picks',
+          thumbnail: _storyTile(const Color(0xFF0A6B47)),
+          content: _storyContent(
+            const Color(0xFF0A6B47),
+            'Choose your 3 cashback categories for Q3.',
+          ),
+        ),
+        BankStory(
+          id: 's3',
+          title: 'Travel mode',
+          thumbnail: _storyTile(const Color(0xFF1B4B7A)),
+          content: _storyContent(
+            const Color(0xFF1B4B7A),
+            'Zero FX fees in 30+ currencies this summer.',
+          ),
+          unread: false,
+        ),
+      ],
+      onStoryViewed: (_) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPeekBalance',
+    description: 'Pre-login press-and-hold balance peek.',
+    category: GalleryCategory.accounts,
+    params: const [],
+    builder: (ctx, p) => BankPeekBalance(
+      accounts: [
+        (label: 'Main', balance: Money.fromDouble(2480.50, 'GBP')),
+        (label: 'Savings', balance: Money.fromDouble(5200.00, 'GBP')),
+      ],
+      enabled: true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankEarlyPaydayCard',
+    description: 'Earned wage access: get paid up to 2 days early.',
+    category: GalleryCategory.accounts,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => _StatefulWrapper<bool>(
+      initial: true,
+      builder: (on, set) => BankEarlyPaydayCard(
+        normalPayday: DateTime(2026, 7, 31),
+        earlyPayday: DateTime(2026, 7, 29),
+        enabled: on,
+        onChanged: set,
+        expectedAmount: Money.fromDouble(2150.00, 'GBP'),
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankBillForecastList',
+    description: 'Predicted upcoming bills grouped by week.',
+    category: GalleryCategory.payments,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankBillForecastList(
+      forecasts: [
+        BankBillForecast(
+          id: 'bf1',
+          billerName: 'City Power & Gas',
+          predictedAmount: Money.fromDouble(86.20, 'GBP'),
+          expectedDate: DateTime(2026, 7, 3),
+          confidence: 0.95,
+          confirmed: true,
+        ),
+        BankBillForecast(
+          id: 'bf2',
+          billerName: 'Fibre Broadband',
+          predictedAmount: Money.fromDouble(34.99, 'GBP'),
+          expectedDate: DateTime(2026, 7, 8),
+          confidence: 0.86,
+        ),
+        BankBillForecast(
+          id: 'bf3',
+          billerName: 'Gym Membership',
+          predictedAmount: Money.fromDouble(42.00, 'GBP'),
+          expectedDate: DateTime(2026, 7, 18),
+          confidence: 0.62,
+        ),
+      ],
+      currencyCode: 'GBP',
+      onTap: (_) {},
+      onSeeAll: () {},
+      now: DateTime(2026, 6, 29),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankAtmLocatorTile',
+    description: 'Nearby ATM row with fee and deposit chips.',
+    category: GalleryCategory.payments,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Column(
+      children: [
+        BankAtmLocatorTile(
+          atm: const BankAtmLocation(
+            id: 'atm1',
+            name: 'Central Mall ATM',
+            address: '12 Market Street',
+            distanceMeters: 350,
+            feeFree: true,
+            depositCapable: true,
+          ),
+          onTap: () {},
+          onNavigate: () {},
+        ),
+        const SizedBox(height: 12),
+        BankAtmLocatorTile(
+          atm: const BankAtmLocation(
+            id: 'atm2',
+            name: 'Partner Bank Branch',
+            address: '48 Riverside Avenue',
+            distanceMeters: 1250,
+          ),
+          onTap: () {},
+          onNavigate: () {},
+        ),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCardlessCashCode',
+    description: 'One-time ATM withdrawal code with countdown ring.',
+    category: GalleryCategory.payments,
+    params: const [],
+    builder: (ctx, p) => BankCardlessCashCode(
+      code: '482913',
+      expiresAt: DateTime(2026, 12, 31, 23, 59),
+      amount: Money.fromDouble(150.00, 'GBP'),
+      onCancel: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankOffersRail',
+    description: 'Card-linked merchant offers with tap-to-activate.',
+    category: GalleryCategory.rewards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankOffersRail(
+      offers: [
+        BankMerchantOffer(
+          id: 'o1',
+          merchantName: 'Coffee Culture',
+          rewardLabel: '10% back',
+          expiresAt: DateTime(2026, 7, 12),
+        ),
+        BankMerchantOffer(
+          id: 'o2',
+          merchantName: 'FreshMart',
+          rewardLabel: '5% back',
+          activated: true,
+        ),
+        BankMerchantOffer(
+          id: 'o3',
+          merchantName: 'CineWorld',
+          rewardLabel: '2-for-1 tickets',
+          expiresAt: DateTime(2026, 7, 30),
+        ),
+      ],
+      onActivate: (_) async => true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCashbackCategoryPicker',
+    description: 'Quarterly selectable cashback categories grid.',
+    category: GalleryCategory.rewards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankCashbackCategoryPicker(
+      categories: const [
+        BankCashbackCategory(
+          id: 'groceries',
+          label: 'Groceries',
+          icon: Icons.local_grocery_store_outlined,
+          rateLabel: '5%',
+          selected: true,
+        ),
+        BankCashbackCategory(
+          id: 'fuel',
+          label: 'Fuel',
+          icon: Icons.local_gas_station_outlined,
+          rateLabel: '3%',
+        ),
+        BankCashbackCategory(
+          id: 'dining',
+          label: 'Dining',
+          icon: Icons.restaurant_outlined,
+          rateLabel: '5%',
+          selected: true,
+        ),
+        BankCashbackCategory(
+          id: 'travel',
+          label: 'Travel',
+          icon: Icons.flight_outlined,
+          rateLabel: '4%',
+        ),
+        BankCashbackCategory(
+          id: 'pharmacy',
+          label: 'Pharmacy',
+          icon: Icons.local_pharmacy_outlined,
+          rateLabel: '3%',
+        ),
+        BankCashbackCategory(
+          id: 'streaming',
+          label: 'Streaming',
+          icon: Icons.play_circle_outline,
+          rateLabel: '6%',
+        ),
+      ],
+      maxSelections: 3,
+      onChanged: (_) {},
+      effectiveUntil: DateTime(2026, 9, 30),
+      onConfirm: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPointsHubCard',
+    description: 'Loyalty points balance with earn and burn actions.',
+    category: GalleryCategory.rewards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankPointsHubCard(
+      pointsBalance: 45230,
+      actions: const [
+        BankPointsAction(
+          id: 'redeem',
+          label: 'Redeem',
+          icon: Icons.redeem_outlined,
+        ),
+        BankPointsAction(
+          id: 'transfer',
+          label: 'Transfer',
+          icon: Icons.swap_horiz_outlined,
+        ),
+        BankPointsAction(
+          id: 'history',
+          label: 'History',
+          icon: Icons.history_outlined,
+        ),
+      ],
+      cashValueLabel: 'Worth about £45.23',
+      earnRateLabel: '2 points per £1 spent',
+      expiringPoints: 1200,
+      expiringOn: DateTime(2026, 8, 15),
+      onAction: (_) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankSavingsChallengeCard',
+    description: 'Gamified savings challenge with stamps and streak.',
+    category: GalleryCategory.saving,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankSavingsChallengeCard(
+      title: '26-week challenge',
+      totalSteps: 26,
+      completedSteps: 9,
+      nextDeposit: Money.fromDouble(10.00, 'GBP'),
+      nextDepositDate: DateTime(2026, 7, 6),
+      streak: 9,
+      onDepositNow: () async => true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankFinancialHealthScore',
+    description: 'Composite financial health gauge with factors.',
+    category: GalleryCategory.insights,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankFinancialHealthScore(
+      score: 72,
+      previousScore: 65,
+      factors: const [
+        BankHealthFactor(
+          id: 'spend',
+          label: 'Spending vs income',
+          score: 0.8,
+          icon: Icons.pie_chart_outline,
+        ),
+        BankHealthFactor(
+          id: 'save',
+          label: 'Savings rate',
+          score: 0.55,
+          icon: Icons.savings_outlined,
+          tip: 'Set up a round-up rule to boost this.',
+        ),
+        BankHealthFactor(
+          id: 'debt',
+          label: 'Debt load',
+          score: 0.35,
+          icon: Icons.credit_card_outlined,
+          tip: 'Your card balance grew 2 months in a row.',
+        ),
+      ],
+      onFactorTap: (_) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankFoundMoneyList',
+    description: 'Unclaimed money discovery with one-tap claims.',
+    category: GalleryCategory.insights,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankFoundMoneyList(
+      items: [
+        BankFoundMoneyItem(
+          id: 'fm1',
+          title: 'Dormant account at Legacy Bank',
+          amount: Money.fromDouble(214.60, 'GBP'),
+          kind: BankFoundMoneyKind.dormantAccount,
+          subtitle: 'Untouched since 2023',
+        ),
+        BankFoundMoneyItem(
+          id: 'fm2',
+          title: 'Airline refund never collected',
+          amount: Money.fromDouble(89.00, 'GBP'),
+          kind: BankFoundMoneyKind.refund,
+        ),
+        BankFoundMoneyItem(
+          id: 'fm3',
+          title: 'Loyalty points about to lapse',
+          amount: Money.fromDouble(12.40, 'GBP'),
+          kind: BankFoundMoneyKind.points,
+          claimed: true,
+        ),
+      ],
+      onClaim: (_) async => true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCreditLimitAdjuster',
+    description: 'User-controlled credit limit slider with commit.',
+    category: GalleryCategory.credit,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankCreditLimitAdjuster(
+      currentLimit: Money.fromDouble(4000, 'GBP'),
+      maxApproved: Money.fromDouble(8000, 'GBP'),
+      used: Money.fromDouble(1250, 'GBP'),
+      onCommit: (_) async => true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPreapprovedLoanCard',
+    description: 'One-tap pre-approved loan offer with live installment.',
+    category: GalleryCategory.credit,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankPreapprovedLoanCard(
+      maxAmount: Money.fromDouble(25000, 'GBP'),
+      annualRate: 8.9,
+      maxMonths: 48,
+      onContinue: (_) {},
+      offerExpires: DateTime(2026, 7, 20),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankOverdraftCushionMeter',
+    description: 'Fee-free overdraft cushion usage meter.',
+    category: GalleryCategory.credit,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => _StatefulWrapper<bool>(
+      initial: true,
+      builder: (on, set) => BankOverdraftCushionMeter(
+        limit: Money.fromDouble(200, 'GBP'),
+        used: Money.fromDouble(80, 'GBP'),
+        enabled: on,
+        onChanged: set,
+        nextEligibleIncrease: Money.fromDouble(100, 'GBP'),
+        onAdjust: () {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankZakatCalculator',
+    description: 'Zakat estimation across asset classes with nisab.',
+    category: GalleryCategory.islamic,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: BankZakatCalculator(
+        currencyCode: 'SAR',
+        nisabThreshold: Money.fromDouble(22000, 'SAR'),
+        prefilledCash: Money.fromDouble(54000, 'SAR'),
+        onPay: (_) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankDonationHubCard',
+    description: 'Charity donations hub with verified causes.',
+    category: GalleryCategory.islamic,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankDonationHubCard(
+      charities: const [
+        BankCharity(
+          id: 'ch1',
+          name: 'Water for All',
+          causeLabel: 'Clean water',
+          verified: true,
+        ),
+        BankCharity(
+          id: 'ch2',
+          name: 'ReadAhead',
+          causeLabel: 'Education',
+          verified: true,
+        ),
+        BankCharity(
+          id: 'ch3',
+          name: 'City Food Bank',
+          causeLabel: 'Food relief',
+        ),
+      ],
+      onDonate: (_, __) {},
+      currencyCode: 'SAR',
+      quickAmounts: const [10, 50, 100],
+      onRoundUpChanged: (_) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCallVerificationScreen',
+    description: 'Anti-vishing call status verification screen.',
+    category: GalleryCategory.auth,
+    isFullScreen: true,
+    params: const [
+      GalleryParam(
+        name: 'status',
+        label: 'Call status',
+        type: ParamType.enumType,
+        defaultValue: 'activeCall',
+        enumValues: ['noActiveCall', 'activeCall', 'recentCall'],
+      ),
+    ],
+    builder: (ctx, p) => BankCallVerificationScreen(
+      status: BankCallStatus.values
+          .firstWhere((e) => e.name == (p['status'] as String)),
+      agentName: 'Amal',
+      agentId: 'AR-2214',
+      callStartedAt: DateTime(2026, 7, 2, 14, 30),
+      onReportScam: () {},
+      onRefresh: () async {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankEidLoginButton',
+    description: 'National eID sign-in with number-match step.',
+    category: GalleryCategory.auth,
+    isFullScreen: true,
+    params: const [
+      GalleryParam(
+        name: 'state',
+        label: 'Auth state',
+        type: ParamType.enumType,
+        defaultValue: 'numberMatch',
+        enumValues: [
+          'idle',
+          'awaitingApproval',
+          'numberMatch',
+          'approved',
+          'failed',
+        ],
+      ),
+    ],
+    builder: (ctx, p) => BankEidLoginButton(
+      providerLabel: 'National eID',
+      state: BankEidAuthState.values
+          .firstWhere((e) => e.name == (p['state'] as String)),
+      onPressed: () {},
+      matchNumbers: const ['17', '42', '63'],
+      correctNumber: '42',
+      onNumberPicked: (_) {},
+      onCancel: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPanicFreezeButton',
+    description: 'Hold-to-freeze everything panic control.',
+    category: GalleryCategory.auth,
+    params: const [],
+    builder: (ctx, p) => _StatefulWrapper<bool>(
+      initial: false,
+      builder: (frozen, set) => BankPanicFreezeButton(
+        frozen: frozen,
+        onToggle: (freeze) async {
+          set(freeze);
+          return true;
+        },
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankMerchantBlockList',
+    description: 'Category self-exclusion blocks with cool-off.',
+    category: GalleryCategory.cards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankMerchantBlockList(
+      blocks: const [
+        BankCategoryBlock(
+          id: 'gambling',
+          label: 'Gambling',
+          icon: Icons.casino_outlined,
+          blocked: true,
+          unblockCoolOff: Duration(hours: 48),
+        ),
+        BankCategoryBlock(
+          id: 'crypto',
+          label: 'Crypto exchanges',
+          icon: Icons.currency_bitcoin_outlined,
+          blocked: false,
+        ),
+        BankCategoryBlock(
+          id: 'latenight',
+          label: 'Late-night spending',
+          icon: Icons.nightlight_outlined,
+          blocked: false,
+        ),
+      ],
+      onChanged: (_, __) async => true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankFamilyCardTile',
+    description: 'Teen card with parental limits and freeze.',
+    category: GalleryCategory.cards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankFamilyCardTile(
+      member: BankFamilyMemberCard(
+        id: 'fam1',
+        memberName: 'Sara',
+        cardLast4: '4821',
+        spendLimit: Money.fromDouble(200, 'GBP'),
+        spentThisPeriod: Money.fromDouble(68, 'GBP'),
+        age: 14,
+        notificationsOnSpend: true,
+      ),
+      onFreezeToggle: (_) async => true,
+      onTap: () {},
+      onLimits: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankDisposableCardTile',
+    description: 'Single-use virtual card with auto-regeneration.',
+    category: GalleryCategory.cards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankDisposableCardTile(
+      cardLast4: '8317',
+      numberUsed: true,
+      onRegenerate: () async => '5502',
+      onRevealDetails: () {},
+    ),
+  ),
 ];
+
+Widget _storyTile(Color color) => DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [color, Color.lerp(color, Colors.black, 0.4)!],
+        ),
+      ),
+      child: const Center(
+        child: Icon(Icons.auto_awesome, color: Colors.white70, size: 28),
+      ),
+    );
+
+Widget _storyContent(Color color, String message) => DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [color, Color.lerp(color, Colors.black, 0.5)!],
+        ),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.w600,
+              height: 1.3,
+            ),
+          ),
+        ),
+      ),
+    );
 
 String _notifTitle(BankNotificationType type) => switch (type) {
       BankNotificationType.payment => 'Payment received',

@@ -265,7 +265,38 @@ if (!screensOnly) {
     { name: 'BankOnboardingCarousel',     fullScreen: true  },
     { name: 'BankSecureMessageThread',    fullScreen: true  },
     { name: 'BankHelpFaqList',            fullScreen: true  },
+    // Top-20 research release
+    { name: 'BankStoriesCarousel',        fullScreen: true  },
+    { name: 'BankPeekBalance',            fullScreen: false },
+    { name: 'BankEarlyPaydayCard',        fullScreen: true  },
+    { name: 'BankBillForecastList',       fullScreen: true  },
+    { name: 'BankAtmLocatorTile',         fullScreen: true  },
+    { name: 'BankCardlessCashCode',       fullScreen: false },
+    { name: 'BankOffersRail',             fullScreen: true  },
+    { name: 'BankCashbackCategoryPicker', fullScreen: true  },
+    { name: 'BankPointsHubCard',          fullScreen: true  },
+    { name: 'BankSavingsChallengeCard',   fullScreen: true  },
+    { name: 'BankFinancialHealthScore',   fullScreen: true  },
+    { name: 'BankFoundMoneyList',         fullScreen: true  },
+    { name: 'BankCreditLimitAdjuster',    fullScreen: true  },
+    { name: 'BankPreapprovedLoanCard',    fullScreen: true  },
+    { name: 'BankOverdraftCushionMeter',  fullScreen: true  },
+    { name: 'BankZakatCalculator',        fullScreen: true  },
+    { name: 'BankDonationHubCard',        fullScreen: true  },
+    { name: 'BankCallVerificationScreen', fullScreen: true  },
+    { name: 'BankEidLoginButton',         fullScreen: true  },
+    { name: 'BankPanicFreezeButton',      fullScreen: false },
+    { name: 'BankMerchantBlockList',      fullScreen: true  },
+    { name: 'BankFamilyCardTile',         fullScreen: true  },
+    { name: 'BankDisposableCardTile',     fullScreen: true  },
   ];
+
+  // --only=Name1,Name2 restricts the component sweep (incremental capture).
+  const onlyArg = args.find((a) => a.startsWith('--only='));
+  const filtered = onlyArg
+    ? components.filter((c) =>
+        onlyArg.slice('--only='.length).split(',').includes(c.name))
+    : components;
 
   // Preset variants: studio-light is the canonical top-level shot; the
   // other presets land in components/<preset>/ for theme-specific decks.
@@ -278,7 +309,7 @@ if (!screensOnly) {
   for (const v of variants) mkdirSync(v.dir, { recursive: true });
 
   console.log(
-    `\n── Components (${components.length} × ${variants.length} presets) ──────────────`,
+    `\n── Components (${filtered.length} × ${variants.length} presets) ──────────────`,
   );
   // Reuse a single page; resize viewport per component to save memory.
   const compPage = await browser.newPage({
@@ -286,7 +317,7 @@ if (!screensOnly) {
     deviceScaleFactor: 1,
   });
   for (const v of variants) {
-    for (const c of components) {
+    for (const c of filtered) {
       totalAttempts++;
       const h = c.fullScreen ? 812 : 600;
       await compPage.setViewportSize({ width: 375, height: h });

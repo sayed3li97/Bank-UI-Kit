@@ -13,7 +13,7 @@ four design languages, your backend.
 [![Flutter](https://img.shields.io/badge/Flutter-3.27%2B-027DFD.svg)](https://flutter.dev)
 [![style: flutter_lints](https://img.shields.io/badge/style-flutter__lints-40c4ff.svg)](https://pub.dev/packages/flutter_lints)
 
-**110+ components** · **20 banking domains** · **4 design languages** · **WCAG 2.1 AA** · **RTL + Arabic-Indic numerals**
+**135+ components** · **22 banking domains** · **4 design languages** · **WCAG 2.1 AA** · **RTL + Arabic-Indic numerals**
 
 <br />
 
@@ -58,9 +58,10 @@ four design languages, your backend.
 ## Why Bank UI Kit
 
 **Coverage that reads like a banking platform.** Accounts, payments,
-cards, onboarding and KYC, PFM and insights, lending, business-banking
-approvals, disputes, secure messaging, statements: 110+ components
-across 20 domains, each one a widget you compose into your own screens.
+cards, onboarding and KYC, PFM and insights, lending, rewards, Islamic
+banking, business-banking approvals, disputes, secure messaging,
+statements: 135+ components across 22 domains, benchmarked against the
+world's top 20 banking apps so every surface they ship, you can too.
 
 **Compliance-grade by default.** PSD2 dynamic-linking payment approval,
 open-banking consent management, deposit-protection notices, IBAN and
@@ -246,7 +247,7 @@ final tweaked = BankPreset.bloom
 
 ## Component catalogue
 
-110+ widgets across 20 modules. Each screenshot below is a live render of that module's
+135+ widgets across 22 modules. Each screenshot below is a live render of that module's
 showcase screen (Studio preset, light mode) from the example app.
 
 For the full parameter-level API reference (every constructor argument, type, required/optional status, and default value) see **[docs/component-reference.md](docs/component-reference.md)**.
@@ -257,7 +258,7 @@ For the full parameter-level API reference (every constructor argument, type, re
 <img src="docs/screenshots/states-studio-light.png" width="260" align="right" />
 
 ### Accounts & balances
-`BankAccountCard` · `BankAccountSwitcher` · `BankBalanceText` (privacy-aware) · `BankProductItemTile` · `BankAccountNumberText`
+`BankAccountCard` · `BankAccountSwitcher` · `BankBalanceText` (privacy-aware) · `BankProductItemTile` · `BankAccountNumberText` · `BankPeekBalance` (pre-login peek) · `BankEarlyPaydayCard`
 
 ### Transactions
 `BankTransactionListTile` · `BankTransactionGroupHeader` · `BankTransactionDetailSheet` · `BankTransactionFilterSheet` · `BankReceiptView` · `BankTransactionCostSplitSheet` · `BankTransactionCategorySplitSheet`
@@ -270,7 +271,7 @@ For the full parameter-level API reference (every constructor argument, type, re
 
 **Transfers & payments**: `BankAmountKeypad` · `BankBeneficiaryPicker` · `BankTransferReviewCard` · `BankTransactionPinSheet` · `BankScheduledTransferToggle` · `BankPaymentRequestCard` · `BankTransferResultScreen` · `BankContactPaymentSheet`
 
-**Cards**: `BankFlipCard` · `BankHorizontalAccountCard` · `BankVirtualCardWidget` (flat / gradient / mesh / metallic / image) · `BankCardControlsPanel` · `BankCardPinManager` · `BankPhysicalCardMaterialPicker`
+**Cards**: `BankFlipCard` · `BankHorizontalAccountCard` · `BankVirtualCardWidget` (flat / gradient / mesh / metallic / image) · `BankCardControlsPanel` · `BankCardPinManager` · `BankPhysicalCardMaterialPicker` · `BankDisposableCardTile` (single-use) · `BankMerchantBlockList` (self-exclusion) · `BankFamilyCardTile` (teen cards)
 
 ### Flip cards
 
@@ -366,11 +367,11 @@ BankVirtualCardWidget(
 |---|---|---|
 | <img src="docs/screenshots/auth-studio-light.png" width="230" /> | <img src="docs/screenshots/onboarding-studio-light.png" width="230" /> | <img src="docs/screenshots/saving-studio-light.png" width="230" /> |
 
-**Auth & security**: `BankPinKeypad` · `BankPinDots` · `BankBiometricPromptButton` · `BankPrivacyToggle` · `BankDeviceTrustBanner` · `BankSessionTimeoutDialog` · `BankAppSwitcherPrivacyOverlay` · `BankOtpInput` · `BankScaApprovalSheet` (PSD2 dynamic linking) · `BankDeviceSessionTile`
+**Auth & security**: `BankPinKeypad` · `BankPinDots` · `BankBiometricPromptButton` · `BankPrivacyToggle` · `BankDeviceTrustBanner` · `BankSessionTimeoutDialog` · `BankAppSwitcherPrivacyOverlay` · `BankOtpInput` · `BankScaApprovalSheet` (PSD2 dynamic linking) · `BankDeviceSessionTile` · `BankCallVerificationScreen` (anti-vishing) · `BankEidLoginButton` (national eID) · `BankPanicFreezeButton`
 
 **Onboarding & KYC**: `BankStepProgressIndicator` · `BankDocumentCaptureOverlay` · `BankLivenessCheckOverlay` · `BankAsyncVerificationState` · `BankConsentModal` · `BankConsentManagementList` (open-banking dashboard) · `BankOnboardingCarousel` · `BankAddressForm`
 
-**Saving**: `BankSavingsPotCard` · `BankRoundUpSettingsSheet` · `BankPotContributionSheet` · `BankIncomeSorterSheet` · `BankSharedPotInvite`
+**Saving**: `BankSavingsPotCard` · `BankRoundUpSettingsSheet` · `BankPotContributionSheet` · `BankIncomeSorterSheet` · `BankSharedPotInvite` · `BankSavingsChallengeCard` (streaks + stamps)
 
 | Social | Investing | Credit |
 |---|---|---|
@@ -380,7 +381,7 @@ BankVirtualCardWidget(
 
 **Investing**: `BankPortfolioPerformanceChart` · `BankHoldingsListTile` · `BankWatchlistCard` · `BankBuySellSheet` · `BankAssetPriceTicker` · `BankLiveExchangeConverter` · `BankCurrencyWalletTabBar`
 
-**Credit**: `BankCreditLimitGauge` · `BankFlexEligibleBadge` · `BankInstallmentPlanSelector` · `BankRepaymentScheduleView` · `BankCreditScoreGauge` · `BankLoanCalculatorCard`
+**Credit**: `BankCreditLimitGauge` · `BankFlexEligibleBadge` · `BankInstallmentPlanSelector` · `BankRepaymentScheduleView` · `BankCreditScoreGauge` · `BankLoanCalculatorCard` · `BankCreditLimitAdjuster` (user-set limit) · `BankPreapprovedLoanCard` · `BankOverdraftCushionMeter`
 
 | Subscriptions | Insights | Notifications |
 |---|---|---|
@@ -388,7 +389,7 @@ BankVirtualCardWidget(
 
 **Subscriptions**: `BankPlanComparisonTable` · `BankPaywallSheet` · `BankPerksMarketplaceCard` · `BankReferralInviteCard`
 
-**Insights**: `BankSpendingBreakdownChart` (donut) · `BankBudgetGaugeWidget` · `BankInsightCard` · `BankCashflowChart` (history + forecast) · `BankRecurringMerchantTile` (subscription detection)
+**Insights**: `BankSpendingBreakdownChart` (donut) · `BankBudgetGaugeWidget` · `BankInsightCard` · `BankCashflowChart` (history + forecast) · `BankRecurringMerchantTile` (subscription detection) · `BankFinancialHealthScore` · `BankFoundMoneyList`
 
 **Notifications**: `BankInAppNotificationCenter` · `BankAlertPreferencesPanel`
 
@@ -396,7 +397,13 @@ BankVirtualCardWidget(
 `BankTextField` · `BankAmountInputField` (currency-aware) · `BankMaskedInputField` (IBAN / PAN / sort code, mod-97 + Luhn) · `BankPhoneInputField` (E.164) · `BankCountryPicker` (236 countries) · `BankPeriodSelector`
 
 ### Payments & billing
-`BankBillPayTile` + `BankBillCalendarStrip` · `BankStandingOrderTile` · `BankTransferLimitManager` (SCA-gated) · `BankQrScannerOverlay` + `BankMyQrCard` (local QR encoding)
+`BankBillPayTile` + `BankBillCalendarStrip` · `BankStandingOrderTile` · `BankTransferLimitManager` (SCA-gated) · `BankQrScannerOverlay` + `BankMyQrCard` (local QR encoding) · `BankBillForecastList` (bill prediction) · `BankAtmLocatorTile` + `BankCardlessCashCode`
+
+### Rewards & engagement
+`BankPointsHubCard` (earn/burn) · `BankOffersRail` (card-linked offers) · `BankCashbackCategoryPicker` (quarterly picks) · `BankStoriesCarousel` (stories + full-screen viewer)
+
+### Islamic banking
+`BankZakatCalculator` (nisab-aware) · `BankDonationHubCard` (verified charities) · `BankShariahBadge` · profit-rate labeling via `islamicFinanceMode` · the Heritage preset
 
 ### Business banking
 `BankApprovalRequestTile` (maker-checker) · `BankBatchPaymentReviewSheet` · `BankValueDiffRow`
@@ -419,6 +426,17 @@ BankVirtualCardWidget(
 
 ```dart
 BankBalanceText(money: account.balance) // shows '••••' when privacy is on
+```
+
+### Currency-correct money display
+Every amount renders through a currency engine that knows each
+currency's official symbol, minor units, and symbol placement: the
+Saudi riyal symbol, three-decimal Gulf currencies (OMR, KWD, BHD),
+zero-decimal JPY/KRW, and crypto precision all follow their own
+guidelines. Register your own with `BankCurrencies.register`.
+
+```dart
+BankBalanceText(money: Money.fromDouble(1250.5, 'OMR')) // ر.ع. 1,250.500
 ```
 
 ### Numeral styles
@@ -477,7 +495,7 @@ The example app ships two entry points:
 
 | Entry point | Launch command | What it shows |
 |---|---|---|
-| **Component gallery** | `flutter run -t lib/gallery_main.dart` | All 69 components with live parameter controls, preset/dark-mode switching, and search |
+| **Component gallery** | `flutter run -t lib/gallery_main.dart` | 111 components with live parameter controls, preset/dark-mode switching, and search |
 | **Demo dashboard** | `flutter run` | Revolut-style demo app under the Studio preset |
 
 ```bash

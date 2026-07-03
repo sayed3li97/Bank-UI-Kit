@@ -38,11 +38,11 @@ Legend: [x] shipped in Bank UI Kit today, [ ] gap.
 ### Accounts and home
 - [x] balance-first minimal home (compose: BankBalanceText, BankAccountCard)
 - [x] feed/timeline home (BankTransactionListTile + group headers)
-- [ ] stories carousel for promos, tips, recaps (Sber, T-Bank, Chase)
+- [x] stories carousel for promos, tips, recaps (BankStoriesCarousel)
 - [x] super-app modular home (BankQuickActionsGrid)
 - [x] customizable home (BankQuickActionsGrid editable mode)
 - [x] multi-account card carousel (BankAccountCard, BankHorizontalAccountCard)
-- [ ] pre-login peek balance (DBS Peek)
+- [x] pre-login peek balance (BankPeekBalance)
 - [x] external aggregation view (compose: BankProductItemTile list)
 - [x] hidden/discreet balance (BankPrivacyToggle + scope masking)
 - [x] net worth view (compose: BankSummaryStack + BankPortfolioPerformanceChart)
@@ -53,20 +53,20 @@ Legend: [x] shipped in Bank UI Kit today, [ ] gap.
 - [x] QR scan and pay (BankQrScannerOverlay, BankMyQrCard)
 - [x] instant-rail hub primitives (BankTransferLimitManager, BankScheduledTransferToggle)
 - [x] bill-pay hub (BankBillPayTile, BankBillCalendarStrip)
-- [ ] bill auto-discovery / prediction list (CommBank Bill Sense)
+- [x] bill auto-discovery / prediction list (BankBillForecastList)
 - [x] bill splitting (BankTransactionCostSplitSheet)
 - [x] remittance with rate screen (BankLiveExchangeConverter + BankTransferReviewCard)
 - [x] currency exchange (BankLiveExchangeConverter)
 - [x] request money (BankPaymentRequestCard)
-- [ ] ATM finder tile + cardless withdrawal code (Chime, CommBank, Al Rajhi)
+- [x] ATM finder tile + cardless withdrawal code (BankAtmLocatorTile, BankCardlessCashCode)
 
 ### Cards
 - [x] instant virtual card (BankVirtualCardWidget)
-- [ ] disposable single-use virtual card state (Revolut)
+- [x] disposable single-use virtual card state (BankDisposableCardTile)
 - [x] freeze + granular controls (BankCardControlsPanel)
 - [x] card designer primitives (BankPhysicalCardMaterialPicker, BankCardDesignOption)
-- [ ] card-linked offers activation tiles (Chase Offers, Cash App Boosts)
-- [ ] selectable cashback categories picker (T-Bank, Sber)
+- [x] card-linked offers activation tiles (BankOffersRail)
+- [x] selectable cashback categories picker (BankCashbackCategoryPicker)
 - [x] PAN reveal (BankCardPinManager, BankAccountNumberText)
 - [x] transaction enrichment (BankTransactionListTile + detail sheet)
 - [x] single-purchase installment (BankInstallmentPlanSelector)
@@ -77,9 +77,9 @@ Legend: [x] shipped in Bank UI Kit today, [ ] gap.
 - [x] round-ups (BankRoundUpSettingsSheet)
 - [x] save-when-paid (BankIncomeSorterSheet + controller)
 - [x] group savings (BankSharedPotInvite, BankSharedGoalProgressCard)
-- [ ] gamified savings challenge with stamps/streaks (Kakao 26-week)
+- [x] gamified savings challenge with stamps/streaks (BankSavingsChallengeCard)
 - [x] yield-bearing balance tile (compose: BankProductItemTile rateLabel)
-- [ ] early payday / earned wage access card (Chime, Monzo)
+- [x] early payday / earned wage access card (BankEarlyPaydayCard)
 
 ### Budgeting, insights, financial health
 - [x] category analytics (BankSpendingBreakdownChart)
@@ -87,8 +87,8 @@ Legend: [x] shipped in Bank UI Kit today, [ ] gap.
 - [x] proactive insight cards (BankInsightCard)
 - [x] subscriptions manager (BankRecurringMerchantTile)
 - [x] budgets with progress (BankBudgetGaugeWidget)
-- [ ] composite financial health score (BBVA, DBS, BofA)
-- [ ] found-money discovery list (Toss)
+- [x] composite financial health score (BankFinancialHealthScore)
+- [x] found-money discovery list (BankFoundMoneyList)
 
 ### Investing and wealth
 - [x] brokerage surfaces (BankBuySellSheet, BankHoldingsListTile, charts)
@@ -98,17 +98,17 @@ Legend: [x] shipped in Bank UI Kit today, [ ] gap.
 
 ### Credit and lending
 - [x] credit score dashboard (BankCreditScoreGauge)
-- [ ] user-controlled credit limit slider (Nubank)
-- [ ] one-tap pre-approved loan drawdown card (WeBank, BBVA, Al Rajhi)
+- [x] user-controlled credit limit slider (BankCreditLimitAdjuster)
+- [x] one-tap pre-approved loan drawdown card (BankPreapprovedLoanCard)
 - [x] BNPL (BankInstallmentPlanSelector, BankFlexEligibleBadge)
-- [ ] overdraft cushion meter (Chime SpotMe)
+- [x] overdraft cushion meter (BankOverdraftCushionMeter)
 - [x] repayment schedule (BankRepaymentScheduleView)
 
 ### Rewards and engagement
-- [ ] points program hub: earn/burn balance + redemption (Mokafaa, RevPoints, Yello)
+- [x] points program hub: earn/burn balance + redemption (BankPointsHubCard)
 - [x] perks marketplace (BankPerksMarketplaceCard)
 - [x] referral (BankReferralInviteCard)
-- [ ] charity/donations hub (Al Rajhi Sadaqah)
+- [x] charity/donations hub (BankDonationHubCard)
 - [x] tier upsell (BankPlanComparisonTable, BankPaywallSheet)
 
 ### Support and assistant
@@ -117,21 +117,21 @@ Legend: [x] shipped in Bank UI Kit today, [ ] gap.
 - [x] disputes (BankDisputeWizardSheet)
 
 ### Security and privacy
-- [ ] call verification screen (Monzo Call Status)
-- [ ] merchant-category self-exclusion blocks (gambling block)
+- [x] call verification screen (BankCallVerificationScreen)
+- [x] merchant-category self-exclusion blocks (BankMerchantBlockList)
 - [x] limits by channel (BankTransferLimitManager)
 - [x] security surfaces (BankDeviceSessionTile, BankDeviceTrustBanner, BankScaApprovalSheet)
 - [x] real-time push primitives (BankInAppNotificationCenter, BankToastBanner)
-- [ ] national eID login/onboarding button (Nafath, Singpass)
-- [ ] panic freeze-everything control (Revolut, Al Rajhi)
+- [x] national eID login/onboarding button (BankEidLoginButton)
+- [x] panic freeze-everything control (BankPanicFreezeButton)
 
 ### Islamic banking
 - [x] profit-rate labeling (islamicFinanceMode), BankShariahBadge, Heritage preset
 - [x] Murabaha-style financing calculator (BankLoanCalculatorCard with rateLabel)
-- [ ] Zakat calculator (Al Rajhi)
-- [ ] Sadaqah/donations hub (Al Rajhi)
+- [x] Zakat calculator (BankZakatCalculator)
+- [x] Sadaqah/donations hub (BankDonationHubCard)
 
 ### Family, teens, business
 - [x] joint/social (BankJointTransactionListTile, BankAccountOwnershipBadge)
 - [x] business approvals + batch (business/ domain)
-- [ ] family/teen controlled-card tile with parental limits (Revolut <18, Kit)
+- [x] family/teen controlled-card tile with parental limits (BankFamilyCardTile)
