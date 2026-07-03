@@ -149,6 +149,29 @@ every widget re-themes itself because it reads tokens from `BankThemeData.of(con
   </tr>
 </table>
 
+### Heritage — the Islamic-banking preset
+
+A complete demo app (`HeritageDashboard` in the example) built on the Heritage
+preset: SAR balances, profit-rate labels via `islamicFinanceMode`,
+`BankShariahBadge` on eligible products, and gold-accent virtual cards.
+
+<table>
+  <tr>
+    <td align="center">Heritage · light</td>
+    <td align="center">Heritage · dark</td>
+    <td align="center">Home · Heritage</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/heritage-heritage-light.png" width="240" /></td>
+    <td><img src="docs/screenshots/heritage-heritage-dark.png" width="240" /></td>
+    <td><img src="docs/screenshots/home-heritage-light.png" width="240" /></td>
+  </tr>
+</table>
+
+Every component is also captured under all four presets — see
+`docs/screenshots/components/` (Studio at the top level, plus
+`heritage/`, `voltage/`, and `bloom/` sub-folders for theme-specific decks).
+
 ---
 
 ## Custom themes
