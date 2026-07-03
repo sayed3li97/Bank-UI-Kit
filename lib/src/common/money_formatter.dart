@@ -96,4 +96,16 @@ abstract final class BankDateFormatter {
 
   static String formatFull(DateTime date) =>
       DateFormat('EEE d MMM y').format(date);
+
+  /// Compact relative time for activity feeds: `just now`, `5m ago`,
+  /// `2h ago`, `3d ago`, then [formatShort] beyond a week.
+  static String formatRelative(DateTime date, {DateTime? now}) {
+    final reference = now ?? DateTime.now();
+    final diff = reference.difference(date);
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return formatShort(date);
+  }
 }

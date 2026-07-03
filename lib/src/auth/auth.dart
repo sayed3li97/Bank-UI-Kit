@@ -1,5 +1,6 @@
 export 'bank_app_switcher_privacy_overlay.dart';
 export 'bank_biometric_prompt_button.dart';
+export 'bank_device_session_tile.dart';
 export 'bank_device_trust_banner.dart';
 export 'bank_otp_input.dart';
 export 'bank_pin_dots.dart';

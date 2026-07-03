@@ -16,4 +16,5 @@ export 'bank_async_verification_state.dart';
 export 'bank_consent_modal.dart';
 export 'bank_document_capture_overlay.dart';
 export 'bank_liveness_check_overlay.dart';
+export 'bank_onboarding_carousel.dart';
 export 'bank_step_progress_indicator.dart';

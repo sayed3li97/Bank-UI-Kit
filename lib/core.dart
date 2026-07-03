@@ -16,6 +16,7 @@ export 'src/accounts/bank_balance_text.dart';
 export 'src/accounts/bank_product_item_tile.dart';
 export 'src/auth/bank_app_switcher_privacy_overlay.dart';
 export 'src/auth/bank_biometric_prompt_button.dart';
+export 'src/auth/bank_device_session_tile.dart';
 export 'src/auth/bank_device_trust_banner.dart';
 export 'src/auth/bank_otp_input.dart';
 export 'src/auth/bank_pin_dots.dart';
@@ -74,6 +75,7 @@ export 'src/onboarding/bank_async_verification_state.dart';
 export 'src/onboarding/bank_consent_modal.dart';
 export 'src/onboarding/bank_document_capture_overlay.dart';
 export 'src/onboarding/bank_liveness_check_overlay.dart';
+export 'src/onboarding/bank_onboarding_carousel.dart';
 // Onboarding & KYC
 export 'src/onboarding/bank_step_progress_indicator.dart';
 // Payments & billing
