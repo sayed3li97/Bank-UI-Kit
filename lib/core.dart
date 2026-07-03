@@ -86,6 +86,7 @@ export 'src/onboarding/bank_onboarding_carousel.dart';
 export 'src/onboarding/bank_step_progress_indicator.dart';
 // Payments & billing
 export 'src/payments/bank_bill_pay_tile.dart';
+export 'src/payments/bank_qr_pay_view.dart';
 export 'src/payments/bank_standing_order_tile.dart';
 export 'src/payments/bank_transfer_limit_manager.dart';
 // Scope & strings
