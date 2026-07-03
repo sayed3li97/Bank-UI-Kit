@@ -37,8 +37,7 @@ void main() {
         expect(find.text('AT'), findsOneWidget);
       });
 
-      testWidgets('BankSummaryStack renders label/value rows',
-          (tester) async {
+      testWidgets('BankSummaryStack renders label/value rows', (tester) async {
         await tester.pumpWidget(
           _host(
             const BankSummaryStack(
@@ -101,8 +100,7 @@ void main() {
         expect(find.byType(BankOtpInput), findsOneWidget);
       });
 
-      testWidgets('BankCountryPicker field shows placeholder',
-          (tester) async {
+      testWidgets('BankCountryPicker field shows placeholder', (tester) async {
         await tester.pumpWidget(
           _host(BankCountryPicker(onSelected: (_) {}), preset),
         );
@@ -183,8 +181,7 @@ void main() {
         expect(find.text('2 of 3 approvals'), findsOneWidget);
       });
 
-      testWidgets('BankCreditScoreGauge announces the score',
-          (tester) async {
+      testWidgets('BankCreditScoreGauge announces the score', (tester) async {
         await tester.pumpWidget(
           _host(const BankCreditScoreGauge(score: 715), preset),
         );
@@ -212,8 +209,7 @@ void main() {
         expect(find.byType(BankCashflowChart), findsOneWidget);
       });
 
-      testWidgets('BankHelpFaqList expands an item on tap',
-          (tester) async {
+      testWidgets('BankHelpFaqList expands an item on tap', (tester) async {
         await tester.pumpWidget(
           _host(
             const BankHelpFaqList(
@@ -277,8 +273,7 @@ void main() {
       BankUiScope(
         initialData: const BankUiScopeData(privacyEnabled: true),
         child: MaterialApp(
-          theme:
-              BankPreset.studio.apply(ThemeData.light(useMaterial3: true)),
+          theme: BankPreset.studio.apply(ThemeData.light(useMaterial3: true)),
           home: Scaffold(
             body: BankScaApprovalSheet(
               amount: Money.fromDouble(1250, 'GBP'),
