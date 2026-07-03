@@ -160,11 +160,22 @@ abstract final class BankCurrencies {
     'UAH': BankCurrency(code: 'UAH', symbol: '₴', name: 'Ukrainian Hryvnia'),
 
     // ── Gulf & Middle East ───────────────────────────────────────────
+    // SAR defaults to the traditional abbreviation because the official
+    // riyal symbol (U+20C1, adopted 2025) is still missing from most
+    // shipped fonts and would render as a placeholder box. Apps whose
+    // bundled font contains the glyph can opt in:
+    //   BankCurrencies.register(BankCurrency(
+    //     code: 'SAR',
+    //     symbol: '\u20C1',
+    //     name: 'Saudi Riyal',
+    //     spaceBetweenSymbolAndAmount: true,
+    //   ));
     'SAR': BankCurrency(
       code: 'SAR',
-      symbol: '\u20C1',
+      symbol: '\u0631.\u0633',
       name: 'Saudi Riyal',
       spaceBetweenSymbolAndAmount: true,
+      symbolIsRtlScript: true,
     ),
     'AED': BankCurrency(
       code: 'AED',
