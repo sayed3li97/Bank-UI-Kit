@@ -116,6 +116,7 @@ export 'src/payments/bank_transfer_limit_manager.dart';
 export 'src/rewards/bank_cashback_category_picker.dart';
 export 'src/rewards/bank_offers_rail.dart';
 export 'src/rewards/bank_points_hub_card.dart';
+export 'src/rewards/bank_prize_draw_card.dart';
 // Scope & strings
 export 'src/scope/bank_ui_scope.dart';
 export 'src/scope/bank_ui_strings.dart';
@@ -131,6 +132,7 @@ export 'src/states/bank_success_animation.dart';
 export 'src/states/bank_toast_banner.dart';
 export 'src/states/bank_update_prompt_sheet.dart';
 // Support & servicing
+export 'src/support/bank_assistant_panel.dart';
 export 'src/support/bank_dispute_wizard_sheet.dart';
 export 'src/support/bank_help_faq_list.dart';
 export 'src/support/bank_secure_message_thread.dart';

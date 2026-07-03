@@ -294,6 +294,11 @@ if (!screensOnly) {
     { name: 'BankMerchantBlockList',      fullScreen: true  },
     { name: 'BankFamilyCardTile',         fullScreen: true  },
     { name: 'BankDisposableCardTile',     fullScreen: true  },
+    // ila Bank batch
+    { name: 'BankMoneyCircleCard',        fullScreen: true  },
+    { name: 'BankPrizeDrawCard',          fullScreen: true  },
+    { name: 'BankSavingsProjectionCard',  fullScreen: true  },
+    { name: 'BankAssistantPanel',         fullScreen: true  },
     // App gates & degraded states
     { name: 'BankAppGateScreen',          fullScreen: true  },
     { name: 'BankConnectivityBanner',     fullScreen: true  },
