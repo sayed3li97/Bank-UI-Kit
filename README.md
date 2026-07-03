@@ -2,29 +2,37 @@
 
 # Bank UI Kit
 
-**A production-grade Flutter UI component library for mobile banking and fintech apps.**
+### The Flutter front-end for digital banking.
 
-Independently themeable · RTL-aware · WCAG 2.1 AA · state-management agnostic · 110+ widgets
+Every surface a retail, Islamic, or business bank ships — onboarding to
+servicing — as composable, bank-grade Flutter widgets. One codebase,
+four design languages, your backend.
 
 [![CI](https://github.com/sayed3li97/bank-ui-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/sayed3li97/bank-ui-kit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Flutter](https://img.shields.io/badge/Flutter-3.27%2B-027DFD.svg)](https://flutter.dev)
 [![style: flutter_lints](https://img.shields.io/badge/style-flutter__lints-40c4ff.svg)](https://pub.dev/packages/flutter_lints)
 
+**110+ components** · **20 banking domains** · **4 design languages** · **WCAG 2.1 AA** · **RTL + Arabic-Indic numerals**
+
+<br />
+
 <table>
   <tr>
+    <td align="center"><b>Heritage</b></td>
     <td align="center"><b>Studio</b></td>
     <td align="center"><b>Voltage</b></td>
     <td align="center"><b>Bloom</b></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/home-studio-light.png" width="240" alt="Studio preset" /></td>
-    <td><img src="docs/screenshots/home-voltage-dark.png" width="240" alt="Voltage preset" /></td>
-    <td><img src="docs/screenshots/home-bloom-light.png" width="240" alt="Bloom preset" /></td>
+    <td><img src="docs/screenshots/heritage-heritage-light.png" width="185" alt="Heritage preset" /></td>
+    <td><img src="docs/screenshots/home-studio-light.png" width="185" alt="Studio preset" /></td>
+    <td><img src="docs/screenshots/home-voltage-dark.png" width="185" alt="Voltage preset" /></td>
+    <td><img src="docs/screenshots/home-bloom-light.png" width="185" alt="Bloom preset" /></td>
   </tr>
 </table>
 
-*The same home dashboard, composed from the same widgets, rendered under three drop-in design presets.*
+*The same widgets, four complete design languages. Rebrand in minutes, not quarters.*
 
 </div>
 
@@ -49,6 +57,27 @@ Independently themeable · RTL-aware · WCAG 2.1 AA · state-management agnostic
 
 ## Why Bank UI Kit
 
+**Coverage that reads like a banking platform.** Accounts, payments,
+cards, onboarding and KYC, PFM and insights, lending, business-banking
+approvals, disputes, secure messaging, statements — 110+ components
+across 20 domains, each one a widget you compose into your own screens.
+
+**Compliance-grade by default.** PSD2 dynamic-linking payment approval,
+open-banking consent management, deposit-protection notices, IBAN and
+PAN checksum validation, WCAG 2.1 AA semantics, 44 px touch targets,
+and first-class RTL with Arabic-Indic numeral rendering in every input.
+
+**Four design languages, one theming engine.** Every widget reads its
+colour, shape, depth, and numeral typography from `BankThemeData`
+tokens. Ship the included presets, or derive a complete brand theme
+from a single primary colour.
+
+**Backend-agnostic by design.** Pure props and callbacks; headless flow
+controllers (`ChangeNotifier` state machines) that never touch the
+network. Your core banking APIs stay yours.
+
+### How it compares
+
 | | Bank UI Kit | Typical screen-template kits |
 |---|---|---|
 | **Integration model** | Compose into any existing app | Copy-paste whole screens |
@@ -58,8 +87,6 @@ Independently themeable · RTL-aware · WCAG 2.1 AA · state-management agnostic
 | **State management** | Agnostic (pure props + callbacks) | Tied to the template's choice |
 | **Money** | Lossless `Decimal`-backed `Money` type | `double` |
 | **Tests** | Unit + widget tests across presets | None |
-
-Everything is a **widget you drop into your own screens** — not a finished app you have to adopt wholesale.
 
 ---
 
@@ -128,7 +155,7 @@ Four first-class presets ship in the box. Each defines a complete `BankThemeData
 
 | Preset | Personality | Signature |
 |---|---|---|
-| **Studio** | Restrained, editorial | Petrol-green, 12 px corners, hairline borders, Space Grotesk |
+| **Studio** | Restrained, editorial | Petrol-green, soft-shadow depth, Space Grotesk |
 | **Voltage** | Electric, dark-native | Violet→cyan gradient, pill shapes, glow depth |
 | **Bloom** | Warm, consumer-friendly | Coral primary, fully-rounded, Nunito |
 | **Heritage** | Institutional, Islamic-banking ready | Deep forest green + muted gold, pairs with `BankShariahBadge` and profit-rate labels |
