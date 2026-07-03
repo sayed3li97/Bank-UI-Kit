@@ -64,7 +64,7 @@ sealed class BankIncomeSorterStatus {
   const BankIncomeSorterStatus();
 }
 
-/// Initial state — the user has not started editing yet.
+/// Initial state: the user has not started editing yet.
 class BankIncomeSorterIdle extends BankIncomeSorterStatus {
   const BankIncomeSorterIdle();
 }

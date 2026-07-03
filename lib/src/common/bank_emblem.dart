@@ -13,15 +13,15 @@ import 'bank_icon_spec.dart';
 ///
 /// Content is resolved in this order:
 ///
-/// 1. **Network image** — [imageUrl] fades in over
+/// 1. **Network image**: [imageUrl] fades in over
 ///    [BankTokens.durationFast] once loaded. While loading, and if the
 ///    request fails, the initials / icon placeholder below is shown
 ///    instead; a broken-image glyph is never rendered.
-/// 2. **Initials** — the first letters of up to two words of
+/// 2. **Initials**: the first letters of up to two words of
 ///    [initialsFrom], on a background colour derived from a stable hash of
 ///    [initialsFrom] across an eight-colour palette, so the same payee
 ///    always receives the same colour.
-/// 3. **Icon** — [icon] tinted [BankThemeData.primary] on an 8 % primary
+/// 3. **Icon**: [icon] tinted [BankThemeData.primary] on an 8 % primary
 ///    tint; [BankIcons.account] is used when no content is given at all.
 ///
 /// [badgeCount] renders a [BankTokens.danger] count bubble at the top-end
@@ -98,7 +98,7 @@ class BankEmblem extends StatelessWidget {
   /// Makes the emblem tappable and exposes it as a semantic button.
   final VoidCallback? onTap;
 
-  /// Deterministic initials palette — eight hues dark enough to keep the
+  /// Deterministic initials palette: eight hues dark enough to keep the
   /// automatically chosen foreground legible in light and dark themes.
   static const List<Color> _initialsPalette = <Color>[
     Color(0xFF3B5BDB),

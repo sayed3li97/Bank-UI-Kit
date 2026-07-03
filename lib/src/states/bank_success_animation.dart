@@ -123,7 +123,7 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
       ),
     );
 
-    // Phase 3: scale bounce — 1.0 → 1.15 → 1.0 during progress 0.8 → 1.0.
+    // Phase 3: scale bounce: 1.0 → 1.15 → 1.0 during progress 0.8 → 1.0.
     _bouncedScaleAnim = TweenSequence<double>([
       TweenSequenceItem(
         tween: Tween<double>(begin: 1, end: 1.15)
@@ -322,7 +322,7 @@ class _SuccessPainter extends CustomPainter {
       circlePaint,
     );
 
-    // Checkmark path — only draw once circle is complete.
+    // Checkmark path: only draw once circle is complete.
     if (checkProgress <= 0 || circleProgress < 0.95) return;
 
     final checkPaint = Paint()

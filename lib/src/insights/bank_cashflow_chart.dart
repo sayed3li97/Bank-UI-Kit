@@ -18,13 +18,13 @@ class BankBalancePoint {
 }
 
 /// Account-level balance-trend chart with a committed-payments forecast
-/// overlay — the sibling of `BankPortfolioPerformanceChart`, wrapping
+/// overlay: the sibling of `BankPortfolioPerformanceChart`, wrapping
 /// fl_chart's `LineChart`.
 ///
 /// History renders as a solid primary line with a soft gradient fill;
 /// [forecast] continues from today as a dashed line in the pending
 /// color. An optional [safeToSpend] horizontal reference line and a
-/// touch tooltip (privacy-aware — masked mode shows bullets) complete
+/// touch tooltip (privacy-aware: masked mode shows bullets) complete
 /// the Backbase-Figma-only chart they never shipped as code.
 ///
 /// ```dart

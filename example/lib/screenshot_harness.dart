@@ -7,10 +7,10 @@
 // Screen mode (existing):
 //   index.html?screen=home&preset=voltage&dark=1
 //
-// Component mode (new — renders one gallery entry with default params):
+// Component mode (new: renders one gallery entry with default params):
 //   index.html?component=BankBalanceText&preset=studio&dark=0
 //
-// This is NOT the app users run — see main.dart for the interactive gallery.
+// This is NOT the app users run: see main.dart for the interactive gallery.
 import 'package:bank_ui_kit/core.dart';
 import 'package:flutter/material.dart';
 

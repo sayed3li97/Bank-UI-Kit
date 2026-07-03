@@ -10,11 +10,11 @@ enum BankWalletTarget { appleWallet, googleWallet }
 enum BankWalletProvisionState { notAdded, adding, added, unavailable }
 
 /// Add-to-wallet button pair with platform-appropriate chrome, free of
-/// platform APIs — the host wires the actual push-provisioning SDK into
+/// platform APIs: the host wires the actual push-provisioning SDK into
 /// [onPressed].
 ///
 /// Renders the wallet-brand-mandated black button (min-width, padding
-/// and typography per both brands' guidelines — replace the glyph and
+/// and typography per both brands' guidelines: replace the glyph and
 /// wording only within what Apple's and Google's marks guidelines
 /// allow; misuse risks app-store rejection). `adding` swaps the label
 /// for a spinner; `added` becomes a non-interactive outlined

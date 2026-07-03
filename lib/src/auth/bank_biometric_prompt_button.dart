@@ -37,11 +37,11 @@ enum _ButtonState { idle, loading, success, error }
 /// signals a user-facing failure.
 ///
 /// State machine:
-/// - **idle** — shows [type]-appropriate icon above [label].
-/// - **loading** — replaces icon with a [CircularProgressIndicator].
-/// - **success** — briefly shows a green checkmark (750 ms) then calls
+/// - **idle**: shows [type]-appropriate icon above [label].
+/// - **loading**: replaces icon with a [CircularProgressIndicator].
+/// - **success**: briefly shows a green checkmark (750 ms) then calls
 ///   [onSuccess] and returns to idle.
-/// - **error** — calls [onError] with `'Authentication failed'` and returns
+/// - **error**: calls [onError] with `'Authentication failed'` and returns
 ///   to idle after 500 ms.
 ///
 /// ```dart

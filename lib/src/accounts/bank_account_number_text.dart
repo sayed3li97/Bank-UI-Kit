@@ -19,10 +19,10 @@ enum BankAccountNumberKind {
   /// International Bank Account Number (e.g. `GB29 NWBK 6016 1331 9268 19`).
   iban,
 
-  /// Basic Bank Account Number — the domestic part of an IBAN.
+  /// Basic Bank Account Number: the domestic part of an IBAN.
   bban,
 
-  /// Primary Account Number — the long card number.
+  /// Primary Account Number: the long card number.
   pan,
 
   /// UK sort code, displayed as `NN-NN-NN`.
@@ -55,7 +55,7 @@ enum BankAccountNumberKind {
 abstract final class BankAccountNumberFormatter {
   static final RegExp _separators = RegExp(r'[\s-]');
 
-  /// Strips spaces and hyphens, returning the raw identifier — the exact
+  /// Strips spaces and hyphens, returning the raw identifier: the exact
   /// string [BankAccountNumberText] places on the clipboard.
   static String normalize(String value) => value.replaceAll(_separators, '');
 
@@ -98,8 +98,8 @@ abstract final class BankAccountNumberFormatter {
   }
 }
 
-/// Display widget for account identifiers — IBANs, card numbers, sort
-/// codes, routing numbers and SWIFT/BIC codes — with kind-aware grouping,
+/// Display widget for account identifiers: IBANs, card numbers, sort
+/// codes, routing numbers and SWIFT/BIC codes: with kind-aware grouping,
 /// masking and a one-tap copy affordance.
 ///
 /// Use it anywhere an account detail is surfaced: account detail sheets,
@@ -107,8 +107,8 @@ abstract final class BankAccountNumberFormatter {
 ///
 /// - Grouping follows [kind] via [BankAccountNumberFormatter] (IBAN/PAN in
 ///   groups of 4, sort code as `NN-NN-NN`).
-/// - When [masked] is `true` — or privacy mode is active on the ambient
-///   [BankUiScope] — only the last four characters are shown; the rest are
+/// - When [masked] is `true`: or privacy mode is active on the ambient
+///   [BankUiScope]: only the last four characters are shown; the rest are
 ///   replaced with `•` bullets.
 /// - When [copyEnabled] is `true`, a copy icon (44 px tap target) copies
 ///   the **unformatted** full value to the clipboard, swaps to a success

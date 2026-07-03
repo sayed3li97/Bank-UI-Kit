@@ -3,7 +3,7 @@ import 'package:bank_ui_kit/saving.dart';
 import 'package:flutter/material.dart';
 
 // ---------------------------------------------------------------------------
-// Sample data — SAR-denominated accounts
+// Sample data: SAR-denominated accounts
 // ---------------------------------------------------------------------------
 
 abstract final class _HeritageSampleData {
@@ -88,7 +88,7 @@ abstract final class _HeritageSampleData {
       status: TransactionStatus.cleared,
       merchantName: 'Employer',
       category: TransactionCategory.income,
-      reference: 'Salary — June 2026',
+      reference: 'Salary: June 2026',
     ),
     Transaction(
       id: 'h_txn_4',
@@ -144,7 +144,7 @@ abstract final class _HeritageSampleData {
   static final BankInsight insight = BankInsight(
     id: 'h_insight_1',
     title: 'You saved 12% more this month',
-    body: 'Your savings rate reached 31% of income — '
+    body: 'Your savings rate reached 31% of income: '
         'well above the recommended 20%. Keep it up.',
     confidence: InsightConfidence.high,
     generatedAt: DateTime(2026, 7, 1),
@@ -717,7 +717,7 @@ class _LabelledAccountCard extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Transfer tab — showcases BankTextField
+// Transfer tab: showcases BankTextField
 // ---------------------------------------------------------------------------
 
 class _TransferTab extends StatelessWidget {

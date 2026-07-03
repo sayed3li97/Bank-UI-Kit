@@ -50,7 +50,7 @@ class BankTransferReviewCard extends StatelessWidget {
   /// `true`.
   final DateTime? scheduledDate;
 
-  /// Optional widget rendered below the summary rows — use for disclaimers,
+  /// Optional widget rendered below the summary rows: use for disclaimers,
   /// T&C links, or exchange-rate freshness notes.
   final Widget? additionalInfo;
 
@@ -83,7 +83,7 @@ class BankTransferReviewCard extends StatelessWidget {
     if (isScheduled && scheduledDate != null) {
       return 'Scheduled: ${BankDateFormatter.formatFull(scheduledDate!)}';
     }
-    return estimatedArrival ?? '—';
+    return estimatedArrival ?? '-';
   }
 
   String _formatRate() {

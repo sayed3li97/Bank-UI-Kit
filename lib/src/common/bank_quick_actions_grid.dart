@@ -71,8 +71,8 @@ class BankQuickAction {
 /// high-elevation shadow) into a drag-to-reorder interaction; the other
 /// tiles wiggle while a drag is active (suppressed when the platform
 /// requests reduced motion). Releasing the tile commits the new order via
-/// [onReorder], which receives every action id — including any hidden
-/// behind the "More" tile — so the host can persist it.
+/// [onReorder], which receives every action id: including any hidden
+/// behind the "More" tile: so the host can persist it.
 ///
 /// ```dart
 /// BankQuickActionsGrid(

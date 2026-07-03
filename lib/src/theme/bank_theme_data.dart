@@ -28,7 +28,7 @@ import 'tokens.dart';
 ///
 /// ## Creating a fully custom theme
 ///
-/// Use [BankThemeData.custom] — supply your brand colour and brightness;
+/// Use [BankThemeData.custom]: supply your brand colour and brightness;
 /// every other field is optional with sensible neutral defaults:
 ///
 /// ```dart
@@ -115,7 +115,7 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
   /// Creates a [BankThemeData] from a brand [primary] colour and [brightness],
   /// with every other token derived automatically.
   ///
-  /// Override any individual field to match your brand — fields you omit
+  /// Override any individual field to match your brand: fields you omit
   /// receive sensible neutral defaults that work for both light and dark modes.
   ///
   /// ### Minimal example

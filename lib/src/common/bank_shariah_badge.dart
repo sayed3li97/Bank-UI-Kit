@@ -5,10 +5,10 @@ import '../theme/tokens.dart';
 
 /// Visual size tier for [BankShariahBadge].
 enum BankShariahBadgeSize {
-  /// 10 px icon, `labelSmall` text — suitable for list tiles and card corners.
+  /// 10 px icon, `labelSmall` text: suitable for list tiles and card corners.
   small,
 
-  /// 12 px icon, `labelMedium` text — suitable for section headers and modals.
+  /// 12 px icon, `labelMedium` text: suitable for section headers and modals.
   medium,
 }
 

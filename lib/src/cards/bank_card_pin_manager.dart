@@ -191,7 +191,7 @@ class _BankCardPinManagerState extends State<BankCardPinManager> {
         });
         widget.onSuccess?.call();
       } else {
-        // Incorrect current PIN — return to step 0.
+        // Incorrect current PIN: return to step 0.
         setState(() {
           _isSubmitting = false;
           _step = _PinStep.current;
@@ -368,7 +368,7 @@ class _PinStepNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Back button — min 44×44
+        // Back button: min 44×44
         Semantics(
           button: true,
           label: 'Go back',

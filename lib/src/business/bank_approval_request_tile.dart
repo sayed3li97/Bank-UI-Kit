@@ -53,7 +53,7 @@ class BankApprovalRequest {
 /// Shows the requester emblem, title, relative request time, optional
 /// amount, and a segmented approval-progress element ("2 of 3
 /// approvals"). When the viewer can act, inline Approve / Reject
-/// buttons appear — Reject collects a mandatory reason in a bottom
+/// buttons appear: Reject collects a mandatory reason in a bottom
 /// sheet. Async actions disable both buttons with an inline spinner.
 ///
 /// ```dart

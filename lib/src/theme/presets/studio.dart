@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../bank_theme_data.dart';
 import '../tokens.dart';
 
-/// The **Studio** preset — a restrained, editorial banking aesthetic.
+/// The **Studio** preset: a restrained, editorial banking aesthetic.
 ///
 /// Characteristics:
 /// - Warm off-white / off-black neutrals

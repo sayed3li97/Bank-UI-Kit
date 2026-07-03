@@ -70,7 +70,7 @@ class _CardsScreenState extends State<CardsScreen> {
         children: [
           // ── Section: Virtual card ─────────────────────────────────────────
           _SectionHeader(
-            label: 'Virtual Card — Enhanced',
+            label: 'Virtual Card: Enhanced',
             sublabel:
                 'Tap card to flip • Built-in flip button • Image background',
             theme: theme,
@@ -115,7 +115,7 @@ class _CardsScreenState extends State<CardsScreen> {
 
           // ── Section: BankFlipCard generic ──────────────────────────────────
           _SectionHeader(
-            label: 'BankFlipCard — Generic Container',
+            label: 'BankFlipCard: Generic Container',
             sublabel:
                 'Custom front & back builders • Any content • Tap to flip',
             theme: theme,
@@ -484,13 +484,13 @@ class _CustomBackFace extends StatelessWidget {
           const SizedBox(height: BankTokens.space3),
           _Row(
             label: 'IBAN',
-            value: account.ibanOrAccountNumber ?? '—',
+            value: account.ibanOrAccountNumber ?? '-',
             theme: theme,
           ),
           const SizedBox(height: BankTokens.space2),
           _Row(
             label: 'Sort Code',
-            value: account.sortCodeOrBic ?? '—',
+            value: account.sortCodeOrBic ?? '-',
             theme: theme,
           ),
           const SizedBox(height: BankTokens.space2),

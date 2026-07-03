@@ -67,7 +67,7 @@ class BankDeviceSession {
 ///
 /// Shows a device-kind icon, name, location and relative last-active
 /// time, a `This device` chip on the current session, a shield icon on
-/// trusted devices, and — for other devices — an async revoke ("sign
+/// trusted devices, and: for other devices: an async revoke ("sign
 /// out") affordance with a confirmation dialog.
 ///
 /// ```dart

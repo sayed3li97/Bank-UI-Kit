@@ -10,14 +10,14 @@ import '../theme/numeral_style.dart';
 import '../theme/tokens.dart';
 import 'money_formatter.dart';
 
-/// A format-as-you-type monetary text field — the form-embedded counterpart
+/// A format-as-you-type monetary text field: the form-embedded counterpart
 /// to `BankAmountKeypad`.
 ///
 /// The field renders the currency symbol (resolved through
 /// [BankMoneyFormatter]'s symbol table) as a fixed prefix, groups thousands
 /// live while the user types, restricts fraction digits to the currency's
 /// precision (0 for JPY, 3 for KWD/BHD, 2 by default), and converts digits
-/// per [NumeralStyle] — falling back to the ambient [BankUiScope] style when
+/// per [NumeralStyle]: falling back to the ambient [BankUiScope] style when
 /// [numeralStyle] is `null`.
 ///
 /// The parsed value is emitted as a [Decimal] via [onChanged] so hosts can
@@ -332,7 +332,7 @@ class _BankAmountInputFieldState extends State<BankAmountInputField> {
 /// Normalises raw keystrokes to a canonical amount string, then re-renders
 /// it with live thousands grouping and [NumeralStyle] digit conversion.
 ///
-/// The caret is kept at the end of the field — the natural position for
+/// The caret is kept at the end of the field: the natural position for
 /// calculator-style amount entry.
 class _BankAmountTextInputFormatter extends TextInputFormatter {
   _BankAmountTextInputFormatter({
@@ -366,7 +366,7 @@ int _precisionFor(String currencyCode) =>
     BankCurrencies.of(currencyCode).decimalDigits;
 
 /// Extracts the display symbol for [currencyCode] by formatting zero through
-/// [BankMoneyFormatter] and stripping the digits — reusing the kit's symbol
+/// [BankMoneyFormatter] and stripping the digits: reusing the kit's symbol
 /// table instead of duplicating it.
 String _currencySymbolFor(String currencyCode) =>
     BankMoneyFormatter.symbolFor(currencyCode);

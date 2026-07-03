@@ -1,11 +1,11 @@
 /// Onboarding & KYC widgets for the Bank UI Kit.
 ///
 /// Import this barrel to access all onboarding-related widgets:
-/// - [BankStepProgressIndicator] — numbered step progress indicator
-/// - [BankDocumentCaptureOverlay] — camera frame guide for document capture
-/// - [BankLivenessCheckOverlay] — face-guide overlay for liveness detection
-/// - [BankAsyncVerificationState] — "under review" holding-state widget
-/// - [BankConsentModal] — scrollable terms-acknowledgement modal
+/// - [BankStepProgressIndicator]: numbered step progress indicator
+/// - [BankDocumentCaptureOverlay]: camera frame guide for document capture
+/// - [BankLivenessCheckOverlay]: face-guide overlay for liveness detection
+/// - [BankAsyncVerificationState]: "under review" holding-state widget
+/// - [BankConsentModal]: scrollable terms-acknowledgement modal
 library;
 
 import '../../bank_ui_kit.dart';

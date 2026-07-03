@@ -10,7 +10,7 @@ import '../theme/bank_theme_data.dart';
 import '../theme/numeral_style.dart';
 import '../theme/tokens.dart';
 
-/// Amount / tenor sliders with a live repayment preview — the entry
+/// Amount / tenor sliders with a live repayment preview: the entry
 /// point that front-ends `BankRepaymentScheduleView` and
 /// `BankInstallmentPlanSelector`.
 ///

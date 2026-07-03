@@ -44,7 +44,7 @@ const Map<GalleryCategory, Color> _kCategoryAccents = {
 };
 
 // ---------------------------------------------------------------------------
-// GalleryApp — root StatelessWidget wrapping state management
+// GalleryApp: root StatelessWidget wrapping state management
 // ---------------------------------------------------------------------------
 
 /// Root widget for the Bank UI Kit component gallery.
@@ -74,7 +74,7 @@ class _GalleryAppState extends State<GalleryApp> {
     return BankUiScope(
       initialData: BankUiScopeData(preset: bankPreset),
       child: MaterialApp(
-        title: 'Bank UI Kit — Gallery',
+        title: 'Bank UI Kit: Gallery',
         debugShowCheckedModeBanner: false,
         theme: bankPreset.apply(ThemeData.light(useMaterial3: true)),
         darkTheme: bankPreset.apply(ThemeData.dark(useMaterial3: true)),
@@ -91,7 +91,7 @@ class _GalleryAppState extends State<GalleryApp> {
 }
 
 // ---------------------------------------------------------------------------
-// GalleryHome — main scaffold
+// GalleryHome: main scaffold
 // ---------------------------------------------------------------------------
 
 /// The interactive home screen of the Bank UI Kit component gallery.

@@ -10,7 +10,7 @@ import 'bank_balance_text.dart';
 /// Swipeable card that visually represents a single bank account.
 ///
 /// Renders the account balance, type icon, masked account number, account name,
-/// and — when the account is not active — a status chip. Frozen accounts
+/// and: when the account is not active: a status chip. Frozen accounts
 /// additionally show a semi-transparent overlay with a snowflake icon to make
 /// the state unmistakably clear.
 ///

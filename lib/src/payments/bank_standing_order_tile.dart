@@ -174,7 +174,7 @@ class BankStandingOrder {
 /// - **Failed** orders show a danger chip plus an inline retry button that
 ///   fires [onResume].
 ///
-/// A long-press — or the trailing overflow button — opens a bottom action
+/// A long-press: or the trailing overflow button: opens a bottom action
 /// sheet with pause/resume, skip-next (confirmation dialog) and cancel
 /// (destructive, confirmation dialog). Confirming skip-next fires
 /// [onSkipNext] and optimistically advances the displayed date to the

@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 /// Realistic, illustration-free sample data used by the demo "full app"
 /// dashboard and the screenshot harness.
 ///
-/// Everything here is plain Dart data — the same shape a host app would map
+/// Everything here is plain Dart data: the same shape a host app would map
 /// its backend responses into before handing them to Bank UI Kit widgets.
 abstract final class SampleData {
   // ---------------------------------------------------------------------------
@@ -89,7 +89,7 @@ abstract final class SampleData {
       status: TransactionStatus.cleared,
       merchantName: 'Acme Corp',
       category: TransactionCategory.income,
-      reference: 'Salary — June',
+      reference: 'Salary: June',
     ),
     Transaction(
       id: 'txn_5',
@@ -98,7 +98,7 @@ abstract final class SampleData {
       status: TransactionStatus.pending,
       merchantName: 'Transport for London',
       category: TransactionCategory.transport,
-      reference: 'Contactless — Zone 1',
+      reference: 'Contactless: Zone 1',
     ),
     Transaction(
       id: 'txn_6',
@@ -187,7 +187,7 @@ abstract final class SampleData {
   static final BankInsight insight = BankInsight(
     id: 'insight_1',
     title: 'Dining is up 24% this month',
-    body: 'You\'ve spent £199 on eating out — £38 more than your '
+    body: 'You\'ve spent £199 on eating out: £38 more than your '
         '3-month average. Want to set a dining budget?',
     confidence: InsightConfidence.high,
     generatedAt: DateTime(2026, 6, 30),

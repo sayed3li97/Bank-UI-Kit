@@ -307,7 +307,7 @@ class BankMyQrCard extends StatelessWidget {
   /// Renders a requested-amount chip above the QR when set.
   final Money? requestAmount;
 
-  /// Optional center overlay (e.g. bank mark) — keep under 20% of the
+  /// Optional center overlay (e.g. bank mark): keep under 20% of the
   /// QR area so error correction still decodes.
   final Widget? logo;
 

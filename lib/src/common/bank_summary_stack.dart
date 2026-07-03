@@ -99,10 +99,10 @@ class BankSummaryItem {
 /// opacity (disable with [showDividers]).
 ///
 /// Rows can additionally be:
-/// - **emphasized** — stronger value styling for totals;
-/// - **copyable** — a trailing affordance copies the textual value to the
+/// - **emphasized**: stronger value styling for totals;
+/// - **copyable**: a trailing affordance copies the textual value to the
 ///   [Clipboard] and briefly confirms with a success icon;
-/// - **tappable** — [BankSummaryItem.onTap] adds a ripple and a trailing
+/// - **tappable**: [BankSummaryItem.onTap] adds a ripple and a trailing
 ///   chevron, and exposes the row as a button.
 ///
 /// Assistive technologies announce each row as `'label: value'`.

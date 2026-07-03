@@ -35,7 +35,7 @@ class BankConsent {
   final DateTime? expiresAt;
 }
 
-/// Granted data-sharing consents with revocation — the
+/// Granted data-sharing consents with revocation: the
 /// ongoing-management counterpart to `BankConsentModal`'s one-shot
 /// acceptance, covering the PSD2 / open-banking consent dashboard.
 ///

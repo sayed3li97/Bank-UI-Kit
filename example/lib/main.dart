@@ -42,7 +42,7 @@ class _BankUiKitExampleAppState extends State<BankUiKitExampleApp> {
     return BankUiScope(
       initialData: BankUiScopeData(preset: _preset),
       child: MaterialApp(
-        title: 'Bank UI Kit — Component Gallery',
+        title: 'Bank UI Kit: Component Gallery',
         theme: theme,
         debugShowCheckedModeBanner: false,
         home: Directionality(

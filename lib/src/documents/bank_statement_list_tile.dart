@@ -25,16 +25,16 @@ enum BankDocumentType {
 
 /// Download lifecycle of a document row's trailing action.
 enum BankDocumentDownloadState {
-  /// No download started — shows the download affordance.
+  /// No download started: shows the download affordance.
   idle,
 
-  /// Download in flight — shows a circular progress indicator.
+  /// Download in flight: shows a circular progress indicator.
   downloading,
 
-  /// Download finished — shows a success check.
+  /// Download finished: shows a success check.
   done,
 
-  /// Download failed — shows a danger-coloured retry affordance.
+  /// Download failed: shows a danger-coloured retry affordance.
   failed,
 }
 
@@ -122,7 +122,7 @@ class BankStatementListTile extends StatelessWidget {
 
   final BankDocument document;
 
-  /// Fired when the row body is tapped — opens the document viewer.
+  /// Fired when the row body is tapped: opens the document viewer.
   final VoidCallback onView;
 
   /// Starts (or retries) a download. The trailing affordance is hidden

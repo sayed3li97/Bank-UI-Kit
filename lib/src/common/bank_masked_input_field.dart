@@ -22,13 +22,13 @@ final RegExp _digitChar = RegExp('[0-9]');
 ///
 /// Built-in masks:
 ///
-/// * [BankInputMask.iban] — uppercase alphanumerics in groups of four,
+/// * [BankInputMask.iban]: uppercase alphanumerics in groups of four,
 ///   capped at 34 characters, validated with the ISO 13616 mod-97 checksum.
-/// * [BankInputMask.cardPan] — digits in groups of four, capped at 19,
+/// * [BankInputMask.cardPan]: digits in groups of four, capped at 19,
 ///   validated with the Luhn checksum; can obscure all but the last four
 ///   digits.
-/// * [BankInputMask.sortCode] — six-digit UK sort code shown as `NN-NN-NN`.
-/// * [BankInputMask.custom] — arbitrary digit patterns such as
+/// * [BankInputMask.sortCode]: six-digit UK sort code shown as `NN-NN-NN`.
+/// * [BankInputMask.custom]: arbitrary digit patterns such as
 ///   `'## ### ###'`.
 ///
 /// The checksum routines are also available directly via the static

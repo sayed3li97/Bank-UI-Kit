@@ -23,7 +23,7 @@ class BankAlertPreference {
   final bool email;
   final bool sms;
 
-  /// Compliance alerts that cannot be disabled — switches render on and
+  /// Compliance alerts that cannot be disabled: switches render on and
   /// disabled with a lock icon.
   final bool locked;
 
@@ -40,7 +40,7 @@ class BankAlertPreference {
 /// Rows group into Security & fraud / Payments / Account activity /
 /// Marketing sections with the security section pinned first. Locked
 /// (compliance) rows render their switches on and disabled. Changes fire
-/// [onChanged] immediately — hosts debounce persistence.
+/// [onChanged] immediately: hosts debounce persistence.
 ///
 /// ```dart
 /// BankAlertPreferencesPanel(

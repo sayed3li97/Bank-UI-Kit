@@ -18,7 +18,7 @@ class BankOnboardingPage {
   final String title;
   final String body;
 
-  /// Illustration slot — the kit bundles no image assets.
+  /// Illustration slot: the kit bundles no image assets.
   final Widget illustration;
 
   /// Overrides the theme primary for this page's active dot.

@@ -11,7 +11,7 @@ import 'bank_balance_text.dart';
 /// The product family a [BankProductItemTile] renders.
 ///
 /// Normally derived automatically from [BankAccountType]; pass
-/// `variantOverride` to force a specific treatment — in particular
+/// `variantOverride` to force a specific treatment: in particular
 /// [credit], which has no [BankAccountType] equivalent and unlocks the
 /// credit-utilisation progress bar.
 enum BankProductItemVariant {
@@ -46,11 +46,11 @@ enum BankProductItemVariant {
 /// show the same frozen / pending status chips as `BankAccountCard`.
 ///
 /// Type-specific secondary content:
-/// - **current** — an "Available" caption next to the masked number.
-/// - **savings / isa** — the [rateLabel] slot (e.g. `'4.20%'`); its label
+/// - **current**: an "Available" caption next to the masked number.
+/// - **savings / isa**: the [rateLabel] slot (e.g. `'4.20%'`); its label
 ///   respects `islamicFinanceMode` from [BankUiScope] (Interest Rate vs
 ///   Profit Rate).
-/// - **credit** — when [creditLimit] and [outstanding] are supplied, a
+/// - **credit**: when [creditLimit] and [outstanding] are supplied, a
 ///   thin progress bar of used vs available credit coloured with
 ///   [BankTokens.creditUsed] / [BankTokens.creditAvailable].
 ///

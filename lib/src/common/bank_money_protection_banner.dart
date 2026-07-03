@@ -6,12 +6,12 @@ import 'bank_icon_spec.dart';
 
 /// Visual treatments for [BankMoneyProtectionBanner].
 enum BankMoneyProtectionStyle {
-  /// A quiet surface tile with a shield icon — suitable for footers of
+  /// A quiet surface tile with a shield icon: suitable for footers of
   /// account screens and onboarding flows.
   subtle,
 
   /// A card with a 4 px positive-coloured start border on a tinted
-  /// background — suitable for placement near deposit actions where the
+  /// background: suitable for placement near deposit actions where the
   /// guarantee should be unmissable.
   prominent,
 }
@@ -25,13 +25,13 @@ enum BankMoneyProtectionStyle {
 ///
 /// Deliberately **non-dismissible**: compliance notices must remain visible,
 /// so no close affordance is offered. The banner is static informational
-/// content — it is not announced as a live region.
+/// content: it is not announced as a live region.
 ///
 /// Visual treatment (see [BankMoneyProtectionStyle]):
-/// - [BankMoneyProtectionStyle.subtle] — a [BankThemeData.surfaceVariant]
+/// - [BankMoneyProtectionStyle.subtle]: a [BankThemeData.surfaceVariant]
 ///   tile with the [BankIcons.shield] icon tinted
 ///   [BankThemeData.positiveBalance].
-/// - [BankMoneyProtectionStyle.prominent] — a 4 px
+/// - [BankMoneyProtectionStyle.prominent]: a 4 px
 ///   [BankThemeData.positiveBalance] start border on a
 ///   `positiveBalance.withValues(alpha: 0.08)` background.
 ///

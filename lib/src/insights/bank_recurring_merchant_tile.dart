@@ -41,7 +41,7 @@ class BankRecurringMerchant {
   final bool priceIncreased;
 }
 
-/// Detected-recurring-payment row for the PFM subscription manager —
+/// Detected-recurring-payment row for the PFM subscription manager -
 /// distinct from the `subscriptions/` domain, which covers the bank's
 /// own premium tiers.
 ///

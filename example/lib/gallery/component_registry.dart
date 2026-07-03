@@ -178,7 +178,7 @@ BankInsight _insight({InsightConfidence confidence = InsightConfidence.high}) =>
     BankInsight(
       id: 'ins-1',
       title: 'Spending up 18% on dining',
-      body: 'You spent £142 on restaurants this month — 18% more than average.',
+      body: 'You spent £142 on restaurants this month: 18% more than average.',
       confidence: confidence,
       generatedAt: DateTime(2026, 6, 28),
       isDismissed: false,
@@ -464,7 +464,7 @@ final List<GalleryEntry> kGalleryEntries = [
 
   GalleryEntry(
     name: 'BankFlipCard',
-    description: 'Generic 3-D flip container — wrap any two widgets.',
+    description: 'Generic 3-D flip container: wrap any two widgets.',
     category: GalleryCategory.cards,
     codeExample: '''BankFlipCard(
   trigger: BankFlipTrigger.tapToFlip,
@@ -516,7 +516,7 @@ final List<GalleryEntry> kGalleryEntries = [
               Icon(Icons.credit_card, color: Colors.white, size: 32),
               SizedBox(height: 8),
               Text(
-                'FRONT — tap to flip',
+                'FRONT: tap to flip',
                 style: TextStyle(
                   color: Colors.white70,
                   fontWeight: FontWeight.w600,
@@ -540,7 +540,7 @@ final List<GalleryEntry> kGalleryEntries = [
               Icon(Icons.info_outline, color: Colors.white70, size: 32),
               SizedBox(height: 8),
               Text(
-                'BACK — tap to flip',
+                'BACK: tap to flip',
                 style: TextStyle(color: Colors.white54),
               ),
             ],
@@ -2348,7 +2348,7 @@ final List<GalleryEntry> kGalleryEntries = [
     builder: (ctx, p) => BankStandingOrderTile(
       order: BankStandingOrder(
         id: 's1',
-        payeeName: 'Landlord — Al Noor Properties',
+        payeeName: 'Landlord: Al Noor Properties',
         amount: Money.fromDouble(1200, 'GBP'),
         pattern: BankRecurringPattern.monthly,
         nextRunDate: DateTime(2026, 8, 1),
@@ -2699,7 +2699,7 @@ final List<GalleryEntry> kGalleryEntries = [
         ),
         BankMessage(
           id: 'm2',
-          body: 'Of course — I have attached it here. Anything else?',
+          body: 'Of course: I have attached it here. Anything else?',
           sentAt: DateTime(2026, 7, 2, 9, 40),
           author: BankMessageAuthor.bank,
           authorName: 'Amal',

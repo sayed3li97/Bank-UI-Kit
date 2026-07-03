@@ -29,19 +29,19 @@ enum BankValueDiffStyle {
 /// Provide the previous value via [oldValue] *or* [oldMoney], and the new
 /// value via [newValue] *or* [newMoney]:
 ///
-/// - Both present — rendered per [style]: [BankValueDiffStyle.inline]
+/// - Both present: rendered per [style]: [BankValueDiffStyle.inline]
 ///   strikes through the old value and points an arrow at the new one;
 ///   [BankValueDiffStyle.stacked] lists them on two microlabelled lines.
-/// - Old absent — the field was **added**: the new value is shown with a
+/// - Old absent: the field was **added**: the new value is shown with a
 ///   positive `'+ Added'` chip.
-/// - New absent — the field was **removed**: the old value is shown struck
+/// - New absent: the field was **removed**: the old value is shown struck
 ///   through with a danger `'– Removed'` chip.
 ///
 /// Monetary values render through [BankBalanceText] (small tier), so they
 /// mask automatically when privacy mode is active on the ambient
 /// [BankUiScope]. When [highlightIncrease] is `true` and both sides are
 /// [Money] in the same currency, an increased new value is tinted with
-/// [BankTokens.warning] — use this for limits and amounts where an
+/// [BankTokens.warning]: use this for limits and amounts where an
 /// increase deserves reviewer attention.
 ///
 /// Assistive technologies announce the row as
@@ -481,7 +481,7 @@ class BankValueDiffItem {
 ///     const BankValueDiffItem(
 ///       label: 'Nickname',
 ///       oldValue: 'Ops account',
-///       newValue: 'Operations — EMEA',
+///       newValue: 'Operations: EMEA',
 ///     ),
 ///     const BankValueDiffItem(
 ///       label: 'Second approver',

@@ -37,7 +37,7 @@ class BankDisputeReason {
 }
 
 /// A named evidence attachment descriptor (the host owns file pickers
-/// and uploads — the controller stores names only).
+/// and uploads: the controller stores names only).
 class BankDisputeEvidence {
   const BankDisputeEvidence({required this.id, required this.name});
 

@@ -22,7 +22,7 @@ import '../../core.dart';
 /// still read for the icon colour but its internal state is not mutated.
 ///
 /// ```dart
-/// // Uncontrolled — inside a BankUiScope subtree
+/// // Uncontrolled: inside a BankUiScope subtree
 /// const BankPrivacyToggle()
 ///
 /// // Controlled

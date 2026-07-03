@@ -38,7 +38,7 @@ typedef BankScaApproveCallback = Future<bool> Function(
 /// PSD2 dynamic-linking pattern: the amount and payee stay visible and
 /// cannot be scrolled away while the customer authenticates.
 ///
-/// The amount is deliberately rendered WITHOUT the scope privacy mask —
+/// The amount is deliberately rendered WITHOUT the scope privacy mask -
 /// dynamic linking requires the customer to see exactly what they are
 /// approving.
 ///

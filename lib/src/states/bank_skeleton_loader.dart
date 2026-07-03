@@ -8,11 +8,11 @@ import '../saving/saving.dart';
 
 /// Describes the shape of the skeleton placeholder to render.
 ///
-/// - [accountCard]: mimics a [BankAccountCard] — 200 px tall card with a
+/// - [accountCard]: mimics a [BankAccountCard]: 200 px tall card with a
 ///   balance line and two text lines.
-/// - [transactionTile]: mimics a [BankTransactionListTile] — 72 px tall row
+/// - [transactionTile]: mimics a [BankTransactionListTile]: 72 px tall row
 ///   with a 40 px avatar circle and two lines.
-/// - [potCard]: mimics a [BankSavingsPotCard] — 120 px card with a circular
+/// - [potCard]: mimics a [BankSavingsPotCard]: 120 px card with a circular
 ///   progress ring area.
 /// - [generic]: a plain rectangle sized to [BankSkeletonLoader.width] ×
 ///   [BankSkeletonLoader.height] (defaults to `∞ × 80`).
@@ -500,7 +500,7 @@ class _GenericSkeleton extends StatelessWidget {
 /// A solid-coloured rounded rectangle used as a structural element inside
 /// skeleton variants. The shimmer gradient from the parent [Stack] bleeds
 /// through because this widget is painted on top of the shimmer layer and uses
-/// the same `base` colour — the two layers blend to produce the sweep effect.
+/// the same `base` colour: the two layers blend to produce the sweep effect.
 class _SkeletonBlock extends StatelessWidget {
   const _SkeletonBlock({
     required this.width,

@@ -8,13 +8,13 @@ import '../theme/tokens.dart';
 
 /// Granularity of the time period navigated by a [BankPeriodSelector].
 enum BankPeriodUnit {
-  /// Calendar month — labelled like `March 2026`.
+  /// Calendar month: labelled like `March 2026`.
   month,
 
-  /// Calendar quarter — labelled like `Q1 2026`.
+  /// Calendar quarter: labelled like `Q1 2026`.
   quarter,
 
-  /// Calendar year — labelled like `2026`.
+  /// Calendar year: labelled like `2026`.
   year,
 }
 
@@ -22,7 +22,7 @@ enum BankPeriodUnit {
 ///
 /// Renders a row with a back chevron, a centred period label, and a
 /// forward chevron. Hosts keep the current [period] in their own state and
-/// receive the previous/next period through [onChanged] — the widget itself
+/// receive the previous/next period through [onChanged]: the widget itself
 /// is stateless with respect to the selected period (controlled component).
 ///
 /// Typical placement is as the header above a spending breakdown chart or
@@ -72,7 +72,7 @@ class BankPeriodSelector extends StatefulWidget {
   /// The forward chevron disables once [period] reaches this bound.
   final DateTime? maxPeriod;
 
-  /// Called when the user taps the period label — hosts typically open a
+  /// Called when the user taps the period label: hosts typically open a
   /// month-grid or year picker here. When `null` the label is not tappable.
   final VoidCallback? onTapLabel;
 

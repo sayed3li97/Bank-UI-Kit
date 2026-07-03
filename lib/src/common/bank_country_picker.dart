@@ -396,7 +396,7 @@ class BankCountryPicker extends StatelessWidget {
   final String emptyLabel;
 
   // ---------------------------------------------------------------------------
-  // Static helper — modal presentation
+  // Static helper: modal presentation
   // ---------------------------------------------------------------------------
 
   /// Presents the country selection sheet and returns the country the user

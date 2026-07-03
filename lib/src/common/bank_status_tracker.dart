@@ -13,7 +13,7 @@ import 'money_formatter.dart';
 
 /// A single milestone displayed by [BankStatusTracker].
 ///
-/// Purely descriptive — the stage's visual state (completed, current,
+/// Purely descriptive: the stage's visual state (completed, current,
 /// upcoming, failed) is derived by the tracker from its `currentIndex`
 /// and `failed` properties, not stored on the stage itself.
 @immutable

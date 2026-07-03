@@ -39,7 +39,7 @@ enum BankFlipAxis {
 /// A generic 3-D flip-card container.
 ///
 /// Wraps any [frontBuilder] / [backBuilder] pair in a smooth perspective-flip
-/// animation. Suitable for credit cards, account cards, info tiles — any
+/// animation. Suitable for credit cards, account cards, info tiles: any
 /// two-sided widget.
 ///
 /// ## Trigger modes
@@ -48,7 +48,7 @@ enum BankFlipAxis {
 /// |------------------------------------|-----------|
 /// | `tapToFlip`     | Tap anywhere on the card to flip (default). |
 /// | `builtInButton` | Small icon button in the card corner. |
-/// | `external`      | No built-in trigger — host drives the flip. |
+/// | `external`      | No built-in trigger: host drives the flip. |
 ///
 /// ## External control
 ///

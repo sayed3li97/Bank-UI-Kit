@@ -34,16 +34,16 @@ enum BankCardState { normal, frozen }
 ///
 /// ## New in this version
 ///
-/// - **[backgroundImage]** — supply any [ImageProvider] (asset, network,
+/// - **[backgroundImage]**: supply any [ImageProvider] (asset, network,
 ///   memory) to use as the card background instead of the [surface] colour.
 ///   A dark overlay is applied automatically for readability; override it
 ///   with [backgroundImageOverlay].
 ///
-/// - **[flipTrigger]** — choose how the flip is triggered:
-///   - [BankFlipTrigger.tapToFlip] (default) — tap anywhere on the card.
-///   - [BankFlipTrigger.builtInButton] — overlaid icon button in the card
+/// - **[flipTrigger]**: choose how the flip is triggered:
+///   - [BankFlipTrigger.tapToFlip] (default): tap anywhere on the card.
+///   - [BankFlipTrigger.builtInButton]: overlaid icon button in the card
 ///     corner; provide [flipButtonBuilder] to customise it.
-///   - [BankFlipTrigger.external] — host app drives the flip entirely.
+///   - [BankFlipTrigger.external]: host app drives the flip entirely.
 ///
 /// Card corner radius is fixed at 16 px per the card-material specification.
 class BankVirtualCardWidget extends StatefulWidget {
@@ -71,7 +71,7 @@ class BankVirtualCardWidget extends StatefulWidget {
   final Color? backgroundImageOverlay;
 
   /// Asset path for the card-network logo (e.g. `'assets/visa.png'`).
-  /// Rendered as an [Image.asset] — must be registered in the host-app
+  /// Rendered as an [Image.asset]: must be registered in the host-app
   /// pubspec.yaml.
   final String? networkLogoAsset;
 
@@ -569,7 +569,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   // ---------------------------------------------------------------------------
 
   /// Renders the masked card number as four groups for legibility.
-  /// Input can be `'•••• 4242'` or `'4242'` — we normalise to
+  /// Input can be `'•••• 4242'` or `'4242'`: we normalise to
   /// `'•••• •••• •••• 4242'`.
   String _formatMaskedNumber(String masked) {
     final clean = masked.replaceAll(RegExp(r'[\s•]+'), '');

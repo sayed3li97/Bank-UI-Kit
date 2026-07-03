@@ -11,7 +11,7 @@ import '../theme/tokens.dart';
 /// Which side of the cheque is being captured.
 enum BankChequeSide { front, back }
 
-/// Remote-deposit-capture overlay — the landscape sibling of
+/// Remote-deposit-capture overlay: the landscape sibling of
 /// `BankDocumentCaptureOverlay`, reusing its [BankDocumentFramingState]
 /// vocabulary. Renders a 2.2:1 cheque frame guide with corner marks over
 /// the host's camera preview, a side indicator chip, an endorsement
@@ -280,7 +280,7 @@ class BankChequeDepositSummary extends StatelessWidget {
   final BankAccount depositTo;
   final VoidCallback onSubmit;
 
-  /// Captured image slots — the kit never touches camera APIs.
+  /// Captured image slots: the kit never touches camera APIs.
   final Widget? frontThumbnail;
   final Widget? backThumbnail;
 

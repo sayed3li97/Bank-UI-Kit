@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import '../bank_theme_data.dart';
 import '../tokens.dart';
 
-/// The **Heritage** preset — an institutional Islamic banking aesthetic.
+/// The **Heritage** preset: an institutional Islamic banking aesthetic.
 ///
 /// Characteristics:
 /// - Deep forest-green primary (#006341 light / #4DA67A dark)
 /// - Muted gold accent (#C8A96E) available via [BankHeritageTheme.gold]
 /// - Crisp-white surfaces on a soft sage-tinted background
-/// - 16 px card corners — professional but approachable
+/// - 16 px card corners: professional but approachable
 /// - Subtle emerald gradient for card and hero surfaces
-/// - No glow, no neon — calm authority and institutional trust
+/// - No glow, no neon: calm authority and institutional trust
 class BankHeritageTheme {
   const BankHeritageTheme._();
 

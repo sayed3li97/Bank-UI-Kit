@@ -13,12 +13,17 @@ export 'src/accounts/bank_account_number_text.dart';
 export 'src/accounts/bank_account_switcher.dart';
 // Accounts & balances
 export 'src/accounts/bank_balance_text.dart';
+export 'src/accounts/bank_early_payday_card.dart';
+export 'src/accounts/bank_peek_balance.dart';
 export 'src/accounts/bank_product_item_tile.dart';
 export 'src/auth/bank_app_switcher_privacy_overlay.dart';
 export 'src/auth/bank_biometric_prompt_button.dart';
+export 'src/auth/bank_call_verification_screen.dart';
 export 'src/auth/bank_device_session_tile.dart';
 export 'src/auth/bank_device_trust_banner.dart';
+export 'src/auth/bank_eid_login_button.dart';
 export 'src/auth/bank_otp_input.dart';
+export 'src/auth/bank_panic_freeze_button.dart';
 export 'src/auth/bank_pin_dots.dart';
 // Authentication & security
 export 'src/auth/bank_pin_keypad.dart';
@@ -31,9 +36,12 @@ export 'src/business/bank_batch_payment_review_sheet.dart';
 export 'src/business/bank_value_diff_row.dart';
 export 'src/cards/bank_card_controls_panel.dart';
 export 'src/cards/bank_card_pin_manager.dart';
+export 'src/cards/bank_disposable_card_tile.dart';
+export 'src/cards/bank_family_card_tile.dart';
 // Cards
 export 'src/cards/bank_flip_card.dart';
 export 'src/cards/bank_horizontal_account_card.dart';
+export 'src/cards/bank_merchant_block_list.dart';
 export 'src/cards/bank_physical_card_material_picker.dart';
 export 'src/cards/bank_travel_notice_form.dart';
 export 'src/cards/bank_virtual_card_widget.dart';
@@ -52,6 +60,7 @@ export 'src/common/bank_phone_input_field.dart';
 export 'src/common/bank_quick_actions_grid.dart';
 export 'src/common/bank_shariah_badge.dart';
 export 'src/common/bank_status_tracker.dart';
+export 'src/common/bank_stories_carousel.dart';
 export 'src/common/bank_summary_stack.dart';
 export 'src/common/bank_text_field.dart';
 export 'src/common/money_formatter.dart';
@@ -65,10 +74,15 @@ export 'src/deposits/bank_cheque_capture_overlay.dart';
 export 'src/documents/bank_statement_list_tile.dart';
 export 'src/insights/bank_budget_gauge_widget.dart';
 export 'src/insights/bank_cashflow_chart.dart';
+export 'src/insights/bank_financial_health_score.dart';
+export 'src/insights/bank_found_money_list.dart';
 export 'src/insights/bank_insight_card.dart';
 export 'src/insights/bank_recurring_merchant_tile.dart';
 // Insights
 export 'src/insights/bank_spending_breakdown_chart.dart';
+// Islamic banking
+export 'src/islamic/bank_donation_hub_card.dart';
+export 'src/islamic/bank_zakat_calculator.dart';
 export 'src/models/bank_account.dart';
 export 'src/models/bank_currency.dart';
 export 'src/models/bank_insight.dart';
@@ -91,10 +105,16 @@ export 'src/onboarding/bank_onboarding_carousel.dart';
 // Onboarding & KYC
 export 'src/onboarding/bank_step_progress_indicator.dart';
 // Payments & billing
+export 'src/payments/bank_atm_locator_tile.dart';
+export 'src/payments/bank_bill_forecast_list.dart';
 export 'src/payments/bank_bill_pay_tile.dart';
 export 'src/payments/bank_qr_pay_view.dart';
 export 'src/payments/bank_standing_order_tile.dart';
 export 'src/payments/bank_transfer_limit_manager.dart';
+// Rewards & engagement
+export 'src/rewards/bank_cashback_category_picker.dart';
+export 'src/rewards/bank_offers_rail.dart';
+export 'src/rewards/bank_points_hub_card.dart';
 // Scope & strings
 export 'src/scope/bank_ui_scope.dart';
 export 'src/scope/bank_ui_strings.dart';

@@ -44,7 +44,7 @@ class BankLimitChannel {
 /// bar (danger-tinted beyond 90 %), and a slider with live
 /// formatted-money value snapping to sensible increments. Raising a
 /// limit above its current value can require strong customer
-/// authentication via [onScaRequired] — on refusal the slider animates
+/// authentication via [onScaRequired]: on refusal the slider animates
 /// back. Commits debounce 400 ms before firing [onChanged].
 ///
 /// ```dart

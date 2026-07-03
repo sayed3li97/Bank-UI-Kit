@@ -11,7 +11,7 @@ import '../../src/theme/tokens.dart';
 
 /// Transfer-specific authorisation PIN bottom sheet.
 ///
-/// Distinct from the login PIN — uses a different semantic label, title, and
+/// Distinct from the login PIN: uses a different semantic label, title, and
 /// subtitle to make the authorisation context clear. The host app supplies an
 /// [onSubmit] callback that performs the authorisation; the result determines
 /// whether the sheet closes with `true` or shows an error shake.
@@ -131,7 +131,7 @@ class _BankTransactionPinSheetState extends State<BankTransactionPinSheet> {
       return;
     }
 
-    // Wrong PIN — shake dots, clear after a short delay.
+    // Wrong PIN: shake dots, clear after a short delay.
     setState(() {
       _loading = false;
       _error = true;

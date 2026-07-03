@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import '../bank_theme_data.dart';
 import '../tokens.dart';
 
-/// The **Bloom** preset — a warm, consumer-friendly banking aesthetic.
+/// The **Bloom** preset: a warm, consumer-friendly banking aesthetic.
 ///
 /// Characteristics:
 /// - Coral primary (#FF6B6B light / #FF8585 dark) with navy accent
 /// - Warm cream / deep teal neutrals
 /// - Fully-pill buttons and chips for a friendly, approachable feel
 /// - Generous 20 px card radius and 28 px sheet radius
-/// - No accent gradient, no glow — warmth is conveyed through colour alone
+/// - No accent gradient, no glow: warmth is conveyed through colour alone
 /// - `elevationLow` carries a subtle warm-tinted shadow (modelled as a very
 ///   low opacity value; the host app applies it via [BoxShadow.blurRadius])
 class BankBloomTheme {

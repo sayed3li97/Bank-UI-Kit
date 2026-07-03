@@ -1,4 +1,4 @@
-/// Bank UI Kit — Social sub-library.
+/// Bank UI Kit: Social sub-library.
 ///
 /// Peer-to-peer payments, transaction splitting, and joint accounts.
 /// Depends on `core.dart`.

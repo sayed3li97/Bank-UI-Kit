@@ -1,4 +1,4 @@
-/// Bank UI Kit — convenience re-export of `core.dart`.
+/// Bank UI Kit: convenience re-export of `core.dart`.
 ///
 /// For apps that import the full core library without specifying a sub-library.
 /// Prefer the scoped sub-libraries for tree-shaking:

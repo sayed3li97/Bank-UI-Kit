@@ -123,7 +123,7 @@ class BankReceiptView extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: BankTokens.space2),
-                  // Amount — hero display
+                  // Amount: hero display
                   Text(
                     formattedAmount,
                     style: BankTokens.numeralHero.copyWith(

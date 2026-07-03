@@ -45,7 +45,7 @@ class BankTokens {
   static const Color creditUsed = Color(0xFFFF9F0A);
 
   // ---------------------------------------------------------------------------
-  // Spacing — 4 pt grid
+  // Spacing: 4 pt grid
   // ---------------------------------------------------------------------------
 
   static const double space1 = 4;
@@ -72,7 +72,7 @@ class BankTokens {
   static const double radiusFull = 999;
 
   // ---------------------------------------------------------------------------
-  // Motion — duration
+  // Motion: duration
   // ---------------------------------------------------------------------------
 
   static const Duration durationFast = Duration(milliseconds: 150);
@@ -81,7 +81,7 @@ class BankTokens {
   static const Duration durationXSlow = Duration(milliseconds: 600);
 
   // ---------------------------------------------------------------------------
-  // Motion — easing curves
+  // Motion: easing curves
   // ---------------------------------------------------------------------------
 
   /// General-purpose easing for UI transitions.
@@ -94,7 +94,7 @@ class BankTokens {
   static const Curve curveDecelerate = Curves.decelerate;
 
   // ---------------------------------------------------------------------------
-  // Typography scale — system fonts
+  // Typography scale: system fonts
   //
   // Font files are registered in pubspec.yaml but may be stubs in CI.
   // All styles intentionally omit `fontFamily` so the system font is used,
@@ -167,7 +167,7 @@ class BankTokens {
     letterSpacing: 0.4,
   );
 
-  /// Hero monetary numeral — large balance displays.
+  /// Hero monetary numeral: large balance displays.
   static const TextStyle numeralHero = TextStyle(
     fontSize: 44,
     fontWeight: FontWeight.w600,
@@ -179,7 +179,7 @@ class BankTokens {
     ],
   );
 
-  /// Large monetary numeral — card balances and summary rows.
+  /// Large monetary numeral: card balances and summary rows.
   static const TextStyle numeralLarge = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w600,
@@ -190,7 +190,7 @@ class BankTokens {
     ],
   );
 
-  /// Medium monetary numeral — list items and sub-totals.
+  /// Medium monetary numeral: list items and sub-totals.
   static const TextStyle numeralMedium = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w500,
@@ -200,7 +200,7 @@ class BankTokens {
     ],
   );
 
-  /// Small monetary numeral — dense tables and secondary figures.
+  /// Small monetary numeral: dense tables and secondary figures.
   static const TextStyle numeralSmall = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w500,
@@ -213,7 +213,7 @@ class BankTokens {
   // ---------------------------------------------------------------------------
   // Elevation shadows
   //
-  // Premium surfaces take depth from soft, layered, low-alpha shadows —
+  // Premium surfaces take depth from soft, layered, low-alpha shadows -
   // never from visible hairline borders. All shadows are tinted with a
   // blue-grey ink (0x101828) so they read as ambient light, not dirt.
   // ---------------------------------------------------------------------------

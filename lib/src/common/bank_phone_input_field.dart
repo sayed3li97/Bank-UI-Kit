@@ -15,7 +15,7 @@ import 'bank_text_field.dart';
 /// with simple 3-3-4 grouping; [onChanged] always emits a normalized
 /// E.164 string (`+<dialcode><national digits>`). Hosts needing
 /// carrier-grade per-country validation can layer their own
-/// `inputFormatters` upstream — this widget deliberately avoids a
+/// `inputFormatters` upstream: this widget deliberately avoids a
 /// libphonenumber dependency.
 ///
 /// Digits display through the ambient [NumeralStyle] while the emitted
@@ -51,7 +51,7 @@ class BankPhoneInputField extends StatefulWidget {
   /// [BankCountry.all] when null.
   final BankCountry? initialCountry;
 
-  /// Initial national number (digits only or pre-grouped — separators
+  /// Initial national number (digits only or pre-grouped: separators
   /// are stripped).
   final String? initialNumber;
 
