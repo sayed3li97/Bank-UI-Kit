@@ -27,6 +27,7 @@ export 'src/auth/bank_sca_approval_sheet.dart';
 export 'src/auth/bank_session_timeout_dialog.dart';
 // Business banking
 export 'src/business/bank_approval_request_tile.dart';
+export 'src/business/bank_batch_payment_review_sheet.dart';
 export 'src/business/bank_value_diff_row.dart';
 export 'src/cards/bank_card_controls_panel.dart';
 export 'src/cards/bank_card_pin_manager.dart';
