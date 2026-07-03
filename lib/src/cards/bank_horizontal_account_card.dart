@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../src/cards/bank_flip_card.dart';
 import '../../src/common/bank_icon_spec.dart';
 import '../../src/models/models.dart';
+import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 import '../accounts/bank_balance_text.dart';
@@ -144,11 +145,19 @@ class BankHorizontalAccountCard extends StatelessWidget {
 
   // ── Size ──────────────────────────────────────────────────────────────────
 
-  /// Card width. Defaults to 340.
-  final double width;
+  /// Fixed card width. When null (the default) the card fills the available
+  /// width up to [maxWidth] (340 when [maxWidth] is also null), so it renders
+  /// at 340 in unconstrained contexts, exactly as older versions did.
+  final double? width;
 
-  /// Card height. Defaults to 200.
-  final double height;
+  /// Fixed card height. When null (the default) the height is 200 if [width]
+  /// is set, otherwise it scales with the resolved width to preserve the
+  /// default 340 x 200 aspect ratio.
+  final double? height;
+
+  /// Upper bound on the card width when [width] is null. Defaults to 340,
+  /// matching the previous fixed width.
+  final double? maxWidth;
 
   static const double _cardRadius = 16;
 
@@ -171,8 +180,9 @@ class BankHorizontalAccountCard extends StatelessWidget {
     this.flipDuration = const Duration(milliseconds: 500),
     this.flipCurve = Curves.easeInOutCubic,
     this.flipAxis = BankFlipAxis.horizontal,
-    this.width = 340,
-    this.height = 200,
+    this.width,
+    this.height,
+    this.maxWidth,
   });
 
   // ── Decoration helpers ────────────────────────────────────────────────────
@@ -487,8 +497,11 @@ class BankHorizontalAccountCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
-    final semanticBalance =
-        '${account.balance.amount} ${account.balance.currencyCode}';
+    final scope = BankUiScope.of(context);
+    // Never announce the raw balance while privacy mode is active.
+    final semanticBalance = scope.privacyEnabled
+        ? scope.strings.balanceHidden
+        : '${account.balance.amount} ${account.balance.currencyCode}';
 
     return Semantics(
       label: 'Account card: ${account.name}, balance $semanticBalance',
@@ -502,6 +515,7 @@ class BankHorizontalAccountCard extends StatelessWidget {
         flipAxis: flipAxis,
         width: width,
         height: height,
+        maxWidth: maxWidth,
         frontBuilder: (ctx, _) => _buildFront(ctx, bankTheme),
         backBuilder: (ctx, _) => _buildBack(ctx, bankTheme),
       ),

@@ -265,8 +265,11 @@ class _BankSummaryRow extends StatelessWidget {
       semanticValue = item.value;
     }
 
+    // Money rows never copy the raw amount while privacy mode is on;
+    // the affordance disappears rather than copying a masked string.
+    final moneyCopyBlocked = item.money != null && scope.privacyEnabled;
     final copyText = item.value ?? formattedMoney;
-    final showCopy = item.copyable && copyText != null;
+    final showCopy = item.copyable && copyText != null && !moneyCopyBlocked;
 
     Widget cluster = Row(
       children: [

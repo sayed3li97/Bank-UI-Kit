@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../src/common/bank_icon_spec.dart';
 import '../../src/models/models.dart';
+import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 import '../../src/transactions/bank_transaction_cost_split_sheet.dart'
@@ -483,7 +484,10 @@ class _ContactCell extends StatelessWidget {
             if (contact.avatarUrl != null)
               CircleAvatar(
                 radius: 28,
-                backgroundImage: NetworkImage(contact.avatarUrl!),
+                backgroundImage: BankUiScope.imageProviderFor(
+                  context,
+                  contact.avatarUrl!,
+                ),
                 backgroundColor: bankTheme.surfaceVariant,
               )
             else
@@ -580,7 +584,10 @@ class _AmountStep extends StatelessWidget {
                 if (selected.avatarUrl != null)
                   CircleAvatar(
                     radius: 28,
-                    backgroundImage: NetworkImage(selected.avatarUrl!),
+                    backgroundImage: BankUiScope.imageProviderFor(
+                      context,
+                      selected.avatarUrl!,
+                    ),
                     backgroundColor: bankTheme.surfaceVariant,
                   )
                 else

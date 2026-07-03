@@ -450,7 +450,7 @@ class _ParticipantRowState extends State<_ParticipantRow> {
       avatar = CircleAvatar(
         radius: 20,
         backgroundColor: bankTheme.surfaceVariant,
-        backgroundImage: NetworkImage(p.avatarUrl!),
+        backgroundImage: BankUiScope.imageProviderFor(context, p.avatarUrl!),
         onBackgroundImageError: (_, __) {
           if (mounted) setState(() => _avatarFailed = true);
         },

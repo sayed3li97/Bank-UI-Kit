@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../src/common/bank_icon_spec.dart';
 import '../../src/models/models.dart';
+import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 
@@ -395,7 +396,7 @@ class _BeneficiaryAvatar extends StatelessWidget {
     if (avatarUrl != null) {
       return CircleAvatar(
         radius: 22,
-        backgroundImage: NetworkImage(avatarUrl!),
+        backgroundImage: BankUiScope.imageProviderFor(context, avatarUrl!),
         backgroundColor: bankTheme.surfaceVariant,
       );
     }

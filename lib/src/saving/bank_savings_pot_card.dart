@@ -196,16 +196,24 @@ class BankSavingsPotCard extends StatelessWidget {
     final bankTheme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
 
-    final formattedCurrent = BankMoneyFormatter.format(
-      amount: pot.current.amount,
-      currencyCode: pot.current.currencyCode,
-      numeralStyle: scope.numeralStyle,
-    );
-    final formattedTarget = BankMoneyFormatter.format(
-      amount: pot.target.amount,
-      currencyCode: pot.target.currencyCode,
-      numeralStyle: scope.numeralStyle,
-    );
+    // Privacy mode masks both amounts: the current balance widget below
+    // masks itself via BankBalanceText, and the target/semantics strings
+    // substitute the scope's masked label.
+    final hidden = scope.privacyEnabled;
+    final formattedCurrent = hidden
+        ? scope.strings.balanceHidden
+        : BankMoneyFormatter.format(
+            amount: pot.current.amount,
+            currencyCode: pot.current.currencyCode,
+            numeralStyle: scope.numeralStyle,
+          );
+    final formattedTarget = hidden
+        ? scope.strings.balanceHidden
+        : BankMoneyFormatter.format(
+            amount: pot.target.amount,
+            currencyCode: pot.target.currencyCode,
+            numeralStyle: scope.numeralStyle,
+          );
 
     final showActions = onAddMoney != null || onWithdraw != null;
     final isShared = pot.memberIds.length > 1;

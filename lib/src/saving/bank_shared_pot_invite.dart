@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../src/models/savings_pot.dart';
+import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 
@@ -93,7 +94,7 @@ class _MemberRow extends StatelessWidget {
           leading: CircleAvatar(
             backgroundColor: theme.surfaceVariant,
             backgroundImage: member.avatarUrl != null
-                ? NetworkImage(member.avatarUrl!)
+                ? BankUiScope.imageProviderFor(context, member.avatarUrl!)
                 : null,
             child: member.avatarUrl == null
                 ? Text(

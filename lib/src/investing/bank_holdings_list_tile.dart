@@ -58,7 +58,10 @@ class BankHoldingsListTile extends StatelessWidget {
                   radius: 20,
                   backgroundColor: theme.surfaceVariant,
                   backgroundImage: holding.logoUrl != null
-                      ? NetworkImage(holding.logoUrl!)
+                      ? BankUiScope.imageProviderFor(
+                          context,
+                          holding.logoUrl!,
+                        )
                       : null,
                   child: holding.logoUrl == null
                       ? Text(

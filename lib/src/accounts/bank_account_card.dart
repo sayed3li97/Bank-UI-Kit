@@ -286,9 +286,14 @@ class BankAccountCard extends StatelessWidget {
       );
     }
 
-    // Semantics wrapper.
+    // Semantics wrapper. Never announce the raw balance while privacy mode
+    // is active; substitute the scope's masked label instead.
+    final scope = BankUiScope.of(context);
+    final semanticBalance = scope.privacyEnabled
+        ? scope.strings.balanceHidden
+        : '${account.balance.amount} ${account.balance.currencyCode}';
     final semanticLabel = 'Account: ${account.name}, '
-        'Balance: ${account.balance.amount} ${account.balance.currencyCode}, '
+        'Balance: $semanticBalance, '
         'Status: ${account.status.name}';
 
     Widget interactive = Semantics(

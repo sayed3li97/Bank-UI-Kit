@@ -133,14 +133,17 @@ class _CardOptionTile extends StatelessWidget {
   // Card preview
   // ---------------------------------------------------------------------------
 
-  Widget _buildCardPreview() {
+  Widget _buildCardPreview(BuildContext context) {
     Widget preview;
 
     if (option.previewImageUrl != null) {
       preview = ClipRRect(
         borderRadius: BorderRadius.circular(_cardRadius),
-        child: Image.network(
-          option.previewImageUrl!,
+        child: Image(
+          image: BankUiScope.imageProviderFor(
+            context,
+            option.previewImageUrl!,
+          ),
           width: _previewWidth,
           height: _previewHeight,
           fit: BoxFit.cover,
@@ -258,7 +261,7 @@ class _CardOptionTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // ── Preview ──────────────────────────────────────────────────────
-            _buildCardPreview(),
+            _buildCardPreview(context),
 
             const SizedBox(height: BankTokens.space2),
 

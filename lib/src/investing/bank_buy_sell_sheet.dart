@@ -135,7 +135,10 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
                     radius: 16,
                     backgroundColor: theme.surfaceVariant,
                     backgroundImage: widget.quote.logoUrl != null
-                        ? NetworkImage(widget.quote.logoUrl!)
+                        ? BankUiScope.imageProviderFor(
+                            context,
+                            widget.quote.logoUrl!,
+                          )
                         : null,
                     child: widget.quote.logoUrl == null
                         ? Text(

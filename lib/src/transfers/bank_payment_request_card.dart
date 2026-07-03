@@ -40,6 +40,10 @@ class BankPaymentRequestCard extends StatelessWidget {
       numeralStyle: scope.numeralStyle,
     );
 
+    // Privacy mode substitutes the scope's masked label for the amount.
+    final displayAmount =
+        scope.privacyEnabled ? scope.strings.balanceHidden : formatted;
+
     final timeAgo = _timeAgo(requestedAt);
 
     return Card(
@@ -57,7 +61,10 @@ class BankPaymentRequestCard extends StatelessWidget {
                   radius: 20,
                   backgroundColor: theme.surfaceVariant,
                   backgroundImage: requesterAvatarUrl != null
-                      ? NetworkImage(requesterAvatarUrl!)
+                      ? BankUiScope.imageProviderFor(
+                          context,
+                          requesterAvatarUrl!,
+                        )
                       : null,
                   child: requesterAvatarUrl == null
                       ? Text(
@@ -85,7 +92,7 @@ class BankPaymentRequestCard extends StatelessWidget {
                               .copyWith(color: theme.onSurfaceVariant),
                         ),
                         TextSpan(
-                          text: formatted,
+                          text: displayAmount,
                           style: BankTokens.labelLarge.copyWith(
                             color: BankTokens.warning,
                           ),

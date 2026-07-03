@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../accounts/bank_balance_text.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
+import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -516,7 +517,10 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
                       radius: 20,
                       backgroundColor: bankTheme.surfaceVariant,
                       backgroundImage: _order.avatarUrl != null
-                          ? NetworkImage(_order.avatarUrl!)
+                          ? BankUiScope.imageProviderFor(
+                              context,
+                              _order.avatarUrl!,
+                            )
                           : null,
                       child: _order.avatarUrl == null
                           ? Text(

@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_amount_input_field.dart';
+import '../common/bank_hijri_date.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_summary_stack.dart';
+import '../common/money_formatter.dart';
 import '../models/bank_currency.dart';
 import '../models/money.dart';
+import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
+import '../theme/numeral_style.dart';
 import '../theme/tokens.dart';
 
 /// A complete zakat calculation flow for Islamic banking apps.
@@ -69,6 +73,9 @@ class BankZakatCalculator extends StatefulWidget {
     this.nisabLabel = 'Nisab threshold',
     this.zakatDueLabel = 'Zakat due',
     this.belowNisabMessage = 'No zakat due this year',
+    this.hawlAnniversary,
+    this.hawlLabel = 'Hawl completes',
+    this.showHijriDates = true,
     this.footnote,
   }) : assert(
           zakatRate > 0 && zakatRate < 1,
@@ -136,6 +143,21 @@ class BankZakatCalculator extends StatefulWidget {
   /// Message shown in place of the pay button when total zakatable
   /// wealth is below [nisabThreshold].
   final String belowNisabMessage;
+
+  /// Optional date on which the customer's hawl completes (the full
+  /// lunar year of holding wealth at or above nisab). When set, a
+  /// quiet [hawlLabel] row is appended to the computation card.
+  final DateTime? hawlAnniversary;
+
+  /// Label of the hawl anniversary row shown when [hawlAnniversary]
+  /// is set.
+  final String hawlLabel;
+
+  /// Whether the hawl row shows a dual Gregorian and Hijri
+  /// (Umm al-Qura) date via [BankDateFormatter.formatDual]. When
+  /// `false` (or the date falls outside the [BankHijriDate] tables)
+  /// the row falls back to [BankDateFormatter.formatFull].
+  final bool showHijriDates;
 
   /// Optional short fiqh disclaimer rendered below the computation
   /// card, styled [BankTokens.bodySmall] in the variant text colour by
@@ -286,6 +308,17 @@ class _BankZakatCalculatorState extends State<BankZakatCalculator> {
         ],
       );
 
+  /// Hawl anniversary rendered as a dual Gregorian and Hijri date, or
+  /// Gregorian only when Hijri display is disabled or unsupported for
+  /// the date.
+  String _hawlDateText(NumeralStyle numeralStyle) {
+    final date = widget.hawlAnniversary!;
+    if (widget.showHijriDates && BankHijriDate.supportsGregorian(date)) {
+      return BankDateFormatter.formatDual(date, numeralStyle: numeralStyle);
+    }
+    return numeralStyle.convert(BankDateFormatter.formatFull(date));
+  }
+
   Widget _computationCard(BuildContext context, BankThemeData theme) {
     final wealth = Money(
       amount: _zakatableWealth,
@@ -293,6 +326,7 @@ class _BankZakatCalculatorState extends State<BankZakatCalculator> {
     );
     final belowNisab = _zakatableWealth < widget.nisabThreshold.amount;
     final disableAnimations = MediaQuery.of(context).disableAnimations;
+    final numeralStyle = BankUiScope.of(context).numeralStyle;
 
     return Card(
       margin: EdgeInsets.zero,
@@ -316,6 +350,11 @@ class _BankZakatCalculatorState extends State<BankZakatCalculator> {
                   label: widget.nisabLabel,
                   money: widget.nisabThreshold,
                 ),
+                if (widget.hawlAnniversary != null)
+                  BankSummaryItem(
+                    label: widget.hawlLabel,
+                    value: _hawlDateText(numeralStyle),
+                  ),
               ],
             ),
             const SizedBox(height: BankTokens.space4),

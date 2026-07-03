@@ -66,6 +66,11 @@ class BankTransactionListTile extends StatelessWidget {
       showSign: isCredit,
     );
 
+    // Privacy mode replaces the amount with the scope's masked label in both
+    // the visible row and the semantics announcement.
+    final displayAmount =
+        scope.privacyEnabled ? scope.strings.balanceHidden : formattedAmount;
+
     final amountColor = isDeclined
         ? bankTheme.onSurfaceVariant
         : isCredit
@@ -78,7 +83,7 @@ class BankTransactionListTile extends StatelessWidget {
       decorationColor: bankTheme.onSurfaceVariant,
     );
 
-    final semanticLabel = '${transaction.merchantName}, $formattedAmount, '
+    final semanticLabel = '${transaction.merchantName}, $displayAmount, '
         '${transaction.status.name}';
 
     return Semantics(
@@ -132,7 +137,7 @@ class BankTransactionListTile extends StatelessWidget {
                 ),
                 const SizedBox(width: BankTokens.space2),
                 Text(
-                  formattedAmount,
+                  displayAmount,
                   style: amountStyle,
                   textAlign: TextAlign.end,
                 ),
@@ -183,7 +188,7 @@ class _LeadingAvatarState extends State<_LeadingAvatar> {
       return CircleAvatar(
         radius: 20,
         backgroundColor: bankTheme.surfaceVariant,
-        backgroundImage: NetworkImage(logoUrl),
+        backgroundImage: BankUiScope.imageProviderFor(context, logoUrl),
         onBackgroundImageError: (_, __) {
           if (mounted) {
             setState(() => _logoFailed = true);

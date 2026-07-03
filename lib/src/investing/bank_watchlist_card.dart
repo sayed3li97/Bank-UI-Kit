@@ -54,8 +54,9 @@ class BankWatchlistCard extends StatelessWidget {
               CircleAvatar(
                 radius: 20,
                 backgroundColor: theme.surfaceVariant,
-                backgroundImage:
-                    quote.logoUrl != null ? NetworkImage(quote.logoUrl!) : null,
+                backgroundImage: quote.logoUrl != null
+                    ? BankUiScope.imageProviderFor(context, quote.logoUrl!)
+                    : null,
                 child: quote.logoUrl == null
                     ? Text(
                         quote.symbol.isNotEmpty ? quote.symbol[0] : '?',

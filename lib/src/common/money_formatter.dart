@@ -1,8 +1,11 @@
 import 'package:decimal/decimal.dart';
 import 'package:intl/intl.dart';
 
-import '../../bank_ui_kit.dart';
-import '../../core.dart';
+// BankHijriDate is hidden from the barrel imports so the sibling file
+// is bound directly via its relative path.
+import '../../bank_ui_kit.dart' hide BankHijriDate;
+import '../../core.dart' hide BankHijriDate;
+import 'bank_hijri_date.dart';
 
 /// Formats [Money]-like amount + currency for display, respecting
 /// [NumeralStyle] and each currency's own presentation guidelines
@@ -95,6 +98,28 @@ abstract final class BankDateFormatter {
 
   static String formatFull(DateTime date) =>
       DateFormat('EEE d MMM y').format(date);
+
+  /// Dual-calendar date for GCC audiences: the Gregorian short date
+  /// followed by the parenthesized Umm al-Qura equivalent, e.g.
+  /// `'16 Jun 2026 (1 Muharram 1448 AH)'`.
+  ///
+  /// The Hijri part is produced by [BankHijriDate.format] with
+  /// [hijriMonthNames] (defaults to the English transliterations) and
+  /// all digits are rendered through [numeralStyle]. Throws
+  /// [ArgumentError] when [date] is outside the supported Umm al-Qura
+  /// range; probe with [BankHijriDate.supportsGregorian] first when
+  /// the input is not under your control.
+  static String formatDual(
+    DateTime date, {
+    NumeralStyle numeralStyle = NumeralStyle.western,
+    List<String>? hijriMonthNames,
+  }) {
+    final gregorian = DateFormat('d MMM y').format(date);
+    final hijri = BankHijriDate.fromGregorian(date).format(
+      monthNames: hijriMonthNames,
+    );
+    return numeralStyle.convert('$gregorian ($hijri)');
+  }
 
   /// Compact relative time for activity feeds: `just now`, `5m ago`,
   /// `2h ago`, `3d ago`, then [formatShort] beyond a week.

@@ -450,7 +450,7 @@ class _MerchantAvatarState extends State<_MerchantAvatar> {
       return CircleAvatar(
         radius: 28,
         backgroundColor: bankTheme.surfaceVariant,
-        backgroundImage: NetworkImage(logoUrl),
+        backgroundImage: BankUiScope.imageProviderFor(context, logoUrl),
         onBackgroundImageError: (_, __) {
           if (mounted) setState(() => _failed = true);
         },

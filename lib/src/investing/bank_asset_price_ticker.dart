@@ -180,7 +180,7 @@ class _AssetLogoState extends State<_AssetLogo> {
       return CircleAvatar(
         radius: 20,
         backgroundColor: widget.bankTheme.surfaceVariant,
-        backgroundImage: NetworkImage(url),
+        backgroundImage: BankUiScope.imageProviderFor(context, url),
         onBackgroundImageError: (_, __) {
           if (mounted) setState(() => _logoFailed = true);
         },

@@ -1,4 +1,4 @@
-import 'dart:math' show pi;
+import 'dart:math' show min, pi;
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
@@ -101,8 +101,19 @@ class BankVirtualCardWidget extends StatefulWidget {
   final Widget Function(BuildContext context, VoidCallback flip)?
       flipButtonBuilder;
 
-  final double width;
-  final double height;
+  /// Fixed card width. When null (the default) the card fills the available
+  /// width up to [maxWidth] (340 when [maxWidth] is also null), so it renders
+  /// at 340 in unconstrained contexts, exactly as older versions did.
+  final double? width;
+
+  /// Fixed card height. When null (the default) the height is 200 if [width]
+  /// is set, otherwise it scales with the resolved width to preserve the
+  /// default 340 x 200 aspect ratio.
+  final double? height;
+
+  /// Upper bound on the card width when [width] is null. Defaults to 340,
+  /// matching the previous fixed width.
+  final double? maxWidth;
 
   const BankVirtualCardWidget({
     required this.account,
@@ -122,8 +133,9 @@ class BankVirtualCardWidget extends StatefulWidget {
     this.onFlip,
     this.flipTrigger = BankFlipTrigger.tapToFlip,
     this.flipButtonBuilder,
-    this.width = 340,
-    this.height = 200,
+    this.width,
+    this.height,
+    this.maxWidth,
   });
 
   @override
@@ -137,6 +149,14 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
 
   static const double _cardRadius = 16;
   static const Duration _flipDuration = Duration(milliseconds: 500);
+
+  /// Default card width, used as the upper bound when neither `width` nor
+  /// `maxWidth` is provided.
+  static const double _defaultWidth = 340;
+
+  /// Default card height, paired with [_defaultWidth] to derive the card's
+  /// aspect ratio when sizing responsively.
+  static const double _defaultHeight = 200;
 
   @override
   void initState() {
@@ -223,14 +243,16 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   Widget _wrapSurface({
     required Widget child,
     required BankThemeData bankTheme,
+    required double cardWidth,
+    required double cardHeight,
   }) {
     final borderRadius = BorderRadius.circular(_cardRadius);
 
     // Image background overrides the surface enum.
     if (widget.backgroundImage != null) {
       return Container(
-        width: widget.width,
-        height: widget.height,
+        width: cardWidth,
+        height: cardHeight,
         decoration: _buildImageDecoration(bankTheme),
         clipBehavior: Clip.antiAlias,
         child: child,
@@ -240,8 +262,8 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
     switch (widget.surface) {
       case BankCardSurface.flatColor:
         return Container(
-          width: widget.width,
-          height: widget.height,
+          width: cardWidth,
+          height: cardHeight,
           decoration: _buildFlatColorDecoration(bankTheme),
           clipBehavior: Clip.antiAlias,
           child: child,
@@ -249,8 +271,8 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
 
       case BankCardSurface.gradient:
         return Container(
-          width: widget.width,
-          height: widget.height,
+          width: cardWidth,
+          height: cardHeight,
           decoration: _buildGradientDecoration(bankTheme),
           clipBehavior: Clip.antiAlias,
           child: child,
@@ -259,8 +281,8 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
       case BankCardSurface.animatedMesh:
         return RepaintBoundary(
           child: _AnimatedMeshCard(
-            width: widget.width,
-            height: widget.height,
+            width: cardWidth,
+            height: cardHeight,
             primaryColor: widget.primaryColor ?? bankTheme.primary,
             secondaryColor: widget.secondaryColor ?? bankTheme.primaryVariant,
             borderRadius: borderRadius,
@@ -271,8 +293,8 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
       case BankCardSurface.metallicSweep:
         return RepaintBoundary(
           child: _MetallicSweepCard(
-            width: widget.width,
-            height: widget.height,
+            width: cardWidth,
+            height: cardHeight,
             primaryColor: widget.primaryColor ?? bankTheme.primary,
             secondaryColor: widget.secondaryColor ?? bankTheme.primaryVariant,
             borderRadius: borderRadius,
@@ -310,12 +332,18 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   // Front face
   // ---------------------------------------------------------------------------
 
-  Widget _buildFrontFace(BankThemeData bankTheme) {
+  Widget _buildFrontFace(
+    BankThemeData bankTheme,
+    double cardWidth,
+    double cardHeight,
+  ) {
     const textPrimary = Colors.white;
     final textSecondary = Colors.white.withValues(alpha: 0.75);
 
     return _wrapSurface(
       bankTheme: bankTheme,
+      cardWidth: cardWidth,
+      cardHeight: cardHeight,
       child: Padding(
         padding: const EdgeInsets.all(BankTokens.space5),
         child: Column(
@@ -445,12 +473,18 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   // Back face
   // ---------------------------------------------------------------------------
 
-  Widget _buildBackFace(BankThemeData bankTheme) {
+  Widget _buildBackFace(
+    BankThemeData bankTheme,
+    double cardWidth,
+    double cardHeight,
+  ) {
     const textPrimary = Colors.white;
     final textSecondary = Colors.white.withValues(alpha: 0.75);
 
     return _wrapSurface(
       bankTheme: bankTheme,
+      cardWidth: cardWidth,
+      cardHeight: cardHeight,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -579,11 +613,50 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   }
 
   // ---------------------------------------------------------------------------
+  // Sizing
+  // ---------------------------------------------------------------------------
+
+  /// Resolves the rendered width: an explicit `width` wins; otherwise the
+  /// card fills the available width up to `maxWidth` (340 by default).
+  double _resolveWidth(BoxConstraints constraints) {
+    final fixedWidth = widget.width;
+    if (fixedWidth != null) return fixedWidth;
+    final maxWidth = widget.maxWidth ?? _defaultWidth;
+    return constraints.hasBoundedWidth
+        ? min(constraints.maxWidth, maxWidth)
+        : maxWidth;
+  }
+
+  /// Resolves the rendered height: an explicit `height` wins; with a fixed
+  /// width the legacy 200 default applies; otherwise the height preserves
+  /// the default 340 x 200 aspect ratio.
+  double _resolveHeight(double cardWidth) {
+    final fixedHeight = widget.height;
+    if (fixedHeight != null) return fixedHeight;
+    if (widget.width != null) return _defaultHeight;
+    return cardWidth * _defaultHeight / _defaultWidth;
+  }
+
+  // ---------------------------------------------------------------------------
   // Build
   // ---------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardWidth = _resolveWidth(constraints);
+        final cardHeight = _resolveHeight(cardWidth);
+        return _buildCard(context, cardWidth, cardHeight);
+      },
+    );
+  }
+
+  Widget _buildCard(
+    BuildContext context,
+    double cardWidth,
+    double cardHeight,
+  ) {
     final bankTheme = BankThemeData.of(context);
     final isFrozen = widget.cardState == BankCardState.frozen;
 
@@ -607,6 +680,8 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
               bankTheme: bankTheme,
               isFront: true,
               isFrozen: isFrozen,
+              cardWidth: cardWidth,
+              cardHeight: cardHeight,
             ),
           );
         } else {
@@ -623,14 +698,16 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
                 bankTheme: bankTheme,
                 isFront: false,
                 isFrozen: isFrozen,
+                cardWidth: cardWidth,
+                cardHeight: cardHeight,
               ),
             ),
           );
         }
 
         return SizedBox(
-          width: widget.width,
-          height: widget.height,
+          width: cardWidth,
+          height: cardHeight,
           child: face,
         );
       },
@@ -678,9 +755,12 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
     required BankThemeData bankTheme,
     required bool isFront,
     required bool isFrozen,
+    required double cardWidth,
+    required double cardHeight,
   }) {
-    final face =
-        isFront ? _buildFrontFace(bankTheme) : _buildBackFace(bankTheme);
+    final face = isFront
+        ? _buildFrontFace(bankTheme, cardWidth, cardHeight)
+        : _buildBackFace(bankTheme, cardWidth, cardHeight);
 
     if (isFrozen) {
       return Stack(

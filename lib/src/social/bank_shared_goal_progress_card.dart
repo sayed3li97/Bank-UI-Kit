@@ -192,8 +192,9 @@ class _ContributorStack extends StatelessWidget {
               child: CircleAvatar(
                 radius: avatarRadius - 1.5,
                 backgroundColor: theme.primary.withValues(alpha: 0.2),
-                backgroundImage:
-                    c.avatarUrl != null ? NetworkImage(c.avatarUrl!) : null,
+                backgroundImage: c.avatarUrl != null
+                    ? BankUiScope.imageProviderFor(context, c.avatarUrl!)
+                    : null,
                 child: c.avatarUrl == null
                     ? Text(
                         c.name.isNotEmpty ? c.name[0].toUpperCase() : '?',

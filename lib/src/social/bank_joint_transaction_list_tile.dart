@@ -62,7 +62,10 @@ class BankJointTransactionListTile extends StatelessWidget {
                       radius: 20,
                       backgroundColor: theme.surfaceVariant,
                       backgroundImage: transaction.merchantLogoUrl != null
-                          ? NetworkImage(transaction.merchantLogoUrl!)
+                          ? BankUiScope.imageProviderFor(
+                              context,
+                              transaction.merchantLogoUrl!,
+                            )
                           : null,
                       child: transaction.merchantLogoUrl == null
                           ? Text(
@@ -86,7 +89,10 @@ class BankJointTransactionListTile extends StatelessWidget {
                             backgroundColor:
                                 theme.primary.withValues(alpha: 0.2),
                             backgroundImage: initiatorAvatarUrl != null
-                                ? NetworkImage(initiatorAvatarUrl!)
+                                ? BankUiScope.imageProviderFor(
+                                    context,
+                                    initiatorAvatarUrl!,
+                                  )
                                 : null,
                             child: initiatorAvatarUrl == null
                                 ? Text(

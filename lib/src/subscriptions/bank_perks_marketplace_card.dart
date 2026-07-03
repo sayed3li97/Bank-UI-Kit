@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 
@@ -98,7 +99,7 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
       logoWidget = CircleAvatar(
         radius: 24,
         backgroundColor: bankTheme.surfaceVariant,
-        backgroundImage: NetworkImage(perk.logoUrl!),
+        backgroundImage: BankUiScope.imageProviderFor(context, perk.logoUrl!),
         onBackgroundImageError: (_, __) {
           if (mounted) setState(() => _logoFailed = true);
         },

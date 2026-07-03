@@ -1,4 +1,4 @@
-import 'dart:math' show pi;
+import 'dart:math' show min, pi;
 
 import 'package:flutter/material.dart';
 
@@ -122,11 +122,27 @@ class BankFlipCard extends StatefulWidget {
 
   // ── Layout ────────────────────────────────────────────────────────────────
 
-  /// Card width. Defaults to 340.
-  final double width;
+  /// Default card width, used as the upper bound when neither [width] nor
+  /// [maxWidth] is provided.
+  static const double _defaultWidth = 340;
 
-  /// Card height. Defaults to 200.
-  final double height;
+  /// Default card height, paired with [_defaultWidth] to derive the card's
+  /// aspect ratio when sizing responsively.
+  static const double _defaultHeight = 200;
+
+  /// Fixed card width. When null (the default) the card fills the available
+  /// width up to [maxWidth] (340 when [maxWidth] is also null), so it renders
+  /// at 340 in unconstrained contexts, exactly as older versions did.
+  final double? width;
+
+  /// Fixed card height. When null (the default) the height is 200 if [width]
+  /// is set, otherwise it scales with the resolved width to preserve the
+  /// default 340 x 200 aspect ratio.
+  final double? height;
+
+  /// Upper bound on the card width when [width] is null. Defaults to 340,
+  /// matching the previous fixed width.
+  final double? maxWidth;
 
   const BankFlipCard({
     required this.frontBuilder,
@@ -139,8 +155,9 @@ class BankFlipCard extends StatefulWidget {
     this.flipDuration = const Duration(milliseconds: 500),
     this.flipCurve = Curves.easeInOutCubic,
     this.flipAxis = BankFlipAxis.horizontal,
-    this.width = 340,
-    this.height = 200,
+    this.width,
+    this.height,
+    this.maxWidth,
   });
 
   @override
@@ -190,10 +207,44 @@ class _BankFlipCardState extends State<BankFlipCard>
     }
   }
 
+  // ── Sizing ────────────────────────────────────────────────────────────────
+
+  /// Resolves the rendered width: an explicit [BankFlipCard.width] wins;
+  /// otherwise the card fills the available width up to
+  /// [BankFlipCard.maxWidth] (340 by default).
+  double _resolveWidth(BoxConstraints constraints) {
+    final fixedWidth = widget.width;
+    if (fixedWidth != null) return fixedWidth;
+    final maxWidth = widget.maxWidth ?? BankFlipCard._defaultWidth;
+    return constraints.hasBoundedWidth
+        ? min(constraints.maxWidth, maxWidth)
+        : maxWidth;
+  }
+
+  /// Resolves the rendered height: an explicit [BankFlipCard.height] wins;
+  /// with a fixed width the legacy 200 default applies; otherwise the height
+  /// preserves the default 340 x 200 aspect ratio.
+  double _resolveHeight(double cardWidth) {
+    final fixedHeight = widget.height;
+    if (fixedHeight != null) return fixedHeight;
+    if (widget.width != null) return BankFlipCard._defaultHeight;
+    return cardWidth * BankFlipCard._defaultHeight / BankFlipCard._defaultWidth;
+  }
+
   // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardWidth = _resolveWidth(constraints);
+        final cardHeight = _resolveHeight(cardWidth);
+        return _buildCard(context, cardWidth, cardHeight);
+      },
+    );
+  }
+
+  Widget _buildCard(BuildContext context, double cardWidth, double cardHeight) {
     Widget card = AnimatedBuilder(
       animation: _anim,
       builder: (context, _) {
@@ -231,8 +282,8 @@ class _BankFlipCardState extends State<BankFlipCard>
         }
 
         return SizedBox(
-          width: widget.width,
-          height: widget.height,
+          width: cardWidth,
+          height: cardHeight,
           child: face,
         );
       },

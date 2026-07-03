@@ -72,12 +72,15 @@ class BankTransferReviewCard extends StatelessWidget {
 
   bool get _isFree => fee == null || fee!.isZero;
 
-  String _formatMoney(Money m, BankUiScopeData scope) =>
-      BankMoneyFormatter.format(
-        amount: m.amount,
-        currencyCode: m.currencyCode,
-        numeralStyle: scope.numeralStyle,
-      );
+  /// Formats [m] for display, substituting the scope's masked label when
+  /// privacy mode is enabled so no monetary value is rendered or announced.
+  String _formatMoney(Money m, BankUiScopeData scope) => scope.privacyEnabled
+      ? scope.strings.balanceHidden
+      : BankMoneyFormatter.format(
+          amount: m.amount,
+          currencyCode: m.currencyCode,
+          numeralStyle: scope.numeralStyle,
+        );
 
   String _formatArrival(BankUiScopeData scope) {
     if (isScheduled && scheduledDate != null) {
@@ -235,7 +238,10 @@ class _BeneficiaryHeader extends StatelessWidget {
         if (beneficiary.avatarUrl != null)
           CircleAvatar(
             radius: 24,
-            backgroundImage: NetworkImage(beneficiary.avatarUrl!),
+            backgroundImage: BankUiScope.imageProviderFor(
+              context,
+              beneficiary.avatarUrl!,
+            ),
             backgroundColor: bankTheme.surfaceVariant,
           )
         else

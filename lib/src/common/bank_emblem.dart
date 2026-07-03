@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 import 'bank_icon_spec.dart';
@@ -13,15 +14,20 @@ import 'bank_icon_spec.dart';
 ///
 /// Content is resolved in this order:
 ///
-/// 1. **Network image**: [imageUrl] fades in over
-///    [BankTokens.durationFast] once loaded. While loading, and if the
-///    request fails, the initials / icon placeholder below is shown
-///    instead; a broken-image glyph is never rendered.
-/// 2. **Initials**: the first letters of up to two words of
+/// 1. **Explicit provider**: [imageProvider], when given, is rendered
+///    directly and takes precedence over [imageUrl].
+/// 2. **URL image**: [imageUrl] is turned into a provider via
+///    [BankUiScope.imageProviderFor] (the scope's
+///    [BankUiScopeData.imageResolver] when set, [NetworkImage]
+///    otherwise) and fades in over [BankTokens.durationFast] once
+///    loaded. While loading, and if the request fails, the initials /
+///    icon placeholder below is shown instead; a broken-image glyph is
+///    never rendered.
+/// 3. **Initials**: the first letters of up to two words of
 ///    [initialsFrom], on a background colour derived from a stable hash of
 ///    [initialsFrom] across an eight-colour palette, so the same payee
 ///    always receives the same colour.
-/// 3. **Icon**: [icon] tinted [BankThemeData.primary] on an 8 % primary
+/// 4. **Icon**: [icon] tinted [BankThemeData.primary] on an 8 % primary
 ///    tint; [BankIcons.account] is used when no content is given at all.
 ///
 /// [badgeCount] renders a [BankTokens.danger] count bubble at the top-end
@@ -50,6 +56,7 @@ class BankEmblem extends StatelessWidget {
   const BankEmblem({
     super.key,
     this.imageUrl,
+    this.imageProvider,
     this.initialsFrom,
     this.icon,
     this.size = 40,
@@ -63,9 +70,17 @@ class BankEmblem extends StatelessWidget {
 
   /// URL of the entity image (payee photo, merchant logo).
   ///
-  /// Highest-priority content; the initials / icon placeholder is shown
-  /// while it loads and if loading fails.
+  /// Resolved via [BankUiScope.imageProviderFor], so a
+  /// [BankUiScopeData.imageResolver] can substitute a custom provider;
+  /// without one, [NetworkImage] is used. The initials / icon
+  /// placeholder is shown while it loads and if loading fails. Ignored
+  /// when [imageProvider] is set.
   final String? imageUrl;
+
+  /// Explicit image provider, bypassing URL resolution entirely.
+  ///
+  /// Highest-priority content; takes precedence over [imageUrl].
+  final ImageProvider? imageProvider;
 
   /// Source text for the initials fallback, typically the entity's
   /// display name. Also used as the semantics label when [onTap] is set.
@@ -168,15 +183,20 @@ class BankEmblem extends StatelessWidget {
 
     Widget content = Center(child: placeholder);
 
-    if (imageUrl != null) {
+    final resolvedImage = imageProvider ??
+        (imageUrl == null
+            ? null
+            : BankUiScope.imageProviderFor(context, imageUrl!));
+
+    if (resolvedImage != null) {
       final disableAnimations =
           MediaQuery.maybeOf(context)?.disableAnimations ?? false;
       content = Stack(
         fit: StackFit.expand,
         children: [
           content,
-          Image.network(
-            imageUrl!,
+          Image(
+            image: resolvedImage,
             fit: BoxFit.cover,
             excludeFromSemantics: true,
             frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
