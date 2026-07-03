@@ -99,6 +99,13 @@ abstract final class BankIcons {
       Icons.notifications_active_outlined;
   static const IconData fraud = Icons.gpp_bad_outlined;
 
+  // Documents
+  static const IconData document = Icons.description_outlined;
+  static const IconData tax = Icons.request_quote_outlined;
+  static const IconData contract = Icons.history_edu_outlined;
+  static const IconData letter = Icons.mail_outline;
+  static const IconData download = Icons.file_download_outlined;
+
   // Misc
   static const IconData calendar = Icons.calendar_today_outlined;
   static const IconData currency = Icons.currency_exchange;

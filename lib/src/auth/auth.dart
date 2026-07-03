@@ -5,4 +5,5 @@ export 'bank_otp_input.dart';
 export 'bank_pin_dots.dart';
 export 'bank_pin_keypad.dart';
 export 'bank_privacy_toggle.dart';
+export 'bank_sca_approval_sheet.dart';
 export 'bank_session_timeout_dialog.dart';

@@ -22,6 +22,7 @@ export 'src/auth/bank_pin_dots.dart';
 // Authentication & security
 export 'src/auth/bank_pin_keypad.dart';
 export 'src/auth/bank_privacy_toggle.dart';
+export 'src/auth/bank_sca_approval_sheet.dart';
 export 'src/auth/bank_session_timeout_dialog.dart';
 // Business banking
 export 'src/business/bank_value_diff_row.dart';
@@ -42,6 +43,7 @@ export 'src/common/bank_icon_spec.dart';
 export 'src/common/bank_masked_input_field.dart';
 export 'src/common/bank_money_protection_banner.dart';
 export 'src/common/bank_period_selector.dart';
+export 'src/common/bank_phone_input_field.dart';
 export 'src/common/bank_quick_actions_grid.dart';
 export 'src/common/bank_shariah_badge.dart';
 export 'src/common/bank_status_tracker.dart';
@@ -52,6 +54,8 @@ export 'src/controllers/bank_income_sorter_controller.dart';
 // Headless controllers
 export 'src/controllers/bank_kyc_flow_controller.dart';
 export 'src/controllers/bank_transfer_flow_controller.dart';
+// Documents & statements
+export 'src/documents/bank_statement_list_tile.dart';
 export 'src/insights/bank_budget_gauge_widget.dart';
 export 'src/insights/bank_insight_card.dart';
 // Insights
