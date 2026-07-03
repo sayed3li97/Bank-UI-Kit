@@ -45,6 +45,7 @@ four design languages, your backend.
 - [Quick start](#quick-start)
 - [Design presets](#design-presets)
 - [Custom themes](#custom-themes)
+- [Journeys, not just widgets](#journeys-not-just-widgets)
 - [Component catalogue](#component-catalogue)
 - [Full API reference](docs/component-reference.md)
 - [Cross-cutting features](#cross-cutting-features)
@@ -88,6 +89,16 @@ network. Your core banking APIs stay yours.
 | **State management** | Agnostic (pure props + callbacks) | Tied to the template's choice |
 | **Money** | Lossless `Decimal`-backed `Money` type | `double` |
 | **Tests** | Unit + widget tests across presets | None |
+
+### One token change rebrands every surface
+
+<p align="center">
+  <img src="docs/diagrams/architecture-flow.svg" width="880" alt="Design tokens flow into four presets, into 135+ components, into your app" />
+</p>
+
+Tokens set color, shape, depth, and numeral typography once. Presets are
+just token sets: swap one and every component follows, light and dark,
+LTR and RTL. Your rebrand is a constructor argument, not a quarter.
 
 ---
 
@@ -204,7 +215,7 @@ Every component is also captured under all four presets: see
 
 ## Custom themes
 
-Not limited to the three presets: build a fully custom theme from your brand colour.
+Not limited to the four presets: build a fully custom theme from your brand colour.
 Only `primary` and `brightness` are required; every other token has a sensible default.
 
 ```dart
@@ -242,6 +253,31 @@ final tweaked = BankPreset.bloom
     .extension<BankThemeData>()!
     .copyWith(primary: const Color(0xFFE91E63));
 ```
+
+---
+
+## Journeys, not just widgets
+
+Components are designed to chain into complete, compliant banking
+journeys. Below, a payment travels through five kit widgets while one
+headless controller owns the state machine:
+
+<p align="center">
+  <img src="docs/diagrams/payment-journey.svg" width="880" alt="A payment journey composed from kit components over one headless flow controller" />
+</p>
+
+The same composition pattern covers every core journey. The full
+catalogue of 25 journey blueprints (triggers, steps, variants, error
+states) lives in [docs/banking-journeys.md](docs/banking-journeys.md).
+
+| Journey | Chain of kit components |
+|---|---|
+| Onboard a customer | `BankOnboardingCarousel` → `BankStepProgressIndicator` → `BankDocumentCaptureOverlay` → `BankLivenessCheckOverlay` → `BankAsyncVerificationState` → `BankSuccessAnimation` |
+| Pay a bill | `BankBillForecastList` → `BankBillPayTile` → `BankAmountInputField` → `BankTransferReviewCard` → `BankScaApprovalSheet` → `BankReceiptView` |
+| Send money to a friend | `BankBeneficiaryPicker` → `BankAmountKeypad` → `BankTransferReviewCard` → `BankTransactionPinSheet` → `BankTransferResultScreen` |
+| Recover a lost card | `BankPanicFreezeButton` → `BankCardControlsPanel` → `BankDisposableCardTile` → `BankPhysicalCardMaterialPicker` → `BankStatusTracker` |
+| Grow savings | `BankFinancialHealthScore` → `BankSavingsPotCard` → `BankRoundUpSettingsSheet` → `BankSavingsChallengeCard` → `BankSharedPotInvite` |
+| Dispute a charge | `BankTransactionDetailSheet` → `BankDisputeWizardSheet` → `BankSecureMessageThread` → `BankStatusTracker` → `BankInAppNotificationCenter` |
 
 ---
 
@@ -518,11 +554,26 @@ node tools/screenshots.mjs          # requires playwright + a Chromium
 
 ---
 
+## See it, then ship it
+
+**Ten minutes to conviction.** Run the gallery and switch presets live:
+
+```bash
+git clone https://github.com/sayed3li97/bank-ui-kit.git
+cd bank-ui-kit/example && flutter run -t lib/gallery_main.dart
+```
+
+**Building a bank?** Start from the [journey blueprints](docs/banking-journeys.md),
+compose the widgets, wire your APIs to the callbacks. The kit never
+touches the network: your core banking stays yours.
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md).
 In short: `flutter analyze` and `flutter test` must be green, and every change must work
-across all three presets, both brightnesses, and RTL.
+across all four presets, both brightnesses, and RTL.
 
 ---
 
