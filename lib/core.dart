@@ -59,6 +59,7 @@ export 'src/controllers/bank_transfer_flow_controller.dart';
 export 'src/documents/bank_statement_list_tile.dart';
 export 'src/insights/bank_budget_gauge_widget.dart';
 export 'src/insights/bank_insight_card.dart';
+export 'src/insights/bank_recurring_merchant_tile.dart';
 // Insights
 export 'src/insights/bank_spending_breakdown_chart.dart';
 export 'src/models/bank_account.dart';
@@ -83,6 +84,7 @@ export 'src/onboarding/bank_step_progress_indicator.dart';
 // Payments & billing
 export 'src/payments/bank_bill_pay_tile.dart';
 export 'src/payments/bank_standing_order_tile.dart';
+export 'src/payments/bank_transfer_limit_manager.dart';
 // Scope & strings
 export 'src/scope/bank_ui_scope.dart';
 export 'src/scope/bank_ui_strings.dart';
