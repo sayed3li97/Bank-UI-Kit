@@ -13,6 +13,7 @@ import '../../core.dart';
 import 'onboarding.dart';
 
 export 'bank_async_verification_state.dart';
+export 'bank_consent_management_list.dart';
 export 'bank_consent_modal.dart';
 export 'bank_document_capture_overlay.dart';
 export 'bank_liveness_check_overlay.dart';

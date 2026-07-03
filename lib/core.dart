@@ -73,6 +73,7 @@ export 'src/models/transaction.dart';
 export 'src/notifications/bank_alert_preferences_panel.dart';
 export 'src/notifications/bank_in_app_notification_center.dart';
 export 'src/onboarding/bank_async_verification_state.dart';
+export 'src/onboarding/bank_consent_management_list.dart';
 export 'src/onboarding/bank_consent_modal.dart';
 export 'src/onboarding/bank_document_capture_overlay.dart';
 export 'src/onboarding/bank_liveness_check_overlay.dart';
@@ -80,6 +81,7 @@ export 'src/onboarding/bank_onboarding_carousel.dart';
 // Onboarding & KYC
 export 'src/onboarding/bank_step_progress_indicator.dart';
 // Payments & billing
+export 'src/payments/bank_bill_pay_tile.dart';
 export 'src/payments/bank_standing_order_tile.dart';
 // Scope & strings
 export 'src/scope/bank_ui_scope.dart';
