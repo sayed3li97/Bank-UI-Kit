@@ -4,7 +4,7 @@
 
 **A production-grade Flutter UI component library for mobile banking and fintech apps.**
 
-Independently themeable · RTL-aware · WCAG 2.1 AA · state-management agnostic · 65+ widgets
+Independently themeable · RTL-aware · WCAG 2.1 AA · state-management agnostic · 110+ widgets
 
 [![CI](https://github.com/sayed3li97/bank-ui-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/sayed3li97/bank-ui-kit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -52,7 +52,7 @@ Independently themeable · RTL-aware · WCAG 2.1 AA · state-management agnostic
 | | Bank UI Kit | Typical screen-template kits |
 |---|---|---|
 | **Integration model** | Compose into any existing app | Copy-paste whole screens |
-| **Theming** | 3 presets + fully custom themes, runtime-switchable | Fork the package |
+| **Theming** | 4 presets + fully custom themes, runtime-switchable | Fork the package |
 | **RTL support** | First-class, every widget | Mirror-on-demand or none |
 | **Accessibility** | WCAG 2.1 AA, 44×44 targets, semantics | Not specified |
 | **State management** | Agnostic (pure props + callbacks) | Tied to the template's choice |
@@ -123,7 +123,7 @@ BankTransactionListTile(transaction: tx, onTap: () { /* open detail */ }),
 
 ## Design presets
 
-Three first-class presets ship in the box. Each defines a complete `BankThemeData`
+Four first-class presets ship in the box. Each defines a complete `BankThemeData`
 (colours, shape radii, elevation/glow, brand font, numeral typography) in light **and** dark.
 
 | Preset | Personality | Signature |
@@ -131,6 +131,7 @@ Three first-class presets ship in the box. Each defines a complete `BankThemeDat
 | **Studio** | Restrained, editorial | Petrol-green, 12 px corners, hairline borders, Space Grotesk |
 | **Voltage** | Electric, dark-native | Violet→cyan gradient, pill shapes, glow depth |
 | **Bloom** | Warm, consumer-friendly | Coral primary, fully-rounded, Nunito |
+| **Heritage** | Institutional, Islamic-banking ready | Deep forest green + muted gold, pairs with `BankShariahBadge` and profit-rate labels |
 
 Switch presets at runtime by changing the `ThemeData` you pass to `MaterialApp` —
 every widget re-themes itself because it reads tokens from `BankThemeData.of(context)`.
@@ -195,7 +196,7 @@ final tweaked = BankPreset.bloom
 
 ## Component catalogue
 
-69 widgets across 14 modules. Each screenshot below is a live render of that module's
+110+ widgets across 20 modules. Each screenshot below is a live render of that module's
 showcase screen (Studio preset, light mode) from the example app.
 
 For the full parameter-level API reference (every constructor argument, type, required/optional status, and default value) see **[docs/component-reference.md](docs/component-reference.md)**.
@@ -206,7 +207,7 @@ For the full parameter-level API reference (every constructor argument, type, re
 <img src="docs/screenshots/states-studio-light.png" width="260" align="right" />
 
 ### Accounts & balances
-`BankAccountCard` · `BankAccountSwitcher` · `BankBalanceText` (privacy-aware)
+`BankAccountCard` · `BankAccountSwitcher` · `BankBalanceText` (privacy-aware) · `BankProductItemTile` · `BankAccountNumberText`
 
 ### Transactions
 `BankTransactionListTile` · `BankTransactionGroupHeader` · `BankTransactionDetailSheet` · `BankTransactionFilterSheet` · `BankReceiptView` · `BankTransactionCostSplitSheet` · `BankTransactionCategorySplitSheet`
@@ -315,9 +316,9 @@ BankVirtualCardWidget(
 |---|---|---|
 | <img src="docs/screenshots/auth-studio-light.png" width="230" /> | <img src="docs/screenshots/onboarding-studio-light.png" width="230" /> | <img src="docs/screenshots/saving-studio-light.png" width="230" /> |
 
-**Auth & security** — `BankPinKeypad` · `BankPinDots` · `BankBiometricPromptButton` · `BankPrivacyToggle` · `BankDeviceTrustBanner` · `BankSessionTimeoutDialog` · `BankAppSwitcherPrivacyOverlay`
+**Auth & security** — `BankPinKeypad` · `BankPinDots` · `BankBiometricPromptButton` · `BankPrivacyToggle` · `BankDeviceTrustBanner` · `BankSessionTimeoutDialog` · `BankAppSwitcherPrivacyOverlay` · `BankOtpInput` · `BankScaApprovalSheet` (PSD2 dynamic linking) · `BankDeviceSessionTile`
 
-**Onboarding & KYC** — `BankStepProgressIndicator` · `BankDocumentCaptureOverlay` · `BankLivenessCheckOverlay` · `BankAsyncVerificationState` · `BankConsentModal`
+**Onboarding & KYC** — `BankStepProgressIndicator` · `BankDocumentCaptureOverlay` · `BankLivenessCheckOverlay` · `BankAsyncVerificationState` · `BankConsentModal` · `BankConsentManagementList` (open-banking dashboard) · `BankOnboardingCarousel` · `BankAddressForm`
 
 **Saving** — `BankSavingsPotCard` · `BankRoundUpSettingsSheet` · `BankPotContributionSheet` · `BankIncomeSorterSheet` · `BankSharedPotInvite`
 
@@ -329,7 +330,7 @@ BankVirtualCardWidget(
 
 **Investing** — `BankPortfolioPerformanceChart` · `BankHoldingsListTile` · `BankWatchlistCard` · `BankBuySellSheet` · `BankAssetPriceTicker` · `BankLiveExchangeConverter` · `BankCurrencyWalletTabBar`
 
-**Credit** — `BankCreditLimitGauge` · `BankFlexEligibleBadge` · `BankInstallmentPlanSelector` · `BankRepaymentScheduleView`
+**Credit** — `BankCreditLimitGauge` · `BankFlexEligibleBadge` · `BankInstallmentPlanSelector` · `BankRepaymentScheduleView` · `BankCreditScoreGauge` · `BankLoanCalculatorCard`
 
 | Subscriptions | Insights | Notifications |
 |---|---|---|
@@ -337,9 +338,27 @@ BankVirtualCardWidget(
 
 **Subscriptions** — `BankPlanComparisonTable` · `BankPaywallSheet` · `BankPerksMarketplaceCard` · `BankReferralInviteCard`
 
-**Insights** — `BankSpendingBreakdownChart` (donut) · `BankBudgetGaugeWidget` · `BankInsightCard`
+**Insights** — `BankSpendingBreakdownChart` (donut) · `BankBudgetGaugeWidget` · `BankInsightCard` · `BankCashflowChart` (history + forecast) · `BankRecurringMerchantTile` (subscription detection)
 
-**Notifications** — `BankInAppNotificationCenter`
+**Notifications** — `BankInAppNotificationCenter` · `BankAlertPreferencesPanel`
+
+### Forms & input
+`BankTextField` · `BankAmountInputField` (currency-aware) · `BankMaskedInputField` (IBAN / PAN / sort code, mod-97 + Luhn) · `BankPhoneInputField` (E.164) · `BankCountryPicker` (236 countries) · `BankPeriodSelector`
+
+### Payments & billing
+`BankBillPayTile` + `BankBillCalendarStrip` · `BankStandingOrderTile` · `BankTransferLimitManager` (SCA-gated) · `BankQrScannerOverlay` + `BankMyQrCard` (local QR encoding)
+
+### Business banking
+`BankApprovalRequestTile` (maker-checker) · `BankBatchPaymentReviewSheet` · `BankValueDiffRow`
+
+### Documents & deposits
+`BankStatementListTile` · `BankChequeCaptureOverlay` + `BankChequeDepositSummary` (remote deposit capture)
+
+### Support & servicing
+`BankDisputeWizardSheet` (+ headless `BankDisputeFlowController`) · `BankSecureMessageThread` · `BankHelpFaqList`
+
+### Scaffolding & display
+`BankAppBar` · `BankBottomNavBar` · `BankEmblem` · `BankSummaryStack` · `BankStatusTracker` · `BankQuickActionsGrid` · `BankMoneyProtectionBanner` · `BankShariahBadge` · `BankWalletProvisioningButton` · `BankTravelNoticeForm`
 
 ---
 
