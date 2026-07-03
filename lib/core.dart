@@ -9,17 +9,22 @@
 library;
 
 export 'src/accounts/bank_account_card.dart';
+export 'src/accounts/bank_account_number_text.dart';
 export 'src/accounts/bank_account_switcher.dart';
 // Accounts & balances
 export 'src/accounts/bank_balance_text.dart';
+export 'src/accounts/bank_product_item_tile.dart';
 export 'src/auth/bank_app_switcher_privacy_overlay.dart';
 export 'src/auth/bank_biometric_prompt_button.dart';
 export 'src/auth/bank_device_trust_banner.dart';
+export 'src/auth/bank_otp_input.dart';
 export 'src/auth/bank_pin_dots.dart';
 // Authentication & security
 export 'src/auth/bank_pin_keypad.dart';
 export 'src/auth/bank_privacy_toggle.dart';
 export 'src/auth/bank_session_timeout_dialog.dart';
+// Business banking
+export 'src/business/bank_value_diff_row.dart';
 export 'src/cards/bank_card_controls_panel.dart';
 export 'src/cards/bank_card_pin_manager.dart';
 // Cards
@@ -28,11 +33,18 @@ export 'src/cards/bank_horizontal_account_card.dart';
 export 'src/cards/bank_physical_card_material_picker.dart';
 export 'src/cards/bank_virtual_card_widget.dart';
 // Common utilities & scaffolding
+export 'src/common/bank_amount_input_field.dart';
 export 'src/common/bank_app_bar.dart';
 export 'src/common/bank_bottom_nav_bar.dart';
+export 'src/common/bank_country_picker.dart';
 export 'src/common/bank_emblem.dart';
 export 'src/common/bank_icon_spec.dart';
+export 'src/common/bank_masked_input_field.dart';
+export 'src/common/bank_money_protection_banner.dart';
+export 'src/common/bank_period_selector.dart';
+export 'src/common/bank_quick_actions_grid.dart';
 export 'src/common/bank_shariah_badge.dart';
+export 'src/common/bank_status_tracker.dart';
 export 'src/common/bank_summary_stack.dart';
 export 'src/common/bank_text_field.dart';
 export 'src/common/money_formatter.dart';
@@ -60,6 +72,8 @@ export 'src/onboarding/bank_document_capture_overlay.dart';
 export 'src/onboarding/bank_liveness_check_overlay.dart';
 // Onboarding & KYC
 export 'src/onboarding/bank_step_progress_indicator.dart';
+// Payments & billing
+export 'src/payments/bank_standing_order_tile.dart';
 // Scope & strings
 export 'src/scope/bank_ui_scope.dart';
 export 'src/scope/bank_ui_strings.dart';
