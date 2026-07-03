@@ -445,13 +445,12 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
     final gradient = theme.accentGradient;
     final showRing = scope.preset == BankPreset.voltage && gradient != null;
 
-    final tint = Color.alphaBlend(
-      theme.primary.withValues(alpha: 0.08),
-      theme.surface,
-    );
-
     final core = DecoratedBox(
-      decoration: BoxDecoration(color: tint, shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: theme.surface,
+        shape: BoxShape.circle,
+        boxShadow: BankTokens.shadowCard,
+      ),
       child: Center(child: Icon(icon, size: _iconSize, color: theme.primary)),
     );
 

@@ -122,11 +122,13 @@ class BankTokens {
   static const TextStyle headlineMedium = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w600,
+    letterSpacing: -0.3,
   );
 
   static const TextStyle headlineSmall = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w600,
+    letterSpacing: -0.2,
   );
 
   static const TextStyle bodyLarge = TextStyle(
@@ -160,15 +162,17 @@ class BankTokens {
   );
 
   static const TextStyle labelSmall = TextStyle(
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: FontWeight.w600,
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   );
 
   /// Hero monetary numeral — large balance displays.
   static const TextStyle numeralHero = TextStyle(
-    fontSize: 48,
-    fontWeight: FontWeight.w700,
+    fontSize: 44,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -1.2,
+    height: 1.1,
     fontFeatures: [
       FontFeature.tabularFigures(),
       FontFeature.liningFigures(),
@@ -179,6 +183,7 @@ class BankTokens {
   static const TextStyle numeralLarge = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w600,
+    letterSpacing: -0.4,
     fontFeatures: [
       FontFeature.tabularFigures(),
       FontFeature.liningFigures(),
@@ -204,6 +209,51 @@ class BankTokens {
       FontFeature.liningFigures(),
     ],
   );
+
+  // ---------------------------------------------------------------------------
+  // Elevation shadows
+  //
+  // Premium surfaces take depth from soft, layered, low-alpha shadows —
+  // never from visible hairline borders. All shadows are tinted with a
+  // blue-grey ink (0x101828) so they read as ambient light, not dirt.
+  // ---------------------------------------------------------------------------
+
+  /// Resting card shadow: barely-there ambient + soft key light.
+  static const List<BoxShadow> shadowCard = [
+    BoxShadow(
+      color: Color(0x0A101828),
+      blurRadius: 2,
+      offset: Offset(0, 1),
+    ),
+    BoxShadow(
+      color: Color(0x0F101828),
+      blurRadius: 24,
+      offset: Offset(0, 8),
+    ),
+  ];
+
+  /// Hovering / floating elements: sheets, pickers, popovers.
+  static const List<BoxShadow> shadowFloating = [
+    BoxShadow(
+      color: Color(0x14101828),
+      blurRadius: 32,
+      offset: Offset(0, 12),
+    ),
+    BoxShadow(
+      color: Color(0x0A101828),
+      blurRadius: 4,
+      offset: Offset(0, 2),
+    ),
+  ];
+
+  /// Hero surfaces (virtual cards, feature banners).
+  static const List<BoxShadow> shadowHero = [
+    BoxShadow(
+      color: Color(0x29101828),
+      blurRadius: 40,
+      offset: Offset(0, 16),
+    ),
+  ];
 
   // ---------------------------------------------------------------------------
   // Accessibility

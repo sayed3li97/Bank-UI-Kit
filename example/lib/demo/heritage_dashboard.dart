@@ -324,11 +324,16 @@ class _HeroHeader extends StatelessWidget {
 
     return SliverToBoxAdapter(
       child: Container(
-        decoration: BoxDecoration(gradient: theme.accentGradient),
+        decoration: BoxDecoration(
+          gradient: theme.accentGradient,
+          borderRadius: const BorderRadius.vertical(
+            bottom: Radius.circular(32),
+          ),
+        ),
         padding: EdgeInsets.fromLTRB(
-          BankTokens.space4,
-          MediaQuery.paddingOf(context).top + BankTokens.space4,
-          BankTokens.space4,
+          BankTokens.space5,
+          MediaQuery.paddingOf(context).top + BankTokens.space5,
+          BankTokens.space5,
           BankTokens.space8,
         ),
         child: Column(
@@ -368,13 +373,22 @@ class _HeroHeader extends StatelessWidget {
             ),
             const SizedBox(height: BankTokens.space6),
             Text(
-              'Total balance',
-              style: BankTokens.bodySmall.copyWith(
-                color: Colors.white.withValues(alpha: 0.75),
+              'TOTAL BALANCE',
+              style: BankTokens.labelSmall.copyWith(
+                color: Colors.white.withValues(alpha: 0.6),
+                letterSpacing: 1.4,
+                fontSize: 10,
               ),
             ),
-            const SizedBox(height: BankTokens.space1),
-            BankBalanceText(money: total, size: BankBalanceSize.hero),
+            const SizedBox(height: BankTokens.space2),
+            BankBalanceText(
+              money: total,
+              size: BankBalanceSize.hero,
+              style: BankTokens.numeralHero.copyWith(
+                color: const Color(0xFFFDFBF6),
+                fontFamily: theme.fontFamily,
+              ),
+            ),
             const SizedBox(height: BankTokens.space3),
             Row(
               children: [
@@ -532,12 +546,13 @@ class _QuickAction extends StatelessWidget {
           width: 60,
           height: 60,
           decoration: BoxDecoration(
-            color: theme.primary,
-            borderRadius: theme.buttonRadius,
+            color: theme.surface,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: BankTokens.shadowCard,
           ),
-          child: Icon(icon, color: theme.onPrimary, size: 26),
+          child: Icon(icon, color: theme.primary, size: 24),
         ),
-        const SizedBox(height: BankTokens.space2),
+        const SizedBox(height: BankTokens.space2 + 2),
         Text(
           label,
           style: BankTokens.labelSmall.copyWith(color: theme.onSurfaceVariant),

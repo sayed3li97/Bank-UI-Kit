@@ -481,6 +481,7 @@ class BankAddressPreview extends StatelessWidget {
         color: theme.surface,
         borderRadius: theme.cardRadius,
         border: Border.all(color: theme.outline),
+        boxShadow: BankTokens.shadowCard,
       ),
       child: Padding(
         padding: const EdgeInsets.all(BankTokens.space4),
