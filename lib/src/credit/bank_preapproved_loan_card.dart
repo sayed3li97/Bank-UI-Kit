@@ -1,0 +1,456 @@
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+
+import '../accounts/bank_balance_text.dart';
+import '../common/bank_icon_spec.dart';
+import '../common/money_formatter.dart';
+import '../models/money.dart';
+import '../scope/bank_ui_scope.dart';
+import '../theme/bank_theme_data.dart';
+import '../theme/numeral_style.dart';
+import '../theme/tokens.dart';
+
+/// Pre-approved financing offer card with quick-pick amounts and a
+/// one-tap continue action.
+///
+/// Shows the maximum pre-approved amount as a hero figure under an
+/// `accentGradient` header strip (title plus offer badge), quick-pick
+/// chips at 25%, 50%, and 100% of the maximum (plus [quickAmount] when
+/// provided), a live estimated monthly installment for the selection
+/// (standard amortization over [maxMonths], the same math as
+/// `BankLoanCalculatorCard`), a rate and tenor microline, and a
+/// full-width CTA that fires [onContinue] with the selected amount.
+///
+/// The rate label honours `islamicFinanceMode` (profit rate instead of
+/// APR) unless [rateLabel] overrides it. An expiry countdown chip
+/// appears when [offerExpires] falls within 14 days; once the offer
+/// has expired the chips and the CTA are disabled. All digits respect
+/// the ambient `NumeralStyle`, and amounts mask automatically when
+/// privacy mode is active.
+///
+/// ```dart
+/// BankPreapprovedLoanCard(
+///   maxAmount: Money.fromDouble(250000, 'SAR'),
+///   annualRate: 0.049,
+///   maxMonths: 60,
+///   onContinue: startApplication,
+///   quickAmount: Money.fromDouble(30000, 'SAR'),
+///   offerExpires: DateTime.now().add(const Duration(days: 10)),
+/// )
+/// ```
+class BankPreapprovedLoanCard extends StatefulWidget {
+  const BankPreapprovedLoanCard({
+    required this.maxAmount,
+    required this.annualRate,
+    required this.maxMonths,
+    required this.onContinue,
+    super.key,
+    this.quickAmount,
+    this.offerExpires,
+    this.title = 'You are pre-approved',
+    this.rateLabel,
+    this.ctaLabel = 'Get the money',
+    this.badgeLabel = 'Exclusive offer',
+    this.upToLabel = 'Up to',
+    this.monthlyLabel = 'Est. monthly payment',
+    this.tenorTemplate = 'up to {n} months',
+    this.expiresTemplate = 'Expires in {n} days',
+    this.expiresTodayLabel = 'Expires today',
+    this.expiredLabel = 'Offer expired',
+    this.aprLabel = 'APR',
+    this.profitRateLabel = 'Profit rate',
+  })  : assert(maxMonths > 0, 'maxMonths must be positive'),
+        assert(annualRate >= 0, 'annualRate must not be negative');
+
+  /// The maximum pre-approved financing amount.
+  final Money maxAmount;
+
+  /// Nominal annual rate as a fraction, e.g. `0.049` for 4.9 %.
+  final double annualRate;
+
+  /// The longest available tenor, used for the installment estimate.
+  final int maxMonths;
+
+  /// Fired by the CTA with the currently selected amount.
+  final void Function(Money amount) onContinue;
+
+  /// Optional extra quick-pick amount (e.g. a personalised suggestion).
+  /// Must share [maxAmount]'s currency.
+  final Money? quickAmount;
+
+  /// When the offer lapses. A countdown chip renders once this falls
+  /// within 14 days; past dates disable the card.
+  final DateTime? offerExpires;
+
+  final String title;
+
+  /// Overrides the APR / profit-rate label entirely.
+  final String? rateLabel;
+
+  final String ctaLabel;
+  final String badgeLabel;
+  final String upToLabel;
+  final String monthlyLabel;
+
+  /// `{n}` is substituted with [maxMonths].
+  final String tenorTemplate;
+
+  /// `{n}` is substituted with the days remaining.
+  final String expiresTemplate;
+
+  final String expiresTodayLabel;
+  final String expiredLabel;
+  final String aprLabel;
+  final String profitRateLabel;
+
+  @override
+  State<BankPreapprovedLoanCard> createState() =>
+      _BankPreapprovedLoanCardState();
+}
+
+class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
+  late Money _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = widget.quickAmount ?? widget.maxAmount;
+  }
+
+  @override
+  void didUpdateWidget(BankPreapprovedLoanCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_options.contains(_selected)) {
+      _selected = widget.quickAmount ?? widget.maxAmount;
+    }
+  }
+
+  /// Quick-pick amounts: 25%, 50%, and 100% of the maximum, plus
+  /// [BankPreapprovedLoanCard.quickAmount] when given, sorted ascending.
+  List<Money> get _options {
+    final maxValue = widget.maxAmount.amount.toDouble();
+    final currency = widget.maxAmount.currencyCode;
+    final options = <Money>[
+      Money.fromDouble(maxValue * 0.25, currency),
+      Money.fromDouble(maxValue * 0.5, currency),
+      widget.maxAmount,
+    ];
+    final quick = widget.quickAmount;
+    if (quick != null && !options.contains(quick)) {
+      options.add(quick);
+    }
+    options.sort((a, b) => a.amount.compareTo(b.amount));
+    return options;
+  }
+
+  /// Standard amortization: P * r / (1 - (1+r)^-n), degrading to P/n at
+  /// a zero rate.
+  double get _monthlyPayment {
+    final principal = _selected.amount.toDouble();
+    final r = widget.annualRate / 12;
+    if (r <= 0) return principal / widget.maxMonths;
+    return principal * r / (1 - math.pow(1 + r, -widget.maxMonths));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = BankThemeData.of(context);
+    final scope = BankUiScope.of(context);
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+
+    final expires = widget.offerExpires;
+    var expired = false;
+    String? expiryText;
+    if (expires != null) {
+      final remaining = expires.difference(DateTime.now());
+      if (remaining.isNegative) {
+        expired = true;
+        expiryText = widget.expiredLabel;
+      } else if (remaining.inDays == 0) {
+        expiryText = widget.expiresTodayLabel;
+      } else if (remaining.inDays <= 14) {
+        expiryText = widget.expiresTemplate.replaceAll(
+          '{n}',
+          scope.numeralStyle.convert('${remaining.inDays}'),
+        );
+      }
+    }
+
+    final rateName = widget.rateLabel ??
+        (scope.islamicFinanceMode ? widget.profitRateLabel : widget.aprLabel);
+    final ratePercent = scope.numeralStyle
+        .convert('${(widget.annualRate * 100).toStringAsFixed(2)}%');
+    final tenorText = widget.tenorTemplate
+        .replaceAll('{n}', scope.numeralStyle.convert('${widget.maxMonths}'));
+    final microline = '$rateName $ratePercent · $tenorText';
+
+    final monthly =
+        Money.fromDouble(_monthlyPayment, widget.maxAmount.currencyCode);
+
+    final gradient = theme.accentGradient ??
+        LinearGradient(colors: [theme.primary, theme.primaryVariant]);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.surface,
+        borderRadius: theme.cardRadius,
+        boxShadow: BankTokens.shadowHero,
+      ),
+      child: ClipRRect(
+        borderRadius: theme.cardRadius,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _header(theme, gradient),
+            Padding(
+              padding: const EdgeInsets.all(BankTokens.space4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.upToLabel,
+                    style: BankTokens.labelMedium
+                        .copyWith(color: theme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: BankTokens.space1),
+                  BankBalanceText(
+                    money: widget.maxAmount,
+                    size: BankBalanceSize.hero,
+                    style: theme.numeralHero.copyWith(
+                      color: theme.onSurface,
+                      fontFamily: theme.fontFamily,
+                    ),
+                  ),
+                  const SizedBox(height: BankTokens.space3),
+                  Wrap(
+                    spacing: BankTokens.space2,
+                    runSpacing: BankTokens.space2,
+                    children: [
+                      for (final option in _options)
+                        _amountChip(
+                          option: option,
+                          selected: option == _selected,
+                          enabled: !expired,
+                          theme: theme,
+                          scope: scope,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: BankTokens.space3),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          widget.monthlyLabel,
+                          style: BankTokens.labelMedium
+                              .copyWith(color: theme.onSurfaceVariant),
+                        ),
+                      ),
+                      const SizedBox(width: BankTokens.space2),
+                      AnimatedSwitcher(
+                        duration: reduceMotion
+                            ? Duration.zero
+                            : BankTokens.durationFast,
+                        switchInCurve: BankTokens.curveStandard,
+                        switchOutCurve: BankTokens.curveStandard,
+                        child: BankBalanceText(
+                          key: ValueKey<String>(monthly.amount.toString()),
+                          money: monthly,
+                          size: BankBalanceSize.medium,
+                          style: theme.numeralMedium.copyWith(
+                            color: theme.primary,
+                            fontFamily: theme.fontFamily,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: BankTokens.space2),
+                  Wrap(
+                    spacing: BankTokens.space2,
+                    runSpacing: BankTokens.space1,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        microline,
+                        style: BankTokens.bodySmall
+                            .copyWith(color: theme.onSurfaceVariant),
+                      ),
+                      if (expiryText != null)
+                        _expiryChip(expiryText, expired: expired, theme: theme),
+                    ],
+                  ),
+                  const SizedBox(height: BankTokens.space4),
+                  SizedBox(
+                    width: double.infinity,
+                    height: BankTokens.space12,
+                    child: FilledButton(
+                      onPressed:
+                          expired ? null : () => widget.onContinue(_selected),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: theme.primary,
+                        foregroundColor: theme.onPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: theme.buttonRadius,
+                        ),
+                      ),
+                      child: Text(
+                        widget.ctaLabel,
+                        style: BankTokens.labelLarge,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Gradient strip carrying the title and the offer badge.
+  Widget _header(BankThemeData theme, Gradient gradient) {
+    return DecoratedBox(
+      decoration: BoxDecoration(gradient: gradient),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: BankTokens.space4,
+          vertical: BankTokens.space3,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                widget.title,
+                style: BankTokens.headlineSmall.copyWith(
+                  color: theme.onPrimary,
+                  fontFamily: theme.fontFamily,
+                ),
+              ),
+            ),
+            const SizedBox(width: BankTokens.space2),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: theme.onPrimary.withValues(alpha: 0.16),
+                borderRadius: theme.chipRadius,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: BankTokens.space2,
+                  vertical: BankTokens.space1,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(BankIcons.success, size: 14, color: theme.onPrimary),
+                    const SizedBox(width: BankTokens.space1),
+                    Text(
+                      widget.badgeLabel,
+                      style: BankTokens.labelSmall
+                          .copyWith(color: theme.onPrimary),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _amountChip({
+    required Money option,
+    required bool selected,
+    required bool enabled,
+    required BankThemeData theme,
+    required BankUiScopeData scope,
+  }) {
+    final formatted = BankMoneyFormatter.format(
+      amount: option.amount,
+      currencyCode: option.currencyCode,
+      numeralStyle: scope.numeralStyle,
+    );
+    final semanticLabel =
+        scope.privacyEnabled ? scope.strings.balanceHidden : formatted;
+    final background =
+        selected && enabled ? theme.primary : theme.surfaceVariant;
+    final foreground = !enabled
+        ? theme.onSurfaceVariant
+        : selected
+            ? theme.onPrimary
+            : theme.onSurface;
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: enabled,
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: Material(
+        color: background,
+        borderRadius: theme.chipRadius,
+        child: InkWell(
+          borderRadius: theme.chipRadius,
+          onTap: enabled ? () => setState(() => _selected = option) : null,
+          child: ConstrainedBox(
+            constraints:
+                const BoxConstraints(minHeight: BankTokens.minTapTarget),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: BankTokens.space3),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  BankBalanceText(
+                    money: option,
+                    size: BankBalanceSize.small,
+                    compact: true,
+                    style: BankTokens.numeralSmall.copyWith(
+                      color: foreground,
+                      fontFamily: theme.fontFamily,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _expiryChip(
+    String text, {
+    required bool expired,
+    required BankThemeData theme,
+  }) {
+    final color = expired ? BankTokens.danger : BankTokens.pending;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: theme.chipRadius,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: BankTokens.space2,
+          vertical: BankTokens.space1,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(BankIcons.schedule, size: 14, color: color),
+            const SizedBox(width: BankTokens.space1),
+            Text(
+              text,
+              style: BankTokens.labelSmall.copyWith(color: color),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
