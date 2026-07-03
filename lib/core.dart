@@ -34,6 +34,7 @@ export 'src/cards/bank_card_pin_manager.dart';
 export 'src/cards/bank_flip_card.dart';
 export 'src/cards/bank_horizontal_account_card.dart';
 export 'src/cards/bank_physical_card_material_picker.dart';
+export 'src/cards/bank_travel_notice_form.dart';
 export 'src/cards/bank_virtual_card_widget.dart';
 export 'src/cards/bank_wallet_provisioning_button.dart';
 // Common utilities & scaffolding
