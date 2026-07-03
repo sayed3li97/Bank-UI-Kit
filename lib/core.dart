@@ -70,6 +70,7 @@ export 'src/insights/bank_recurring_merchant_tile.dart';
 // Insights
 export 'src/insights/bank_spending_breakdown_chart.dart';
 export 'src/models/bank_account.dart';
+export 'src/models/bank_currency.dart';
 export 'src/models/bank_insight.dart';
 export 'src/models/bank_notification.dart';
 export 'src/models/beneficiary.dart';

@@ -1,5 +1,6 @@
 export 'asset_quote.dart';
 export 'bank_account.dart';
+export 'bank_currency.dart';
 export 'bank_insight.dart';
 export 'bank_notification.dart';
 export 'beneficiary.dart';

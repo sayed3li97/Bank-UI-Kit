@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../models/bank_currency.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/numeral_style.dart';
@@ -357,45 +358,18 @@ class _BankAmountTextInputFormatter extends TextInputFormatter {
 }
 
 // ---------------------------------------------------------------------------
-// Currency metadata (precision only — symbols come from BankMoneyFormatter)
+// Currency metadata comes from the shared BankCurrencies registry, so
+// precision and symbols stay consistent with every other money surface.
 // ---------------------------------------------------------------------------
 
-/// ISO 4217 currencies with zero minor units.
-const Set<String> _zeroDecimalCurrencies = {
-  'JPY',
-  'KRW',
-  'VND',
-  'CLP',
-  'ISK',
-};
-
-/// ISO 4217 currencies with three minor units.
-const Set<String> _threeDecimalCurrencies = {
-  'KWD',
-  'BHD',
-  'OMR',
-  'JOD',
-  'TND',
-};
-
-int _precisionFor(String currencyCode) {
-  if (_zeroDecimalCurrencies.contains(currencyCode)) return 0;
-  if (_threeDecimalCurrencies.contains(currencyCode)) return 3;
-  return 2;
-}
+int _precisionFor(String currencyCode) =>
+    BankCurrencies.of(currencyCode).decimalDigits;
 
 /// Extracts the display symbol for [currencyCode] by formatting zero through
 /// [BankMoneyFormatter] and stripping the digits — reusing the kit's symbol
 /// table instead of duplicating it.
-String _currencySymbolFor(String currencyCode) {
-  final zero = BankMoneyFormatter.format(
-    amount: Decimal.zero,
-    currencyCode: currencyCode,
-    hideFraction: true,
-  );
-  final symbol = zero.replaceAll(RegExp('[0-9]'), '').trim();
-  return symbol.isEmpty ? currencyCode : symbol;
-}
+String _currencySymbolFor(String currencyCode) =>
+    BankMoneyFormatter.symbolFor(currencyCode);
 
 // ---------------------------------------------------------------------------
 // Amount string pipeline
