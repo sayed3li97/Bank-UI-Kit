@@ -60,6 +60,7 @@ export 'src/controllers/bank_transfer_flow_controller.dart';
 // Documents & statements
 export 'src/documents/bank_statement_list_tile.dart';
 export 'src/insights/bank_budget_gauge_widget.dart';
+export 'src/insights/bank_cashflow_chart.dart';
 export 'src/insights/bank_insight_card.dart';
 export 'src/insights/bank_recurring_merchant_tile.dart';
 // Insights
