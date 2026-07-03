@@ -102,7 +102,7 @@ let totalAttempts = 0;
 
 // ── 1. SCREEN SHOTS ──────────────────────────────────────────────────────────
 if (!componentsOnly) {
-  const presets = ['studio', 'voltage', 'bloom'];
+  const presets = ['studio', 'voltage', 'bloom', 'heritage'];
   const galleryScreens = [
     'states', 'accounts', 'transactions', 'transfers', 'cards', 'auth',
     'onboarding', 'saving', 'social', 'investing', 'credit',
@@ -122,6 +122,10 @@ if (!componentsOnly) {
     for (const preset of ['voltage', 'bloom']) {
       shots.push({ screen, preset, dark: preset === 'voltage', w: 412, h: 1500 });
     }
+  }
+  // Heritage demo dashboard under its own preset, light and dark.
+  for (const dark of [false, true]) {
+    shots.push({ screen: 'heritage', preset: 'heritage', dark, w: 412, h: 900 });
   }
 
   console.log(`\n── Screens (${shots.length}) ─────────────────────────────────────────────`);
@@ -263,27 +267,41 @@ if (!screensOnly) {
     { name: 'BankHelpFaqList',            fullScreen: true  },
   ];
 
-  console.log(`\n── Components (${components.length}) ────────────────────────────────────────`);
+  // Preset variants: studio-light is the canonical top-level shot; the
+  // other presets land in components/<preset>/ for theme-specific decks.
+  const variants = [
+    { preset: 'studio',   dark: 0, dir: compDir },
+    { preset: 'heritage', dark: 0, dir: join(compDir, 'heritage') },
+    { preset: 'voltage',  dark: 1, dir: join(compDir, 'voltage') },
+    { preset: 'bloom',    dark: 0, dir: join(compDir, 'bloom') },
+  ];
+  for (const v of variants) mkdirSync(v.dir, { recursive: true });
+
+  console.log(
+    `\n── Components (${components.length} × ${variants.length} presets) ──────────────`,
+  );
   // Reuse a single page; resize viewport per component to save memory.
   const compPage = await browser.newPage({
     viewport: { width: 375, height: 600 },
     deviceScaleFactor: 1,
   });
-  for (const c of components) {
-    totalAttempts++;
-    const h = c.fullScreen ? 812 : 600;
-    await compPage.setViewportSize({ width: 375, height: h });
-    const url =
-      `http://localhost:${PORT}/index.html?component=${encodeURIComponent(c.name)}` +
-      `&preset=studio&dark=0`;
-    try {
-      await navigatePage(compPage, url);
-      const file = join(compDir, `${c.name}.png`);
-      await compPage.screenshot({ path: file });
-      totalOk++;
-      console.log(`✓ ${c.name}.png`);
-    } catch (e) {
-      console.error(`✗ ${c.name}: ${e.message}`);
+  for (const v of variants) {
+    for (const c of components) {
+      totalAttempts++;
+      const h = c.fullScreen ? 812 : 600;
+      await compPage.setViewportSize({ width: 375, height: h });
+      const url =
+        `http://localhost:${PORT}/index.html?component=${encodeURIComponent(c.name)}` +
+        `&preset=${v.preset}&dark=${v.dark}`;
+      try {
+        await navigatePage(compPage, url);
+        const file = join(v.dir, `${c.name}.png`);
+        await compPage.screenshot({ path: file });
+        totalOk++;
+        console.log(`✓ ${v.preset}/${c.name}.png`);
+      } catch (e) {
+        console.error(`✗ ${v.preset}/${c.name}: ${e.message}`);
+      }
     }
   }
   await compPage.close();
