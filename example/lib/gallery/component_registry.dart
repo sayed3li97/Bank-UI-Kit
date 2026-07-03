@@ -3312,15 +3312,15 @@ final List<GalleryEntry> kGalleryEntries = [
       onLimits: () {},
     ),
   ),
-  // ── ILA BANK BATCH ───────────────────────────────────────────────────────
+  // ── COMMUNITY SAVINGS & ASSISTANT ───────────────────────────────────────
   GalleryEntry(
     name: 'BankMoneyCircleCard',
-    description: 'Jamiyah saving circle with turn tracker.',
+    description: 'Rotating saving circle with turn tracker.',
     category: GalleryCategory.social,
     isFullScreen: true,
     params: const [],
     builder: (ctx, p) => BankMoneyCircleCard(
-      name: 'Family Jamiyah',
+      name: 'Family circle',
       contribution: Money.fromDouble(100, 'BHD'),
       members: const [
         BankCircleMember(

@@ -54,7 +54,7 @@ class BankCashbackCategory {
 }
 
 /// Bonus-category selection grid for quarterly or monthly cashback
-/// programmes (T-Bank quarterly categories, Sber Spasibo selection).
+/// programmes where the customer picks their own bonus categories.
 ///
 /// Renders a header with a title and a live "n of max selected" counter,
 /// a three-column grid of tappable category cards (icon on a tinted disc,

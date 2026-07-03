@@ -11,8 +11,8 @@ import 'bank_balance_text.dart';
 
 /// Early salary access banner card.
 ///
-/// Advertises (and toggles) an early-payday feature, the equivalent of
-/// Chime's "get paid early" or Monzo's "salary early". The card shows a
+/// Advertises (and toggles) an early-payday feature: salary lands up
+/// to two days early. The card shows a
 /// calendar icon on an accent tint band, a title, a body line with the
 /// computed number of days the salary can arrive early, the expected
 /// amount (via [BankBalanceText], privacy-mask aware) when provided, and

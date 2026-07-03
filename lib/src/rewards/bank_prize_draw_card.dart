@@ -67,8 +67,7 @@ class BankPrizeDraw {
 /// Card for a prize-linked savings account: deposit to earn draw
 /// chances, win monthly prizes, gift entries to loved ones.
 ///
-/// Equivalent surfaces in production apps: ila Bank Al Kanz and GCC
-/// prize-linked savings programmes (Mahzooz, Mega, Al Rabeh).
+/// A staple of prize-linked savings programmes across the GCC.
 ///
 /// The card shows the account balance (via [BankBalanceText], so it is
 /// masked when privacy mode is active on the ambient [BankUiScope]), a

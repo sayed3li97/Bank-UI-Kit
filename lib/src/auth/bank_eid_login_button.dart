@@ -37,8 +37,9 @@ enum BankEidAuthState {
 
 /// National eID authentication button with a number-match prompt.
 ///
-/// Covers the sign-in pattern used by Al Rajhi (Nafath), DBS (Singpass) and
-/// UAE Pass: the app starts an authentication request with the national
+/// Covers the sign-in pattern used with national identity schemes such
+/// as Nafath, Singpass, and UAE Pass: the app starts an
+/// authentication request with the national
 /// identity provider, the user approves it in the provider's own app, and,
 /// for providers such as Nafath, confirms by picking the two-digit number
 /// displayed in the provider app from 2-3 candidates shown here.

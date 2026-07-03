@@ -46,8 +46,8 @@ class BankAssistantPrompt {
 /// optional voice button, recent queries, and an optional disclaimer.
 ///
 /// Embed it in a bottom sheet or a dedicated screen as the front door
-/// to an assistant experience (in the spirit of ila's Ask Fatema or
-/// BofA's Erica). The panel is pure presentation: it performs no
+/// to a named-assistant experience. The panel is pure presentation:
+/// it performs no
 /// networking and contains no AI logic, it only fires callbacks.
 ///
 /// While the assistant is working, set [isThinking] to show a
@@ -118,7 +118,7 @@ class BankAssistantPanel extends StatefulWidget {
     this.semanticLabel,
   });
 
-  /// Display name of the assistant, e.g. `'Fatema'`. Substituted into
+  /// Display name of the assistant, e.g. `'Aya'`. Substituted into
   /// [greetingTemplate] and used in the panel semantics label.
   final String assistantName;
 
@@ -152,7 +152,7 @@ class BankAssistantPanel extends StatefulWidget {
   final String micSemanticLabel;
 
   /// Optional quiet legal or safety line under the panel content,
-  /// e.g. `'Fatema is an AI assistant. For urgent card issues call
+  /// e.g. `'Aya is an AI assistant. For urgent card issues call
   /// us.'`. Hidden when null.
   final String? disclaimerText;
 

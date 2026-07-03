@@ -99,7 +99,7 @@ class BankCircleMember {
 ///
 /// ```dart
 /// BankMoneyCircleCard(
-///   name: 'Family Jamiyah',
+///   name: 'Family circle',
 ///   contribution: Money.fromDouble(100, 'BHD'),
 ///   members: members,
 ///   currentCycle: 3,

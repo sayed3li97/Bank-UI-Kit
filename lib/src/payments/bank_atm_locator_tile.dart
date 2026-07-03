@@ -303,8 +303,8 @@ class _AtmChip extends StatelessWidget {
 /// active [NumeralStyle] from [BankUiScope].
 ///
 /// Use it after the customer requests an ATM withdrawal without a card
-/// (equivalent to CommBank cardless cash or Chime fee-free withdrawal
-/// codes), typically above a [BankAtmLocatorTile] list of nearby ATMs.
+/// (the cardless cash pattern), typically above a [BankAtmLocatorTile]
+/// list of nearby ATMs.
 ///
 /// ```dart
 /// BankCardlessCashCode(

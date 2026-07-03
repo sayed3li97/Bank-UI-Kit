@@ -23,7 +23,7 @@ import '../theme/tokens.dart';
 /// appends a "+N more" tail chip.
 ///
 /// Use it on a savings or goals screen wherever a recurring stepped
-/// challenge (equivalent to Kakao Bank's 26-week challenge) needs a
+/// challenge (the classic 26-week saving challenge) needs a
 /// glanceable, tappable summary.
 ///
 /// ```dart

@@ -88,8 +88,8 @@ class BankStory {
 // Rail
 // -----------------------------------------------------------------------------
 
-/// Horizontal rail of tappable story cards, in the style of the Sber and
-/// T-Bank stories feeds or Chase Daily Snapshot.
+/// Horizontal rail of tappable story cards, in the style of the
+/// stories feeds and daily-recap snapshots of leading banking apps.
 ///
 /// Each card is 92x120 with the story thumbnail under a bottom scrim and the
 /// title in [BankTokens.labelSmall]. Unread stories get a 2.5 px ring in the

@@ -11,8 +11,8 @@ import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
-/// User-controlled credit limit card, equivalent to Nubank's
-/// drag-your-own-limit slider.
+/// User-controlled credit limit card: the customer drags their own
+/// limit.
 ///
 /// Shows the currently selected limit as a large numeral that updates
 /// live while dragging, above a slider spanning from the amount already

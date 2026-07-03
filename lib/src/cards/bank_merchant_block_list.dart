@@ -70,8 +70,8 @@ class BankCategoryBlock {
 // ---------------------------------------------------------------------------
 
 /// Merchant-category self-exclusion controls (gambling blocks, category
-/// blocks) in the style of Monzo's gambling block and Revolut's category
-/// blocks.
+/// blocks) in the style of the gambling blocks pioneered by digital
+/// banks.
 ///
 /// Each row shows the category icon on a tinted tile, its label, and a
 /// [Switch]. Flipping a switch calls [onChanged] and shows an inline

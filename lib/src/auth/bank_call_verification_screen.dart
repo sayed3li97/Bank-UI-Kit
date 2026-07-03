@@ -31,8 +31,8 @@ enum BankCallStatus {
 // BankCallVerificationScreen
 // ---------------------------------------------------------------------------
 
-/// An anti-vishing call verification surface, equivalent to Monzo's
-/// "Call Status" screen.
+/// An anti-vishing call verification surface: a live answer to "is
+/// this call really from my bank?".
 ///
 /// Place it behind a prominent security entry point so a customer who
 /// receives a suspicious phone call can immediately check whether the bank

@@ -13,7 +13,7 @@ four built-in themes, your backend.
 [![Flutter](https://img.shields.io/badge/Flutter-3.27%2B-027DFD.svg)](https://flutter.dev)
 [![style: flutter_lints](https://img.shields.io/badge/style-flutter__lints-40c4ff.svg)](https://pub.dev/packages/flutter_lints)
 
-**135+ components** · **22 banking domains** · **4 built-in themes** · **built toward WCAG 2.1 AA** · **RTL + Arabic-Indic numerals**
+**140+ components** · **22 banking domains** · **4 built-in themes** · **built toward WCAG 2.1 AA** · **RTL + Arabic-Indic numerals**
 
 <br />
 
@@ -61,8 +61,9 @@ four built-in themes, your backend.
 **Coverage that reads like a banking platform.** Accounts, payments,
 cards, onboarding and KYC, PFM and insights, lending, rewards, Islamic
 banking, business-banking approvals, disputes, secure messaging,
-statements: 135+ components across 22 domains, benchmarked against the
-world's top 20 banking apps so every surface they ship, you can too.
+statements: 140+ components across 22 domains, benchmarked against 21
+of the world's leading banking apps so every surface they ship, you
+can too.
 
 **Compliance-ready patterns.** PSD2-style dynamic-linking approval,
 open-banking consent management, deposit-protection notices, IBAN and
@@ -101,7 +102,7 @@ so fully air-gapped builds need no source changes.
 ### One token change rebrands every surface
 
 <p align="center">
-  <img src="docs/diagrams/architecture-flow.svg" width="880" alt="Design tokens flow into four presets, into 135+ components, into your app" />
+  <img src="docs/diagrams/architecture-flow.svg" width="880" alt="Design tokens flow into four presets, into 140+ components, into your app" />
 </p>
 
 Tokens set color, shape, depth, and numeral typography once. Presets are
@@ -291,13 +292,13 @@ states) lives in [docs/banking-journeys.md](docs/banking-journeys.md).
 
 ## Component catalogue
 
-135+ widgets across 22 modules. Each screenshot below is a live render of that module's
+140+ widgets across 22 modules. Each screenshot below is a live render of that module's
 showcase screen (Studio preset, light mode) from the example app.
 
 For the full parameter-level API reference (every constructor argument, type, required/optional status, and default value) see **[docs/component-reference.md](docs/component-reference.md)**.
 
 ### States & feedback
-`BankSkeletonLoader` · `BankEmptyStateView` · `BankErrorStateView` · `BankSuccessAnimation` · `BankToastBanner` · `BankFraudAlertBanner`
+`BankSkeletonLoader` · `BankEmptyStateView` · `BankErrorStateView` · `BankSuccessAnimation` · `BankToastBanner` · `BankFraudAlertBanner` · `BankAppGateScreen` (11 gate reasons: maintenance, force update, root/VPN blocks, waiting room) · `BankConnectivityBanner` · `BankServiceStatusList` · `BankUpdatePromptSheet`
 
 <img src="docs/screenshots/states-studio-light.png" width="260" align="right" />
 
@@ -415,13 +416,13 @@ BankVirtualCardWidget(
 
 **Onboarding & KYC**: `BankStepProgressIndicator` · `BankDocumentCaptureOverlay` · `BankLivenessCheckOverlay` · `BankAsyncVerificationState` · `BankConsentModal` · `BankConsentManagementList` (open-banking dashboard) · `BankOnboardingCarousel` · `BankAddressForm`
 
-**Saving**: `BankSavingsPotCard` · `BankRoundUpSettingsSheet` · `BankPotContributionSheet` · `BankIncomeSorterSheet` · `BankSharedPotInvite` · `BankSavingsChallengeCard` (streaks + stamps)
+**Saving**: `BankSavingsPotCard` · `BankRoundUpSettingsSheet` · `BankPotContributionSheet` · `BankIncomeSorterSheet` · `BankSharedPotInvite` · `BankSavingsChallengeCard` (streaks + stamps) · `BankSavingsProjectionCard` (earnings calculator)
 
 | Social | Investing | Credit |
 |---|---|---|
 | <img src="docs/screenshots/social-studio-light.png" width="230" /> | <img src="docs/screenshots/investing-studio-light.png" width="230" /> | <img src="docs/screenshots/credit-studio-light.png" width="230" /> |
 
-**Social**: `BankJointTransactionListTile` · `BankAccountOwnershipBadge` · `BankSharedGoalProgressCard`
+**Social**: `BankJointTransactionListTile` · `BankAccountOwnershipBadge` · `BankSharedGoalProgressCard` · `BankMoneyCircleCard` (Jamiyah saving circle)
 
 **Investing**: `BankPortfolioPerformanceChart` · `BankHoldingsListTile` · `BankWatchlistCard` · `BankBuySellSheet` · `BankAssetPriceTicker` · `BankLiveExchangeConverter` · `BankCurrencyWalletTabBar`
 
@@ -444,7 +445,7 @@ BankVirtualCardWidget(
 `BankBillPayTile` + `BankBillCalendarStrip` · `BankStandingOrderTile` · `BankTransferLimitManager` (SCA-gated) · `BankQrScannerOverlay` + `BankMyQrCard` (local QR encoding) · `BankBillForecastList` (bill prediction) · `BankAtmLocatorTile` + `BankCardlessCashCode`
 
 ### Rewards & engagement
-`BankPointsHubCard` (earn/burn) · `BankOffersRail` (card-linked offers) · `BankCashbackCategoryPicker` (quarterly picks) · `BankStoriesCarousel` (stories + full-screen viewer)
+`BankPointsHubCard` (earn/burn) · `BankOffersRail` (card-linked offers) · `BankCashbackCategoryPicker` (quarterly picks) · `BankStoriesCarousel` (stories + full-screen viewer) · `BankPrizeDrawCard` (prize-linked savings)
 
 ### Islamic banking
 `BankZakatCalculator` (nisab-aware) · `BankDonationHubCard` (verified charities) · `BankShariahBadge` · profit-rate labeling via `islamicFinanceMode` · Murabaha cost-plus math in `BankLoanCalculatorCard` · the Heritage preset
@@ -461,7 +462,7 @@ board controls, not rulings the kit makes.
 `BankStatementListTile` · `BankChequeCaptureOverlay` + `BankChequeDepositSummary` (remote deposit capture)
 
 ### Support & servicing
-`BankDisputeWizardSheet` (+ headless `BankDisputeFlowController`) · `BankSecureMessageThread` · `BankHelpFaqList`
+`BankDisputeWizardSheet` (+ headless `BankDisputeFlowController`) · `BankSecureMessageThread` · `BankHelpFaqList` · `BankAssistantPanel` (named AI assistant entry)
 
 ### Scaffolding & display
 `BankAppBar` · `BankBottomNavBar` · `BankEmblem` · `BankSummaryStack` · `BankStatusTracker` · `BankQuickActionsGrid` · `BankMoneyProtectionBanner` · `BankShariahBadge` · `BankWalletProvisioningButton` · `BankTravelNoticeForm`
@@ -553,7 +554,7 @@ The example app ships two entry points:
 
 | Entry point | Launch command | What it shows |
 |---|---|---|
-| **Component gallery** | `flutter run -t lib/gallery_main.dart` | 111 components with live parameter controls, preset/dark-mode switching, and search |
+| **Component gallery** | `flutter run -t lib/gallery_main.dart` | 119 components with live parameter controls, preset/dark-mode switching, and search |
 | **Demo dashboard** | `flutter run` | Revolut-style demo app under the Studio preset |
 
 ```bash

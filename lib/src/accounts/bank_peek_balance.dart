@@ -25,8 +25,8 @@ const double _kPullRevealDistance = BankTokens.space6;
 /// semantic long-press action (screen readers cannot hold a pointer down).
 const Duration _kAccessibilityPeekDuration = Duration(seconds: 3);
 
-/// Pre-login balance peek without authentication, in the style of DBS
-/// Peek Balance or the CommBank quick balance widget.
+/// Pre-login balance peek without authentication: the press-and-hold
+/// quick balance pattern.
 ///
 /// Renders a pill affordance. While the user presses and holds the pill
 /// (for at least [revealHold]), a floating card appears listing each

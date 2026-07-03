@@ -10,8 +10,7 @@ import '../theme/tokens.dart';
 
 /// Hold-to-activate emergency "freeze everything" control.
 ///
-/// Equivalent to Revolut's freeze-everything and Al Rajhi's security freeze:
-/// one panic gesture blocks all cards and outgoing payments.
+/// One panic gesture blocks all cards and outgoing payments.
 ///
 /// Two visual states, driven by [frozen]:
 ///

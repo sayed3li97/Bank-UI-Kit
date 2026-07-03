@@ -25,7 +25,7 @@ class BankBalancePoint {
 /// [forecast] continues from today as a dashed line in the pending
 /// color. An optional [safeToSpend] horizontal reference line and a
 /// touch tooltip (privacy-aware: masked mode shows bullets) complete
-/// the Backbase-Figma-only chart they never shipped as code.
+/// the chart.
 ///
 /// ```dart
 /// BankCashflowChart(

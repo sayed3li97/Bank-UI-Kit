@@ -73,8 +73,8 @@ class BankBillForecast {
       );
 }
 
-/// A predicted-upcoming-bills list, equivalent to CommBank's Bill Sense or
-/// BBVA's expected expenses.
+/// A predicted-upcoming-bills list: the bill-prediction pattern found
+/// in leading banking apps.
 ///
 /// Shows a header with a [title], the summed predicted total for the
 /// period (rendered through [BankBalanceText] so privacy mode masks it),

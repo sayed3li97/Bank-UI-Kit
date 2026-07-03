@@ -294,7 +294,7 @@ if (!screensOnly) {
     { name: 'BankMerchantBlockList',      fullScreen: true  },
     { name: 'BankFamilyCardTile',         fullScreen: true  },
     { name: 'BankDisposableCardTile',     fullScreen: true  },
-    // ila Bank batch
+    // Community savings & assistant
     { name: 'BankMoneyCircleCard',        fullScreen: true  },
     { name: 'BankPrizeDrawCard',          fullScreen: true  },
     { name: 'BankSavingsProjectionCard',  fullScreen: true  },

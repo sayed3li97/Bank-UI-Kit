@@ -52,8 +52,8 @@ class BankHealthFactor {
   int get hashCode => Object.hash(id, label, score, icon, tip);
 }
 
-/// Composite financial wellness score card, in the spirit of BBVA
-/// financial health, DBS NAV Planner, and BofA Life Plan checkups.
+/// Composite financial wellness score card: one glanceable number
+/// with tappable factor drill-downs.
 ///
 /// Renders a 270 degree segmented arc gauge (red, amber, green bands)
 /// with the overall [score] centered in hero numerals and the [title]

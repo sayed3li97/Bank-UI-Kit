@@ -18,7 +18,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         BankMoneyCircleCard(
-          name: 'Family Jamiyah',
+          name: 'Family circle',
           contribution: Money.fromDouble(100, 'BHD'),
           members: const [
             BankCircleMember(
@@ -43,7 +43,7 @@ void main() {
         ),
       ),
     );
-    expect(find.text('Family Jamiyah'), findsOneWidget);
+    expect(find.text('Family circle'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

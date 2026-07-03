@@ -70,7 +70,7 @@ class BankServiceStatusEntry {
   int get hashCode => Object.hash(name, health, note, updatedAt, icon);
 }
 
-/// Per-rail system health card (the Starling/Monzo status pattern):
+/// Per-rail system health card (the digital-bank status pattern):
 /// one row per banking rail such as 'Card payments', 'Transfers out',
 /// or 'Login', each with a trailing status pill combining an icon, a
 /// label, and a colour so state is never colour alone.
