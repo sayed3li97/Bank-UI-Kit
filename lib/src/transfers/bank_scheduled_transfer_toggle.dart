@@ -146,7 +146,7 @@ class BankScheduledTransferToggle extends StatelessWidget {
           ),
         ),
         // ----------------------------------------------------------------
-        // "Later" — date + time picker row
+        // "Later": date + time picker row
         // ----------------------------------------------------------------
         if (selected == BankTransferTiming.later && onDateChanged != null) ...[
           const SizedBox(height: BankTokens.space3),
@@ -157,7 +157,7 @@ class BankScheduledTransferToggle extends StatelessWidget {
           ),
         ],
         // ----------------------------------------------------------------
-        // "Recurring" — pattern dropdown
+        // "Recurring": pattern dropdown
         // ----------------------------------------------------------------
         if (selected == BankTransferTiming.recurring &&
             onRecurringPatternChanged != null) ...[

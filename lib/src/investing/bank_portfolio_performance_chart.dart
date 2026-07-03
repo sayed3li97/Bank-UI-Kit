@@ -22,7 +22,7 @@ class BankChartDataPoint {
 }
 
 /// Time-series chart wrapper sitting on top of fl_chart.
-/// Does not implement its own charting — wraps fl_chart's [LineChart].
+/// Does not implement its own charting: wraps fl_chart's [LineChart].
 class BankPortfolioPerformanceChart extends StatelessWidget {
   final List<BankChartDataPoint> dataPoints;
   final bool showGrid;

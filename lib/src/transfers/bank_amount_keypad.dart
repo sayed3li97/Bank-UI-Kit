@@ -54,7 +54,7 @@ class BankAmountKeypad extends StatelessWidget {
 
   /// Optional upper bound; when the current parsed amount meets or exceeds
   /// this value, digit keys are rendered at reduced opacity. The host app
-  /// remains responsible for enforcing the limit — this is a visual cue only.
+  /// remains responsible for enforcing the limit: this is a visual cue only.
   final double? maxAmount;
 
   /// When `false`, the entire keypad is rendered at 40 % opacity and does not

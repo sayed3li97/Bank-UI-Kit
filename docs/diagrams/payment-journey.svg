@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 330" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="A payment journey composed from kit components over one headless flow controller">
+  <style>
+    :root {
+      --ink: #101828;
+      --muted: #667085;
+      --line: #D0D5DD;
+      --surface: #FFFFFF;
+      --canvas: #F9FAFB;
+      --accent: #0A6B47;
+      --accent-soft: #0A6B4722;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #F2F4F7;
+        --muted: #98A2B3;
+        --line: #344054;
+        --surface: #1D2939;
+        --canvas: #101828;
+        --accent: #34D399;
+        --accent-soft: #34D39926;
+      }
+    }
+    .card  { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+    .name  { fill: var(--ink); font-size: 12.5px; font-weight: 600; }
+    .step  { fill: var(--muted); font-size: 10.5px; letter-spacing: 0.5px; }
+    .small { fill: var(--muted); font-size: 11.5px; }
+    .state { fill: var(--accent); font-size: 12px; font-weight: 600; }
+    .rail  { stroke: var(--line); stroke-width: 1.5; fill: none; }
+    .ring  { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.8; }
+    .glyph { stroke: var(--accent); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    @media (prefers-reduced-motion: reduce) {
+      .ring, .anim { display: none; }
+    }
+  </style>
+
+  <rect x="0" y="0" width="960" height="330" fill="var(--canvas)" rx="16"/>
+  <text class="small" x="480" y="36" text-anchor="middle">One journey, five widgets, zero backend coupling</text>
+
+  <!-- rail -->
+  <path class="rail" d="M96 150 H864"/>
+
+  <!-- walking highlight ring -->
+  <g class="ring-holder">
+    <rect class="ring" x="-77" y="-58" width="154" height="116" rx="16" opacity="0.95">
+      <animateTransform attributeName="transform" type="translate"
+        values="118 150; 118 150; 299 150; 299 150; 480 150; 480 150; 661 150; 661 150; 842 150; 842 150; 118 150"
+        keyTimes="0; 0.16; 0.2; 0.36; 0.4; 0.56; 0.6; 0.76; 0.8; 0.97; 1"
+        dur="9s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <!-- five component cards -->
+  <g text-anchor="middle">
+    <g>
+      <rect class="card" x="48" y="98" width="140" height="104" rx="13"/>
+      <circle class="glyph" cx="118" cy="128" r="11"/>
+      <path class="glyph" d="M108 154 q10 -10 20 0"/>
+      <text class="name" x="118" y="178">BeneficiaryPicker</text>
+      <text class="step" x="118" y="222">1 · CHOOSE PAYEE</text>
+    </g>
+    <g>
+      <rect class="card" x="229" y="98" width="140" height="104" rx="13"/>
+      <text class="glyph" x="299" y="140" text-anchor="middle" font-size="24" font-weight="700" stroke="none" fill="var(--accent)">25.00</text>
+      <path class="glyph" d="M279 152 h40"/>
+      <text class="name" x="299" y="178">AmountKeypad</text>
+      <text class="step" x="299" y="222">2 · ENTER AMOUNT</text>
+    </g>
+    <g>
+      <rect class="card" x="410" y="98" width="140" height="104" rx="13"/>
+      <path class="glyph" d="M456 122 h48 M456 136 h48 M456 150 h30"/>
+      <path class="glyph anim" d="M488 148 l6 6 l12 -14" stroke-dasharray="30" stroke-dashoffset="30">
+        <animate attributeName="stroke-dashoffset" values="30;0;0;30" keyTimes="0;0.1;0.9;1" dur="9s" begin="3.6s" repeatCount="indefinite"/>
+      </path>
+      <text class="name" x="480" y="178">TransferReviewCard</text>
+      <text class="step" x="480" y="222">3 · REVIEW · IBAN CHECK</text>
+    </g>
+    <g>
+      <rect class="card" x="591" y="98" width="140" height="104" rx="13"/>
+      <rect class="glyph" x="649" y="126" width="24" height="20" rx="4"/>
+      <path class="glyph" d="M653 126 v-6 a8 8 0 0 1 16 0 v6"/>
+      <circle class="anim" cx="661" cy="136" r="2.6" fill="var(--accent)">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.4s" repeatCount="indefinite"/>
+      </circle>
+      <text class="name" x="661" y="178">ScaApprovalSheet</text>
+      <text class="step" x="661" y="222">4 · PSD2 APPROVAL</text>
+    </g>
+    <g>
+      <rect class="card" x="772" y="98" width="140" height="104" rx="13"/>
+      <circle class="glyph" cx="842" cy="134" r="15"/>
+      <path class="glyph anim" d="M834 134 l6 6 l11 -13" stroke-dasharray="30" stroke-dashoffset="30">
+        <animate attributeName="stroke-dashoffset" values="30;0;0;30" keyTimes="0;0.08;0.92;1" dur="9s" begin="7.2s" repeatCount="indefinite"/>
+      </path>
+      <text class="name" x="842" y="178">TransferResultScreen</text>
+      <text class="step" x="842" y="222">5 · SENT · RECEIPT</text>
+    </g>
+  </g>
+
+  <!-- headless controller bar -->
+  <rect class="card" x="48" y="252" width="864" height="46" rx="12"/>
+  <text class="name" x="76" y="280" text-anchor="start">BankTransferFlowController</text>
+  <g text-anchor="end">
+    <text class="state" x="884" y="280" opacity="0">state: selecting payee<animate class="anim" attributeName="opacity" values="1;1;0;0;0;0;0;0;0;0;1" keyTimes="0;0.19;0.2;0.39;0.4;0.59;0.6;0.79;0.8;0.99;1" calcMode="discrete" dur="9s" repeatCount="indefinite"/></text>
+    <text class="state" x="884" y="280" opacity="0">state: validating amount<animate class="anim" attributeName="opacity" values="0;0;1;1;0;0;0;0;0;0;0" keyTimes="0;0.19;0.2;0.39;0.4;0.59;0.6;0.79;0.8;0.99;1" calcMode="discrete" dur="9s" repeatCount="indefinite"/></text>
+    <text class="state" x="884" y="280" opacity="0">state: reviewing<animate class="anim" attributeName="opacity" values="0;0;0;0;1;1;0;0;0;0;0" keyTimes="0;0.19;0.2;0.39;0.4;0.59;0.6;0.79;0.8;0.99;1" calcMode="discrete" dur="9s" repeatCount="indefinite"/></text>
+    <text class="state" x="884" y="280" opacity="0">state: authorizing (SCA)<animate class="anim" attributeName="opacity" values="0;0;0;0;0;0;1;1;0;0;0" keyTimes="0;0.19;0.2;0.39;0.4;0.59;0.6;0.79;0.8;0.99;1" calcMode="discrete" dur="9s" repeatCount="indefinite"/></text>
+    <text class="state" x="884" y="280" opacity="0">state: done<animate class="anim" attributeName="opacity" values="0;0;0;0;0;0;0;0;1;1;0" keyTimes="0;0.19;0.2;0.39;0.4;0.59;0.6;0.79;0.8;0.99;1" calcMode="discrete" dur="9s" repeatCount="indefinite"/></text>
+  </g>
+  <text class="small" x="480" y="322" text-anchor="middle">The controller owns the state machine. The widgets stay swappable. Your API stays yours.</text>
+</svg>

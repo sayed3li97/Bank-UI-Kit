@@ -7,13 +7,14 @@
 // Screen mode (existing):
 //   index.html?screen=home&preset=voltage&dark=1
 //
-// Component mode (new — renders one gallery entry with default params):
+// Component mode (new: renders one gallery entry with default params):
 //   index.html?component=BankBalanceText&preset=studio&dark=0
 //
-// This is NOT the app users run — see main.dart for the interactive gallery.
+// This is NOT the app users run: see main.dart for the interactive gallery.
 import 'package:bank_ui_kit/core.dart';
 import 'package:flutter/material.dart';
 
+import 'demo/heritage_dashboard.dart';
 import 'demo/home_dashboard.dart';
 import 'gallery/component_registry.dart';
 import 'screens/accounts_screen.dart';
@@ -33,6 +34,7 @@ import 'screens/transfers_screen.dart';
 
 final Map<String, Widget Function()> _screens = {
   'home': HomeDashboard.new,
+  'heritage': HeritageDashboard.new,
   'states': StatesScreen.new,
   'accounts': AccountsScreen.new,
   'transactions': TransactionsScreen.new,
@@ -52,6 +54,7 @@ final Map<String, Widget Function()> _screens = {
 BankPreset _presetFromName(String? name) => switch (name) {
       'voltage' => BankPreset.voltage,
       'bloom' => BankPreset.bloom,
+      'heritage' => BankPreset.heritage,
       _ => BankPreset.studio,
     };
 
@@ -62,7 +65,15 @@ void main() {
   final rtl = params['dir'] == 'rtl';
 
   final base = dark ? ThemeData.dark() : ThemeData.light();
-  final theme = preset.apply(base);
+  // Arabic glyph fallback: the capture browser cannot download the web
+  // engine's remote Noto fonts, so the bundled subset steps in for
+  // currency symbols and RTL sample text.
+  final themed = preset.apply(base);
+  final theme = themed.copyWith(
+    textTheme: themed.textTheme.apply(
+      fontFamilyFallback: const ['NotoSansArabic'],
+    ),
+  );
 
   // ── Component mode ─────────────────────────────────────────────────────────
   final componentName = params['component'];

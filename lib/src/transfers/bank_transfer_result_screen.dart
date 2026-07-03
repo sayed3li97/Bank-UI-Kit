@@ -289,7 +289,7 @@ class _ActionButtons extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Secondary actions row — only when at least one callback is provided.
+        // Secondary actions row: only when at least one callback is provided.
         if (onShareReceipt != null || onNewTransfer != null) ...[
           Row(
             children: [

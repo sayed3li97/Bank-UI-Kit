@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="Design tokens flow into four presets, into 135 plus components, into your app">
+  <style>
+    :root {
+      --ink: #101828;
+      --muted: #667085;
+      --line: #D0D5DD;
+      --surface: #FFFFFF;
+      --canvas: #F9FAFB;
+      --accent: #0A6B47;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #F2F4F7;
+        --muted: #98A2B3;
+        --line: #344054;
+        --surface: #1D2939;
+        --canvas: #101828;
+        --accent: #34D399;
+      }
+    }
+    .card { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+    .title { fill: var(--ink); font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
+    .label { fill: var(--muted); font-size: 11px; letter-spacing: 0.6px; }
+    .small { fill: var(--muted); font-size: 11.5px; }
+    .rail  { stroke: var(--line); stroke-width: 1.5; fill: none; }
+    .pulse { fill: var(--accent); }
+    .glowring { stroke: var(--accent); fill: none; stroke-width: 1.5; opacity: 0; }
+    @media (prefers-reduced-motion: reduce) {
+      .pulse, .swatch-anim, .glowring { display: none; }
+    }
+  </style>
+
+  <rect x="0" y="0" width="960" height="300" fill="var(--canvas)" rx="16"/>
+
+  <!-- Stage 1: tokens -->
+  <rect class="card" x="36" y="70" width="180" height="160" rx="14"/>
+  <text class="label" x="126" y="98" text-anchor="middle">DESIGN TOKENS</text>
+  <text class="title" x="126" y="122" text-anchor="middle">BankTokens</text>
+  <g class="small" text-anchor="middle">
+    <text x="126" y="148">color · radius · depth</text>
+    <text x="126" y="166">spacing · motion</text>
+    <text x="126" y="184">numeral typography</text>
+  </g>
+  <rect class="glowring" x="33" y="67" width="186" height="166" rx="16">
+    <animate attributeName="opacity" values="0;0.9;0" keyTimes="0;0.5;1" dur="1.2s" begin="0s;flow.end+0.2s" fill="freeze"/>
+  </rect>
+
+  <!-- Stage 2: presets -->
+  <rect class="card" x="300" y="70" width="180" height="160" rx="14"/>
+  <text class="label" x="390" y="98" text-anchor="middle">DESIGN LANGUAGES</text>
+  <text class="title" x="390" y="122" text-anchor="middle">4 presets</text>
+  <g class="swatch-anim">
+    <rect x="322" y="140" width="30" height="30" rx="9" fill="#101828">
+      <animate attributeName="opacity" values="1;0.35;1" dur="8s" begin="0s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="360" y="140" width="30" height="30" rx="9" fill="#0A6B47">
+      <animate attributeName="opacity" values="0.35;1;0.35" dur="8s" begin="0s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="398" y="140" width="30" height="30" rx="9" fill="#6D5DF6">
+      <animate attributeName="opacity" values="1;0.35;1" dur="8s" begin="2s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="436" y="140" width="30" height="30" rx="9" fill="#E8618C">
+      <animate attributeName="opacity" values="0.35;1;0.35" dur="8s" begin="2s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <g class="small" text-anchor="middle">
+    <text x="390" y="196">Studio · Heritage</text>
+    <text x="390" y="212">Voltage · Bloom</text>
+  </g>
+  <rect class="glowring" x="297" y="67" width="186" height="166" rx="16">
+    <animate attributeName="opacity" values="0;0.9;0" keyTimes="0;0.5;1" dur="1.2s" begin="1.6s;flow.end+1.8s" fill="freeze"/>
+  </rect>
+
+  <!-- Stage 3: components -->
+  <rect class="card" x="564" y="70" width="180" height="160" rx="14"/>
+  <text class="label" x="654" y="98" text-anchor="middle">COMPONENT LIBRARY</text>
+  <text class="title" x="654" y="122" text-anchor="middle">135+ components</text>
+  <g class="small" text-anchor="middle">
+    <text x="654" y="148">22 banking domains</text>
+    <text x="654" y="166">privacy · RTL · WCAG AA</text>
+    <text x="654" y="184">currency-correct money</text>
+  </g>
+  <rect class="glowring" x="561" y="67" width="186" height="166" rx="16">
+    <animate attributeName="opacity" values="0;0.9;0" keyTimes="0;0.5;1" dur="1.2s" begin="3.2s;flow.end+3.4s" fill="freeze"/>
+  </rect>
+
+  <!-- Stage 4: your app -->
+  <rect class="card" x="828" y="70" width="96" height="160" rx="18"/>
+  <rect x="852" y="84" width="48" height="7" rx="3.5" fill="var(--line)"/>
+  <rect x="842" y="104" width="68" height="34" rx="8" fill="var(--accent)" opacity="0.92">
+    <animate attributeName="opacity" values="0.92;0.55;0.92" dur="8s" begin="0.6s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="842" y="146" width="68" height="9" rx="4.5" fill="var(--line)"/>
+  <rect x="842" y="162" width="52" height="9" rx="4.5" fill="var(--line)"/>
+  <rect x="842" y="184" width="68" height="22" rx="8" fill="none" stroke="var(--line)"/>
+  <text class="label" x="876" y="250" text-anchor="middle">YOUR APP</text>
+  <rect class="glowring" x="825" y="67" width="102" height="166" rx="20">
+    <animate attributeName="opacity" values="0;0.9;0" keyTimes="0;0.5;1" dur="1.2s" begin="4.8s;flow.end+5s" fill="freeze"/>
+  </rect>
+
+  <!-- connectors -->
+  <path class="rail" d="M216 150 H300"/>
+  <path class="rail" d="M480 150 H564"/>
+  <path class="rail" d="M744 150 H828"/>
+
+  <!-- traveling pulse -->
+  <circle class="pulse" r="5" opacity="0">
+    <animateMotion id="flow" dur="6s" begin="0s;flow.end+0.6s" path="M216 150 H300 M480 150 H564 M744 150 H828" keyPoints="0;0.33;0.34;0.66;0.67;1" keyTimes="0;0.3;0.35;0.62;0.67;1" calcMode="linear"/>
+    <animate attributeName="opacity" values="0;1;1;0;1;1;0;1;1;0" keyTimes="0;0.05;0.28;0.33;0.37;0.6;0.65;0.69;0.95;1" dur="6s" begin="0s;flow.end+0.6s"/>
+  </circle>
+
+  <!-- captions under connectors -->
+  <text class="label" x="258" y="176" text-anchor="middle">theme</text>
+  <text class="label" x="522" y="176" text-anchor="middle">compose</text>
+  <text class="label" x="786" y="176" text-anchor="middle">ship</text>
+
+  <text class="small" x="480" y="272" text-anchor="middle">One token change rebrands every surface. No forks, no copies.</text>
+</svg>

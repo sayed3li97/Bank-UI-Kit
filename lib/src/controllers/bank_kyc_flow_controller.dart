@@ -25,7 +25,7 @@ sealed class BankKycStatus {
   const BankKycStatus();
 }
 
-/// Initial state — no action has been taken yet.
+/// Initial state: no action has been taken yet.
 class BankKycIdle extends BankKycStatus {
   const BankKycIdle();
 }

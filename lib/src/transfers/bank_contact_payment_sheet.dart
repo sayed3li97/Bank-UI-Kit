@@ -15,10 +15,10 @@ import 'bank_amount_keypad.dart';
 /// Pick a contact (in-network or by phone/email), then send or request money.
 ///
 /// Runs a three-step flow:
-/// 1. Contact picker — search contacts and select one.
-/// 2. Amount entry — use [BankAmountKeypad], add an optional note, choose
+/// 1. Contact picker: search contacts and select one.
+/// 2. Amount entry: use [BankAmountKeypad], add an optional note, choose
 ///    Send or Request.
-/// 3. Result — loading indicator, then a compact success or failure message.
+/// 3. Result: loading indicator, then a compact success or failure message.
 ///
 /// Present it with [BankContactPaymentSheet.show]:
 ///
@@ -353,7 +353,7 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
 }
 
 // ---------------------------------------------------------------------------
-// Step 0 — Contact picker
+// Step 0: Contact picker
 // ---------------------------------------------------------------------------
 
 class _ContactPickerStep extends StatelessWidget {
@@ -515,7 +515,7 @@ class _ContactCell extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Step 1 — Amount entry
+// Step 1: Amount entry
 // ---------------------------------------------------------------------------
 
 class _AmountStep extends StatelessWidget {
@@ -720,7 +720,7 @@ class _AmountStep extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Step 2 — Result
+// Step 2: Result
 // ---------------------------------------------------------------------------
 
 class _ResultStep extends StatelessWidget {

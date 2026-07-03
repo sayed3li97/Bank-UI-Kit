@@ -141,7 +141,7 @@ class BankCardControlsPanel extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// _ControlRow — icon + label/subtitle + switch
+// _ControlRow: icon + label/subtitle + switch
 // ---------------------------------------------------------------------------
 
 class _ControlRow extends StatelessWidget {
@@ -221,7 +221,7 @@ class _ControlRow extends StatelessWidget {
                     ),
                   ),
 
-                  // Switch — min 44×44 via SizedBox wrapper
+                  // Switch: min 44×44 via SizedBox wrapper
                   SizedBox(
                     height: BankTokens.minTapTarget,
                     child: Center(
@@ -243,7 +243,7 @@ class _ControlRow extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// _SpendLimitRow — label + current value display + Slider
+// _SpendLimitRow: label + current value display + Slider
 // ---------------------------------------------------------------------------
 
 class _SpendLimitRow extends StatelessWidget {
@@ -326,7 +326,7 @@ class _SpendLimitRow extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// _ActionRow — tappable row with forward arrow
+// _ActionRow: tappable row with forward arrow
 // ---------------------------------------------------------------------------
 
 class _ActionRow extends StatelessWidget {

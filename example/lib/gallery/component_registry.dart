@@ -23,7 +23,14 @@ enum GalleryCategory {
   social('Social', Icons.people),
   investing('Investing', Icons.trending_up),
   credit('Credit', Icons.credit_score),
-  notifications('Notifications', Icons.notifications);
+  notifications('Notifications', Icons.notifications),
+  forms('Common & Forms', Icons.tune),
+  payments('Payments & Billing', Icons.request_page),
+  business('Business Banking', Icons.business_center),
+  documents('Documents & Deposits', Icons.description),
+  support('Support & Servicing', Icons.support_agent),
+  rewards('Rewards & Engagement', Icons.card_giftcard),
+  islamic('Islamic Banking', Icons.volunteer_activism);
 
   const GalleryCategory(this.label, this.icon);
   final String label;
@@ -173,7 +180,7 @@ BankInsight _insight({InsightConfidence confidence = InsightConfidence.high}) =>
     BankInsight(
       id: 'ins-1',
       title: 'Spending up 18% on dining',
-      body: 'You spent £142 on restaurants this month — 18% more than average.',
+      body: 'You spent £142 on restaurants this month: 18% more than average.',
       confidence: confidence,
       generatedAt: DateTime(2026, 6, 28),
       isDismissed: false,
@@ -459,7 +466,7 @@ final List<GalleryEntry> kGalleryEntries = [
 
   GalleryEntry(
     name: 'BankFlipCard',
-    description: 'Generic 3-D flip container — wrap any two widgets.',
+    description: 'Generic 3-D flip container: wrap any two widgets.',
     category: GalleryCategory.cards,
     codeExample: '''BankFlipCard(
   trigger: BankFlipTrigger.tapToFlip,
@@ -511,7 +518,7 @@ final List<GalleryEntry> kGalleryEntries = [
               Icon(Icons.credit_card, color: Colors.white, size: 32),
               SizedBox(height: 8),
               Text(
-                'FRONT — tap to flip',
+                'FRONT: tap to flip',
                 style: TextStyle(
                   color: Colors.white70,
                   fontWeight: FontWeight.w600,
@@ -535,7 +542,7 @@ final List<GalleryEntry> kGalleryEntries = [
               Icon(Icons.info_outline, color: Colors.white70, size: 32),
               SizedBox(height: 8),
               Text(
-                'BACK — tap to flip',
+                'BACK: tap to flip',
                 style: TextStyle(color: Colors.white54),
               ),
             ],
@@ -1934,7 +1941,1429 @@ final List<GalleryEntry> kGalleryEntries = [
       );
     },
   ),
+
+  // ── Parity release: common & forms ───────────────────────────────────────
+  GalleryEntry(
+    name: 'BankTextField',
+    description: 'Themed text input with label, helper, and error states.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => const Padding(
+      padding: EdgeInsets.all(16),
+      child: BankTextField(
+        label: 'Full name',
+        hint: 'Enter your full name',
+        helper: 'As printed on your ID',
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankAmountInputField',
+    description: 'Format-as-you-type money entry with currency precision.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankAmountInputField(
+        currencyCode: 'GBP',
+        initialAmount: Decimal.parse('1250.50'),
+        label: 'Amount',
+        onChanged: (_) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankMaskedInputField',
+    description: 'IBAN / PAN / sort-code masking with checksum validation.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankMaskedInputField(
+        mask: BankInputMask.iban(),
+        label: 'IBAN',
+        initialValue: 'GB29NWBK60161331926819',
+        onChanged: (_) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPhoneInputField',
+    description: 'E.164 phone entry with in-field dial-code selector.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankPhoneInputField(
+        label: 'Mobile number',
+        initialNumber: '5551234567',
+        onChanged: (_, __) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCountryPicker',
+    description: 'Searchable 236-country selector field and sheet.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankCountryPicker(
+        label: 'Country of residence',
+        selected: BankCountry.all.firstWhere((c) => c.isoCode == 'SA'),
+        showDialCode: true,
+        onSelected: (_) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPeriodSelector',
+    description: 'Prev/next month, quarter, or year navigator.',
+    category: GalleryCategory.forms,
+    params: const [],
+    builder: (ctx, p) => BankPeriodSelector(
+      period: DateTime(2026, 7),
+      unit: BankPeriodUnit.month,
+      onChanged: (_) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankEmblem',
+    description: 'Deterministic initials / image / icon avatar with badges.',
+    category: GalleryCategory.forms,
+    params: const [],
+    builder: (ctx, p) => const Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        BankEmblem(initialsFrom: 'Acme Trading', badgeCount: 3),
+        SizedBox(width: 16),
+        BankEmblem(initialsFrom: 'Sara Ahmed'),
+        SizedBox(width: 16),
+        BankEmblem(icon: Icons.bolt_outlined),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankSummaryStack',
+    description: 'Label/value review rows with money and copyable values.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankSummaryStack(
+        items: [
+          const BankSummaryItem(label: 'From', value: 'Everyday Checking'),
+          const BankSummaryItem(label: 'To', value: 'Acme Trading LLC'),
+          BankSummaryItem(
+            label: 'Amount',
+            money: Money.fromDouble(1250.50, 'GBP'),
+            emphasized: true,
+          ),
+          const BankSummaryItem(
+            label: 'Reference',
+            value: 'INV-2044',
+            copyable: true,
+          ),
+        ],
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankStatusTracker',
+    description: 'Vertical milestone tracker for async processes.',
+    category: GalleryCategory.forms,
+    params: const [],
+    builder: (ctx, p) => BankStatusTracker(
+      stages: [
+        BankTrackerStage(
+          title: 'Submitted',
+          timestamp: DateTime(2026, 7, 2, 9, 15),
+        ),
+        const BankTrackerStage(
+          title: 'Under review',
+          subtitle: 'Usually takes 1-2 days',
+        ),
+        const BankTrackerStage(title: 'Resolved'),
+      ],
+      currentIndex: 1,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankQuickActionsGrid',
+    description: 'Dashboard shortcut tiles with badges and reordering.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankQuickActionsGrid(
+        actions: [
+          BankQuickAction(
+            id: 'send',
+            label: 'Send',
+            icon: Icons.send_outlined,
+            onTap: () {},
+          ),
+          BankQuickAction(
+            id: 'request',
+            label: 'Request',
+            icon: Icons.download_outlined,
+            onTap: () {},
+          ),
+          BankQuickAction(
+            id: 'scan',
+            label: 'Scan',
+            icon: Icons.qr_code_scanner_outlined,
+            onTap: () {},
+            badgeText: 'New',
+          ),
+          BankQuickAction(
+            id: 'more',
+            label: 'More',
+            icon: Icons.grid_view_outlined,
+            onTap: () {},
+          ),
+        ],
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankMoneyProtectionBanner',
+    description: 'Deposit-guarantee compliance notice.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => const Padding(
+      padding: EdgeInsets.all(16),
+      child: BankMoneyProtectionBanner(schemeName: 'FSCS'),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankAppBar',
+    description: 'Themed app bar with optional subtitle.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => const Align(
+      alignment: Alignment.topCenter,
+      child: BankAppBar(
+        title: 'Accounts',
+        subtitle: 'Sara Ahmed',
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankBottomNavBar',
+    description: 'Themed bottom navigation with animated pill highlight.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Align(
+      alignment: Alignment.bottomCenter,
+      child: BankBottomNavBar(
+        currentIndex: 0,
+        onTap: (_) {},
+        items: const [
+          BankNavItem(icon: Icons.home_outlined, label: 'Home'),
+          BankNavItem(icon: Icons.credit_card_outlined, label: 'Cards'),
+          BankNavItem(icon: Icons.swap_horiz_rounded, label: 'Transfers'),
+          BankNavItem(icon: Icons.person_outline_rounded, label: 'Profile'),
+        ],
+      ),
+    ),
+  ),
+
+  // ── Parity release: accounts, auth, cards ────────────────────────────────
+  GalleryEntry(
+    name: 'BankProductItemTile',
+    description: 'Per-product-type summary row for pickers and dashboards.',
+    category: GalleryCategory.accounts,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Column(
+      children: [
+        BankProductItemTile(account: _account(), onTap: () {}),
+        BankProductItemTile(account: _savingsAccount(), selected: true),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankAccountNumberText',
+    description: 'Masked, grouped IBAN / PAN display with copy affordance.',
+    category: GalleryCategory.accounts,
+    params: const [],
+    builder: (ctx, p) => const BankAccountNumberText(
+      value: 'GB29NWBK60161331926819',
+      kind: BankAccountNumberKind.iban,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankOtpInput',
+    description: 'Segmented one-time-code entry with resend countdown.',
+    category: GalleryCategory.auth,
+    params: const [],
+    builder: (ctx, p) => BankOtpInput(
+      onCompleted: (_) {},
+      resendCooldown: const Duration(seconds: 30),
+      onResend: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankScaApprovalSheet',
+    description: 'PSD2 dynamic-linking payment approval with PIN entry.',
+    category: GalleryCategory.auth,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      child: BankScaApprovalSheet(
+        amount: Money.fromDouble(1250, 'GBP'),
+        payeeName: 'Acme Trading LLC',
+        payeeAccountMasked: 'GB29 •••• 6819',
+        reference: 'INV-2044',
+        methods: const {BankScaMethod.pin},
+        onApprove: (_, __) async => true,
+        onReject: () {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankDeviceSessionTile',
+    description: 'Trusted-device row with async sign-out.',
+    category: GalleryCategory.auth,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Column(
+      children: [
+        BankDeviceSessionTile(
+          session: BankDeviceSession(
+            id: 'd1',
+            deviceName: 'iPhone 16 Pro',
+            kind: BankDeviceKind.phone,
+            lastActiveAt: DateTime(2026, 7, 3, 8, 30),
+            location: 'Riyadh',
+            isCurrentDevice: true,
+            isTrusted: true,
+          ),
+        ),
+        BankDeviceSessionTile(
+          session: BankDeviceSession(
+            id: 'd2',
+            deviceName: 'MacBook Air',
+            kind: BankDeviceKind.desktop,
+            lastActiveAt: DateTime(2026, 7, 1, 19, 5),
+            location: 'Jeddah',
+          ),
+          onRevoke: () async => true,
+        ),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankWalletProvisioningButton',
+    description: 'Apple / Google add-to-wallet button states.',
+    category: GalleryCategory.cards,
+    params: const [],
+    builder: (ctx, p) => Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        BankWalletProvisioningButton(
+          target: BankWalletTarget.appleWallet,
+          state: BankWalletProvisionState.notAdded,
+          onPressed: () {},
+        ),
+        const SizedBox(height: 12),
+        BankWalletProvisioningButton(
+          target: BankWalletTarget.googleWallet,
+          state: BankWalletProvisionState.added,
+          onPressed: () {},
+        ),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankTravelNoticeForm',
+    description: 'Travel notice composer with cards, destinations, dates.',
+    category: GalleryCategory.cards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: BankTravelNoticeForm(
+        cards: [_account(), _savingsAccount()],
+        initialCountryIsoCodes: const ['AE', 'GB'],
+        onSubmit: (_) async => true,
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankShariahBadge',
+    description: 'Shariah-compliance product badge.',
+    category: GalleryCategory.accounts,
+    params: const [],
+    builder: (ctx, p) => const BankShariahBadge(),
+  ),
+
+  // ── Parity release: payments & billing ───────────────────────────────────
+  GalleryEntry(
+    name: 'BankBillPayTile',
+    description: 'Saved-biller row with due urgency and inline pay.',
+    category: GalleryCategory.payments,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Column(
+      children: [
+        BankBillPayTile(
+          bill: BankBill(
+            id: 'b1',
+            billerName: 'City Power & Water',
+            amountDue: Money.fromDouble(184.20, 'GBP'),
+            dueDate: DateTime(2026, 7, 5),
+            status: BankBillStatus.dueSoon,
+            eBill: true,
+          ),
+          onPay: () {},
+        ),
+        BankBillPayTile(
+          bill: BankBill(
+            id: 'b2',
+            billerName: 'Metro Internet',
+            amountDue: Money.fromDouble(49.99, 'GBP'),
+            dueDate: DateTime(2026, 7, 18),
+            status: BankBillStatus.autopay,
+          ),
+        ),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankStandingOrderTile',
+    description: 'Recurring payment manager row with pause / skip.',
+    category: GalleryCategory.payments,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankStandingOrderTile(
+      order: BankStandingOrder(
+        id: 's1',
+        payeeName: 'Landlord: Al Noor Properties',
+        amount: Money.fromDouble(1200, 'GBP'),
+        pattern: BankRecurringPattern.monthly,
+        nextRunDate: DateTime(2026, 8, 1),
+        state: BankStandingOrderState.active,
+      ),
+      onPause: () {},
+      onSkipNext: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankTransferLimitManager',
+    description: 'Per-channel limit sliders with SCA gating.',
+    category: GalleryCategory.payments,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankTransferLimitManager(
+      channels: [
+        BankLimitChannel(
+          id: 'online',
+          label: 'Daily online transfers',
+          icon: Icons.swap_horiz_rounded,
+          current: Money.fromDouble(5000, 'GBP'),
+          max: Money.fromDouble(20000, 'GBP'),
+          used: Money.fromDouble(1800, 'GBP'),
+        ),
+        BankLimitChannel(
+          id: 'atm',
+          label: 'ATM withdrawals',
+          icon: Icons.local_atm_outlined,
+          current: Money.fromDouble(1000, 'GBP'),
+          max: Money.fromDouble(2500, 'GBP'),
+          used: Money.fromDouble(950, 'GBP'),
+        ),
+      ],
+      onChanged: (_, __) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankMyQrCard',
+    description: 'Locally-encoded receive-payment QR card.',
+    category: GalleryCategory.payments,
+    params: const [],
+    builder: (ctx, p) => BankMyQrCard(
+      payload: 'bank://pay/GB29NWBK60161331926819',
+      displayName: 'Sara Ahmed',
+      accountMasked: 'GB29 •••• 6819',
+      requestAmount: Money.fromDouble(45, 'GBP'),
+      onShare: () {},
+    ),
+  ),
+
+  // ── Parity release: business banking ─────────────────────────────────────
+  GalleryEntry(
+    name: 'BankApprovalRequestTile',
+    description: 'Maker-checker queue row with approvals progress.',
+    category: GalleryCategory.business,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankApprovalRequestTile(
+      request: BankApprovalRequest(
+        id: 'ap1',
+        title: 'Payment to Acme Ltd',
+        amount: Money.fromDouble(12500, 'GBP'),
+        requesterName: 'Dana Khalid',
+        requestedAt: DateTime(2026, 7, 3, 7, 40),
+        approvalsRequired: 3,
+        approvalsGiven: 2,
+        state: BankApprovalState.pending,
+      ),
+      onApprove: () async => true,
+      onReject: (_) async => true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankValueDiffRow',
+    description: 'Old-vs-new change display for approval review.',
+    category: GalleryCategory.business,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          BankValueDiffRow(
+            label: 'Daily limit',
+            oldMoney: Money.fromDouble(5000, 'GBP'),
+            newMoney: Money.fromDouble(10000, 'GBP'),
+            highlightIncrease: true,
+          ),
+          const BankValueDiffRow(
+            label: 'Account name',
+            oldValue: 'Acme Trading',
+            newValue: 'Acme Trading LLC',
+          ),
+        ],
+      ),
+    ),
+  ),
+
+  // ── Parity release: documents, insights, credit ──────────────────────────
+  GalleryEntry(
+    name: 'BankStatementListTile',
+    description: 'Statements-center row with download states.',
+    category: GalleryCategory.documents,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Column(
+      children: [
+        BankStatementListTile(
+          document: BankDocument(
+            id: 'st1',
+            title: 'June 2026 statement',
+            periodOrDate: DateTime(2026, 6, 30),
+            type: BankDocumentType.statement,
+            fileSizeBytes: 245000,
+            isNew: true,
+          ),
+          onView: () {},
+          onDownload: () {},
+        ),
+        BankStatementListTile(
+          document: BankDocument(
+            id: 'st2',
+            title: 'Annual tax certificate',
+            periodOrDate: DateTime(2026, 4, 5),
+            type: BankDocumentType.taxDocument,
+            fileSizeBytes: 98000,
+          ),
+          onView: () {},
+          onDownload: () {},
+          downloadState: BankDocumentDownloadState.done,
+        ),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCashflowChart',
+    description: 'Balance history with dashed forecast and safe-to-spend.',
+    category: GalleryCategory.insights,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankCashflowChart(
+        history: [
+          for (var i = 0; i < 21; i++)
+            BankBalancePoint(
+              date: DateTime(2026, 6, 10 + i),
+              balance: Money.fromDouble(
+                2400 + 420 * (i % 5) - 130.0 * (i % 3),
+                'GBP',
+              ),
+            ),
+        ],
+        forecast: [
+          for (var i = 0; i < 8; i++)
+            BankBalancePoint(
+              date: DateTime(2026, 7, 1 + i),
+              balance: Money.fromDouble(2900 - 90.0 * i, 'GBP'),
+            ),
+        ],
+        currencyCode: 'GBP',
+        safeToSpend: Money.fromDouble(2100, 'GBP'),
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankRecurringMerchantTile',
+    description: 'Detected subscription row with price-rise warning.',
+    category: GalleryCategory.insights,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankRecurringMerchantTile(
+      merchant: BankRecurringMerchant(
+        id: 'm1',
+        merchantName: 'StreamFlix',
+        amount: Money.fromDouble(15.99, 'GBP'),
+        previousAmount: Money.fromDouble(12.99, 'GBP'),
+        priceIncreased: true,
+        cadence: BankRecurringPattern.monthly,
+        nextExpectedDate: DateTime(2026, 7, 12),
+        firstSeen: DateTime(2025, 3, 12),
+        category: TransactionCategory.entertainment,
+      ),
+      onCancelHelp: () {},
+      onBlock: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCreditScoreGauge',
+    description: 'Segmented credit-score arc with trend delta.',
+    category: GalleryCategory.credit,
+    params: const [],
+    builder: (ctx, p) => BankCreditScoreGauge(
+      score: 715,
+      previousScore: 703,
+      updatedAt: DateTime(2026, 6, 28),
+      providerLabel: 'TransUnion',
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankLoanCalculatorCard',
+    description: 'Amount / tenor sliders with live amortization preview.',
+    category: GalleryCategory.credit,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: BankLoanCalculatorCard(
+        minAmount: Money.fromDouble(1000, 'GBP'),
+        maxAmount: Money.fromDouble(25000, 'GBP'),
+        minMonths: 6,
+        maxMonths: 60,
+        annualRate: 0.049,
+        onChanged: (_, __) {},
+        onContinue: () {},
+      ),
+    ),
+  ),
+
+  // ── Parity release: notifications, onboarding, support ───────────────────
+  GalleryEntry(
+    name: 'BankAlertPreferencesPanel',
+    description: 'Per-event, per-channel notification switch matrix.',
+    category: GalleryCategory.notifications,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      child: BankAlertPreferencesPanel(
+        preferences: const [
+          BankAlertPreference(
+            type: BankNotificationType.fraud,
+            push: true,
+            email: true,
+            locked: true,
+          ),
+          BankAlertPreference(
+            type: BankNotificationType.security,
+            push: true,
+            locked: true,
+          ),
+          BankAlertPreference(
+            type: BankNotificationType.payment,
+            push: true,
+          ),
+          BankAlertPreference(
+            type: BankNotificationType.cardActivity,
+            push: true,
+            email: true,
+          ),
+          BankAlertPreference(type: BankNotificationType.marketing),
+        ],
+        onChanged: (_, __, ___) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankConsentManagementList',
+    description: 'Open-banking consent dashboard with revocation.',
+    category: GalleryCategory.onboarding,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      child: BankConsentManagementList(
+        consents: [
+          BankConsent(
+            id: 'c1',
+            granteeName: 'BudgetWise',
+            scopes: const [
+              'Account balances',
+              'Transaction history',
+              'Direct debits',
+              'Standing orders',
+            ],
+            grantedAt: DateTime(2026, 5, 12),
+            expiresAt: DateTime(2026, 8, 12),
+            state: BankConsentState.active,
+          ),
+          BankConsent(
+            id: 'c2',
+            granteeName: 'TaxHelper Pro',
+            scopes: const ['Account balances'],
+            grantedAt: DateTime(2026, 3, 2),
+            expiresAt: DateTime(2026, 7, 10),
+            state: BankConsentState.expiringSoon,
+          ),
+        ],
+        onRevoke: (_) async => true,
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankAddressForm',
+    description: 'Per-country structured address capture.',
+    category: GalleryCategory.onboarding,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: BankAddressForm(
+        defaultCountry: BankCountry.all.firstWhere((c) => c.isoCode == 'GB'),
+        onChanged: (_) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankOnboardingCarousel',
+    description: 'First-run walkthrough with parallax and pill dots.',
+    category: GalleryCategory.onboarding,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankOnboardingCarousel(
+      pages: [
+        BankOnboardingPage(
+          title: 'Bank without borders',
+          body: 'Hold, send and exchange 30+ currencies in one place.',
+          illustration: Icon(
+            Icons.public_rounded,
+            size: 120,
+            color: Theme.of(ctx).colorScheme.primary,
+          ),
+        ),
+        const BankOnboardingPage(
+          title: 'Spend with confidence',
+          body: 'Instant notifications and card controls built in.',
+          illustration: Icon(Icons.notifications_active_outlined, size: 120),
+        ),
+      ],
+      onDone: () {},
+      onSkip: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankSecureMessageThread',
+    description: 'Secure-inbox conversation with delivery ticks.',
+    category: GalleryCategory.support,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankSecureMessageThread(
+      messages: [
+        BankMessage(
+          id: 'm1',
+          body: 'Hi, I need a stamped IBAN letter for my visa application.',
+          sentAt: DateTime(2026, 7, 2, 9, 12),
+          author: BankMessageAuthor.customer,
+          deliveryState: BankMessageDeliveryState.read,
+        ),
+        BankMessage(
+          id: 'm2',
+          body: 'Of course: I have attached it here. Anything else?',
+          sentAt: DateTime(2026, 7, 2, 9, 40),
+          author: BankMessageAuthor.bank,
+          authorName: 'Amal',
+          attachments: const [
+            BankMessageAttachment(
+              id: 'a1',
+              fileName: 'iban-letter.pdf',
+              sizeBytes: 182000,
+            ),
+          ],
+        ),
+      ],
+      onSend: (_) async => true,
+      onAttach: () {},
+      bannerText: 'Replies within 1 business day',
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankHelpFaqList',
+    description: 'Searchable FAQ accordion with helpful votes.',
+    category: GalleryCategory.support,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      child: BankHelpFaqList(
+        items: const [
+          BankFaqItem(
+            id: 'f1',
+            question: 'How do I freeze my card?',
+            answer: 'Open the card screen and tap Freeze. The card '
+                'stops working instantly and you can unfreeze anytime.',
+          ),
+          BankFaqItem(
+            id: 'f2',
+            question: 'What are the transfer limits?',
+            answer: 'Daily limits depend on your account tier. You can '
+                'review and adjust them under Settings → Limits.',
+          ),
+        ],
+        onContactSupport: () {},
+      ),
+    ),
+  ),
+  // ── TOP-20 RESEARCH BATCH ─────────────────────────────────────────────────
+  GalleryEntry(
+    name: 'BankStoriesCarousel',
+    description: 'Promo and recap stories rail with full-screen viewer.',
+    category: GalleryCategory.rewards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankStoriesCarousel(
+      stories: [
+        BankStory(
+          id: 's1',
+          title: 'Your June recap',
+          thumbnail: _storyTile(const Color(0xFF5B4B8A)),
+          content: _storyContent(
+            const Color(0xFF5B4B8A),
+            'You saved 18% more than in May.',
+          ),
+        ),
+        BankStory(
+          id: 's2',
+          title: 'New: cashback picks',
+          thumbnail: _storyTile(const Color(0xFF0A6B47)),
+          content: _storyContent(
+            const Color(0xFF0A6B47),
+            'Choose your 3 cashback categories for Q3.',
+          ),
+        ),
+        BankStory(
+          id: 's3',
+          title: 'Travel mode',
+          thumbnail: _storyTile(const Color(0xFF1B4B7A)),
+          content: _storyContent(
+            const Color(0xFF1B4B7A),
+            'Zero FX fees in 30+ currencies this summer.',
+          ),
+          unread: false,
+        ),
+      ],
+      onStoryViewed: (_) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPeekBalance',
+    description: 'Pre-login press-and-hold balance peek.',
+    category: GalleryCategory.accounts,
+    params: const [],
+    builder: (ctx, p) => BankPeekBalance(
+      accounts: [
+        (label: 'Main', balance: Money.fromDouble(2480.50, 'GBP')),
+        (label: 'Savings', balance: Money.fromDouble(5200.00, 'GBP')),
+      ],
+      enabled: true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankEarlyPaydayCard',
+    description: 'Earned wage access: get paid up to 2 days early.',
+    category: GalleryCategory.accounts,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => _StatefulWrapper<bool>(
+      initial: true,
+      builder: (on, set) => BankEarlyPaydayCard(
+        normalPayday: DateTime(2026, 7, 31),
+        earlyPayday: DateTime(2026, 7, 29),
+        enabled: on,
+        onChanged: set,
+        expectedAmount: Money.fromDouble(2150.00, 'GBP'),
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankBillForecastList',
+    description: 'Predicted upcoming bills grouped by week.',
+    category: GalleryCategory.payments,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankBillForecastList(
+      forecasts: [
+        BankBillForecast(
+          id: 'bf1',
+          billerName: 'City Power & Gas',
+          predictedAmount: Money.fromDouble(86.20, 'GBP'),
+          expectedDate: DateTime(2026, 7, 3),
+          confidence: 0.95,
+          confirmed: true,
+        ),
+        BankBillForecast(
+          id: 'bf2',
+          billerName: 'Fibre Broadband',
+          predictedAmount: Money.fromDouble(34.99, 'GBP'),
+          expectedDate: DateTime(2026, 7, 8),
+          confidence: 0.86,
+        ),
+        BankBillForecast(
+          id: 'bf3',
+          billerName: 'Gym Membership',
+          predictedAmount: Money.fromDouble(42.00, 'GBP'),
+          expectedDate: DateTime(2026, 7, 18),
+          confidence: 0.62,
+        ),
+      ],
+      currencyCode: 'GBP',
+      onTap: (_) {},
+      onSeeAll: () {},
+      now: DateTime(2026, 6, 29),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankAtmLocatorTile',
+    description: 'Nearby ATM row with fee and deposit chips.',
+    category: GalleryCategory.payments,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Column(
+      children: [
+        BankAtmLocatorTile(
+          atm: const BankAtmLocation(
+            id: 'atm1',
+            name: 'Central Mall ATM',
+            address: '12 Market Street',
+            distanceMeters: 350,
+            feeFree: true,
+            depositCapable: true,
+          ),
+          onTap: () {},
+          onNavigate: () {},
+        ),
+        const SizedBox(height: 12),
+        BankAtmLocatorTile(
+          atm: const BankAtmLocation(
+            id: 'atm2',
+            name: 'Partner Bank Branch',
+            address: '48 Riverside Avenue',
+            distanceMeters: 1250,
+          ),
+          onTap: () {},
+          onNavigate: () {},
+        ),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCardlessCashCode',
+    description: 'One-time ATM withdrawal code with countdown ring.',
+    category: GalleryCategory.payments,
+    params: const [],
+    builder: (ctx, p) => BankCardlessCashCode(
+      code: '482913',
+      expiresAt: DateTime(2026, 12, 31, 23, 59),
+      amount: Money.fromDouble(150.00, 'GBP'),
+      onCancel: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankOffersRail',
+    description: 'Card-linked merchant offers with tap-to-activate.',
+    category: GalleryCategory.rewards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankOffersRail(
+      offers: [
+        BankMerchantOffer(
+          id: 'o1',
+          merchantName: 'Coffee Culture',
+          rewardLabel: '10% back',
+          expiresAt: DateTime(2026, 7, 12),
+        ),
+        BankMerchantOffer(
+          id: 'o2',
+          merchantName: 'FreshMart',
+          rewardLabel: '5% back',
+          activated: true,
+        ),
+        BankMerchantOffer(
+          id: 'o3',
+          merchantName: 'CineWorld',
+          rewardLabel: '2-for-1 tickets',
+          expiresAt: DateTime(2026, 7, 30),
+        ),
+      ],
+      onActivate: (_) async => true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCashbackCategoryPicker',
+    description: 'Quarterly selectable cashback categories grid.',
+    category: GalleryCategory.rewards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankCashbackCategoryPicker(
+      categories: const [
+        BankCashbackCategory(
+          id: 'groceries',
+          label: 'Groceries',
+          icon: Icons.local_grocery_store_outlined,
+          rateLabel: '5%',
+          selected: true,
+        ),
+        BankCashbackCategory(
+          id: 'fuel',
+          label: 'Fuel',
+          icon: Icons.local_gas_station_outlined,
+          rateLabel: '3%',
+        ),
+        BankCashbackCategory(
+          id: 'dining',
+          label: 'Dining',
+          icon: Icons.restaurant_outlined,
+          rateLabel: '5%',
+          selected: true,
+        ),
+        BankCashbackCategory(
+          id: 'travel',
+          label: 'Travel',
+          icon: Icons.flight_outlined,
+          rateLabel: '4%',
+        ),
+        BankCashbackCategory(
+          id: 'pharmacy',
+          label: 'Pharmacy',
+          icon: Icons.local_pharmacy_outlined,
+          rateLabel: '3%',
+        ),
+        BankCashbackCategory(
+          id: 'streaming',
+          label: 'Streaming',
+          icon: Icons.play_circle_outline,
+          rateLabel: '6%',
+        ),
+      ],
+      maxSelections: 3,
+      onChanged: (_) {},
+      effectiveUntil: DateTime(2026, 9, 30),
+      onConfirm: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPointsHubCard',
+    description: 'Loyalty points balance with earn and burn actions.',
+    category: GalleryCategory.rewards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankPointsHubCard(
+      pointsBalance: 45230,
+      actions: const [
+        BankPointsAction(
+          id: 'redeem',
+          label: 'Redeem',
+          icon: Icons.redeem_outlined,
+        ),
+        BankPointsAction(
+          id: 'transfer',
+          label: 'Transfer',
+          icon: Icons.swap_horiz_outlined,
+        ),
+        BankPointsAction(
+          id: 'history',
+          label: 'History',
+          icon: Icons.history_outlined,
+        ),
+      ],
+      cashValueLabel: 'Worth about £45.23',
+      earnRateLabel: '2 points per £1 spent',
+      expiringPoints: 1200,
+      expiringOn: DateTime(2026, 8, 15),
+      onAction: (_) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankSavingsChallengeCard',
+    description: 'Gamified savings challenge with stamps and streak.',
+    category: GalleryCategory.saving,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankSavingsChallengeCard(
+      title: '26-week challenge',
+      totalSteps: 26,
+      completedSteps: 9,
+      nextDeposit: Money.fromDouble(10.00, 'GBP'),
+      nextDepositDate: DateTime(2026, 7, 6),
+      streak: 9,
+      onDepositNow: () async => true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankFinancialHealthScore',
+    description: 'Composite financial health gauge with factors.',
+    category: GalleryCategory.insights,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankFinancialHealthScore(
+      score: 72,
+      previousScore: 65,
+      factors: const [
+        BankHealthFactor(
+          id: 'spend',
+          label: 'Spending vs income',
+          score: 0.8,
+          icon: Icons.pie_chart_outline,
+        ),
+        BankHealthFactor(
+          id: 'save',
+          label: 'Savings rate',
+          score: 0.55,
+          icon: Icons.savings_outlined,
+          tip: 'Set up a round-up rule to boost this.',
+        ),
+        BankHealthFactor(
+          id: 'debt',
+          label: 'Debt load',
+          score: 0.35,
+          icon: Icons.credit_card_outlined,
+          tip: 'Your card balance grew 2 months in a row.',
+        ),
+      ],
+      onFactorTap: (_) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankFoundMoneyList',
+    description: 'Unclaimed money discovery with one-tap claims.',
+    category: GalleryCategory.insights,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankFoundMoneyList(
+      items: [
+        BankFoundMoneyItem(
+          id: 'fm1',
+          title: 'Dormant account at Legacy Bank',
+          amount: Money.fromDouble(214.60, 'GBP'),
+          kind: BankFoundMoneyKind.dormantAccount,
+          subtitle: 'Untouched since 2023',
+        ),
+        BankFoundMoneyItem(
+          id: 'fm2',
+          title: 'Airline refund never collected',
+          amount: Money.fromDouble(89.00, 'GBP'),
+          kind: BankFoundMoneyKind.refund,
+        ),
+        BankFoundMoneyItem(
+          id: 'fm3',
+          title: 'Loyalty points about to lapse',
+          amount: Money.fromDouble(12.40, 'GBP'),
+          kind: BankFoundMoneyKind.points,
+          claimed: true,
+        ),
+      ],
+      onClaim: (_) async => true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCreditLimitAdjuster',
+    description: 'User-controlled credit limit slider with commit.',
+    category: GalleryCategory.credit,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankCreditLimitAdjuster(
+      currentLimit: Money.fromDouble(4000, 'GBP'),
+      maxApproved: Money.fromDouble(8000, 'GBP'),
+      used: Money.fromDouble(1250, 'GBP'),
+      onCommit: (_) async => true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPreapprovedLoanCard',
+    description: 'One-tap pre-approved loan offer with live installment.',
+    category: GalleryCategory.credit,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankPreapprovedLoanCard(
+      maxAmount: Money.fromDouble(25000, 'GBP'),
+      annualRate: 8.9,
+      maxMonths: 48,
+      onContinue: (_) {},
+      offerExpires: DateTime(2026, 7, 20),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankOverdraftCushionMeter',
+    description: 'Fee-free overdraft cushion usage meter.',
+    category: GalleryCategory.credit,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => _StatefulWrapper<bool>(
+      initial: true,
+      builder: (on, set) => BankOverdraftCushionMeter(
+        limit: Money.fromDouble(200, 'GBP'),
+        used: Money.fromDouble(80, 'GBP'),
+        enabled: on,
+        onChanged: set,
+        nextEligibleIncrease: Money.fromDouble(100, 'GBP'),
+        onAdjust: () {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankZakatCalculator',
+    description: 'Zakat estimation across asset classes with nisab.',
+    category: GalleryCategory.islamic,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: BankZakatCalculator(
+        currencyCode: 'SAR',
+        nisabThreshold: Money.fromDouble(22000, 'SAR'),
+        prefilledCash: Money.fromDouble(54000, 'SAR'),
+        onPay: (_) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankDonationHubCard',
+    description: 'Charity donations hub with verified causes.',
+    category: GalleryCategory.islamic,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankDonationHubCard(
+      charities: const [
+        BankCharity(
+          id: 'ch1',
+          name: 'Water for All',
+          causeLabel: 'Clean water',
+          verified: true,
+        ),
+        BankCharity(
+          id: 'ch2',
+          name: 'ReadAhead',
+          causeLabel: 'Education',
+          verified: true,
+        ),
+        BankCharity(
+          id: 'ch3',
+          name: 'City Food Bank',
+          causeLabel: 'Food relief',
+        ),
+      ],
+      onDonate: (_, __) {},
+      currencyCode: 'SAR',
+      quickAmounts: const [10, 50, 100],
+      onRoundUpChanged: (_) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCallVerificationScreen',
+    description: 'Anti-vishing call status verification screen.',
+    category: GalleryCategory.auth,
+    isFullScreen: true,
+    params: const [
+      GalleryParam(
+        name: 'status',
+        label: 'Call status',
+        type: ParamType.enumType,
+        defaultValue: 'activeCall',
+        enumValues: ['noActiveCall', 'activeCall', 'recentCall'],
+      ),
+    ],
+    builder: (ctx, p) => BankCallVerificationScreen(
+      status: BankCallStatus.values
+          .firstWhere((e) => e.name == (p['status'] as String)),
+      agentName: 'Amal',
+      agentId: 'AR-2214',
+      callStartedAt: DateTime(2026, 7, 2, 14, 30),
+      onReportScam: () {},
+      onRefresh: () async {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankEidLoginButton',
+    description: 'National eID sign-in with number-match step.',
+    category: GalleryCategory.auth,
+    isFullScreen: true,
+    params: const [
+      GalleryParam(
+        name: 'state',
+        label: 'Auth state',
+        type: ParamType.enumType,
+        defaultValue: 'numberMatch',
+        enumValues: [
+          'idle',
+          'awaitingApproval',
+          'numberMatch',
+          'approved',
+          'failed',
+        ],
+      ),
+    ],
+    builder: (ctx, p) => BankEidLoginButton(
+      providerLabel: 'National eID',
+      state: BankEidAuthState.values
+          .firstWhere((e) => e.name == (p['state'] as String)),
+      onPressed: () {},
+      matchNumbers: const ['17', '42', '63'],
+      correctNumber: '42',
+      onNumberPicked: (_) {},
+      onCancel: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPanicFreezeButton',
+    description: 'Hold-to-freeze everything panic control.',
+    category: GalleryCategory.auth,
+    params: const [],
+    builder: (ctx, p) => _StatefulWrapper<bool>(
+      initial: false,
+      builder: (frozen, set) => BankPanicFreezeButton(
+        frozen: frozen,
+        onToggle: (freeze) async {
+          set(freeze);
+          return true;
+        },
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankMerchantBlockList',
+    description: 'Category self-exclusion blocks with cool-off.',
+    category: GalleryCategory.cards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankMerchantBlockList(
+      blocks: const [
+        BankCategoryBlock(
+          id: 'gambling',
+          label: 'Gambling',
+          icon: Icons.casino_outlined,
+          blocked: true,
+          unblockCoolOff: Duration(hours: 48),
+        ),
+        BankCategoryBlock(
+          id: 'crypto',
+          label: 'Crypto exchanges',
+          icon: Icons.currency_bitcoin_outlined,
+          blocked: false,
+        ),
+        BankCategoryBlock(
+          id: 'latenight',
+          label: 'Late-night spending',
+          icon: Icons.nightlight_outlined,
+          blocked: false,
+        ),
+      ],
+      onChanged: (_, __) async => true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankFamilyCardTile',
+    description: 'Teen card with parental limits and freeze.',
+    category: GalleryCategory.cards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankFamilyCardTile(
+      member: BankFamilyMemberCard(
+        id: 'fam1',
+        memberName: 'Sara',
+        cardLast4: '4821',
+        spendLimit: Money.fromDouble(200, 'GBP'),
+        spentThisPeriod: Money.fromDouble(68, 'GBP'),
+        age: 14,
+        notificationsOnSpend: true,
+      ),
+      onFreezeToggle: (_) async => true,
+      onTap: () {},
+      onLimits: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankDisposableCardTile',
+    description: 'Single-use virtual card with auto-regeneration.',
+    category: GalleryCategory.cards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankDisposableCardTile(
+      cardLast4: '8317',
+      numberUsed: true,
+      onRegenerate: () async => '5502',
+      onRevealDetails: () {},
+    ),
+  ),
 ];
+
+Widget _storyTile(Color color) => DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [color, Color.lerp(color, Colors.black, 0.4)!],
+        ),
+      ),
+      child: const Center(
+        child: Icon(Icons.auto_awesome, color: Colors.white70, size: 28),
+      ),
+    );
+
+Widget _storyContent(Color color, String message) => DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [color, Color.lerp(color, Colors.black, 0.5)!],
+        ),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.w600,
+              height: 1.3,
+            ),
+          ),
+        ),
+      ),
+    );
 
 String _notifTitle(BankNotificationType type) => switch (type) {
       BankNotificationType.payment => 'Payment received',

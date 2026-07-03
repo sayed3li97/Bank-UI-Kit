@@ -21,7 +21,7 @@ class BankConsentModal extends StatefulWidget {
   /// Plain-text terms content. Used when [richTermsContent] is `null`.
   final String termsContent;
 
-  /// If provided, used instead of [termsContent] — allows the host app to
+  /// If provided, used instead of [termsContent]: allows the host app to
   /// pass rich widgets (e.g. rendered Markdown).
   final Widget? richTermsContent;
 

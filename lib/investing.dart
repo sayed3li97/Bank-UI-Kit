@@ -1,4 +1,4 @@
-/// Bank UI Kit — Investing sub-library.
+/// Bank UI Kit: Investing sub-library.
 ///
 /// Multi-currency wallets, stock/ETF/crypto holdings, buy/sell, charts.
 /// Depends on `core.dart`.

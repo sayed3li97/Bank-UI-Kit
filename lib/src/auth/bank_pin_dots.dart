@@ -124,7 +124,7 @@ class BankPinDots extends StatelessWidget {
   final int filled;
 
   /// When `true`, dots are drawn as solid circles; when `false`, this field
-  /// is reserved for future use — in practice dots are always shown obscured.
+  /// is reserved for future use: in practice dots are always shown obscured.
   final bool obscure;
 
   /// When flipped to `true`, the dot row plays a horizontal shake animation

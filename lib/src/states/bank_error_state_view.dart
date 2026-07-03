@@ -27,7 +27,7 @@ class BankErrorStateView extends StatelessWidget {
   /// Short title describing what went wrong.
   final String title;
 
-  /// A specific explanation of the error — never a generic fallback.
+  /// A specific explanation of the error: never a generic fallback.
   final String message;
 
   /// Label for the retry action button.

@@ -14,7 +14,7 @@ class BankTransactionListTile extends StatelessWidget {
   final Transaction transaction;
   final VoidCallback? onTap;
 
-  /// Full override — when provided, replaces the default tile layout entirely.
+  /// Full override: when provided, replaces the default tile layout entirely.
   final Widget Function(BuildContext, Transaction)? itemBuilder;
 
   const BankTransactionListTile({

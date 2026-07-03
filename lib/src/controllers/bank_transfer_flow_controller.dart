@@ -25,7 +25,7 @@ sealed class BankTransferStatus {
   const BankTransferStatus();
 }
 
-/// Initial state — the flow has not started yet.
+/// Initial state: the flow has not started yet.
 class BankTransferIdle extends BankTransferStatus {
   const BankTransferIdle();
 }
@@ -170,7 +170,7 @@ class BankTransferFlowController extends ChangeNotifier {
   /// for validating [pin] against its backend and calling [markSuccess] or
   /// [markFailure] with the result.
   ///
-  /// The [pin] parameter is intentionally unused by the controller itself —
+  /// The [pin] parameter is intentionally unused by the controller itself -
   /// PIN validation must never happen on the client.
   void submitPin(String pin) {
     _status = const BankTransferProcessing();

@@ -2,29 +2,37 @@
 
 # Bank UI Kit
 
-**A production-grade Flutter UI component library for mobile banking and fintech apps.**
+### The Flutter front-end for digital banking.
 
-Independently themeable · RTL-aware · WCAG 2.1 AA · state-management agnostic · 65+ widgets
+Every surface a retail, Islamic, or business bank ships: onboarding to
+servicing: as composable, bank-grade Flutter widgets. One codebase,
+four design languages, your backend.
 
 [![CI](https://github.com/sayed3li97/bank-ui-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/sayed3li97/bank-ui-kit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Flutter](https://img.shields.io/badge/Flutter-3.27%2B-027DFD.svg)](https://flutter.dev)
 [![style: flutter_lints](https://img.shields.io/badge/style-flutter__lints-40c4ff.svg)](https://pub.dev/packages/flutter_lints)
 
+**135+ components** · **22 banking domains** · **4 design languages** · **WCAG 2.1 AA** · **RTL + Arabic-Indic numerals**
+
+<br />
+
 <table>
   <tr>
+    <td align="center"><b>Heritage</b></td>
     <td align="center"><b>Studio</b></td>
     <td align="center"><b>Voltage</b></td>
     <td align="center"><b>Bloom</b></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/home-studio-light.png" width="240" alt="Studio preset" /></td>
-    <td><img src="docs/screenshots/home-voltage-dark.png" width="240" alt="Voltage preset" /></td>
-    <td><img src="docs/screenshots/home-bloom-light.png" width="240" alt="Bloom preset" /></td>
+    <td><img src="docs/screenshots/heritage-heritage-light.png" width="185" alt="Heritage preset" /></td>
+    <td><img src="docs/screenshots/home-studio-light.png" width="185" alt="Studio preset" /></td>
+    <td><img src="docs/screenshots/home-voltage-dark.png" width="185" alt="Voltage preset" /></td>
+    <td><img src="docs/screenshots/home-bloom-light.png" width="185" alt="Bloom preset" /></td>
   </tr>
 </table>
 
-*The same home dashboard, composed from the same widgets, rendered under three drop-in design presets.*
+*The same widgets, four complete design languages. Rebrand in minutes, not quarters.*
 
 </div>
 
@@ -37,6 +45,7 @@ Independently themeable · RTL-aware · WCAG 2.1 AA · state-management agnostic
 - [Quick start](#quick-start)
 - [Design presets](#design-presets)
 - [Custom themes](#custom-themes)
+- [Journeys, not just widgets](#journeys-not-just-widgets)
 - [Component catalogue](#component-catalogue)
 - [Full API reference](docs/component-reference.md)
 - [Cross-cutting features](#cross-cutting-features)
@@ -49,17 +58,47 @@ Independently themeable · RTL-aware · WCAG 2.1 AA · state-management agnostic
 
 ## Why Bank UI Kit
 
+**Coverage that reads like a banking platform.** Accounts, payments,
+cards, onboarding and KYC, PFM and insights, lending, rewards, Islamic
+banking, business-banking approvals, disputes, secure messaging,
+statements: 135+ components across 22 domains, benchmarked against the
+world's top 20 banking apps so every surface they ship, you can too.
+
+**Compliance-grade by default.** PSD2 dynamic-linking payment approval,
+open-banking consent management, deposit-protection notices, IBAN and
+PAN checksum validation, WCAG 2.1 AA semantics, 44 px touch targets,
+and first-class RTL with Arabic-Indic numeral rendering in every input.
+
+**Four design languages, one theming engine.** Every widget reads its
+colour, shape, depth, and numeral typography from `BankThemeData`
+tokens. Ship the included presets, or derive a complete brand theme
+from a single primary colour.
+
+**Backend-agnostic by design.** Pure props and callbacks; headless flow
+controllers (`ChangeNotifier` state machines) that never touch the
+network. Your core banking APIs stay yours.
+
+### How it compares
+
 | | Bank UI Kit | Typical screen-template kits |
 |---|---|---|
 | **Integration model** | Compose into any existing app | Copy-paste whole screens |
-| **Theming** | 3 presets + fully custom themes, runtime-switchable | Fork the package |
+| **Theming** | 4 presets + fully custom themes, runtime-switchable | Fork the package |
 | **RTL support** | First-class, every widget | Mirror-on-demand or none |
 | **Accessibility** | WCAG 2.1 AA, 44×44 targets, semantics | Not specified |
 | **State management** | Agnostic (pure props + callbacks) | Tied to the template's choice |
 | **Money** | Lossless `Decimal`-backed `Money` type | `double` |
 | **Tests** | Unit + widget tests across presets | None |
 
-Everything is a **widget you drop into your own screens** — not a finished app you have to adopt wholesale.
+### One token change rebrands every surface
+
+<p align="center">
+  <img src="docs/diagrams/architecture-flow.svg" width="880" alt="Design tokens flow into four presets, into 135+ components, into your app" />
+</p>
+
+Tokens set color, shape, depth, and numeral typography once. Presets are
+just token sets: swap one and every component follows, light and dark,
+LTR and RTL. Your rebrand is a constructor argument, not a quarter.
 
 ---
 
@@ -123,16 +162,17 @@ BankTransactionListTile(transaction: tx, onTap: () { /* open detail */ }),
 
 ## Design presets
 
-Three first-class presets ship in the box. Each defines a complete `BankThemeData`
+Four first-class presets ship in the box. Each defines a complete `BankThemeData`
 (colours, shape radii, elevation/glow, brand font, numeral typography) in light **and** dark.
 
 | Preset | Personality | Signature |
 |---|---|---|
-| **Studio** | Restrained, editorial | Petrol-green, 12 px corners, hairline borders, Space Grotesk |
+| **Studio** | Restrained, editorial | Petrol-green, soft-shadow depth, Space Grotesk |
 | **Voltage** | Electric, dark-native | Violet→cyan gradient, pill shapes, glow depth |
 | **Bloom** | Warm, consumer-friendly | Coral primary, fully-rounded, Nunito |
+| **Heritage** | Institutional, Islamic-banking ready | Deep forest green + muted gold, pairs with `BankShariahBadge` and profit-rate labels |
 
-Switch presets at runtime by changing the `ThemeData` you pass to `MaterialApp` —
+Switch presets at runtime by changing the `ThemeData` you pass to `MaterialApp` -
 every widget re-themes itself because it reads tokens from `BankThemeData.of(context)`.
 
 <table>
@@ -148,11 +188,34 @@ every widget re-themes itself because it reads tokens from `BankThemeData.of(con
   </tr>
 </table>
 
+### Heritage: the Islamic-banking preset
+
+A complete demo app (`HeritageDashboard` in the example) built on the Heritage
+preset: SAR balances, profit-rate labels via `islamicFinanceMode`,
+`BankShariahBadge` on eligible products, and gold-accent virtual cards.
+
+<table>
+  <tr>
+    <td align="center">Heritage · light</td>
+    <td align="center">Heritage · dark</td>
+    <td align="center">Home · Heritage</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/heritage-heritage-light.png" width="240" /></td>
+    <td><img src="docs/screenshots/heritage-heritage-dark.png" width="240" /></td>
+    <td><img src="docs/screenshots/home-heritage-light.png" width="240" /></td>
+  </tr>
+</table>
+
+Every component is also captured under all four presets: see
+`docs/screenshots/components/` (Studio at the top level, plus
+`heritage/`, `voltage/`, and `bloom/` sub-folders for theme-specific decks).
+
 ---
 
 ## Custom themes
 
-Not limited to the three presets — build a fully custom theme from your brand colour.
+Not limited to the four presets: build a fully custom theme from your brand colour.
 Only `primary` and `brightness` are required; every other token has a sensible default.
 
 ```dart
@@ -193,9 +256,34 @@ final tweaked = BankPreset.bloom
 
 ---
 
+## Journeys, not just widgets
+
+Components are designed to chain into complete, compliant banking
+journeys. Below, a payment travels through five kit widgets while one
+headless controller owns the state machine:
+
+<p align="center">
+  <img src="docs/diagrams/payment-journey.svg" width="880" alt="A payment journey composed from kit components over one headless flow controller" />
+</p>
+
+The same composition pattern covers every core journey. The full
+catalogue of 25 journey blueprints (triggers, steps, variants, error
+states) lives in [docs/banking-journeys.md](docs/banking-journeys.md).
+
+| Journey | Chain of kit components |
+|---|---|
+| Onboard a customer | `BankOnboardingCarousel` → `BankStepProgressIndicator` → `BankDocumentCaptureOverlay` → `BankLivenessCheckOverlay` → `BankAsyncVerificationState` → `BankSuccessAnimation` |
+| Pay a bill | `BankBillForecastList` → `BankBillPayTile` → `BankAmountInputField` → `BankTransferReviewCard` → `BankScaApprovalSheet` → `BankReceiptView` |
+| Send money to a friend | `BankBeneficiaryPicker` → `BankAmountKeypad` → `BankTransferReviewCard` → `BankTransactionPinSheet` → `BankTransferResultScreen` |
+| Recover a lost card | `BankPanicFreezeButton` → `BankCardControlsPanel` → `BankDisposableCardTile` → `BankPhysicalCardMaterialPicker` → `BankStatusTracker` |
+| Grow savings | `BankFinancialHealthScore` → `BankSavingsPotCard` → `BankRoundUpSettingsSheet` → `BankSavingsChallengeCard` → `BankSharedPotInvite` |
+| Dispute a charge | `BankTransactionDetailSheet` → `BankDisputeWizardSheet` → `BankSecureMessageThread` → `BankStatusTracker` → `BankInAppNotificationCenter` |
+
+---
+
 ## Component catalogue
 
-69 widgets across 14 modules. Each screenshot below is a live render of that module's
+135+ widgets across 22 modules. Each screenshot below is a live render of that module's
 showcase screen (Studio preset, light mode) from the example app.
 
 For the full parameter-level API reference (every constructor argument, type, required/optional status, and default value) see **[docs/component-reference.md](docs/component-reference.md)**.
@@ -206,7 +294,7 @@ For the full parameter-level API reference (every constructor argument, type, re
 <img src="docs/screenshots/states-studio-light.png" width="260" align="right" />
 
 ### Accounts & balances
-`BankAccountCard` · `BankAccountSwitcher` · `BankBalanceText` (privacy-aware)
+`BankAccountCard` · `BankAccountSwitcher` · `BankBalanceText` (privacy-aware) · `BankProductItemTile` · `BankAccountNumberText` · `BankPeekBalance` (pre-login peek) · `BankEarlyPaydayCard`
 
 ### Transactions
 `BankTransactionListTile` · `BankTransactionGroupHeader` · `BankTransactionDetailSheet` · `BankTransactionFilterSheet` · `BankReceiptView` · `BankTransactionCostSplitSheet` · `BankTransactionCategorySplitSheet`
@@ -217,15 +305,15 @@ For the full parameter-level API reference (every constructor argument, type, re
 |---|---|---|
 | <img src="docs/screenshots/transactions-studio-light.png" width="230" /> | <img src="docs/screenshots/transfers-studio-light.png" width="230" /> | <img src="docs/screenshots/cards-studio-light.png" width="230" /> |
 
-**Transfers & payments** — `BankAmountKeypad` · `BankBeneficiaryPicker` · `BankTransferReviewCard` · `BankTransactionPinSheet` · `BankScheduledTransferToggle` · `BankPaymentRequestCard` · `BankTransferResultScreen` · `BankContactPaymentSheet`
+**Transfers & payments**: `BankAmountKeypad` · `BankBeneficiaryPicker` · `BankTransferReviewCard` · `BankTransactionPinSheet` · `BankScheduledTransferToggle` · `BankPaymentRequestCard` · `BankTransferResultScreen` · `BankContactPaymentSheet`
 
-**Cards** — `BankFlipCard` · `BankHorizontalAccountCard` · `BankVirtualCardWidget` (flat / gradient / mesh / metallic / image) · `BankCardControlsPanel` · `BankCardPinManager` · `BankPhysicalCardMaterialPicker`
+**Cards**: `BankFlipCard` · `BankHorizontalAccountCard` · `BankVirtualCardWidget` (flat / gradient / mesh / metallic / image) · `BankCardControlsPanel` · `BankCardPinManager` · `BankPhysicalCardMaterialPicker` · `BankDisposableCardTile` (single-use) · `BankMerchantBlockList` (self-exclusion) · `BankFamilyCardTile` (teen cards)
 
 ### Flip cards
 
 Smooth 3-D perspective flip animation revealing the account details on the back face.
 Three trigger modes, two flip axes, three front-face layouts, and three background modes
-ship in the box — all backward-compatible and opt-in.
+ship in the box: all backward-compatible and opt-in.
 
 <table>
   <tr>
@@ -240,7 +328,7 @@ ship in the box — all backward-compatible and opt-in.
   </tr>
 </table>
 
-#### `BankFlipCard` — generic flip container
+#### `BankFlipCard`: generic flip container
 
 Wraps any two widgets in a perspective flip. Use it for any two-sided surface.
 
@@ -255,7 +343,7 @@ BankFlipCard(
 )
 ```
 
-#### `BankHorizontalAccountCard` — landscape account card with flip
+#### `BankHorizontalAccountCard`: landscape account card with flip
 
 A landscape-format bank card showing balance, masked number, and account-type icon on
 the front. The back reveals the full IBAN / account number and sort code / BIC with
@@ -277,7 +365,7 @@ BankHorizontalAccountCard(
 )
 ```
 
-External (host-controlled) flip — pair `isFlipped` with `onFlip`:
+External (host-controlled) flip: pair `isFlipped` with `onFlip`:
 
 ```dart
 bool _flipped = false;
@@ -293,7 +381,7 @@ BankHorizontalAccountCard(
 #### Enhanced `BankVirtualCardWidget`
 
 The existing virtual-card widget now accepts an image background and an explicit flip
-trigger. All new parameters are optional — existing code compiles unchanged.
+trigger. All new parameters are optional: existing code compiles unchanged.
 
 ```dart
 BankVirtualCardWidget(
@@ -301,7 +389,7 @@ BankVirtualCardWidget(
   cardholderName: 'ALEX MORGAN',
   // new: image background
   backgroundImage: const NetworkImage('https://example.com/card.jpg'),
-  // new: flip trigger (default: tapToFlip — same as before)
+  // new: flip trigger (default: tapToFlip: same as before)
   flipTrigger: BankFlipTrigger.builtInButton,
   // new: optional custom flip button
   flipButtonBuilder: (ctx, flip) => IconButton(
@@ -315,31 +403,55 @@ BankVirtualCardWidget(
 |---|---|---|
 | <img src="docs/screenshots/auth-studio-light.png" width="230" /> | <img src="docs/screenshots/onboarding-studio-light.png" width="230" /> | <img src="docs/screenshots/saving-studio-light.png" width="230" /> |
 
-**Auth & security** — `BankPinKeypad` · `BankPinDots` · `BankBiometricPromptButton` · `BankPrivacyToggle` · `BankDeviceTrustBanner` · `BankSessionTimeoutDialog` · `BankAppSwitcherPrivacyOverlay`
+**Auth & security**: `BankPinKeypad` · `BankPinDots` · `BankBiometricPromptButton` · `BankPrivacyToggle` · `BankDeviceTrustBanner` · `BankSessionTimeoutDialog` · `BankAppSwitcherPrivacyOverlay` · `BankOtpInput` · `BankScaApprovalSheet` (PSD2 dynamic linking) · `BankDeviceSessionTile` · `BankCallVerificationScreen` (anti-vishing) · `BankEidLoginButton` (national eID) · `BankPanicFreezeButton`
 
-**Onboarding & KYC** — `BankStepProgressIndicator` · `BankDocumentCaptureOverlay` · `BankLivenessCheckOverlay` · `BankAsyncVerificationState` · `BankConsentModal`
+**Onboarding & KYC**: `BankStepProgressIndicator` · `BankDocumentCaptureOverlay` · `BankLivenessCheckOverlay` · `BankAsyncVerificationState` · `BankConsentModal` · `BankConsentManagementList` (open-banking dashboard) · `BankOnboardingCarousel` · `BankAddressForm`
 
-**Saving** — `BankSavingsPotCard` · `BankRoundUpSettingsSheet` · `BankPotContributionSheet` · `BankIncomeSorterSheet` · `BankSharedPotInvite`
+**Saving**: `BankSavingsPotCard` · `BankRoundUpSettingsSheet` · `BankPotContributionSheet` · `BankIncomeSorterSheet` · `BankSharedPotInvite` · `BankSavingsChallengeCard` (streaks + stamps)
 
 | Social | Investing | Credit |
 |---|---|---|
 | <img src="docs/screenshots/social-studio-light.png" width="230" /> | <img src="docs/screenshots/investing-studio-light.png" width="230" /> | <img src="docs/screenshots/credit-studio-light.png" width="230" /> |
 
-**Social** — `BankJointTransactionListTile` · `BankAccountOwnershipBadge` · `BankSharedGoalProgressCard`
+**Social**: `BankJointTransactionListTile` · `BankAccountOwnershipBadge` · `BankSharedGoalProgressCard`
 
-**Investing** — `BankPortfolioPerformanceChart` · `BankHoldingsListTile` · `BankWatchlistCard` · `BankBuySellSheet` · `BankAssetPriceTicker` · `BankLiveExchangeConverter` · `BankCurrencyWalletTabBar`
+**Investing**: `BankPortfolioPerformanceChart` · `BankHoldingsListTile` · `BankWatchlistCard` · `BankBuySellSheet` · `BankAssetPriceTicker` · `BankLiveExchangeConverter` · `BankCurrencyWalletTabBar`
 
-**Credit** — `BankCreditLimitGauge` · `BankFlexEligibleBadge` · `BankInstallmentPlanSelector` · `BankRepaymentScheduleView`
+**Credit**: `BankCreditLimitGauge` · `BankFlexEligibleBadge` · `BankInstallmentPlanSelector` · `BankRepaymentScheduleView` · `BankCreditScoreGauge` · `BankLoanCalculatorCard` · `BankCreditLimitAdjuster` (user-set limit) · `BankPreapprovedLoanCard` · `BankOverdraftCushionMeter`
 
 | Subscriptions | Insights | Notifications |
 |---|---|---|
 | <img src="docs/screenshots/subscriptions-studio-light.png" width="230" /> | <img src="docs/screenshots/insights-studio-light.png" width="230" /> | <img src="docs/screenshots/notifications-studio-light.png" width="230" /> |
 
-**Subscriptions** — `BankPlanComparisonTable` · `BankPaywallSheet` · `BankPerksMarketplaceCard` · `BankReferralInviteCard`
+**Subscriptions**: `BankPlanComparisonTable` · `BankPaywallSheet` · `BankPerksMarketplaceCard` · `BankReferralInviteCard`
 
-**Insights** — `BankSpendingBreakdownChart` (donut) · `BankBudgetGaugeWidget` · `BankInsightCard`
+**Insights**: `BankSpendingBreakdownChart` (donut) · `BankBudgetGaugeWidget` · `BankInsightCard` · `BankCashflowChart` (history + forecast) · `BankRecurringMerchantTile` (subscription detection) · `BankFinancialHealthScore` · `BankFoundMoneyList`
 
-**Notifications** — `BankInAppNotificationCenter`
+**Notifications**: `BankInAppNotificationCenter` · `BankAlertPreferencesPanel`
+
+### Forms & input
+`BankTextField` · `BankAmountInputField` (currency-aware) · `BankMaskedInputField` (IBAN / PAN / sort code, mod-97 + Luhn) · `BankPhoneInputField` (E.164) · `BankCountryPicker` (236 countries) · `BankPeriodSelector`
+
+### Payments & billing
+`BankBillPayTile` + `BankBillCalendarStrip` · `BankStandingOrderTile` · `BankTransferLimitManager` (SCA-gated) · `BankQrScannerOverlay` + `BankMyQrCard` (local QR encoding) · `BankBillForecastList` (bill prediction) · `BankAtmLocatorTile` + `BankCardlessCashCode`
+
+### Rewards & engagement
+`BankPointsHubCard` (earn/burn) · `BankOffersRail` (card-linked offers) · `BankCashbackCategoryPicker` (quarterly picks) · `BankStoriesCarousel` (stories + full-screen viewer)
+
+### Islamic banking
+`BankZakatCalculator` (nisab-aware) · `BankDonationHubCard` (verified charities) · `BankShariahBadge` · profit-rate labeling via `islamicFinanceMode` · the Heritage preset
+
+### Business banking
+`BankApprovalRequestTile` (maker-checker) · `BankBatchPaymentReviewSheet` · `BankValueDiffRow`
+
+### Documents & deposits
+`BankStatementListTile` · `BankChequeCaptureOverlay` + `BankChequeDepositSummary` (remote deposit capture)
+
+### Support & servicing
+`BankDisputeWizardSheet` (+ headless `BankDisputeFlowController`) · `BankSecureMessageThread` · `BankHelpFaqList`
+
+### Scaffolding & display
+`BankAppBar` · `BankBottomNavBar` · `BankEmblem` · `BankSummaryStack` · `BankStatusTracker` · `BankQuickActionsGrid` · `BankMoneyProtectionBanner` · `BankShariahBadge` · `BankWalletProvisioningButton` · `BankTravelNoticeForm`
 
 ---
 
@@ -352,8 +464,19 @@ BankVirtualCardWidget(
 BankBalanceText(money: account.balance) // shows '••••' when privacy is on
 ```
 
+### Currency-correct money display
+Every amount renders through a currency engine that knows each
+currency's official symbol, minor units, and symbol placement: the
+Saudi riyal symbol, three-decimal Gulf currencies (OMR, KWD, BHD),
+zero-decimal JPY/KRW, and crypto precision all follow their own
+guidelines. Register your own with `BankCurrencies.register`.
+
+```dart
+BankBalanceText(money: Money.fromDouble(1250.5, 'OMR')) // ر.ع. 1,250.500
+```
+
 ### Numeral styles
-Western or Eastern Arabic-Indic digits, independent of locale — ideal for GCC apps.
+Western or Eastern Arabic-Indic digits, independent of locale: ideal for GCC apps.
 
 ```dart
 BankUiScope(
@@ -370,7 +493,7 @@ BankUiScope(initialData: BankUiScopeData(islamicFinanceMode: true), child: ...)
 ```
 
 ### Localization
-Ships English strings; override any subset via `BankUiStrings` — no `gen-l10n` dependency.
+Ships English strings; override any subset via `BankUiStrings`: no `gen-l10n` dependency.
 
 ### RTL
 Every widget is built and tested under `TextDirection.rtl`.
@@ -380,7 +503,7 @@ Every widget is built and tested under `TextDirection.rtl`.
 ## Architecture & principles
 
 - **Tokens, not magic numbers.** Widgets read colours, radii, spacing, elevation, and
-  numeral typography from `BankThemeData` / `BankTokens` — never hard-coded.
+  numeral typography from `BankThemeData` / `BankTokens`: never hard-coded.
 - **State-management agnostic.** Pure widgets: data in via the constructor, events out
   via callbacks. No provider/bloc/riverpod coupling in `lib/`.
 - **Lossless money.** The `Money` type wraps `Decimal`; no `double` ever touches an amount.
@@ -408,7 +531,7 @@ The example app ships two entry points:
 
 | Entry point | Launch command | What it shows |
 |---|---|---|
-| **Component gallery** | `flutter run -t lib/gallery_main.dart` | All 69 components with live parameter controls, preset/dark-mode switching, and search |
+| **Component gallery** | `flutter run -t lib/gallery_main.dart` | 111 components with live parameter controls, preset/dark-mode switching, and search |
 | **Demo dashboard** | `flutter run` | Revolut-style demo app under the Studio preset |
 
 ```bash
@@ -431,11 +554,26 @@ node tools/screenshots.mjs          # requires playwright + a Chromium
 
 ---
 
+## See it, then ship it
+
+**Ten minutes to conviction.** Run the gallery and switch presets live:
+
+```bash
+git clone https://github.com/sayed3li97/bank-ui-kit.git
+cd bank-ui-kit/example && flutter run -t lib/gallery_main.dart
+```
+
+**Building a bank?** Start from the [journey blueprints](docs/banking-journeys.md),
+compose the widgets, wire your APIs to the callbacks. The kit never
+touches the network: your core banking stays yours.
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md).
 In short: `flutter analyze` and `flutter test` must be green, and every change must work
-across all three presets, both brightnesses, and RTL.
+across all four presets, both brightnesses, and RTL.
 
 ---
 
@@ -443,6 +581,6 @@ across all three presets, both brightnesses, and RTL.
 
 [MIT](LICENSE) © 2026 Sayed Ali and Bank UI Kit contributors.
 
-Fonts bundled with the kit — [Space Grotesk](https://github.com/floriankarsten/space-grotesk),
-[Fredoka](https://github.com/hafontia/Fredoka), and [Nunito](https://github.com/googlefonts/nunito) —
+Fonts bundled with the kit: [Space Grotesk](https://github.com/floriankarsten/space-grotesk),
+[Fredoka](https://github.com/hafontia/Fredoka), and [Nunito](https://github.com/googlefonts/nunito) -
 are licensed under the SIL Open Font License.

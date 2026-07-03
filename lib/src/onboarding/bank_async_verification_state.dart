@@ -9,7 +9,7 @@ import '../../src/theme/tokens.dart';
 
 /// "Under review" holding-state widget for manual KYC review.
 ///
-/// Distinct from a generic spinner — conveys the human review process with:
+/// Distinct from a generic spinner: conveys the human review process with:
 /// - An animated pulsing document icon.
 /// - Three sequentially-pulsing dots indicating "processing".
 /// - A title, body message, and optional estimated-time chip.

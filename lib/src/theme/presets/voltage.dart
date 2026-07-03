@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import '../bank_theme_data.dart';
 import '../tokens.dart';
 
-/// The **Voltage** preset — an electric, dark-native fintech aesthetic.
+/// The **Voltage** preset: an electric, dark-native fintech aesthetic.
 ///
 /// Characteristics:
 /// - Deep space-blue backgrounds (dark-first; the "light" variant is still
 ///   dark)
 /// - Violet + cyan accent gradient (#7C3AED → #06B6D4 at 135°)
 /// - Fully-pill buttons and chips (999 px radius)
-/// - Glow-based depth — all Material elevations are 0
+/// - Glow-based depth: all Material elevations are 0
 /// - `useGlow` = `true` with a 20 % violet glow colour
 class BankVoltageTheme {
   const BankVoltageTheme._();
@@ -28,7 +28,7 @@ class BankVoltageTheme {
   );
 
   // ---------------------------------------------------------------------------
-  // Light (still a dark palette — Voltage is always dark)
+  // Light (still a dark palette: Voltage is always dark)
   // ---------------------------------------------------------------------------
 
   static BankThemeData light() => const BankThemeData(
@@ -41,13 +41,13 @@ class BankVoltageTheme {
         onSurfaceVariant: Color(0xFFA0A0C0),
         background: Color(0xFF1A1A2E),
         onBackground: Color(0xFFF0F0FF),
-        outline: Color(0xFF3A3A5A),
+        outline: Color(0xFF31314E),
         positiveBalance: BankTokens.positiveBalance,
         negativeBalance: BankTokens.negativeBalance,
         pending: BankTokens.pending,
         frozen: BankTokens.frozen,
         accentGradient: _accentGradient,
-        cardRadius: BorderRadius.all(Radius.circular(16)),
+        cardRadius: BorderRadius.all(Radius.circular(20)),
         buttonRadius: BorderRadius.all(Radius.circular(999)),
         sheetRadius: BorderRadius.vertical(top: Radius.circular(20)),
         chipRadius: BorderRadius.all(Radius.circular(999)),
@@ -77,13 +77,13 @@ class BankVoltageTheme {
         onSurfaceVariant: Color(0xFFA0A0C0),
         background: Color(0xFF0F0F1A),
         onBackground: Color(0xFFF0F0FF),
-        outline: Color(0xFF3A3A5A),
+        outline: Color(0xFF31314E),
         positiveBalance: BankTokens.positiveBalance,
         negativeBalance: BankTokens.negativeBalance,
         pending: BankTokens.pending,
         frozen: BankTokens.frozen,
         accentGradient: _accentGradient,
-        cardRadius: BorderRadius.all(Radius.circular(16)),
+        cardRadius: BorderRadius.all(Radius.circular(20)),
         buttonRadius: BorderRadius.all(Radius.circular(999)),
         sheetRadius: BorderRadius.vertical(top: Radius.circular(20)),
         chipRadius: BorderRadius.all(Radius.circular(999)),

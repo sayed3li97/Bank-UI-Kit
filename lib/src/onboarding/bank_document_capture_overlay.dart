@@ -24,7 +24,7 @@ enum BankDocumentFramingState {
 
 /// Camera frame guide for document capture.
 ///
-/// Camera-plugin agnostic — overlays on top of whatever camera widget the
+/// Camera-plugin agnostic: overlays on top of whatever camera widget the
 /// host app provides via [cameraChild]. The overlay draws:
 /// - A dark semi-transparent background with a rectangular document cutout.
 /// - L-shaped corner guides that animate between idle and aligned colours.
@@ -33,7 +33,7 @@ enum BankDocumentFramingState {
 /// - A capture button when [framingState] is
 ///   [BankDocumentFramingState.aligned].
 class BankDocumentCaptureOverlay extends StatelessWidget {
-  /// The detected framing state — drives corner colour, status message, and
+  /// The detected framing state: drives corner colour, status message, and
   /// whether the capture button is shown.
   final BankDocumentFramingState framingState;
 
@@ -124,7 +124,7 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Capture button — only when aligned and callback provided.
+              // Capture button: only when aligned and callback provided.
               if (isAligned && onCapture != null) ...[
                 Semantics(
                   button: true,

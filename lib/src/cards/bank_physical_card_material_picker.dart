@@ -195,7 +195,7 @@ class _CardOptionTile extends StatelessWidget {
             : null,
         color: option.secondaryColor == null ? option.primaryColor : null,
       ),
-      // Minimal card content — chip rectangle
+      // Minimal card content: chip rectangle
       child: Padding(
         padding: const EdgeInsets.all(6),
         child: Align(

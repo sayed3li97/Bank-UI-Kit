@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 /// financial data. The overlay activates when [AppLifecycleState] becomes
 /// [AppLifecycleState.inactive] or [AppLifecycleState.paused].
 ///
-/// **Blur mode** (default — when [placeholder] is `null`): the [child] is
+/// **Blur mode** (default: when [placeholder] is `null`): the [child] is
 /// covered by a `sigma 12` Gaussian blur and a `Colors.black26` dark scrim.
 ///
 /// **Placeholder mode** (when [placeholder] is non-null): the [child] is

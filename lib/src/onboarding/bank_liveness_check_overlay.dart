@@ -30,7 +30,7 @@ enum BankLivenessState {
 /// - A retry button when [state] is [BankLivenessState.retry] and [onRetry]
 ///   is provided.
 class BankLivenessCheckOverlay extends StatefulWidget {
-  /// The detected liveness state — drives ring colour and feedback icons.
+  /// The detected liveness state: drives ring colour and feedback icons.
   final BankLivenessState state;
 
   /// The host app's camera widget. It sits behind the overlay in a [Stack].
@@ -166,7 +166,7 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
       BankLivenessState.idle => 'Position your face in the oval',
       BankLivenessState.detecting => 'Look straight at the camera',
       BankLivenessState.success => 'Liveness verified',
-      BankLivenessState.retry => 'Could not verify — please try again',
+      BankLivenessState.retry => 'Could not verify: please try again',
     };
   }
 

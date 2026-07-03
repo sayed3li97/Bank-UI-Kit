@@ -56,11 +56,11 @@ enum BankHorizontalCardBackground {
 /// copy-to-clipboard action.
 ///
 /// The card background supports three modes via [background]:
-/// - [BankHorizontalCardBackground.themeGradient] — preset accent gradient.
-/// - [BankHorizontalCardBackground.solidColor] — [primaryColor] or
+/// - [BankHorizontalCardBackground.themeGradient]: preset accent gradient.
+/// - [BankHorizontalCardBackground.solidColor]: [primaryColor] or
 ///   [BankThemeData.primary].
-/// - [BankHorizontalCardBackground.image] — [backgroundImage] widget (any
-///   [ImageProvider] — asset, network, memory).
+/// - [BankHorizontalCardBackground.image]: [backgroundImage] widget (any
+///   [ImageProvider]: asset, network, memory).
 ///
 /// Flip behaviour is fully configurable via [trigger], [flipButtonBuilder],
 /// [isFlipped], and [onFlip] (see [BankFlipCard]).

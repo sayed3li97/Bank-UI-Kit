@@ -7,7 +7,7 @@ import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 
 // ---------------------------------------------------------------------------
-// Local enum — avoids cross-module import
+// Local enum: avoids cross-module import
 // ---------------------------------------------------------------------------
 
 enum BankCardMaterial { plastic, metal }

@@ -86,6 +86,11 @@ console.log(`Serving ${webRoot} on http://localhost:${PORT}`);
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium',
   args: ['--no-sandbox', '--force-color-profile=srgb'],
+  // Route through the environment proxy (when present) so the Flutter web
+  // engine can fetch Noto fallback fonts for Arabic and other scripts.
+  proxy: process.env.HTTPS_PROXY
+    ? { server: process.env.HTTPS_PROXY, bypass: 'localhost,127.0.0.1' }
+    : undefined,
 });
 
 // ── Helper: navigate an existing page to a Flutter URL and wait for render ───
@@ -102,7 +107,7 @@ let totalAttempts = 0;
 
 // ── 1. SCREEN SHOTS ──────────────────────────────────────────────────────────
 if (!componentsOnly) {
-  const presets = ['studio', 'voltage', 'bloom'];
+  const presets = ['studio', 'voltage', 'bloom', 'heritage'];
   const galleryScreens = [
     'states', 'accounts', 'transactions', 'transfers', 'cards', 'auth',
     'onboarding', 'saving', 'social', 'investing', 'credit',
@@ -122,6 +127,10 @@ if (!componentsOnly) {
     for (const preset of ['voltage', 'bloom']) {
       shots.push({ screen, preset, dark: preset === 'voltage', w: 412, h: 1500 });
     }
+  }
+  // Heritage demo dashboard under its own preset, light and dark.
+  for (const dark of [false, true]) {
+    shots.push({ screen: 'heritage', preset: 'heritage', dark, w: 412, h: 900 });
   }
 
   console.log(`\n── Screens (${shots.length}) ─────────────────────────────────────────────`);
@@ -217,29 +226,118 @@ if (!screensOnly) {
     { name: 'BankFlexEligibleBadge',      fullScreen: false },
     // Notifications
     { name: 'BankInAppNotificationCenter', fullScreen: true },
+    // Parity release: common & forms
+    { name: 'BankTextField',              fullScreen: true  },
+    { name: 'BankAmountInputField',       fullScreen: true  },
+    { name: 'BankMaskedInputField',       fullScreen: true  },
+    { name: 'BankPhoneInputField',        fullScreen: true  },
+    { name: 'BankCountryPicker',          fullScreen: true  },
+    { name: 'BankPeriodSelector',         fullScreen: false },
+    { name: 'BankEmblem',                 fullScreen: false },
+    { name: 'BankSummaryStack',           fullScreen: true  },
+    { name: 'BankStatusTracker',          fullScreen: false },
+    { name: 'BankQuickActionsGrid',       fullScreen: true  },
+    { name: 'BankMoneyProtectionBanner',  fullScreen: true  },
+    { name: 'BankAppBar',                 fullScreen: true  },
+    { name: 'BankBottomNavBar',           fullScreen: true  },
+    // Parity release: accounts, auth, cards
+    { name: 'BankProductItemTile',        fullScreen: true  },
+    { name: 'BankAccountNumberText',      fullScreen: false },
+    { name: 'BankOtpInput',               fullScreen: false },
+    { name: 'BankScaApprovalSheet',       fullScreen: true  },
+    { name: 'BankDeviceSessionTile',      fullScreen: true  },
+    { name: 'BankWalletProvisioningButton', fullScreen: false },
+    { name: 'BankTravelNoticeForm',       fullScreen: true  },
+    { name: 'BankShariahBadge',           fullScreen: false },
+    // Parity release: payments & billing
+    { name: 'BankBillPayTile',            fullScreen: true  },
+    { name: 'BankStandingOrderTile',      fullScreen: true  },
+    { name: 'BankTransferLimitManager',   fullScreen: true  },
+    { name: 'BankMyQrCard',               fullScreen: false },
+    // Parity release: business banking
+    { name: 'BankApprovalRequestTile',    fullScreen: true  },
+    { name: 'BankValueDiffRow',           fullScreen: true  },
+    // Parity release: documents, insights, credit
+    { name: 'BankStatementListTile',      fullScreen: true  },
+    { name: 'BankCashflowChart',          fullScreen: true  },
+    { name: 'BankRecurringMerchantTile',  fullScreen: true  },
+    { name: 'BankCreditScoreGauge',       fullScreen: false },
+    { name: 'BankLoanCalculatorCard',     fullScreen: true  },
+    // Parity release: notifications, onboarding, support
+    { name: 'BankAlertPreferencesPanel',  fullScreen: true  },
+    { name: 'BankConsentManagementList',  fullScreen: true  },
+    { name: 'BankAddressForm',            fullScreen: true  },
+    { name: 'BankOnboardingCarousel',     fullScreen: true  },
+    { name: 'BankSecureMessageThread',    fullScreen: true  },
+    { name: 'BankHelpFaqList',            fullScreen: true  },
+    // Top-20 research release
+    { name: 'BankStoriesCarousel',        fullScreen: true  },
+    { name: 'BankPeekBalance',            fullScreen: false },
+    { name: 'BankEarlyPaydayCard',        fullScreen: true  },
+    { name: 'BankBillForecastList',       fullScreen: true  },
+    { name: 'BankAtmLocatorTile',         fullScreen: true  },
+    { name: 'BankCardlessCashCode',       fullScreen: false },
+    { name: 'BankOffersRail',             fullScreen: true  },
+    { name: 'BankCashbackCategoryPicker', fullScreen: true  },
+    { name: 'BankPointsHubCard',          fullScreen: true  },
+    { name: 'BankSavingsChallengeCard',   fullScreen: true  },
+    { name: 'BankFinancialHealthScore',   fullScreen: true  },
+    { name: 'BankFoundMoneyList',         fullScreen: true  },
+    { name: 'BankCreditLimitAdjuster',    fullScreen: true  },
+    { name: 'BankPreapprovedLoanCard',    fullScreen: true  },
+    { name: 'BankOverdraftCushionMeter',  fullScreen: true  },
+    { name: 'BankZakatCalculator',        fullScreen: true  },
+    { name: 'BankDonationHubCard',        fullScreen: true  },
+    { name: 'BankCallVerificationScreen', fullScreen: true  },
+    { name: 'BankEidLoginButton',         fullScreen: true  },
+    { name: 'BankPanicFreezeButton',      fullScreen: false },
+    { name: 'BankMerchantBlockList',      fullScreen: true  },
+    { name: 'BankFamilyCardTile',         fullScreen: true  },
+    { name: 'BankDisposableCardTile',     fullScreen: true  },
   ];
 
-  console.log(`\n── Components (${components.length}) ────────────────────────────────────────`);
+  // --only=Name1,Name2 restricts the component sweep (incremental capture).
+  const onlyArg = args.find((a) => a.startsWith('--only='));
+  const filtered = onlyArg
+    ? components.filter((c) =>
+        onlyArg.slice('--only='.length).split(',').includes(c.name))
+    : components;
+
+  // Preset variants: studio-light is the canonical top-level shot; the
+  // other presets land in components/<preset>/ for theme-specific decks.
+  const variants = [
+    { preset: 'studio',   dark: 0, dir: compDir },
+    { preset: 'heritage', dark: 0, dir: join(compDir, 'heritage') },
+    { preset: 'voltage',  dark: 1, dir: join(compDir, 'voltage') },
+    { preset: 'bloom',    dark: 0, dir: join(compDir, 'bloom') },
+  ];
+  for (const v of variants) mkdirSync(v.dir, { recursive: true });
+
+  console.log(
+    `\n── Components (${filtered.length} × ${variants.length} presets) ──────────────`,
+  );
   // Reuse a single page; resize viewport per component to save memory.
   const compPage = await browser.newPage({
     viewport: { width: 375, height: 600 },
     deviceScaleFactor: 1,
   });
-  for (const c of components) {
-    totalAttempts++;
-    const h = c.fullScreen ? 812 : 600;
-    await compPage.setViewportSize({ width: 375, height: h });
-    const url =
-      `http://localhost:${PORT}/index.html?component=${encodeURIComponent(c.name)}` +
-      `&preset=studio&dark=0`;
-    try {
-      await navigatePage(compPage, url);
-      const file = join(compDir, `${c.name}.png`);
-      await compPage.screenshot({ path: file });
-      totalOk++;
-      console.log(`✓ ${c.name}.png`);
-    } catch (e) {
-      console.error(`✗ ${c.name}: ${e.message}`);
+  for (const v of variants) {
+    for (const c of filtered) {
+      totalAttempts++;
+      const h = c.fullScreen ? 812 : 600;
+      await compPage.setViewportSize({ width: 375, height: h });
+      const url =
+        `http://localhost:${PORT}/index.html?component=${encodeURIComponent(c.name)}` +
+        `&preset=${v.preset}&dark=${v.dark}`;
+      try {
+        await navigatePage(compPage, url);
+        const file = join(v.dir, `${c.name}.png`);
+        await compPage.screenshot({ path: file });
+        totalOk++;
+        console.log(`✓ ${v.preset}/${c.name}.png`);
+      } catch (e) {
+        console.error(`✗ ${v.preset}/${c.name}: ${e.message}`);
+      }
     }
   }
   await compPage.close();

@@ -28,7 +28,7 @@ import '../../src/theme/tokens.dart';
 ///   body: 'A payment of £420 to an unknown recipient was attempted '
 ///       'on your account. Did you authorise this?',
 ///   primaryActionLabel: 'Secure My Account',
-///   dismissLabel: 'Not me — dismiss',
+///   dismissLabel: 'Not me: dismiss',
 ///   onPrimaryAction: () => navigator.push(SecureAccountRoute()),
 ///   onDismiss: () => bloc.add(DismissFraudAlertEvent()),
 /// )

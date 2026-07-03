@@ -53,7 +53,7 @@ class BankAccountSwitcher extends StatelessWidget {
   });
 
   // ---------------------------------------------------------------------------
-  // Static helper — modal presentation
+  // Static helper: modal presentation
   // ---------------------------------------------------------------------------
 
   /// Presents [BankAccountSwitcher] as a transparent-background modal bottom

@@ -34,16 +34,16 @@ enum BankCardState { normal, frozen }
 ///
 /// ## New in this version
 ///
-/// - **[backgroundImage]** — supply any [ImageProvider] (asset, network,
+/// - **[backgroundImage]**: supply any [ImageProvider] (asset, network,
 ///   memory) to use as the card background instead of the [surface] colour.
 ///   A dark overlay is applied automatically for readability; override it
 ///   with [backgroundImageOverlay].
 ///
-/// - **[flipTrigger]** — choose how the flip is triggered:
-///   - [BankFlipTrigger.tapToFlip] (default) — tap anywhere on the card.
-///   - [BankFlipTrigger.builtInButton] — overlaid icon button in the card
+/// - **[flipTrigger]**: choose how the flip is triggered:
+///   - [BankFlipTrigger.tapToFlip] (default): tap anywhere on the card.
+///   - [BankFlipTrigger.builtInButton]: overlaid icon button in the card
 ///     corner; provide [flipButtonBuilder] to customise it.
-///   - [BankFlipTrigger.external] — host app drives the flip entirely.
+///   - [BankFlipTrigger.external]: host app drives the flip entirely.
 ///
 /// Card corner radius is fixed at 16 px per the card-material specification.
 class BankVirtualCardWidget extends StatefulWidget {
@@ -71,7 +71,7 @@ class BankVirtualCardWidget extends StatefulWidget {
   final Color? backgroundImageOverlay;
 
   /// Asset path for the card-network logo (e.g. `'assets/visa.png'`).
-  /// Rendered as an [Image.asset] — must be registered in the host-app
+  /// Rendered as an [Image.asset]: must be registered in the host-app
   /// pubspec.yaml.
   final String? networkLogoAsset;
 
@@ -180,6 +180,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
       BoxDecoration(
         color: widget.primaryColor ?? bankTheme.primary,
         borderRadius: BorderRadius.circular(_cardRadius),
+        boxShadow: BankTokens.shadowHero,
       );
 
   BoxDecoration _buildGradientDecoration(BankThemeData bankTheme) =>
@@ -194,6 +195,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
               ],
             ),
         borderRadius: BorderRadius.circular(_cardRadius),
+        boxShadow: BankTokens.shadowHero,
       );
 
   // ---------------------------------------------------------------------------
@@ -325,12 +327,25 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
               children: [
                 // EMV chip placeholder
                 Container(
-                  width: 36,
+                  width: 38,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD4AF37).withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(4),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFFE8CE8C),
+                        Color(0xFFC9A85C),
+                        Color(0xFFB08F45),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: const Color(0x33FFFFFF),
+                      width: 0.8,
+                    ),
                   ),
+                  child: CustomPaint(painter: _ChipContactPainter()),
                 ),
                 if (widget.networkLogoAsset != null)
                   Image.asset(
@@ -554,7 +569,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   // ---------------------------------------------------------------------------
 
   /// Renders the masked card number as four groups for legibility.
-  /// Input can be `'•••• 4242'` or `'4242'` — we normalise to
+  /// Input can be `'•••• 4242'` or `'4242'`: we normalise to
   /// `'•••• •••• •••• 4242'`.
   String _formatMaskedNumber(String masked) {
     final clean = masked.replaceAll(RegExp(r'[\s•]+'), '');
@@ -943,4 +958,32 @@ class _MetallicSweepCardState extends State<_MetallicSweepCard>
       child: widget.child,
     );
   }
+}
+
+/// Faint EMV contact lines that make the chip read as metal, not paint.
+class _ChipContactPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0x2E6B5320)
+      ..strokeWidth = 0.9;
+    final thirdW = size.width / 3;
+    final thirdH = size.height / 3;
+    canvas
+      ..drawLine(Offset(thirdW, 0), Offset(thirdW, size.height), paint)
+      ..drawLine(
+        Offset(thirdW * 2, 0),
+        Offset(thirdW * 2, size.height),
+        paint,
+      )
+      ..drawLine(Offset(0, thirdH), Offset(size.width, thirdH), paint)
+      ..drawLine(
+        Offset(0, thirdH * 2),
+        Offset(size.width, thirdH * 2),
+        paint,
+      );
+  }
+
+  @override
+  bool shouldRepaint(_ChipContactPainter oldDelegate) => false;
 }

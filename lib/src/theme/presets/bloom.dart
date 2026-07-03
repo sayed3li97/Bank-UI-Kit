@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import '../bank_theme_data.dart';
 import '../tokens.dart';
 
-/// The **Bloom** preset — a warm, consumer-friendly banking aesthetic.
+/// The **Bloom** preset: a warm, consumer-friendly banking aesthetic.
 ///
 /// Characteristics:
 /// - Coral primary (#FF6B6B light / #FF8585 dark) with navy accent
 /// - Warm cream / deep teal neutrals
 /// - Fully-pill buttons and chips for a friendly, approachable feel
 /// - Generous 20 px card radius and 28 px sheet radius
-/// - No accent gradient, no glow — warmth is conveyed through colour alone
+/// - No accent gradient, no glow: warmth is conveyed through colour alone
 /// - `elevationLow` carries a subtle warm-tinted shadow (modelled as a very
 ///   low opacity value; the host app applies it via [BoxShadow.blurRadius])
 class BankBloomTheme {
@@ -30,7 +30,7 @@ class BankBloomTheme {
         onSurfaceVariant: Color(0xFF6B7280),
         background: Color(0xFFFFF9F5),
         onBackground: Color(0xFF1A2030),
-        outline: Color(0xFFF0E8E4),
+        outline: Color(0xFFF6EFEA),
         positiveBalance: BankTokens.positiveBalance,
         negativeBalance: BankTokens.negativeBalance,
         pending: BankTokens.pending,
@@ -66,7 +66,7 @@ class BankBloomTheme {
         onSurfaceVariant: Color(0xFFB0B8C4),
         background: Color(0xFF1C2A3A),
         onBackground: Color(0xFFF5F0EC),
-        outline: Color(0xFF2C3A4A),
+        outline: Color(0xFF283646),
         positiveBalance: BankTokens.positiveBalance,
         negativeBalance: BankTokens.negativeBalance,
         pending: BankTokens.pending,

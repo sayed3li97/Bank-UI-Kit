@@ -45,7 +45,7 @@ class BankTokens {
   static const Color creditUsed = Color(0xFFFF9F0A);
 
   // ---------------------------------------------------------------------------
-  // Spacing — 4 pt grid
+  // Spacing: 4 pt grid
   // ---------------------------------------------------------------------------
 
   static const double space1 = 4;
@@ -72,7 +72,7 @@ class BankTokens {
   static const double radiusFull = 999;
 
   // ---------------------------------------------------------------------------
-  // Motion — duration
+  // Motion: duration
   // ---------------------------------------------------------------------------
 
   static const Duration durationFast = Duration(milliseconds: 150);
@@ -81,7 +81,7 @@ class BankTokens {
   static const Duration durationXSlow = Duration(milliseconds: 600);
 
   // ---------------------------------------------------------------------------
-  // Motion — easing curves
+  // Motion: easing curves
   // ---------------------------------------------------------------------------
 
   /// General-purpose easing for UI transitions.
@@ -94,7 +94,7 @@ class BankTokens {
   static const Curve curveDecelerate = Curves.decelerate;
 
   // ---------------------------------------------------------------------------
-  // Typography scale — system fonts
+  // Typography scale: system fonts
   //
   // Font files are registered in pubspec.yaml but may be stubs in CI.
   // All styles intentionally omit `fontFamily` so the system font is used,
@@ -122,11 +122,13 @@ class BankTokens {
   static const TextStyle headlineMedium = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w600,
+    letterSpacing: -0.3,
   );
 
   static const TextStyle headlineSmall = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w600,
+    letterSpacing: -0.2,
   );
 
   static const TextStyle bodyLarge = TextStyle(
@@ -160,32 +162,35 @@ class BankTokens {
   );
 
   static const TextStyle labelSmall = TextStyle(
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: FontWeight.w600,
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   );
 
-  /// Hero monetary numeral — large balance displays.
+  /// Hero monetary numeral: large balance displays.
   static const TextStyle numeralHero = TextStyle(
-    fontSize: 48,
-    fontWeight: FontWeight.w700,
+    fontSize: 44,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -1.2,
+    height: 1.1,
     fontFeatures: [
       FontFeature.tabularFigures(),
       FontFeature.liningFigures(),
     ],
   );
 
-  /// Large monetary numeral — card balances and summary rows.
+  /// Large monetary numeral: card balances and summary rows.
   static const TextStyle numeralLarge = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w600,
+    letterSpacing: -0.4,
     fontFeatures: [
       FontFeature.tabularFigures(),
       FontFeature.liningFigures(),
     ],
   );
 
-  /// Medium monetary numeral — list items and sub-totals.
+  /// Medium monetary numeral: list items and sub-totals.
   static const TextStyle numeralMedium = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w500,
@@ -195,7 +200,7 @@ class BankTokens {
     ],
   );
 
-  /// Small monetary numeral — dense tables and secondary figures.
+  /// Small monetary numeral: dense tables and secondary figures.
   static const TextStyle numeralSmall = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w500,
@@ -204,6 +209,51 @@ class BankTokens {
       FontFeature.liningFigures(),
     ],
   );
+
+  // ---------------------------------------------------------------------------
+  // Elevation shadows
+  //
+  // Premium surfaces take depth from soft, layered, low-alpha shadows -
+  // never from visible hairline borders. All shadows are tinted with a
+  // blue-grey ink (0x101828) so they read as ambient light, not dirt.
+  // ---------------------------------------------------------------------------
+
+  /// Resting card shadow: barely-there ambient + soft key light.
+  static const List<BoxShadow> shadowCard = [
+    BoxShadow(
+      color: Color(0x0A101828),
+      blurRadius: 2,
+      offset: Offset(0, 1),
+    ),
+    BoxShadow(
+      color: Color(0x0F101828),
+      blurRadius: 24,
+      offset: Offset(0, 8),
+    ),
+  ];
+
+  /// Hovering / floating elements: sheets, pickers, popovers.
+  static const List<BoxShadow> shadowFloating = [
+    BoxShadow(
+      color: Color(0x14101828),
+      blurRadius: 32,
+      offset: Offset(0, 12),
+    ),
+    BoxShadow(
+      color: Color(0x0A101828),
+      blurRadius: 4,
+      offset: Offset(0, 2),
+    ),
+  ];
+
+  /// Hero surfaces (virtual cards, feature banners).
+  static const List<BoxShadow> shadowHero = [
+    BoxShadow(
+      color: Color(0x29101828),
+      blurRadius: 40,
+      offset: Offset(0, 16),
+    ),
+  ];
 
   // ---------------------------------------------------------------------------
   // Accessibility
