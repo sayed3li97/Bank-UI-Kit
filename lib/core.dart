@@ -59,6 +59,8 @@ export 'src/controllers/bank_income_sorter_controller.dart';
 // Headless controllers
 export 'src/controllers/bank_kyc_flow_controller.dart';
 export 'src/controllers/bank_transfer_flow_controller.dart';
+// Deposits
+export 'src/deposits/bank_cheque_capture_overlay.dart';
 // Documents & statements
 export 'src/documents/bank_statement_list_tile.dart';
 export 'src/insights/bank_budget_gauge_widget.dart';
