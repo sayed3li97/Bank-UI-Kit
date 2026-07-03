@@ -103,6 +103,7 @@ export 'src/states/bank_success_animation.dart';
 export 'src/states/bank_toast_banner.dart';
 // Support & servicing
 export 'src/support/bank_help_faq_list.dart';
+export 'src/support/bank_secure_message_thread.dart';
 export 'src/theme/bank_theme_data.dart';
 export 'src/theme/extensions.dart';
 export 'src/theme/numeral_style.dart';
