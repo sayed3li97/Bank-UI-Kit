@@ -23,7 +23,12 @@ enum GalleryCategory {
   social('Social', Icons.people),
   investing('Investing', Icons.trending_up),
   credit('Credit', Icons.credit_score),
-  notifications('Notifications', Icons.notifications);
+  notifications('Notifications', Icons.notifications),
+  forms('Common & Forms', Icons.tune),
+  payments('Payments & Billing', Icons.request_page),
+  business('Business Banking', Icons.business_center),
+  documents('Documents & Deposits', Icons.description),
+  support('Support & Servicing', Icons.support_agent);
 
   const GalleryCategory(this.label, this.icon);
   final String label;
@@ -1933,6 +1938,810 @@ final List<GalleryEntry> kGalleryEntries = [
         onMarkAllRead: () {},
       );
     },
+  ),
+
+  // ── Parity release: common & forms ───────────────────────────────────────
+  GalleryEntry(
+    name: 'BankTextField',
+    description: 'Themed text input with label, helper, and error states.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => const Padding(
+      padding: EdgeInsets.all(16),
+      child: BankTextField(
+        label: 'Full name',
+        hint: 'Enter your full name',
+        helper: 'As printed on your ID',
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankAmountInputField',
+    description: 'Format-as-you-type money entry with currency precision.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankAmountInputField(
+        currencyCode: 'GBP',
+        initialAmount: Decimal.parse('1250.50'),
+        label: 'Amount',
+        onChanged: (_) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankMaskedInputField',
+    description: 'IBAN / PAN / sort-code masking with checksum validation.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankMaskedInputField(
+        mask: BankInputMask.iban(),
+        label: 'IBAN',
+        initialValue: 'GB29NWBK60161331926819',
+        onChanged: (_) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPhoneInputField',
+    description: 'E.164 phone entry with in-field dial-code selector.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankPhoneInputField(
+        label: 'Mobile number',
+        initialNumber: '5551234567',
+        onChanged: (_, __) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCountryPicker',
+    description: 'Searchable 236-country selector field and sheet.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankCountryPicker(
+        label: 'Country of residence',
+        selected: BankCountry.all.firstWhere((c) => c.isoCode == 'SA'),
+        showDialCode: true,
+        onSelected: (_) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPeriodSelector',
+    description: 'Prev/next month, quarter, or year navigator.',
+    category: GalleryCategory.forms,
+    params: const [],
+    builder: (ctx, p) => BankPeriodSelector(
+      period: DateTime(2026, 7),
+      unit: BankPeriodUnit.month,
+      onChanged: (_) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankEmblem',
+    description: 'Deterministic initials / image / icon avatar with badges.',
+    category: GalleryCategory.forms,
+    params: const [],
+    builder: (ctx, p) => const Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        BankEmblem(initialsFrom: 'Acme Trading', badgeCount: 3),
+        SizedBox(width: 16),
+        BankEmblem(initialsFrom: 'Sara Ahmed'),
+        SizedBox(width: 16),
+        BankEmblem(icon: Icons.bolt_outlined),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankSummaryStack',
+    description: 'Label/value review rows with money and copyable values.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankSummaryStack(
+        items: [
+          const BankSummaryItem(label: 'From', value: 'Everyday Checking'),
+          const BankSummaryItem(label: 'To', value: 'Acme Trading LLC'),
+          BankSummaryItem(
+            label: 'Amount',
+            money: Money.fromDouble(1250.50, 'GBP'),
+            emphasized: true,
+          ),
+          const BankSummaryItem(
+            label: 'Reference',
+            value: 'INV-2044',
+            copyable: true,
+          ),
+        ],
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankStatusTracker',
+    description: 'Vertical milestone tracker for async processes.',
+    category: GalleryCategory.forms,
+    params: const [],
+    builder: (ctx, p) => BankStatusTracker(
+      stages: [
+        BankTrackerStage(
+          title: 'Submitted',
+          timestamp: DateTime(2026, 7, 2, 9, 15),
+        ),
+        const BankTrackerStage(
+          title: 'Under review',
+          subtitle: 'Usually takes 1-2 days',
+        ),
+        const BankTrackerStage(title: 'Resolved'),
+      ],
+      currentIndex: 1,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankQuickActionsGrid',
+    description: 'Dashboard shortcut tiles with badges and reordering.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankQuickActionsGrid(
+        actions: [
+          BankQuickAction(
+            id: 'send',
+            label: 'Send',
+            icon: Icons.send_outlined,
+            onTap: () {},
+          ),
+          BankQuickAction(
+            id: 'request',
+            label: 'Request',
+            icon: Icons.download_outlined,
+            onTap: () {},
+          ),
+          BankQuickAction(
+            id: 'scan',
+            label: 'Scan',
+            icon: Icons.qr_code_scanner_outlined,
+            onTap: () {},
+            badgeText: 'New',
+          ),
+          BankQuickAction(
+            id: 'more',
+            label: 'More',
+            icon: Icons.grid_view_outlined,
+            onTap: () {},
+          ),
+        ],
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankMoneyProtectionBanner',
+    description: 'Deposit-guarantee compliance notice.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => const Padding(
+      padding: EdgeInsets.all(16),
+      child: BankMoneyProtectionBanner(schemeName: 'FSCS'),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankAppBar',
+    description: 'Themed app bar with optional subtitle.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => const Align(
+      alignment: Alignment.topCenter,
+      child: BankAppBar(
+        title: 'Accounts',
+        subtitle: 'Sara Ahmed',
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankBottomNavBar',
+    description: 'Themed bottom navigation with animated pill highlight.',
+    category: GalleryCategory.forms,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Align(
+      alignment: Alignment.bottomCenter,
+      child: BankBottomNavBar(
+        currentIndex: 0,
+        onTap: (_) {},
+        items: const [
+          BankNavItem(icon: Icons.home_outlined, label: 'Home'),
+          BankNavItem(icon: Icons.credit_card_outlined, label: 'Cards'),
+          BankNavItem(icon: Icons.swap_horiz_rounded, label: 'Transfers'),
+          BankNavItem(icon: Icons.person_outline_rounded, label: 'Profile'),
+        ],
+      ),
+    ),
+  ),
+
+  // ── Parity release: accounts, auth, cards ────────────────────────────────
+  GalleryEntry(
+    name: 'BankProductItemTile',
+    description: 'Per-product-type summary row for pickers and dashboards.',
+    category: GalleryCategory.accounts,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Column(
+      children: [
+        BankProductItemTile(account: _account(), onTap: () {}),
+        BankProductItemTile(account: _savingsAccount(), selected: true),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankAccountNumberText',
+    description: 'Masked, grouped IBAN / PAN display with copy affordance.',
+    category: GalleryCategory.accounts,
+    params: const [],
+    builder: (ctx, p) => const BankAccountNumberText(
+      value: 'GB29NWBK60161331926819',
+      kind: BankAccountNumberKind.iban,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankOtpInput',
+    description: 'Segmented one-time-code entry with resend countdown.',
+    category: GalleryCategory.auth,
+    params: const [],
+    builder: (ctx, p) => BankOtpInput(
+      onCompleted: (_) {},
+      resendCooldown: const Duration(seconds: 30),
+      onResend: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankScaApprovalSheet',
+    description: 'PSD2 dynamic-linking payment approval with PIN entry.',
+    category: GalleryCategory.auth,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      child: BankScaApprovalSheet(
+        amount: Money.fromDouble(1250, 'GBP'),
+        payeeName: 'Acme Trading LLC',
+        payeeAccountMasked: 'GB29 •••• 6819',
+        reference: 'INV-2044',
+        methods: const {BankScaMethod.pin},
+        onApprove: (_, __) async => true,
+        onReject: () {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankDeviceSessionTile',
+    description: 'Trusted-device row with async sign-out.',
+    category: GalleryCategory.auth,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Column(
+      children: [
+        BankDeviceSessionTile(
+          session: BankDeviceSession(
+            id: 'd1',
+            deviceName: 'iPhone 16 Pro',
+            kind: BankDeviceKind.phone,
+            lastActiveAt: DateTime(2026, 7, 3, 8, 30),
+            location: 'Riyadh',
+            isCurrentDevice: true,
+            isTrusted: true,
+          ),
+        ),
+        BankDeviceSessionTile(
+          session: BankDeviceSession(
+            id: 'd2',
+            deviceName: 'MacBook Air',
+            kind: BankDeviceKind.desktop,
+            lastActiveAt: DateTime(2026, 7, 1, 19, 5),
+            location: 'Jeddah',
+          ),
+          onRevoke: () async => true,
+        ),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankWalletProvisioningButton',
+    description: 'Apple / Google add-to-wallet button states.',
+    category: GalleryCategory.cards,
+    params: const [],
+    builder: (ctx, p) => Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        BankWalletProvisioningButton(
+          target: BankWalletTarget.appleWallet,
+          state: BankWalletProvisionState.notAdded,
+          onPressed: () {},
+        ),
+        const SizedBox(height: 12),
+        BankWalletProvisioningButton(
+          target: BankWalletTarget.googleWallet,
+          state: BankWalletProvisionState.added,
+          onPressed: () {},
+        ),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankTravelNoticeForm',
+    description: 'Travel notice composer with cards, destinations, dates.',
+    category: GalleryCategory.cards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: BankTravelNoticeForm(
+        cards: [_account(), _savingsAccount()],
+        initialCountryIsoCodes: const ['AE', 'GB'],
+        onSubmit: (_) async => true,
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankShariahBadge',
+    description: 'Shariah-compliance product badge.',
+    category: GalleryCategory.accounts,
+    params: const [],
+    builder: (ctx, p) => const BankShariahBadge(),
+  ),
+
+  // ── Parity release: payments & billing ───────────────────────────────────
+  GalleryEntry(
+    name: 'BankBillPayTile',
+    description: 'Saved-biller row with due urgency and inline pay.',
+    category: GalleryCategory.payments,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Column(
+      children: [
+        BankBillPayTile(
+          bill: BankBill(
+            id: 'b1',
+            billerName: 'City Power & Water',
+            amountDue: Money.fromDouble(184.20, 'GBP'),
+            dueDate: DateTime(2026, 7, 5),
+            status: BankBillStatus.dueSoon,
+            eBill: true,
+          ),
+          onPay: () {},
+        ),
+        BankBillPayTile(
+          bill: BankBill(
+            id: 'b2',
+            billerName: 'Metro Internet',
+            amountDue: Money.fromDouble(49.99, 'GBP'),
+            dueDate: DateTime(2026, 7, 18),
+            status: BankBillStatus.autopay,
+          ),
+        ),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankStandingOrderTile',
+    description: 'Recurring payment manager row with pause / skip.',
+    category: GalleryCategory.payments,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankStandingOrderTile(
+      order: BankStandingOrder(
+        id: 's1',
+        payeeName: 'Landlord — Al Noor Properties',
+        amount: Money.fromDouble(1200, 'GBP'),
+        pattern: BankRecurringPattern.monthly,
+        nextRunDate: DateTime(2026, 8, 1),
+        state: BankStandingOrderState.active,
+      ),
+      onPause: () {},
+      onSkipNext: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankTransferLimitManager',
+    description: 'Per-channel limit sliders with SCA gating.',
+    category: GalleryCategory.payments,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankTransferLimitManager(
+      channels: [
+        BankLimitChannel(
+          id: 'online',
+          label: 'Daily online transfers',
+          icon: Icons.swap_horiz_rounded,
+          current: Money.fromDouble(5000, 'GBP'),
+          max: Money.fromDouble(20000, 'GBP'),
+          used: Money.fromDouble(1800, 'GBP'),
+        ),
+        BankLimitChannel(
+          id: 'atm',
+          label: 'ATM withdrawals',
+          icon: Icons.local_atm_outlined,
+          current: Money.fromDouble(1000, 'GBP'),
+          max: Money.fromDouble(2500, 'GBP'),
+          used: Money.fromDouble(950, 'GBP'),
+        ),
+      ],
+      onChanged: (_, __) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankMyQrCard',
+    description: 'Locally-encoded receive-payment QR card.',
+    category: GalleryCategory.payments,
+    params: const [],
+    builder: (ctx, p) => BankMyQrCard(
+      payload: 'bank://pay/GB29NWBK60161331926819',
+      displayName: 'Sara Ahmed',
+      accountMasked: 'GB29 •••• 6819',
+      requestAmount: Money.fromDouble(45, 'GBP'),
+      onShare: () {},
+    ),
+  ),
+
+  // ── Parity release: business banking ─────────────────────────────────────
+  GalleryEntry(
+    name: 'BankApprovalRequestTile',
+    description: 'Maker-checker queue row with approvals progress.',
+    category: GalleryCategory.business,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankApprovalRequestTile(
+      request: BankApprovalRequest(
+        id: 'ap1',
+        title: 'Payment to Acme Ltd',
+        amount: Money.fromDouble(12500, 'GBP'),
+        requesterName: 'Dana Khalid',
+        requestedAt: DateTime(2026, 7, 3, 7, 40),
+        approvalsRequired: 3,
+        approvalsGiven: 2,
+        state: BankApprovalState.pending,
+      ),
+      onApprove: () async => true,
+      onReject: (_) async => true,
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankValueDiffRow',
+    description: 'Old-vs-new change display for approval review.',
+    category: GalleryCategory.business,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          BankValueDiffRow(
+            label: 'Daily limit',
+            oldMoney: Money.fromDouble(5000, 'GBP'),
+            newMoney: Money.fromDouble(10000, 'GBP'),
+            highlightIncrease: true,
+          ),
+          const BankValueDiffRow(
+            label: 'Account name',
+            oldValue: 'Acme Trading',
+            newValue: 'Acme Trading LLC',
+          ),
+        ],
+      ),
+    ),
+  ),
+
+  // ── Parity release: documents, insights, credit ──────────────────────────
+  GalleryEntry(
+    name: 'BankStatementListTile',
+    description: 'Statements-center row with download states.',
+    category: GalleryCategory.documents,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Column(
+      children: [
+        BankStatementListTile(
+          document: BankDocument(
+            id: 'st1',
+            title: 'June 2026 statement',
+            periodOrDate: DateTime(2026, 6, 30),
+            type: BankDocumentType.statement,
+            fileSizeBytes: 245000,
+            isNew: true,
+          ),
+          onView: () {},
+          onDownload: () {},
+        ),
+        BankStatementListTile(
+          document: BankDocument(
+            id: 'st2',
+            title: 'Annual tax certificate',
+            periodOrDate: DateTime(2026, 4, 5),
+            type: BankDocumentType.taxDocument,
+            fileSizeBytes: 98000,
+          ),
+          onView: () {},
+          onDownload: () {},
+          downloadState: BankDocumentDownloadState.done,
+        ),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCashflowChart',
+    description: 'Balance history with dashed forecast and safe-to-spend.',
+    category: GalleryCategory.insights,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => Padding(
+      padding: const EdgeInsets.all(16),
+      child: BankCashflowChart(
+        history: [
+          for (var i = 0; i < 21; i++)
+            BankBalancePoint(
+              date: DateTime(2026, 6, 10 + i),
+              balance: Money.fromDouble(
+                2400 + 420 * (i % 5) - 130.0 * (i % 3),
+                'GBP',
+              ),
+            ),
+        ],
+        forecast: [
+          for (var i = 0; i < 8; i++)
+            BankBalancePoint(
+              date: DateTime(2026, 7, 1 + i),
+              balance: Money.fromDouble(2900 - 90.0 * i, 'GBP'),
+            ),
+        ],
+        currencyCode: 'GBP',
+        safeToSpend: Money.fromDouble(2100, 'GBP'),
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankRecurringMerchantTile',
+    description: 'Detected subscription row with price-rise warning.',
+    category: GalleryCategory.insights,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankRecurringMerchantTile(
+      merchant: BankRecurringMerchant(
+        id: 'm1',
+        merchantName: 'StreamFlix',
+        amount: Money.fromDouble(15.99, 'GBP'),
+        previousAmount: Money.fromDouble(12.99, 'GBP'),
+        priceIncreased: true,
+        cadence: BankRecurringPattern.monthly,
+        nextExpectedDate: DateTime(2026, 7, 12),
+        firstSeen: DateTime(2025, 3, 12),
+        category: TransactionCategory.entertainment,
+      ),
+      onCancelHelp: () {},
+      onBlock: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankCreditScoreGauge',
+    description: 'Segmented credit-score arc with trend delta.',
+    category: GalleryCategory.credit,
+    params: const [],
+    builder: (ctx, p) => BankCreditScoreGauge(
+      score: 715,
+      previousScore: 703,
+      updatedAt: DateTime(2026, 6, 28),
+      providerLabel: 'TransUnion',
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankLoanCalculatorCard',
+    description: 'Amount / tenor sliders with live amortization preview.',
+    category: GalleryCategory.credit,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: BankLoanCalculatorCard(
+        minAmount: Money.fromDouble(1000, 'GBP'),
+        maxAmount: Money.fromDouble(25000, 'GBP'),
+        minMonths: 6,
+        maxMonths: 60,
+        annualRate: 0.049,
+        onChanged: (_, __) {},
+        onContinue: () {},
+      ),
+    ),
+  ),
+
+  // ── Parity release: notifications, onboarding, support ───────────────────
+  GalleryEntry(
+    name: 'BankAlertPreferencesPanel',
+    description: 'Per-event, per-channel notification switch matrix.',
+    category: GalleryCategory.notifications,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      child: BankAlertPreferencesPanel(
+        preferences: const [
+          BankAlertPreference(
+            type: BankNotificationType.fraud,
+            push: true,
+            email: true,
+            locked: true,
+          ),
+          BankAlertPreference(
+            type: BankNotificationType.security,
+            push: true,
+            locked: true,
+          ),
+          BankAlertPreference(
+            type: BankNotificationType.payment,
+            push: true,
+          ),
+          BankAlertPreference(
+            type: BankNotificationType.cardActivity,
+            push: true,
+            email: true,
+          ),
+          BankAlertPreference(type: BankNotificationType.marketing),
+        ],
+        onChanged: (_, __, ___) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankConsentManagementList',
+    description: 'Open-banking consent dashboard with revocation.',
+    category: GalleryCategory.onboarding,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      child: BankConsentManagementList(
+        consents: [
+          BankConsent(
+            id: 'c1',
+            granteeName: 'BudgetWise',
+            scopes: const [
+              'Account balances',
+              'Transaction history',
+              'Direct debits',
+              'Standing orders',
+            ],
+            grantedAt: DateTime(2026, 5, 12),
+            expiresAt: DateTime(2026, 8, 12),
+            state: BankConsentState.active,
+          ),
+          BankConsent(
+            id: 'c2',
+            granteeName: 'TaxHelper Pro',
+            scopes: const ['Account balances'],
+            grantedAt: DateTime(2026, 3, 2),
+            expiresAt: DateTime(2026, 7, 10),
+            state: BankConsentState.expiringSoon,
+          ),
+        ],
+        onRevoke: (_) async => true,
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankAddressForm',
+    description: 'Per-country structured address capture.',
+    category: GalleryCategory.onboarding,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: BankAddressForm(
+        defaultCountry: BankCountry.all.firstWhere((c) => c.isoCode == 'GB'),
+        onChanged: (_) {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankOnboardingCarousel',
+    description: 'First-run walkthrough with parallax and pill dots.',
+    category: GalleryCategory.onboarding,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankOnboardingCarousel(
+      pages: [
+        BankOnboardingPage(
+          title: 'Bank without borders',
+          body: 'Hold, send and exchange 30+ currencies in one place.',
+          illustration: Icon(
+            Icons.public_rounded,
+            size: 120,
+            color: Theme.of(ctx).colorScheme.primary,
+          ),
+        ),
+        const BankOnboardingPage(
+          title: 'Spend with confidence',
+          body: 'Instant notifications and card controls built in.',
+          illustration: Icon(Icons.notifications_active_outlined, size: 120),
+        ),
+      ],
+      onDone: () {},
+      onSkip: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankSecureMessageThread',
+    description: 'Secure-inbox conversation with delivery ticks.',
+    category: GalleryCategory.support,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankSecureMessageThread(
+      messages: [
+        BankMessage(
+          id: 'm1',
+          body: 'Hi, I need a stamped IBAN letter for my visa application.',
+          sentAt: DateTime(2026, 7, 2, 9, 12),
+          author: BankMessageAuthor.customer,
+          deliveryState: BankMessageDeliveryState.read,
+        ),
+        BankMessage(
+          id: 'm2',
+          body: 'Of course — I have attached it here. Anything else?',
+          sentAt: DateTime(2026, 7, 2, 9, 40),
+          author: BankMessageAuthor.bank,
+          authorName: 'Amal',
+          attachments: const [
+            BankMessageAttachment(
+              id: 'a1',
+              fileName: 'iban-letter.pdf',
+              sizeBytes: 182000,
+            ),
+          ],
+        ),
+      ],
+      onSend: (_) async => true,
+      onAttach: () {},
+      bannerText: 'Replies within 1 business day',
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankHelpFaqList',
+    description: 'Searchable FAQ accordion with helpful votes.',
+    category: GalleryCategory.support,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => SingleChildScrollView(
+      child: BankHelpFaqList(
+        items: const [
+          BankFaqItem(
+            id: 'f1',
+            question: 'How do I freeze my card?',
+            answer: 'Open the card screen and tap Freeze. The card '
+                'stops working instantly and you can unfreeze anytime.',
+          ),
+          BankFaqItem(
+            id: 'f2',
+            question: 'What are the transfer limits?',
+            answer: 'Daily limits depend on your account tier. You can '
+                'review and adjust them under Settings → Limits.',
+          ),
+        ],
+        onContactSupport: () {},
+      ),
+    ),
   ),
 ];
 

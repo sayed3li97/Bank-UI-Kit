@@ -217,6 +217,50 @@ if (!screensOnly) {
     { name: 'BankFlexEligibleBadge',      fullScreen: false },
     // Notifications
     { name: 'BankInAppNotificationCenter', fullScreen: true },
+    // Parity release: common & forms
+    { name: 'BankTextField',              fullScreen: true  },
+    { name: 'BankAmountInputField',       fullScreen: true  },
+    { name: 'BankMaskedInputField',       fullScreen: true  },
+    { name: 'BankPhoneInputField',        fullScreen: true  },
+    { name: 'BankCountryPicker',          fullScreen: true  },
+    { name: 'BankPeriodSelector',         fullScreen: false },
+    { name: 'BankEmblem',                 fullScreen: false },
+    { name: 'BankSummaryStack',           fullScreen: true  },
+    { name: 'BankStatusTracker',          fullScreen: false },
+    { name: 'BankQuickActionsGrid',       fullScreen: true  },
+    { name: 'BankMoneyProtectionBanner',  fullScreen: true  },
+    { name: 'BankAppBar',                 fullScreen: true  },
+    { name: 'BankBottomNavBar',           fullScreen: true  },
+    // Parity release: accounts, auth, cards
+    { name: 'BankProductItemTile',        fullScreen: true  },
+    { name: 'BankAccountNumberText',      fullScreen: false },
+    { name: 'BankOtpInput',               fullScreen: false },
+    { name: 'BankScaApprovalSheet',       fullScreen: true  },
+    { name: 'BankDeviceSessionTile',      fullScreen: true  },
+    { name: 'BankWalletProvisioningButton', fullScreen: false },
+    { name: 'BankTravelNoticeForm',       fullScreen: true  },
+    { name: 'BankShariahBadge',           fullScreen: false },
+    // Parity release: payments & billing
+    { name: 'BankBillPayTile',            fullScreen: true  },
+    { name: 'BankStandingOrderTile',      fullScreen: true  },
+    { name: 'BankTransferLimitManager',   fullScreen: true  },
+    { name: 'BankMyQrCard',               fullScreen: false },
+    // Parity release: business banking
+    { name: 'BankApprovalRequestTile',    fullScreen: true  },
+    { name: 'BankValueDiffRow',           fullScreen: true  },
+    // Parity release: documents, insights, credit
+    { name: 'BankStatementListTile',      fullScreen: true  },
+    { name: 'BankCashflowChart',          fullScreen: true  },
+    { name: 'BankRecurringMerchantTile',  fullScreen: true  },
+    { name: 'BankCreditScoreGauge',       fullScreen: false },
+    { name: 'BankLoanCalculatorCard',     fullScreen: true  },
+    // Parity release: notifications, onboarding, support
+    { name: 'BankAlertPreferencesPanel',  fullScreen: true  },
+    { name: 'BankConsentManagementList',  fullScreen: true  },
+    { name: 'BankAddressForm',            fullScreen: true  },
+    { name: 'BankOnboardingCarousel',     fullScreen: true  },
+    { name: 'BankSecureMessageThread',    fullScreen: true  },
+    { name: 'BankHelpFaqList',            fullScreen: true  },
   ];
 
   console.log(`\n── Components (${components.length}) ────────────────────────────────────────`);
