@@ -10,6 +10,7 @@ library;
 
 export 'src/credit/bank_credit_limit_gauge.dart';
 export 'src/credit/bank_credit_score_gauge.dart';
+export 'src/credit/bank_loan_calculator_card.dart';
 export 'src/credit/bank_flex_eligible_badge.dart';
 export 'src/credit/bank_installment_plan_selector.dart';
 export 'src/credit/bank_repayment_schedule_view.dart';
