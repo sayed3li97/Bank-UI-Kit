@@ -118,13 +118,17 @@ export 'src/rewards/bank_points_hub_card.dart';
 // Scope & strings
 export 'src/scope/bank_ui_scope.dart';
 export 'src/scope/bank_ui_strings.dart';
+export 'src/states/bank_app_gate_screen.dart';
+export 'src/states/bank_connectivity_banner.dart';
 export 'src/states/bank_empty_state_view.dart';
 export 'src/states/bank_error_state_view.dart';
 export 'src/states/bank_fraud_alert_banner.dart';
+export 'src/states/bank_service_status_list.dart';
 // States & feedback
 export 'src/states/bank_skeleton_loader.dart';
 export 'src/states/bank_success_animation.dart';
 export 'src/states/bank_toast_banner.dart';
+export 'src/states/bank_update_prompt_sheet.dart';
 // Support & servicing
 export 'src/support/bank_dispute_wizard_sheet.dart';
 export 'src/support/bank_help_faq_list.dart';

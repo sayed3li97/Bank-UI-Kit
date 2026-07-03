@@ -3312,6 +3312,146 @@ final List<GalleryEntry> kGalleryEntries = [
       onLimits: () {},
     ),
   ),
+  // ── APP GATES & DEGRADED STATES ──────────────────────────────────────────
+  GalleryEntry(
+    name: 'BankAppGateScreen',
+    description: 'Full-screen gate: maintenance, blocks, force update.',
+    category: GalleryCategory.states,
+    isFullScreen: true,
+    params: const [
+      GalleryParam(
+        name: 'reason',
+        label: 'Gate reason',
+        type: ParamType.enumType,
+        defaultValue: 'maintenance',
+        enumValues: [
+          'maintenance',
+          'offline',
+          'forceUpdate',
+          'rootedDevice',
+          'vpnDetected',
+          'emulatorDetected',
+          'tamperDetected',
+          'geoRestricted',
+          'clockSkew',
+          'developerMode',
+          'queueFull',
+        ],
+      ),
+    ],
+    builder: (ctx, p) {
+      final reason = BankAppGateReason.values
+          .firstWhere((e) => e.name == (p['reason'] as String));
+      return BankAppGateScreen(
+        reason: reason,
+        resumesAt: reason == BankAppGateReason.maintenance
+            ? DateTime(2026, 7, 4, 2, 30)
+            : null,
+        clock: () => DateTime(2026, 7, 4, 1, 12),
+        onPrimaryAction: () {},
+        referenceCode: reason == BankAppGateReason.rootedDevice ||
+                reason == BankAppGateReason.vpnDetected ||
+                reason == BankAppGateReason.tamperDetected
+            ? 'RC-7F2K-401'
+            : null,
+        supportPhoneLabel: '+973 1758 3300',
+        onContactSupport: () {},
+        appVersion: '4.13.0',
+        queuePosition: reason == BankAppGateReason.queueFull ? 1240 : null,
+        queueInitialPosition:
+            reason == BankAppGateReason.queueFull ? 5000 : null,
+        estimatedWait: reason == BankAppGateReason.queueFull
+            ? const Duration(minutes: 4)
+            : null,
+        stillWorking: reason == BankAppGateReason.maintenance
+            ? const ['Card payments', 'ATM withdrawals', 'Standing orders']
+            : const [],
+      );
+    },
+  ),
+  GalleryEntry(
+    name: 'BankConnectivityBanner',
+    description: 'Offline and degraded-service banner with retry.',
+    category: GalleryCategory.states,
+    isFullScreen: true,
+    params: const [
+      GalleryParam(
+        name: 'status',
+        label: 'Status',
+        type: ParamType.enumType,
+        defaultValue: 'deviceOffline',
+        enumValues: ['deviceOffline', 'serviceDegraded', 'reconnected'],
+      ),
+    ],
+    builder: (ctx, p) => Align(
+      alignment: Alignment.topCenter,
+      child: BankConnectivityBanner(
+        status: BankConnectivityStatus.values
+            .firstWhere((e) => e.name == (p['status'] as String)),
+        lastSyncedAt: DateTime(2026, 7, 4, 0, 58),
+        nextRetryAt: DateTime(2026, 7, 4, 1, 12, 45),
+        clock: () => DateTime(2026, 7, 4, 1, 12, 30),
+        onRetry: () {},
+        onViewStatus: () {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankServiceStatusList',
+    description: 'Per-service health with incident notes.',
+    category: GalleryCategory.states,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankServiceStatusList(
+      services: [
+        const BankServiceStatusEntry(
+          name: 'Cards & payments',
+          health: BankServiceHealth.operational,
+          icon: Icons.credit_card_outlined,
+        ),
+        BankServiceStatusEntry(
+          name: 'Instant transfers',
+          health: BankServiceHealth.degraded,
+          note: 'Transfers may take up to 30 minutes.',
+          updatedAt: DateTime(2026, 7, 4, 0, 40),
+          icon: Icons.swap_horiz_outlined,
+        ),
+        const BankServiceStatusEntry(
+          name: 'International payments',
+          health: BankServiceHealth.maintenance,
+          note: 'Scheduled work until 02:30.',
+          icon: Icons.public_outlined,
+        ),
+        const BankServiceStatusEntry(
+          name: 'Sign-in & security',
+          health: BankServiceHealth.operational,
+          icon: Icons.lock_outline,
+        ),
+      ],
+      lastUpdatedAt: DateTime(2026, 7, 4, 1, 5),
+      clock: () => DateTime(2026, 7, 4, 1, 12),
+      onViewStatusPage: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankUpdatePromptSheet',
+    description: 'Soft update prompt with release highlights.',
+    category: GalleryCategory.states,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankUpdatePromptSheet(
+      onUpdate: () {},
+      onNotNow: () {},
+      availableVersion: '4.14.0',
+      installedVersion: '4.13.0',
+      highlights: const [
+        'Faster sign-in with passkeys',
+        'Redesigned spending insights',
+        'Fixes for scheduled transfers',
+      ],
+      unsupportedAfter: DateTime(2026, 8, 31),
+    ),
+  ),
   GalleryEntry(
     name: 'BankDisposableCardTile',
     description: 'Single-use virtual card with auto-regeneration.',
