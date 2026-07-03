@@ -12,6 +12,7 @@ import '../../bank_ui_kit.dart';
 import '../../core.dart';
 import 'onboarding.dart';
 
+export 'bank_address_form.dart';
 export 'bank_async_verification_state.dart';
 export 'bank_consent_management_list.dart';
 export 'bank_consent_modal.dart';

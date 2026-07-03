@@ -76,6 +76,7 @@ export 'src/models/transaction.dart';
 // Notifications
 export 'src/notifications/bank_alert_preferences_panel.dart';
 export 'src/notifications/bank_in_app_notification_center.dart';
+export 'src/onboarding/bank_address_form.dart';
 export 'src/onboarding/bank_async_verification_state.dart';
 export 'src/onboarding/bank_consent_management_list.dart';
 export 'src/onboarding/bank_consent_modal.dart';
