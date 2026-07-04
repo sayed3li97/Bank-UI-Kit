@@ -3,10 +3,10 @@
 This document states what `bank_ui_kit` v0.1.0 does today for localization,
 right-to-left layout, numerals, currency symbology, and calendars, and the
 dated plan for what it does not do yet. It follows the same rule as
-`docs/enterprise/accessibility-conformance.md`: every figure below is
+`doc/enterprise/accessibility-conformance.md`: every figure below is
 measured against the source in this repository, and where the kit has not
 reached a stated target, this document says so and gives the committed
-milestone from `docs/enterprise/versioning-and-releases.md`.
+milestone from `doc/enterprise/versioning-and-releases.md`.
 
 ## String inventory
 
@@ -65,7 +65,7 @@ Committed direction, at v0.2.0 alongside the externalization:
   strings, so existing overrides keep working.
 - String-freeze process for vendor round trips: strings freeze at each
   minor-release code cut (the dated milestones in
-  `docs/enterprise/versioning-and-releases.md`); the ARB diff since the
+  `doc/enterprise/versioning-and-releases.md`); the ARB diff since the
   previous tag is the vendor handoff; translations land before tag; any
   post-freeze string change moves to the next release. Key renames follow
   the same deprecation grace window as API renames.
@@ -181,11 +181,11 @@ What verification exists today, stated honestly: RTL review is manual,
 through the screenshot harness's `dir=rtl` query parameter
 (`example/lib/screenshot_harness.dart`) with the bundled NotoSansArabic
 fallback. The 6 files under `test/` (41 tests) pump LTR only, the
-checked-in `docs/screenshots/` set contains no RTL captures, and
+checked-in `doc/screenshots/` set contains no RTL captures, and
 `tools/screenshots.mjs` does not yet drive `dir=rtl`. There are no golden
 tests in the repository yet; `alchemist ^0.10.0` is already in
 `pubspec.yaml` dev dependencies for this purpose. The committed evidence
 package lands with the v0.3.0 golden baseline (2026-10-31): an RTL golden
 matrix per preset for the money-rendering and form widgets, RTL variants in
-the Playwright capture matrix committed under `docs/screenshots/`, and an
+the Playwright capture matrix committed under `doc/screenshots/`, and an
 `ar` pseudo-locale smoke pass over the externalized `BankUiStrings`.

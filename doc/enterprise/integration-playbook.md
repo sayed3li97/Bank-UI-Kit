@@ -4,7 +4,7 @@ This document specifies how a bank composes `bank_ui_kit` 0.1.0 into a
 production app: where the kit's responsibility ends, where the host shell
 begins, and the seams (scope, callbacks, controllers) that join them. Every
 statement traces to source under `lib/` or a sibling document in
-`docs/enterprise/`. Where the kit does not yet do something, this file
+`doc/enterprise/`. Where the kit does not yet do something, this file
 says so and names the committed direction.
 
 ## Reference architecture
@@ -31,7 +31,7 @@ mutate via `BankUiScope.controllerOf(context)`; only scope dependents rebuild.
 ## Auth and session management
 
 The kit ships the display side of the session lifecycle; authority for every
-decision stays server-side, per `docs/enterprise/compliance-matrix.md`.
+decision stays server-side, per `doc/enterprise/compliance-matrix.md`.
 
 - `BankSessionTimeoutDialog` (`lib/src/auth/bank_session_timeout_dialog.dart`)
   counts down from `remainingTime` and fires `onLogout` at zero; the host
@@ -58,7 +58,7 @@ instantiable through the six entry points (`bank_ui_kit.dart`, `core.dart`,
 `saving.dart`, `social.dart`, `investing.dart`, `credit.dart`), so
 tree-shaking removes what a deployment never composes. Committed direction:
 journey controllers gain step-skip configuration as the top-10 controller
-set lands through v0.5.0 per `docs/enterprise/versioning-and-releases.md`;
+set lands through v0.5.0 per `doc/enterprise/versioning-and-releases.md`;
 that is where entitlement-driven flow variation belongs. A client-side
 "hide if not entitled" flag will not be added; concealment without server
 enforcement is not access control.
@@ -98,7 +98,7 @@ offers a close affordance. `BankAppGateScreen.offline` is the full-screen
 gate with a retry action. `BankSkeletonLoader` (self-contained shimmer, no
 third-party package), `BankEmptyStateView`, `BankErrorStateView`, and
 `BankServiceStatusList` cover load, empty, failure, and status surfaces.
-Persisted drafts are a host duty; `docs/banking-journeys.md` states the
+Persisted drafts are a host duty; `doc/banking-journeys.md` states the
 resume-from-step pattern the controllers' input setters support.
 
 ## Deep linking and navigation conventions
@@ -142,7 +142,7 @@ Dart-side lifecycle observer that covers content with a sigma-12 blur and
 scrim (or a full placeholder) on `AppLifecycleState.inactive` or `.paused`.
 It does not block screenshots, recording, or the OS snapshot. The kit sets
 no window flags and ships no platform channels; none are planned
-(`docs/enterprise/compliance-matrix.md`). The host applies the controls:
+(`doc/enterprise/compliance-matrix.md`). The host applies the controls:
 
 Android, in `MainActivity.onCreate`:
 
@@ -192,7 +192,7 @@ per `.github/workflows/ci.yml`. Committed methodology: an
 frame-timing summaries, reporting average and worst-case build and raster
 times per screen. The low-end reference device is an Android Go class
 handset (2 GB RAM, Cortex-A53); GCC and South Asian deployments profiled
-in `docs/research/top-20-banking-apps.md` skew toward that tier. Harness
+in `doc/research/top-20-banking-apps.md` skew toward that tier. Harness
 and first numbers ride the v0.3.0 milestone (2026-10-31) with the
 golden-test baseline; until they exist, this document publishes none.
 

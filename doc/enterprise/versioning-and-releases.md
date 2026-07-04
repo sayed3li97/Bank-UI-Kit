@@ -123,7 +123,7 @@ following hold, and not before:
    requiring a human review distinct from the author, and pub.dev
    publication under a verified publisher with two uploaders.
 4. Every exported symbol has dartdoc and an entry in
-   `docs/component-reference.md`.
+   `doc/component-reference.md`.
 
 After 1.0, the exported API changes only through the deprecation policy, and
 breaking changes require a major release.
@@ -131,7 +131,7 @@ breaking changes require a major release.
 ## 12-month roadmap: July 2026 to June 2027
 
 The top-10 journeys are the first ten entries of
-`docs/banking-journeys.md`, in its order. Two controllers exist today;
+`doc/banking-journeys.md`, in its order. Two controllers exist today;
 the remaining eight names below are planned and follow the shipped naming
 pattern. Each controller lands with the kit widgets it drives already in
 place (for example `BankOtpInput`, `BankPinKeypad`, and
@@ -139,7 +139,7 @@ place (for example `BankOtpInput`, `BankPinKeypad`, and
 `BankBeneficiaryPicker` for transfers, `BankBillPayTile` for bills,
 `BankMyQrCard` for QR receive).
 
-| # | Journey (docs/banking-journeys.md) | Controller | Status |
+| # | Journey (doc/banking-journeys.md) | Controller | Status |
 |---|-----------------------------------|------------|--------|
 | 1 | Onboarding + KYC | `BankKycFlowController` | Shipped, 0.1.0 |
 | 2 | Login / re-auth | `BankAuthFlowController` | Planned, v0.2.0 |

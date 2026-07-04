@@ -150,13 +150,13 @@ functional bugs, because they render or route confidential data.
   to the host app, and a dedicated guide section below covers it.
 
 Integration guidance for all of the above lives in the Auth & Security
-section of `docs/component-reference.md`, with end-to-end flows (security
+section of `doc/component-reference.md`, with end-to-end flows (security
 center, device management, step-up authentication) in
-`docs/banking-journeys.md`. A consolidated security integration guide,
-`docs/security-integration.md`, covering FLAG_SECURE wiring, clipboard
+`doc/banking-journeys.md`. A consolidated security integration guide,
+`doc/security-integration.md`, covering FLAG_SECURE wiring, clipboard
 expiry, session timeout, and PIN-flow backend contracts, is committed for
 the 1.0.0 documentation set.
 
 Out of scope for this policy: the `example/` app, the screenshot tooling in
-`tools/`, and the documentation build. Report defects there as regular
+`tool/`, and the documentation build. Report defects there as regular
 issues on the tracker.

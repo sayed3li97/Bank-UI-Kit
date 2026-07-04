@@ -3,7 +3,7 @@
 This document states what `bank_ui_kit` v0.1.0 conforms to under WCAG 2.1
 Level AA and EN 301 549, how that conformance is measured, where it falls
 short today, and the dated plan to close each gap. It follows the same rule
-as `docs/enterprise/versioning-and-releases.md`: where the kit has not yet
+as `doc/enterprise/versioning-and-releases.md`: where the kit has not yet
 reached a stated target, this document says so and gives the committed
 direction, not an aspiration dressed as fact.
 
@@ -96,13 +96,13 @@ fails the build:
 3. Text-scale goldens (v0.3.0): golden baselines at `TextScaler` 1.0, 1.3,
    1.5, and 2.0 using the `alchemist ^0.10.0` dev dependency already in
    `pubspec.yaml`, on the same v0.3.0 golden-baseline milestone dated
-   2026-10-31 in `docs/enterprise/versioning-and-releases.md`. Components
+   2026-10-31 in `doc/enterprise/versioning-and-releases.md`. Components
    that clip or overflow at 2.0 fail the build.
 
 ## Known gaps and remediation dates
 
 Dates align with the release milestones in
-`docs/enterprise/versioning-and-releases.md`. A date that slips is re-dated
+`doc/enterprise/versioning-and-releases.md`. A date that slips is re-dated
 here by pull request, not silently missed.
 
 | ID | Gap | Evidence | Remediation | Date |

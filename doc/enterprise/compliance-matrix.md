@@ -12,7 +12,7 @@ or the platform window. Every regulatory control therefore splits into a
 display-side duty the kit discharges and a policy, cryptographic, or
 server-side duty the bank retains. Where the kit does not yet do something,
 this document says so and gives the committed direction, following the same
-rule as `docs/enterprise/versioning-and-releases.md`.
+rule as `doc/enterprise/versioning-and-releases.md`.
 
 Terms: "Kit provides" means shipped and verifiable in `lib/` at 0.1.0;
 "Host implements" means the bank's duty, wired through a kit callback or slot.
@@ -96,7 +96,7 @@ always supplied by the host because the package never inspects telephony;
 and `BankPanicFreezeButton` with a 1,500 ms press-and-hold default. The
 full Confirmation of Payee journey (match, close match, no match, mismatch
 liability copy, first-payee scam interstitial) is specified in
-`docs/banking-journeys.md`.
+`doc/banking-journeys.md`.
 
 Current position: no tri-state name-check result widget and no
 scam-questionnaire interstitial ship at 0.1.0; `isVerified` is binary.

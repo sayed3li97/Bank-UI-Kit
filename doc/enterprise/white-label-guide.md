@@ -5,7 +5,7 @@ This document states how a bank ships two or more brands from one
 which become overridable on the dated roadmap, how dark mode is derived, how
 a multi-brand app is structured, and how visual regressions are caught per
 brand on every kit upgrade. It follows the same rule as
-`docs/enterprise/versioning-and-releases.md`: where the kit has not yet
+`doc/enterprise/versioning-and-releases.md`: where the kit has not yet
 reached a stated target, it says so and gives the committed direction.
 
 Scope: version 0.1.0, 141 exported widgets across six entry points, themed
@@ -34,7 +34,7 @@ tabular figures, `fontFamily`, `accentGradient`, and the glow pair. The
 remaining axes live in `BankTokens` as compile-time constants, which makes
 them consistent but not yet per-brand. The plan moves each axis into the
 theme extension, additively, on the release train defined in
-`docs/enterprise/versioning-and-releases.md`:
+`doc/enterprise/versioning-and-releases.md`:
 
 | Axis | Current position | Committed direction |
 |------|------------------|---------------------|
@@ -79,7 +79,7 @@ factory, keeping explicit overrides authoritative:
    keeps the `useGlow` path (`voltage` preset) as the third rendering mode.
 
 Acceptance for this work is contrast-checked: every ladder step must hold
-the ratios documented in `docs/enterprise/accessibility-conformance.md`.
+the ratios documented in `doc/enterprise/accessibility-conformance.md`.
 
 ## Multi-brand reference: two brands, one codebase
 
@@ -118,13 +118,13 @@ any single gallery component from URL parameters
 `tools/screenshots.mjs` drives headless Chromium via Playwright across the
 full matrix: 30 screen-level shots (the home dashboard in all 4 presets in
 light and dark, 14 journey screens, and cross-preset spot checks) plus 114
-components in 4 preset variants, written under `docs/screenshots/` and
-`docs/screenshots/components/<preset>/`. Reruns are reproducible, which is
+components in 4 preset variants, written under `doc/screenshots/` and
+`doc/screenshots/components/<preset>/`. Reruns are reproducible, which is
 the property a diff workflow needs. `alchemist ^0.10.0` is already pinned
 in `pubspec.yaml` dev dependencies; no golden baseline is committed yet.
 
 Committed workflow, due with the v0.3.0 golden baseline (2026-10-31 on the
-release table in `docs/enterprise/versioning-and-releases.md`):
+release table in `doc/enterprise/versioning-and-releases.md`):
 
 1. Golden tests via `alchemist` for every widget in the component registry
    (`example/lib/gallery/component_registry.dart`), executed once per

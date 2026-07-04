@@ -11,7 +11,7 @@ Scope: the `bank_ui_kit` Flutter package at version 0.1.0 (see
 `pubspec.yaml` and `CHANGELOG.md`), comprising 141 exported widgets in 185
 Dart source files under `lib/src/`, six barrel entry points (`bank_ui_kit.dart`,
 `core.dart`, `saving.dart`, `social.dart`, `investing.dart`, `credit.dart`),
-and the example gallery and screenshot tooling under `example/` and `tools/`.
+and the example gallery and screenshot tooling under `example/` and `tool/`.
 
 ## Maintainer bench
 
@@ -106,12 +106,12 @@ Current bus factor: one. The mitigations below bound the impact.
 1. No private infrastructure. Build, test, and documentation generation run
    entirely from the repository: GitHub Actions (`.github/workflows/ci.yml`),
    the screenshot pipeline (`example/lib/screenshot_harness.dart` plus
-   `tools/screenshots.mjs`), and docs under `docs/`. Any fork reproduces the
+   `tool/screenshots.mjs`), and docs under `doc/`. Any fork reproduces the
    full toolchain with `flutter pub get`.
 2. Written-down knowledge. Architecture conventions live in
    `CONTRIBUTING.md`; the component contract is documented per widget with
-   parameter tables in `docs/component-reference.md` (1,000+ lines); flow
-   coverage is mapped in `docs/banking-journeys.md`.
+   parameter tables in `doc/component-reference.md` (1,000+ lines); flow
+   coverage is mapped in `doc/banking-journeys.md`.
 3. Succession: if the lead maintainer is unresponsive for 60 days, merge and
    release rights pass to the most senior remaining maintainer. Until the
    bench exists, the MIT license is the backstop: any adopter may continue a
