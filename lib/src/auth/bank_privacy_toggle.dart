@@ -40,10 +40,48 @@ class BankPrivacyToggle extends StatelessWidget {
   /// desired privacy state (`true` = private / hide balances).
   final ValueChanged<bool>? onChanged;
 
+  /// Color of the eye icon. Defaults to the theme `onSurface` when null.
+  final Color? foregroundColor;
+
+  /// Size, in logical pixels, of the eye icon. Defaults to 24 when null.
+  final double? iconSize;
+
+  /// Glyph shown when privacy is enabled (balances hidden). Defaults to
+  /// [BankIcons.visibilityOff] when null.
+  final IconData? hiddenIcon;
+
+  /// Glyph shown when privacy is disabled (balances visible). Defaults to
+  /// [BankIcons.visibility] when null.
+  final IconData? visibleIcon;
+
+  /// Accessibility / tooltip label used when the action reveals balances
+  /// (privacy currently enabled). Defaults to `'Show balances'` when null.
+  final String? showBalancesLabel;
+
+  /// Accessibility / tooltip label used when the action hides balances
+  /// (privacy currently disabled). Defaults to `'Hide balances'` when null.
+  final String? hideBalancesLabel;
+
+  /// Duration of the icon cross-fade. Defaults to [BankTokens.durationFast]
+  /// when null.
+  final Duration? animationDuration;
+
+  /// Curve of the icon cross-fade. Defaults to [BankTokens.curveStandard]
+  /// when null.
+  final Curve? animationCurve;
+
   const BankPrivacyToggle({
     super.key,
     this.overrideValue,
     this.onChanged,
+    this.foregroundColor,
+    this.iconSize,
+    this.hiddenIcon,
+    this.visibleIcon,
+    this.showBalancesLabel,
+    this.hideBalancesLabel,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   @override
@@ -53,7 +91,13 @@ class BankPrivacyToggle extends StatelessWidget {
 
     final privacyEnabled = overrideValue ?? scopeData.privacyEnabled;
 
-    final semanticLabel = privacyEnabled ? 'Show balances' : 'Hide balances';
+    final semanticLabel = privacyEnabled
+        ? (showBalancesLabel ?? 'Show balances')
+        : (hideBalancesLabel ?? 'Hide balances');
+
+    final resolvedIcon = privacyEnabled
+        ? (hiddenIcon ?? BankIcons.visibilityOff)
+        : (visibleIcon ?? BankIcons.visibility);
 
     return Semantics(
       button: true,
@@ -71,9 +115,9 @@ class BankPrivacyToggle extends StatelessWidget {
           tooltip: semanticLabel,
           onPressed: () => _handleTap(context, privacyEnabled),
           icon: AnimatedSwitcher(
-            duration: BankTokens.durationFast,
-            switchInCurve: BankTokens.curveStandard,
-            switchOutCurve: BankTokens.curveStandard,
+            duration: animationDuration ?? BankTokens.durationFast,
+            switchInCurve: animationCurve ?? BankTokens.curveStandard,
+            switchOutCurve: animationCurve ?? BankTokens.curveStandard,
             transitionBuilder: (Widget child, Animation<double> animation) {
               return FadeTransition(
                 opacity: animation,
@@ -81,10 +125,10 @@ class BankPrivacyToggle extends StatelessWidget {
               );
             },
             child: Icon(
-              privacyEnabled ? BankIcons.visibilityOff : BankIcons.visibility,
+              resolvedIcon,
               key: ValueKey<bool>(privacyEnabled),
-              color: bankTheme.onSurface,
-              size: 24,
+              color: foregroundColor ?? bankTheme.onSurface,
+              size: iconSize ?? 24,
             ),
           ),
         ),

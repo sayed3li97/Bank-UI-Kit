@@ -161,6 +161,21 @@ class BankDisputeWizardSheet extends StatefulWidget {
       BankTrackerStage(title: 'Resolved'),
     ],
     this.submittedNote = 'Most disputes are resolved within 10 business days.',
+    this.padding,
+    this.titleStyle,
+    this.stepTitleStyle,
+    this.noteStyle,
+    this.accentColor,
+    this.buttonColor,
+    this.buttonForegroundColor,
+    this.buttonRadius,
+    this.backIcon,
+    this.closeIcon,
+    this.selectedReasonIcon,
+    this.unselectedReasonIcon,
+    this.evidenceIcon,
+    this.removeEvidenceIcon,
+    this.addEvidenceIcon,
   });
 
   final Transaction transaction;
@@ -184,6 +199,62 @@ class BankDisputeWizardSheet extends StatefulWidget {
   final String descriptionLabel;
   final List<BankTrackerStage> submittedStages;
   final String submittedNote;
+
+  /// Overrides the outer sheet padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Merged over the header title style
+  /// (BankTokens.headlineSmall in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over each step heading style
+  /// (BankTokens.headlineSmall in onSurface).
+  final TextStyle? stepTitleStyle;
+
+  /// Merged over the submitted note style
+  /// (BankTokens.bodyMedium in onSurfaceVariant).
+  final TextStyle? noteStyle;
+
+  /// Overrides the accent used for the selected reason and evidence icon.
+  /// Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the primary button background. Defaults to the theme primary.
+  final Color? buttonColor;
+
+  /// Overrides the primary button foreground. Defaults to the theme
+  /// onPrimary.
+  final Color? buttonForegroundColor;
+
+  /// Overrides the primary button corner radius. Defaults to the theme
+  /// buttonRadius.
+  final BorderRadius? buttonRadius;
+
+  /// Overrides the back navigation icon. Defaults to
+  /// `Icons.arrow_back_rounded`.
+  final IconData? backIcon;
+
+  /// Overrides the close icon. Defaults to `Icons.close_rounded`.
+  final IconData? closeIcon;
+
+  /// Overrides the selected reason icon. Defaults to
+  /// `Icons.radio_button_checked_rounded`.
+  final IconData? selectedReasonIcon;
+
+  /// Overrides the unselected reason icon. Defaults to
+  /// `Icons.radio_button_off_rounded`.
+  final IconData? unselectedReasonIcon;
+
+  /// Overrides the evidence attachment icon. Defaults to
+  /// `Icons.description_outlined`.
+  final IconData? evidenceIcon;
+
+  /// Overrides the remove-evidence icon. Defaults to `Icons.close_rounded`.
+  final IconData? removeEvidenceIcon;
+
+  /// Overrides the add-evidence icon. Defaults to `Icons.add_rounded`.
+  final IconData? addEvidenceIcon;
 
   /// Presents the wizard as a 92%-height modal sheet.
   static Future<void> show(
@@ -248,9 +319,11 @@ class _BankDisputeWizardSheetState extends State<BankDisputeWizardSheet> {
     final controller = widget.controller;
     final step = controller.step;
 
+    final accent = widget.accentColor ?? theme.primary;
+
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space4),
+        padding: widget.padding ?? const EdgeInsets.all(BankTokens.space4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -261,7 +334,7 @@ class _BankDisputeWizardSheetState extends State<BankDisputeWizardSheet> {
                   IconButton(
                     onPressed: controller.goBack,
                     icon: Icon(
-                      Icons.arrow_back_rounded,
+                      widget.backIcon ?? Icons.arrow_back_rounded,
                       color: theme.onSurface,
                     ),
                   ),
@@ -269,13 +342,14 @@ class _BankDisputeWizardSheetState extends State<BankDisputeWizardSheet> {
                   child: Text(
                     widget.title,
                     style: BankTokens.headlineSmall
-                        .copyWith(color: theme.onSurface),
+                        .copyWith(color: theme.onSurface)
+                        .merge(widget.titleStyle),
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
                   icon: Icon(
-                    Icons.close_rounded,
+                    widget.closeIcon ?? Icons.close_rounded,
                     color: theme.onSurfaceVariant,
                   ),
                 ),
@@ -298,6 +372,12 @@ class _BankDisputeWizardSheetState extends State<BankDisputeWizardSheet> {
                       selected: controller.reason,
                       theme: theme,
                       onSelected: controller.selectReason,
+                      titleStyle: widget.stepTitleStyle,
+                      accentColor: accent,
+                      selectedIcon: widget.selectedReasonIcon ??
+                          Icons.radio_button_checked_rounded,
+                      unselectedIcon: widget.unselectedReasonIcon ??
+                          Icons.radio_button_off_rounded,
                     ),
                   BankDisputeStep.details => _DetailsStep(
                       title: widget.detailsTitle,
@@ -305,6 +385,7 @@ class _BankDisputeWizardSheetState extends State<BankDisputeWizardSheet> {
                       controller: _description,
                       theme: theme,
                       onChanged: controller.setDescription,
+                      titleStyle: widget.stepTitleStyle,
                     ),
                   BankDisputeStep.evidence => _EvidenceStep(
                       title: widget.evidenceTitle,
@@ -313,6 +394,13 @@ class _BankDisputeWizardSheetState extends State<BankDisputeWizardSheet> {
                       theme: theme,
                       onAdd: widget.onAddEvidence,
                       onRemove: controller.removeEvidence,
+                      titleStyle: widget.stepTitleStyle,
+                      accentColor: accent,
+                      evidenceIcon:
+                          widget.evidenceIcon ?? Icons.description_outlined,
+                      removeIcon:
+                          widget.removeEvidenceIcon ?? Icons.close_rounded,
+                      addIcon: widget.addEvidenceIcon ?? Icons.add_rounded,
                     ),
                   BankDisputeStep.review => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,7 +408,8 @@ class _BankDisputeWizardSheetState extends State<BankDisputeWizardSheet> {
                         Text(
                           widget.reviewTitle,
                           style: BankTokens.headlineSmall
-                              .copyWith(color: theme.onSurface),
+                              .copyWith(color: theme.onSurface)
+                              .merge(widget.stepTitleStyle),
                         ),
                         const SizedBox(height: BankTokens.space3),
                         BankTransactionListTile(
@@ -351,7 +440,8 @@ class _BankDisputeWizardSheetState extends State<BankDisputeWizardSheet> {
                         Text(
                           widget.submittedNote,
                           style: BankTokens.bodyMedium
-                              .copyWith(color: theme.onSurfaceVariant),
+                              .copyWith(color: theme.onSurfaceVariant)
+                              .merge(widget.noteStyle),
                         ),
                       ],
                     ),
@@ -373,11 +463,12 @@ class _BankDisputeWizardSheetState extends State<BankDisputeWizardSheet> {
                     _ => controller.submit,
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: theme.primary,
-                    foregroundColor: theme.onPrimary,
+                    backgroundColor: widget.buttonColor ?? theme.primary,
+                    foregroundColor:
+                        widget.buttonForegroundColor ?? theme.onPrimary,
                     disabledBackgroundColor: theme.surfaceVariant,
                     shape: RoundedRectangleBorder(
-                      borderRadius: theme.buttonRadius,
+                      borderRadius: widget.buttonRadius ?? theme.buttonRadius,
                     ),
                   ),
                   child: Text(
@@ -402,6 +493,10 @@ class _ReasonStep extends StatelessWidget {
     required this.selected,
     required this.theme,
     required this.onSelected,
+    required this.accentColor,
+    required this.selectedIcon,
+    required this.unselectedIcon,
+    this.titleStyle,
   });
 
   final String title;
@@ -409,6 +504,10 @@ class _ReasonStep extends StatelessWidget {
   final BankDisputeReason? selected;
   final BankThemeData theme;
   final ValueChanged<BankDisputeReason> onSelected;
+  final Color accentColor;
+  final IconData selectedIcon;
+  final IconData unselectedIcon;
+  final TextStyle? titleStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -417,7 +516,9 @@ class _ReasonStep extends StatelessWidget {
       children: [
         Text(
           title,
-          style: BankTokens.headlineSmall.copyWith(color: theme.onSurface),
+          style: BankTokens.headlineSmall
+              .copyWith(color: theme.onSurface)
+              .merge(titleStyle),
         ),
         const SizedBox(height: BankTokens.space3),
         for (final reason in reasons)
@@ -436,11 +537,11 @@ class _ReasonStep extends StatelessWidget {
                   children: [
                     Icon(
                       reason.code == selected?.code
-                          ? Icons.radio_button_checked_rounded
-                          : Icons.radio_button_off_rounded,
+                          ? selectedIcon
+                          : unselectedIcon,
                       size: 20,
                       color: reason.code == selected?.code
-                          ? theme.primary
+                          ? accentColor
                           : theme.onSurfaceVariant,
                     ),
                     const SizedBox(width: BankTokens.space3),
@@ -468,6 +569,7 @@ class _DetailsStep extends StatelessWidget {
     required this.controller,
     required this.theme,
     required this.onChanged,
+    this.titleStyle,
   });
 
   final String title;
@@ -475,6 +577,7 @@ class _DetailsStep extends StatelessWidget {
   final TextEditingController controller;
   final BankThemeData theme;
   final ValueChanged<String> onChanged;
+  final TextStyle? titleStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -483,7 +586,9 @@ class _DetailsStep extends StatelessWidget {
       children: [
         Text(
           title,
-          style: BankTokens.headlineSmall.copyWith(color: theme.onSurface),
+          style: BankTokens.headlineSmall
+              .copyWith(color: theme.onSurface)
+              .merge(titleStyle),
         ),
         const SizedBox(height: BankTokens.space3),
         BankTextField(
@@ -506,6 +611,11 @@ class _EvidenceStep extends StatelessWidget {
     required this.theme,
     required this.onAdd,
     required this.onRemove,
+    required this.accentColor,
+    required this.evidenceIcon,
+    required this.removeIcon,
+    required this.addIcon,
+    this.titleStyle,
   });
 
   final String title;
@@ -514,6 +624,11 @@ class _EvidenceStep extends StatelessWidget {
   final BankThemeData theme;
   final VoidCallback? onAdd;
   final ValueChanged<String> onRemove;
+  final Color accentColor;
+  final IconData evidenceIcon;
+  final IconData removeIcon;
+  final IconData addIcon;
+  final TextStyle? titleStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -522,7 +637,9 @@ class _EvidenceStep extends StatelessWidget {
       children: [
         Text(
           title,
-          style: BankTokens.headlineSmall.copyWith(color: theme.onSurface),
+          style: BankTokens.headlineSmall
+              .copyWith(color: theme.onSurface)
+              .merge(titleStyle),
         ),
         const SizedBox(height: BankTokens.space3),
         for (final item in evidence)
@@ -540,9 +657,9 @@ class _EvidenceStep extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.description_outlined,
+                      evidenceIcon,
                       size: 18,
-                      color: theme.primary,
+                      color: accentColor,
                     ),
                     const SizedBox(width: BankTokens.space2),
                     Expanded(
@@ -558,7 +675,7 @@ class _EvidenceStep extends StatelessWidget {
                       onPressed: () => onRemove(item.id),
                       iconSize: 16,
                       icon: Icon(
-                        Icons.close_rounded,
+                        removeIcon,
                         color: theme.onSurfaceVariant,
                       ),
                     ),
@@ -571,13 +688,13 @@ class _EvidenceStep extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onAdd,
             style: OutlinedButton.styleFrom(
-              foregroundColor: theme.primary,
+              foregroundColor: accentColor,
               side: BorderSide(color: theme.outline),
               shape: RoundedRectangleBorder(
                 borderRadius: theme.buttonRadius,
               ),
             ),
-            icon: const Icon(Icons.add_rounded, size: 18),
+            icon: Icon(addIcon, size: 18),
             label: Text(addLabel, style: BankTokens.labelLarge),
           ),
       ],

@@ -80,6 +80,13 @@ class BankApprovalRequestTile extends StatefulWidget {
     this.rejectReasonTitle = 'Reason for rejection',
     this.rejectReasonHint = 'Explain why this request is rejected',
     this.rejectSubmitLabel = 'Reject request',
+    this.padding,
+    this.accentColor,
+    this.approvedIcon = Icons.check_rounded,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.progressStyle,
+    this.semanticLabel,
   });
 
   final BankApprovalRequest request;
@@ -107,6 +114,33 @@ class BankApprovalRequestTile extends StatefulWidget {
   final String rejectReasonTitle;
   final String rejectReasonHint;
   final String rejectSubmitLabel;
+
+  /// Overrides the tile content padding. Defaults to
+  /// `EdgeInsetsDirectional.symmetric(horizontal: space4, vertical: space3)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the color of filled approval-progress segments and the
+  /// "you approved" check. Defaults to the theme positiveBalance.
+  final Color? accentColor;
+
+  /// Glyph shown in the "you approved" row. Defaults to
+  /// [Icons.check_rounded].
+  final IconData approvedIcon;
+
+  /// Merged over the title style (BankTokens.bodyLarge in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the requested-by line style
+  /// (BankTokens.bodySmall in onSurfaceVariant).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the approval-progress label style
+  /// (BankTokens.labelSmall in onSurfaceVariant).
+  final TextStyle? progressStyle;
+
+  /// Overrides the composed Semantics label. Defaults to the title,
+  /// requested-by line, and approval-progress label.
+  final String? semanticLabel;
 
   @override
   State<BankApprovalRequestTile> createState() =>
@@ -183,14 +217,16 @@ class _BankApprovalRequestTileState extends State<BankApprovalRequestTile> {
       opacity: expired ? 0.4 : 1,
       child: Semantics(
         button: widget.onTap != null,
-        label: '${request.title}, $requestedLine, $progressLabel',
+        label: widget.semanticLabel ??
+            '${request.title}, $requestedLine, $progressLabel',
         child: InkWell(
           onTap: widget.onTap,
           child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: BankTokens.space4,
-              vertical: BankTokens.space3,
-            ),
+            padding: widget.padding ??
+                const EdgeInsetsDirectional.symmetric(
+                  horizontal: BankTokens.space4,
+                  vertical: BankTokens.space3,
+                ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -208,7 +244,8 @@ class _BankApprovalRequestTileState extends State<BankApprovalRequestTile> {
                           Text(
                             request.title,
                             style: BankTokens.bodyLarge
-                                .copyWith(color: theme.onSurface),
+                                .copyWith(color: theme.onSurface)
+                                .merge(widget.titleStyle),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -216,7 +253,8 @@ class _BankApprovalRequestTileState extends State<BankApprovalRequestTile> {
                           Text(
                             requestedLine,
                             style: BankTokens.bodySmall
-                                .copyWith(color: theme.onSurfaceVariant),
+                                .copyWith(color: theme.onSurfaceVariant)
+                                .merge(widget.subtitleStyle),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -241,7 +279,7 @@ class _BankApprovalRequestTileState extends State<BankApprovalRequestTile> {
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: i < request.approvalsGiven
-                                ? theme.positiveBalance
+                                ? (widget.accentColor ?? theme.positiveBalance)
                                 : theme.surfaceVariant,
                             borderRadius: theme.chipRadius,
                           ),
@@ -252,7 +290,8 @@ class _BankApprovalRequestTileState extends State<BankApprovalRequestTile> {
                     Text(
                       progressLabel,
                       style: BankTokens.labelSmall
-                          .copyWith(color: theme.onSurfaceVariant),
+                          .copyWith(color: theme.onSurfaceVariant)
+                          .merge(widget.progressStyle),
                     ),
                   ],
                 ),
@@ -271,15 +310,16 @@ class _BankApprovalRequestTileState extends State<BankApprovalRequestTile> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.check_rounded,
+                        widget.approvedIcon,
                         size: 14,
-                        color: theme.positiveBalance,
+                        color: widget.accentColor ?? theme.positiveBalance,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         widget.youApprovedLabel,
-                        style: BankTokens.labelMedium
-                            .copyWith(color: theme.positiveBalance),
+                        style: BankTokens.labelMedium.copyWith(
+                          color: widget.accentColor ?? theme.positiveBalance,
+                        ),
                       ),
                     ],
                   ),

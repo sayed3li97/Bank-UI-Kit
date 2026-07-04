@@ -57,6 +57,44 @@ class BankPinKeypad extends StatelessWidget {
   /// biometric cells are not affected.
   final Widget Function(BuildContext context, String digit)? digitBuilder;
 
+  /// Outer padding wrapped around the whole keypad. When null, no outer
+  /// padding is added (the current behavior).
+  final EdgeInsetsGeometry? padding;
+
+  /// Fill color of each round digit key. Defaults to the theme
+  /// `surfaceVariant` when null.
+  final Color? backgroundColor;
+
+  /// Color of the digit glyphs and the action (delete / biometric) icons.
+  /// Defaults to the theme `onSurface` when null.
+  final Color? foregroundColor;
+
+  /// Accent color used for the key press splash and highlight. Defaults to
+  /// the theme `primary` when null.
+  final Color? accentColor;
+
+  /// Text style merged over the computed digit style (headline large in the
+  /// resolved foreground color). Null applies no override.
+  final TextStyle? digitStyle;
+
+  /// Diameter, in logical pixels, of every key and the empty placeholder.
+  /// Defaults to 64 when null.
+  final double? keySize;
+
+  /// Glyph for the delete (backspace) key. Defaults to
+  /// [Icons.backspace_outlined] when null.
+  final IconData? deleteIcon;
+
+  /// Glyph for the biometric key. Defaults to [BankIcons.biometric] when null.
+  final IconData? biometricIcon;
+
+  /// Accessibility label for the biometric key. Defaults to
+  /// `'Use biometrics'` when null.
+  final String? biometricSemanticLabel;
+
+  /// Accessibility label for the delete key. Defaults to `'Delete'` when null.
+  final String? deleteSemanticLabel;
+
   const BankPinKeypad({
     required this.onDigit,
     required this.onDelete,
@@ -64,6 +102,16 @@ class BankPinKeypad extends StatelessWidget {
     this.onBiometric,
     this.enabled = true,
     this.digitBuilder,
+    this.padding,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.accentColor,
+    this.digitStyle,
+    this.keySize,
+    this.deleteIcon,
+    this.biometricIcon,
+    this.biometricSemanticLabel,
+    this.deleteSemanticLabel,
   });
 
   @override
@@ -89,6 +137,11 @@ class BankPinKeypad extends StatelessWidget {
       keypad = Opacity(opacity: 0.4, child: keypad);
     }
 
+    final resolvedPadding = padding;
+    if (resolvedPadding != null) {
+      keypad = Padding(padding: resolvedPadding, child: keypad);
+    }
+
     return keypad;
   }
 
@@ -109,6 +162,11 @@ class BankPinKeypad extends StatelessWidget {
             bankTheme: bankTheme,
             onTap: enabled ? () => _handleDigit(digit) : null,
             builder: digitBuilder,
+            backgroundColor: backgroundColor,
+            foregroundColor: foregroundColor,
+            accentColor: accentColor,
+            digitStyle: digitStyle,
+            keySize: keySize,
           ),
         );
       }).toList(),
@@ -116,19 +174,23 @@ class BankPinKeypad extends StatelessWidget {
   }
 
   Widget _buildBottomRow(BuildContext context, BankThemeData bankTheme) {
+    final resolvedKeySize = keySize ?? 64;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Left: biometric or empty placeholder
         if (onBiometric != null)
           _ActionKey(
-            semanticLabel: 'Use biometrics',
-            icon: BankIcons.biometric,
+            semanticLabel: biometricSemanticLabel ?? 'Use biometrics',
+            icon: biometricIcon ?? BankIcons.biometric,
             bankTheme: bankTheme,
             onTap: enabled ? onBiometric : null,
+            foregroundColor: foregroundColor,
+            accentColor: accentColor,
+            keySize: keySize,
           )
         else
-          const SizedBox(width: 64, height: 64),
+          SizedBox(width: resolvedKeySize, height: resolvedKeySize),
         const SizedBox(width: BankTokens.space3),
         // Centre: digit 0
         _DigitKey(
@@ -136,14 +198,22 @@ class BankPinKeypad extends StatelessWidget {
           bankTheme: bankTheme,
           onTap: enabled ? () => _handleDigit('0') : null,
           builder: digitBuilder,
+          backgroundColor: backgroundColor,
+          foregroundColor: foregroundColor,
+          accentColor: accentColor,
+          digitStyle: digitStyle,
+          keySize: keySize,
         ),
         const SizedBox(width: BankTokens.space3),
         // Right: delete
         _ActionKey(
-          semanticLabel: 'Delete',
-          icon: Icons.backspace_outlined,
+          semanticLabel: deleteSemanticLabel ?? 'Delete',
+          icon: deleteIcon ?? Icons.backspace_outlined,
           bankTheme: bankTheme,
           onTap: enabled ? onDelete : null,
+          foregroundColor: foregroundColor,
+          accentColor: accentColor,
+          keySize: keySize,
         ),
       ],
     );
@@ -165,22 +235,34 @@ class _DigitKey extends StatelessWidget {
     required this.bankTheme,
     required this.onTap,
     required this.builder,
+    required this.backgroundColor,
+    required this.foregroundColor,
+    required this.accentColor,
+    required this.digitStyle,
+    required this.keySize,
   });
 
   final String digit;
   final BankThemeData bankTheme;
   final VoidCallback? onTap;
   final Widget Function(BuildContext context, String digit)? builder;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
+  final Color? accentColor;
+  final TextStyle? digitStyle;
+  final double? keySize;
 
   @override
   Widget build(BuildContext context) {
+    final resolvedKeySize = keySize ?? 64;
+    final resolvedAccent = accentColor ?? bankTheme.primary;
     final label = builder != null
         ? builder!(context, digit)
         : Text(
             digit,
-            style: BankTokens.headlineLarge.copyWith(
-              color: bankTheme.onSurface,
-            ),
+            style: BankTokens.headlineLarge
+                .copyWith(color: foregroundColor ?? bankTheme.onSurface)
+                .merge(digitStyle),
           );
 
     return Semantics(
@@ -192,15 +274,15 @@ class _DigitKey extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          splashColor: bankTheme.primary.withValues(alpha: 0.12),
-          highlightColor: bankTheme.primary.withValues(alpha: 0.08),
+          splashColor: resolvedAccent.withValues(alpha: 0.12),
+          highlightColor: resolvedAccent.withValues(alpha: 0.08),
           child: Container(
-            width: 64,
-            height: 64,
+            width: resolvedKeySize,
+            height: resolvedKeySize,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: bankTheme.surfaceVariant,
+              color: backgroundColor ?? bankTheme.surfaceVariant,
             ),
             child: label,
           ),
@@ -220,15 +302,23 @@ class _ActionKey extends StatelessWidget {
     required this.icon,
     required this.bankTheme,
     required this.onTap,
+    required this.foregroundColor,
+    required this.accentColor,
+    required this.keySize,
   });
 
   final String semanticLabel;
   final IconData icon;
   final BankThemeData bankTheme;
   final VoidCallback? onTap;
+  final Color? foregroundColor;
+  final Color? accentColor;
+  final double? keySize;
 
   @override
   Widget build(BuildContext context) {
+    final resolvedKeySize = keySize ?? 64;
+    final resolvedAccent = accentColor ?? bankTheme.primary;
     return Semantics(
       button: true,
       label: semanticLabel,
@@ -238,15 +328,15 @@ class _ActionKey extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          splashColor: bankTheme.primary.withValues(alpha: 0.12),
-          highlightColor: bankTheme.primary.withValues(alpha: 0.08),
+          splashColor: resolvedAccent.withValues(alpha: 0.12),
+          highlightColor: resolvedAccent.withValues(alpha: 0.08),
           child: SizedBox(
-            width: 64,
-            height: 64,
+            width: resolvedKeySize,
+            height: resolvedKeySize,
             child: Icon(
               icon,
               size: 24,
-              color: bankTheme.onSurface,
+              color: foregroundColor ?? bankTheme.onSurface,
             ),
           ),
         ),

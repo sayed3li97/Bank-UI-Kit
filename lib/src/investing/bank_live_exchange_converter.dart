@@ -25,11 +25,105 @@ class BankLiveExchangeConverter extends StatefulWidget {
   /// Called whenever the FROM amount changes, with the computed [Money] value.
   final ValueChanged<Money>? onAmountChanged;
 
+  /// Overrides the outer padding around the converter. Defaults to none.
+  final EdgeInsetsGeometry? padding;
+
+  /// Placeholder shown in each empty amount field. Defaults to `'0.00'`.
+  final String hintText;
+
+  /// Glyph on the swap button. Defaults to [Icons.swap_vert].
+  final IconData swapIcon;
+
+  /// Semantic label for the swap button. Defaults to `'Swap currencies'`.
+  final String swapSemanticLabel;
+
+  /// Semantic label for the convert button. Defaults to `'Convert'`.
+  final String convertSemanticLabel;
+
+  /// Rate line template. `{from}`, `{rate}`, and `{to}` are substituted.
+  /// Defaults to `'1 {from} = {rate} {to}'`.
+  final String rateTemplate;
+
+  /// Separator between the rate line and the freshness line. Defaults to
+  /// `' • '`.
+  final String rateSeparator;
+
+  /// Freshness label used within the last minute. Defaults to
+  /// `'updated just now'`.
+  final String updatedJustNowLabel;
+
+  /// Freshness template in minutes; `{n}` is substituted. Defaults to
+  /// `'updated {n}m ago'`.
+  final String updatedMinutesTemplate;
+
+  /// Freshness template in hours; `{n}` is substituted. Defaults to
+  /// `'updated {n}h ago'`.
+  final String updatedHoursTemplate;
+
+  /// Overrides the amount-field corner radius. Defaults to
+  /// `BorderRadius.circular(BankTokens.radiusMedium)`.
+  final BorderRadius? fieldRadius;
+
+  /// Overrides the amount-field fill colour. Defaults to the theme
+  /// surfaceVariant.
+  final Color? fieldFillColor;
+
+  /// Overrides the swap button background. Defaults to the theme
+  /// surfaceVariant.
+  final Color? swapButtonColor;
+
+  /// Overrides the primary accent (convert button background and the
+  /// focused-field border). Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the convert button corner radius. Defaults to the theme
+  /// buttonRadius.
+  final BorderRadius? buttonRadius;
+
+  /// Merged over the field-label style
+  /// (BankTokens.labelMedium in onSurfaceVariant).
+  final TextStyle? fieldLabelStyle;
+
+  /// Merged over the amount-input text style (numeralSmall in onSurface).
+  final TextStyle? inputStyle;
+
+  /// Merged over the amount-input hint style
+  /// (numeralSmall in onSurfaceVariant).
+  final TextStyle? hintStyle;
+
+  /// Merged over the rate line style (BankTokens.bodySmall in
+  /// onSurfaceVariant).
+  final TextStyle? rateLabelStyle;
+
+  /// Merged over the convert button label style
+  /// (BankTokens.labelLarge in onPrimary).
+  final TextStyle? convertLabelStyle;
+
   const BankLiveExchangeConverter({
     required this.rate,
     super.key,
     this.onConvert,
     this.onAmountChanged,
+    this.padding,
+    this.hintText = '0.00',
+    this.swapIcon = Icons.swap_vert,
+    this.swapSemanticLabel = 'Swap currencies',
+    this.convertSemanticLabel = 'Convert',
+    this.rateTemplate = '1 {from} = {rate} {to}',
+    this.rateSeparator = ' • ',
+    this.updatedJustNowLabel = 'updated just now',
+    this.updatedMinutesTemplate = 'updated {n}m ago',
+    this.updatedHoursTemplate = 'updated {n}h ago',
+    this.fieldRadius,
+    this.fieldFillColor,
+    this.swapButtonColor,
+    this.accentColor,
+    this.buttonRadius,
+    this.fieldLabelStyle,
+    this.inputStyle,
+    this.hintStyle,
+    this.rateLabelStyle,
+    this.convertLabelStyle,
   });
 
   @override
@@ -175,14 +269,20 @@ class _BankLiveExchangeConverterState extends State<BankLiveExchangeConverter> {
   String _rateLabel() {
     final rateDouble = _effectiveRate.toDouble();
     final formatted = rateDouble.toStringAsFixed(4);
-    return '1 $_fromCurrency = $formatted $_toCurrency';
+    return widget.rateTemplate
+        .replaceAll('{from}', _fromCurrency)
+        .replaceAll('{rate}', formatted)
+        .replaceAll('{to}', _toCurrency);
   }
 
   String _updatedLabel() {
     final diff = DateTime.now().difference(widget.rate.fetchedAt);
-    if (diff.inSeconds < 60) return 'updated just now';
-    if (diff.inMinutes < 60) return 'updated ${diff.inMinutes}m ago';
-    return 'updated ${diff.inHours}h ago';
+    if (diff.inSeconds < 60) return widget.updatedJustNowLabel;
+    if (diff.inMinutes < 60) {
+      return widget.updatedMinutesTemplate
+          .replaceAll('{n}', '${diff.inMinutes}');
+    }
+    return widget.updatedHoursTemplate.replaceAll('{n}', '${diff.inHours}');
   }
 
   // ---------------------------------------------------------------------------
@@ -193,8 +293,9 @@ class _BankLiveExchangeConverterState extends State<BankLiveExchangeConverter> {
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final accent = widget.accentColor ?? bankTheme.primary;
 
-    return Column(
+    final column = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -203,6 +304,13 @@ class _BankLiveExchangeConverterState extends State<BankLiveExchangeConverter> {
           label: _fromCurrency,
           controller: _fromController,
           bankTheme: bankTheme,
+          hintText: widget.hintText,
+          fieldRadius: widget.fieldRadius,
+          fillColor: widget.fieldFillColor,
+          focusColor: accent,
+          labelStyle: widget.fieldLabelStyle,
+          inputStyle: widget.inputStyle,
+          hintStyle: widget.hintStyle,
         ),
 
         // ── Swap button ──
@@ -211,16 +319,16 @@ class _BankLiveExchangeConverterState extends State<BankLiveExchangeConverter> {
             padding: const EdgeInsets.symmetric(vertical: BankTokens.space2),
             child: Semantics(
               button: true,
-              label: 'Swap currencies',
+              label: widget.swapSemanticLabel,
               child: Material(
-                color: bankTheme.surfaceVariant,
+                color: widget.swapButtonColor ?? bankTheme.surfaceVariant,
                 shape: const CircleBorder(),
                 child: InkWell(
                   onTap: _swapCurrencies,
                   customBorder: const CircleBorder(),
-                  child: const Padding(
-                    padding: EdgeInsets.all(BankTokens.space2),
-                    child: Icon(Icons.swap_vert, size: 22),
+                  child: Padding(
+                    padding: const EdgeInsets.all(BankTokens.space2),
+                    child: Icon(widget.swapIcon, size: 22),
                   ),
                 ),
               ),
@@ -233,16 +341,23 @@ class _BankLiveExchangeConverterState extends State<BankLiveExchangeConverter> {
           label: _toCurrency,
           controller: _toController,
           bankTheme: bankTheme,
+          hintText: widget.hintText,
+          fieldRadius: widget.fieldRadius,
+          fillColor: widget.fieldFillColor,
+          focusColor: accent,
+          labelStyle: widget.fieldLabelStyle,
+          inputStyle: widget.inputStyle,
+          hintStyle: widget.hintStyle,
         ),
 
         const SizedBox(height: BankTokens.space3),
 
         // ── Exchange rate label ──
         Text(
-          '${_rateLabel()} • ${_updatedLabel()}',
-          style: BankTokens.bodySmall.copyWith(
-            color: bankTheme.onSurfaceVariant,
-          ),
+          '${_rateLabel()}${widget.rateSeparator}${_updatedLabel()}',
+          style: BankTokens.bodySmall
+              .copyWith(color: bankTheme.onSurfaceVariant)
+              .merge(widget.rateLabelStyle),
           textAlign: TextAlign.center,
         ),
 
@@ -252,26 +367,26 @@ class _BankLiveExchangeConverterState extends State<BankLiveExchangeConverter> {
         Semantics(
           button: true,
           enabled: _canConvert,
-          label: 'Convert',
+          label: widget.convertSemanticLabel,
           child: AnimatedBuilder(
             animation: Listenable.merge([_fromController, _toController]),
             builder: (context, _) {
               return FilledButton(
                 onPressed: _canConvert ? widget.onConvert : null,
                 style: FilledButton.styleFrom(
-                  backgroundColor: bankTheme.primary,
+                  backgroundColor: accent,
                   foregroundColor: bankTheme.onPrimary,
                   minimumSize:
                       const Size(double.infinity, BankTokens.minTapTarget),
                   shape: RoundedRectangleBorder(
-                    borderRadius: bankTheme.buttonRadius,
+                    borderRadius: widget.buttonRadius ?? bankTheme.buttonRadius,
                   ),
                 ),
                 child: Text(
                   scope.strings.confirm,
-                  style: BankTokens.labelLarge.copyWith(
-                    color: bankTheme.onPrimary,
-                  ),
+                  style: BankTokens.labelLarge
+                      .copyWith(color: bankTheme.onPrimary)
+                      .merge(widget.convertLabelStyle),
                 ),
               );
             },
@@ -279,6 +394,9 @@ class _BankLiveExchangeConverterState extends State<BankLiveExchangeConverter> {
         ),
       ],
     );
+
+    if (widget.padding == null) return column;
+    return Padding(padding: widget.padding!, child: column);
   }
 }
 
@@ -291,23 +409,39 @@ class _CurrencyInputField extends StatelessWidget {
     required this.label,
     required this.controller,
     required this.bankTheme,
+    required this.hintText,
+    this.fieldRadius,
+    this.fillColor,
+    this.focusColor,
+    this.labelStyle,
+    this.inputStyle,
+    this.hintStyle,
   });
 
   final String label;
   final TextEditingController controller;
   final BankThemeData bankTheme;
+  final String hintText;
+  final BorderRadius? fieldRadius;
+  final Color? fillColor;
+  final Color? focusColor;
+  final TextStyle? labelStyle;
+  final TextStyle? inputStyle;
+  final TextStyle? hintStyle;
 
   @override
   Widget build(BuildContext context) {
+    final resolvedRadius =
+        fieldRadius ?? BorderRadius.circular(BankTokens.radiusMedium);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
-          style: BankTokens.labelMedium.copyWith(
-            color: bankTheme.onSurfaceVariant,
-          ),
+          style: BankTokens.labelMedium
+              .copyWith(color: bankTheme.onSurfaceVariant)
+              .merge(labelStyle),
         ),
         const SizedBox(height: BankTokens.space1),
         TextField(
@@ -316,25 +450,30 @@ class _CurrencyInputField extends StatelessWidget {
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
           ],
-          style: bankTheme.numeralSmall.copyWith(color: bankTheme.onSurface),
+          style: bankTheme.numeralSmall
+              .copyWith(color: bankTheme.onSurface)
+              .merge(inputStyle),
           decoration: InputDecoration(
-            hintText: '0.00',
-            hintStyle: bankTheme.numeralSmall.copyWith(
-              color: bankTheme.onSurfaceVariant,
-            ),
+            hintText: hintText,
+            hintStyle: bankTheme.numeralSmall
+                .copyWith(color: bankTheme.onSurfaceVariant)
+                .merge(hintStyle),
             filled: true,
-            fillColor: bankTheme.surfaceVariant,
+            fillColor: fillColor ?? bankTheme.surfaceVariant,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: BankTokens.space4,
               vertical: BankTokens.space3,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(BankTokens.radiusMedium),
+              borderRadius: resolvedRadius,
               borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(BankTokens.radiusMedium),
-              borderSide: BorderSide(color: bankTheme.primary, width: 2),
+              borderRadius: resolvedRadius,
+              borderSide: BorderSide(
+                color: focusColor ?? bankTheme.primary,
+                width: 2,
+              ),
             ),
           ),
         ),
