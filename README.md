@@ -25,10 +25,10 @@ four built-in themes, your backend.
     <td align="center"><b>Bloom</b></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/heritage-heritage-light.png" width="185" alt="Heritage preset" /></td>
-    <td><img src="docs/screenshots/home-studio-light.png" width="185" alt="Studio preset" /></td>
-    <td><img src="docs/screenshots/home-voltage-dark.png" width="185" alt="Voltage preset" /></td>
-    <td><img src="docs/screenshots/home-bloom-light.png" width="185" alt="Bloom preset" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/heritage-heritage-light.png" width="185" alt="Heritage preset" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/home-studio-light.png" width="185" alt="Studio preset" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/home-voltage-dark.png" width="185" alt="Voltage preset" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/home-bloom-light.png" width="185" alt="Bloom preset" /></td>
   </tr>
 </table>
 
@@ -47,7 +47,7 @@ four built-in themes, your backend.
 - [Custom themes](#custom-themes)
 - [Journeys, not just widgets](#journeys-not-just-widgets)
 - [Component catalogue](#component-catalogue)
-- [Full API reference](docs/component-reference.md)
+- [Full API reference](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/component-reference.md)
 - [Cross-cutting features](#cross-cutting-features)
 - [Architecture & principles](#architecture--principles)
 - [Running the example](#running-the-example)
@@ -71,9 +71,9 @@ PAN checksum validation, semantics on every control, 44 px touch
 targets, and first-class RTL with Arabic-Indic numeral rendering. The
 kit implements the UX pattern; your bank provides the regulated
 controls behind it. The division of responsibility is written down in
-[docs/enterprise/compliance-matrix.md](docs/enterprise/compliance-matrix.md),
+[docs/enterprise/compliance-matrix.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/enterprise/compliance-matrix.md),
 and the accessibility position (verified vs on the roadmap) in
-[docs/enterprise/accessibility-conformance.md](docs/enterprise/accessibility-conformance.md).
+[docs/enterprise/accessibility-conformance.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/enterprise/accessibility-conformance.md).
 
 **Four built-in themes, one theming engine.** Every widget reads its
 colour, shape, depth, and numeral typography from `BankThemeData`
@@ -102,7 +102,7 @@ so fully air-gapped builds need no source changes.
 ### One token change rebrands every surface
 
 <p align="center">
-  <img src="docs/diagrams/architecture-flow.svg" width="880" alt="Design tokens flow into four presets, into 140+ components, into your app" />
+  <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/diagrams/architecture-flow.svg" width="880" alt="Design tokens flow into four presets, into 140+ components, into your app" />
 </p>
 
 Tokens set color, shape, depth, and numeral typography once. Presets are
@@ -191,9 +191,9 @@ every widget re-themes itself because it reads tokens from `BankThemeData.of(con
     <td align="center">Accounts · Bloom</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/accounts-studio-light.png" width="240" /></td>
-    <td><img src="docs/screenshots/accounts-voltage-dark.png" width="240" /></td>
-    <td><img src="docs/screenshots/accounts-bloom-light.png" width="240" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/accounts-studio-light.png" width="240" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/accounts-voltage-dark.png" width="240" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/accounts-bloom-light.png" width="240" /></td>
   </tr>
 </table>
 
@@ -210,9 +210,9 @@ preset: SAR balances, profit-rate labels via `islamicFinanceMode`,
     <td align="center">Home · Heritage</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/heritage-heritage-light.png" width="240" /></td>
-    <td><img src="docs/screenshots/heritage-heritage-dark.png" width="240" /></td>
-    <td><img src="docs/screenshots/home-heritage-light.png" width="240" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/heritage-heritage-light.png" width="240" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/heritage-heritage-dark.png" width="240" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/home-heritage-light.png" width="240" /></td>
   </tr>
 </table>
 
@@ -272,12 +272,12 @@ journeys. Below, a payment travels through five kit widgets while one
 headless controller owns the state machine:
 
 <p align="center">
-  <img src="docs/diagrams/payment-journey.svg" width="880" alt="A payment journey composed from kit components over one headless flow controller" />
+  <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/diagrams/payment-journey.svg" width="880" alt="A payment journey composed from kit components over one headless flow controller" />
 </p>
 
 The same composition pattern covers every core journey. The full
 catalogue of 25 journey blueprints (triggers, steps, variants, error
-states) lives in [docs/banking-journeys.md](docs/banking-journeys.md).
+states) lives in [docs/banking-journeys.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/banking-journeys.md).
 
 | Journey | Chain of kit components |
 |---|---|
@@ -295,12 +295,12 @@ states) lives in [docs/banking-journeys.md](docs/banking-journeys.md).
 140+ widgets across 22 modules. Each screenshot below is a live render of that module's
 showcase screen (Studio preset, light mode) from the example app.
 
-For the full parameter-level API reference (every constructor argument, type, required/optional status, and default value) see **[docs/component-reference.md](docs/component-reference.md)**.
+For the full parameter-level API reference (every constructor argument, type, required/optional status, and default value) see **[docs/component-reference.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/component-reference.md)**.
 
 ### States & feedback
 `BankSkeletonLoader` · `BankEmptyStateView` · `BankErrorStateView` · `BankSuccessAnimation` · `BankToastBanner` · `BankFraudAlertBanner` · `BankAppGateScreen` (11 gate reasons: maintenance, force update, root/VPN blocks, waiting room) · `BankConnectivityBanner` · `BankServiceStatusList` · `BankUpdatePromptSheet`
 
-<img src="docs/screenshots/states-studio-light.png" width="260" align="right" />
+<img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/states-studio-light.png" width="260" align="right" />
 
 ### Accounts & balances
 `BankAccountCard` · `BankAccountSwitcher` · `BankBalanceText` (privacy-aware) · `BankProductItemTile` · `BankAccountNumberText` · `BankPeekBalance` (pre-login peek) · `BankEarlyPaydayCard`
@@ -312,7 +312,7 @@ For the full parameter-level API reference (every constructor argument, type, re
 
 | Transactions | Transfers | Cards |
 |---|---|---|
-| <img src="docs/screenshots/transactions-studio-light.png" width="230" /> | <img src="docs/screenshots/transfers-studio-light.png" width="230" /> | <img src="docs/screenshots/cards-studio-light.png" width="230" /> |
+| <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/transactions-studio-light.png" width="230" /> | <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/transfers-studio-light.png" width="230" /> | <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/cards-studio-light.png" width="230" /> |
 
 **Transfers & payments**: `BankAmountKeypad` · `BankBeneficiaryPicker` · `BankTransferReviewCard` · `BankTransactionPinSheet` · `BankScheduledTransferToggle` · `BankPaymentRequestCard` · `BankTransferResultScreen` · `BankContactPaymentSheet`
 
@@ -331,9 +331,9 @@ ship in the box: all backward-compatible and opt-in.
     <td align="center">Cards · Bloom</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/cards-studio-light.png" width="230" /></td>
-    <td><img src="docs/screenshots/cards-voltage-dark.png" width="230" /></td>
-    <td><img src="docs/screenshots/cards-bloom-light.png" width="230" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/cards-studio-light.png" width="230" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/cards-voltage-dark.png" width="230" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/cards-bloom-light.png" width="230" /></td>
   </tr>
 </table>
 
@@ -410,7 +410,7 @@ BankVirtualCardWidget(
 
 | Auth & security | Onboarding & KYC | Saving |
 |---|---|---|
-| <img src="docs/screenshots/auth-studio-light.png" width="230" /> | <img src="docs/screenshots/onboarding-studio-light.png" width="230" /> | <img src="docs/screenshots/saving-studio-light.png" width="230" /> |
+| <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/auth-studio-light.png" width="230" /> | <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/onboarding-studio-light.png" width="230" /> | <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/saving-studio-light.png" width="230" /> |
 
 **Auth & security**: `BankPinKeypad` · `BankPinDots` · `BankBiometricPromptButton` · `BankPrivacyToggle` · `BankDeviceTrustBanner` · `BankSessionTimeoutDialog` · `BankAppSwitcherPrivacyOverlay` · `BankOtpInput` · `BankScaApprovalSheet` (PSD2 dynamic linking) · `BankDeviceSessionTile` · `BankCallVerificationScreen` (anti-vishing) · `BankEidLoginButton` (national eID) · `BankPanicFreezeButton`
 
@@ -420,7 +420,7 @@ BankVirtualCardWidget(
 
 | Social | Investing | Credit |
 |---|---|---|
-| <img src="docs/screenshots/social-studio-light.png" width="230" /> | <img src="docs/screenshots/investing-studio-light.png" width="230" /> | <img src="docs/screenshots/credit-studio-light.png" width="230" /> |
+| <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/social-studio-light.png" width="230" /> | <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/investing-studio-light.png" width="230" /> | <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/credit-studio-light.png" width="230" /> |
 
 **Social**: `BankJointTransactionListTile` · `BankAccountOwnershipBadge` · `BankSharedGoalProgressCard` · `BankMoneyCircleCard` (Jamiyah saving circle)
 
@@ -430,7 +430,7 @@ BankVirtualCardWidget(
 
 | Subscriptions | Insights | Notifications |
 |---|---|---|
-| <img src="docs/screenshots/subscriptions-studio-light.png" width="230" /> | <img src="docs/screenshots/insights-studio-light.png" width="230" /> | <img src="docs/screenshots/notifications-studio-light.png" width="230" /> |
+| <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/subscriptions-studio-light.png" width="230" /> | <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/insights-studio-light.png" width="230" /> | <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/screenshots/notifications-studio-light.png" width="230" /> |
 
 **Subscriptions**: `BankPlanComparisonTable` · `BankPaywallSheet` · `BankPerksMarketplaceCard` · `BankReferralInviteCard`
 
@@ -482,7 +482,7 @@ BankBalanceText(money: account.balance) // shows '••••' when privacy is 
 widget level. It is defense in depth, not capture protection: pair it
 with platform `FLAG_SECURE` (Android) and screen-capture protection
 (iOS) per the recipes in
-[docs/enterprise/integration-playbook.md](docs/enterprise/integration-playbook.md).
+[docs/enterprise/integration-playbook.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/enterprise/integration-playbook.md).
 
 ### Currency-correct money display
 Every amount renders through a currency engine that knows each
@@ -519,7 +519,7 @@ Ships English strings; override any subset via `BankUiStrings`: no `gen-l10n` de
 Every widget is built RTL-first with directional geometry throughout;
 widget-test coverage runs under `TextDirection.rtl` and automated RTL
 golden screenshots are on the release roadmap
-([docs/enterprise/versioning-and-releases.md](docs/enterprise/versioning-and-releases.md)).
+([docs/enterprise/versioning-and-releases.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/enterprise/versioning-and-releases.md)).
 
 ---
 
@@ -586,9 +586,9 @@ git clone https://github.com/sayed3li97/bank-ui-kit.git
 cd bank-ui-kit/example && flutter run -t lib/gallery_main.dart
 ```
 
-**Building a bank?** Start from the [journey blueprints](docs/banking-journeys.md),
+**Building a bank?** Start from the [journey blueprints](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/banking-journeys.md),
 compose the widgets, wire your APIs to the callbacks, and read the
-[integration playbook](docs/enterprise/integration-playbook.md). Your
+[integration playbook](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/docs/enterprise/integration-playbook.md). Your
 core banking stays yours.
 
 ---

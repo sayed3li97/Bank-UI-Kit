@@ -1,0 +1,32 @@
+# .pubignore controls what ships in the published package. It replaces
+# .gitignore for `dart pub publish`, so it must exclude build output and
+# tooling itself, not only the extras.
+
+# Build output and tooling caches
+build/
+.dart_tool/
+.pub-cache/
+coverage/
+lcov.info
+*.log
+
+# Screenshot documentation (README references absolute GitHub URLs, so
+# these do not need to ship; the pubspec `screenshots:` set lives in
+# screenshots/ and is kept).
+docs/
+
+# Screenshot generation tooling (Node, Playwright)
+tools/
+
+# The example app's own build artifacts (the source stays)
+example/build/
+example/.dart_tool/
+
+# Repo automation and meta
+.github/
+.claude/
+.vscode/
+.idea/
+
+# Golden test failure captures
+test/**/failures/
