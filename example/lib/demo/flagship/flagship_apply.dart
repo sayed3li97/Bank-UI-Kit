@@ -440,9 +440,9 @@ class _FlagshipApplyFlowState extends State<FlagshipApplyFlow> {
                     label: 'Amount',
                     money: Money.fromDouble(25000, _currency),
                   ),
-                  const BankSummaryItem(
+                  BankSummaryItem(
                     label: 'Monthly payment',
-                    value: 'GBP 432.10',
+                    money: Money.fromDouble(432.10, _currency),
                   ),
                   const BankSummaryItem(label: 'Term', value: '60 months'),
                   const BankSummaryItem(
@@ -506,8 +506,7 @@ class _FlagshipApplyFlowState extends State<FlagshipApplyFlow> {
               child: OutlinedButton(
                 onPressed: _controller.back,
                 style: OutlinedButton.styleFrom(
-                  minimumSize:
-                      const Size(0, BankTokens.minTapTarget),
+                  minimumSize: const Size(0, BankTokens.minTapTarget),
                   side: BorderSide(color: theme.outline),
                   foregroundColor: theme.onSurface,
                   shape: RoundedRectangleBorder(
@@ -706,8 +705,7 @@ class _TimelineCard extends StatelessWidget {
             for (var i = 0; i < steps.length; i++)
               Padding(
                 padding: EdgeInsets.only(
-                  bottom:
-                      i == steps.length - 1 ? 0 : BankTokens.space3,
+                  bottom: i == steps.length - 1 ? 0 : BankTokens.space3,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
