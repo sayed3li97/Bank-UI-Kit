@@ -583,7 +583,11 @@ class _BankStoryViewerState extends State<BankStoryViewer>
     final message =
         widget.announcementBuilder?.call(story, page, widget.stories.length) ??
             '${story.title}. Story ${page + 1} of ${widget.stories.length}.';
-    SemanticsService.announce(message, Directionality.of(context));
+    SemanticsService.sendAnnouncement(
+      View.of(context),
+      message,
+      Directionality.of(context),
+    );
   }
 
   void _onTapUp(TapUpDetails details) {

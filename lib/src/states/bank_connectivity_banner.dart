@@ -622,7 +622,7 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
 
     return SizeTransition(
       sizeFactor: _entryAnimation,
-      axisAlignment: -1,
+      alignment: AlignmentDirectional.topStart,
       child: FadeTransition(
         opacity: _entryAnimation,
         child: Semantics(

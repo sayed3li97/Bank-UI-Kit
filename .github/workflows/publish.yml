@@ -1,0 +1,24 @@
+# Publishes the package to pub.dev over OIDC (no stored credentials).
+#
+# Triggered by a version tag push and by workflow_dispatch (release.yml
+# dispatches this against the tag it creates). pub.dev's trusted publishing
+# must be configured for this repo with tag pattern `v{{version}}` and both
+# push and workflow_dispatch events enabled (package Admin > Automated
+# publishing).
+#
+# The dart-lang/setup-dart reusable workflow installs both the Dart and
+# Flutter SDKs, runs the publish dry-run, performs the OIDC handshake, and
+# publishes. `id-token: write` is required for OIDC.
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    permissions:
+      id-token: write # required for pub.dev OIDC authentication
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1

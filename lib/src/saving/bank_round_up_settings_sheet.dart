@@ -373,7 +373,7 @@ class _BankRoundUpSettingsSheetState extends State<BankRoundUpSettingsSheet> {
                     child: Switch(
                       value: _isEnabled,
                       onChanged: _handleToggle,
-                      activeColor: accent,
+                      activeThumbColor: accent,
                     ),
                   ),
                 ],

@@ -4,6 +4,22 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/) and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## 0.0.2
+
+Maintenance release: clears the pub.dev analysis findings for a clean score.
+
+### Changed
+
+- Upgraded `fl_chart` to `^1.2.0` and `qr` to `^4.0.0` (both now on their
+  latest majors). The QR view adopts the `qr` 4.x `QrPayload` API.
+- Raised the Flutter floor to `>=3.44.0` and migrated every deprecated
+  API to its current replacement: Switch `activeColor` to
+  `activeThumbColor`, `SemanticsService.announce` to `sendAnnouncement`,
+  `SizeTransition.axisAlignment` to `alignment`, `Matrix4.scale` to
+  `scaleByDouble`, and `DropdownButtonFormField.value` to `initialValue`.
+
+No public API changes; widgets render and behave exactly as before.
+
 ## 0.0.1
 
 Initial public release: 140+ composable banking widgets across 22 domains,

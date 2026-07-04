@@ -216,7 +216,8 @@ class _BankOnboardingCarouselState extends State<BankOnboardingCarousel> {
               itemCount: widget.pages.length,
               onPageChanged: (index) {
                 setState(() => _page = index);
-                SemanticsService.announce(
+                SemanticsService.sendAnnouncement(
+                  View.of(context),
                   'Page ${index + 1} of ${widget.pages.length}',
                   Directionality.of(context),
                 );

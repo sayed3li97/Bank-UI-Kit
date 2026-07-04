@@ -291,7 +291,7 @@ class _BankBatchPaymentReviewSheetState
                         ),
                         Switch(
                           value: _errorsOnly,
-                          activeColor: theme.onPrimary,
+                          activeThumbColor: theme.onPrimary,
                           activeTrackColor: accent,
                           onChanged: (value) =>
                               setState(() => _errorsOnly = value),

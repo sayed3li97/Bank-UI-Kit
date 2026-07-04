@@ -623,7 +623,7 @@ class _BlockRow extends StatelessWidget {
                             )
                           : Switch(
                               value: block.blocked,
-                              activeColor: theme.onPrimary,
+                              activeThumbColor: theme.onPrimary,
                               activeTrackColor:
                                   coolingOff ? pendingColor : accentColor,
                               onChanged: interactive

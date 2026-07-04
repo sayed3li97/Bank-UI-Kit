@@ -100,3 +100,46 @@ node tool/screenshots.mjs
 
 By contributing you agree that your contributions are licensed under the
 project's [MIT License](LICENSE).
+
+## Releasing to pub.dev
+
+Publishing is fully automated and driven by the version in
+`pubspec.yaml`. There are no stored credentials and no personal access
+tokens: pub.dev trusts the workflow over OIDC.
+
+1. Bump `version:` in `pubspec.yaml` and add a matching `CHANGELOG.md`
+   entry under a bare `## <version>` heading (semantic versioning).
+2. Merge that change to `main`.
+3. `Release on version bump` (`.github/workflows/release.yml`) sees the
+   new version, creates a GitHub Release and `v<version>` tag with the
+   CHANGELOG section as notes, then dispatches the publisher against that
+   tag with `gh workflow run publish.yml --ref v<version>`.
+4. `Publish to pub.dev` (`.github/workflows/publish.yml`) runs the
+   `dart-lang/setup-dart` reusable workflow, which sets up Flutter,
+   dry-runs, and publishes over OIDC.
+
+A merge that does not change the version, or one whose version is already
+tagged, publishes nothing. You cannot republish an existing version, so
+every release needs a version bump.
+
+Why the explicit dispatch in step 3: a tag created with the built-in
+`GITHUB_TOKEN` does not trigger another workflow's `push:` listener
+(GitHub's loop-prevention rule). `workflow_dispatch` is the exemption,
+and it must target the tag ref (`--ref v<version>`), never a branch,
+because pub.dev's trusted publishing only accepts an OIDC token whose ref
+has refType `tag`.
+
+### One-time setup on pub.dev
+
+Enable trusted publishing once at
+`https://pub.dev/packages/bank_ui_kit/admin` under Automated publishing:
+
+- Enable publishing from GitHub Actions.
+- Repository: `sayed3li97/bank-ui-kit`.
+- Tag pattern: `v{{version}}`.
+- Enable publishing from push events: checked.
+- Enable publishing from workflow_dispatch events: checked.
+
+Prefer to cut a release by hand? `git tag vX.Y.Z && git push origin
+vX.Y.Z` still works; the tag push (or a manual `workflow_dispatch` of
+`publish.yml` against the tag) publishes with no other setup.

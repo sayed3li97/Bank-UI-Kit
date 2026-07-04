@@ -450,7 +450,7 @@ class _RegionDropdown extends StatelessWidget {
           ),
         ),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           items: [
             for (final option in options)
               DropdownMenuItem(value: option, child: Text(option)),

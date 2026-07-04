@@ -1,0 +1,65 @@
+# Turns a version bump merged to main into a published pub.dev release.
+#
+# On every push to main this reads the version from pubspec.yaml. If no
+# `v<version>` tag exists yet (that is, the merge actually bumped the
+# version) it creates a GitHub Release and tag, then explicitly dispatches
+# publish.yml against that tag.
+#
+# Why the explicit dispatch: a tag created with the built-in GITHUB_TOKEN
+# does not trigger other workflows' `push:` listeners (GitHub's loop-
+# prevention rule). `workflow_dispatch` is the documented exemption, so we
+# start publish.yml with `gh workflow run publish.yml --ref v<version>`.
+# The ref must be the tag, never a branch: pub.dev's trusted publishing
+# only accepts an OIDC token whose ref has refType "tag".
+name: Release on version bump
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write # create the release and tag
+  actions: write # dispatch publish.yml
+
+jobs:
+  release:
+    name: Release when the version is new
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create release and dispatch publish when the version is new
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | tr -d '[:space:]')"
+          tag="v${version}"
+
+          if git ls-remote --tags origin "refs/tags/${tag}" | grep -q "refs/tags/${tag}$"; then
+            echo "Tag ${tag} already exists; no version bump to release."
+            exit 0
+          fi
+
+          # Release notes: the CHANGELOG block between "## <version>" and
+          # the next "## " heading. Requires bare version headings.
+          notes="$(awk -v ver="## ${version}" '
+            $0 == ver { cap = 1; next }
+            cap && /^## / { cap = 0 }
+            cap { print }
+          ' CHANGELOG.md)"
+          if [ -z "$(printf '%s' "${notes}" | tr -d '[:space:]')" ]; then
+            notes="Release ${tag}"
+          fi
+
+          gh release create "${tag}" \
+            --title "${tag}" \
+            --notes "${notes}" \
+            --target "${GITHUB_SHA}"
+          echo "Created release ${tag}."
+
+          # Dispatch the publisher against the tag ref (not a branch), so
+          # the OIDC token pub.dev receives has refType "tag".
+          gh workflow run publish.yml --ref "${tag}"
+          echo "Dispatched publish.yml against ${tag}."
