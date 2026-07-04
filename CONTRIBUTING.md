@@ -29,8 +29,8 @@ example/               # component gallery + Revolut-style demo app
   lib/screens/         # one showcase screen per module
   lib/demo/            # full-app dashboard + sample data
   lib/screenshot_harness.dart  # URL-driven entrypoint for doc screenshots
-tools/screenshots.mjs  # Playwright doc-screenshot generator
-docs/screenshots/      # generated screenshots used by the README
+tool/screenshots.mjs  # Playwright doc-screenshot generator
+doc/screenshots/      # generated screenshots used by the README
 ```
 
 ## Getting started
@@ -88,7 +88,7 @@ cd example
 flutter build web -t lib/screenshot_harness.dart --release --no-web-resources-cdn --no-tree-shake-icons
 cd ..
 npm i -D playwright      # or have a Chromium available
-node tools/screenshots.mjs
+node tool/screenshots.mjs
 ```
 
 ## Pull requests

@@ -2,15 +2,15 @@
 //
 // Serves the built Flutter web harness (example/build/web) and drives a
 // headless Chromium via Playwright to capture every screen across the three
-// presets and light/dark, writing PNGs into docs/screenshots/.
+// presets and light/dark, writing PNGs into doc/screenshots/.
 //
 // Also captures a per-component screenshot for every gallery entry, writing to
-// docs/screenshots/components/<ComponentName>.png.
+// doc/screenshots/components/<ComponentName>.png.
 //
 // Usage:
 //   cd example && flutter build web -t lib/screenshot_harness.dart --release \
 //     --no-web-resources-cdn --no-tree-shake-icons
-//   node tools/screenshots.mjs
+//   node tool/screenshots.mjs
 //
 // Pass --components-only to skip screen shots and only re-shoot components.
 // Pass --screens-only  to skip component shots.
@@ -27,7 +27,7 @@ import { chromium } from 'playwright';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..');
 const webRoot = join(repoRoot, 'example', 'build', 'web');
-const outDir = join(repoRoot, 'docs', 'screenshots');
+const outDir = join(repoRoot, 'doc', 'screenshots');
 const compDir = join(outDir, 'components');
 
 if (!existsSync(webRoot)) {

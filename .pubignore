@@ -13,10 +13,10 @@ lcov.info
 # Screenshot documentation (README references absolute GitHub URLs, so
 # these do not need to ship; the pubspec `screenshots:` set lives in
 # screenshots/ and is kept).
-docs/
+doc/
 
 # Screenshot generation tooling (Node, Playwright)
-tools/
+tool/
 
 # The example app's own build artifacts (the source stays)
 example/build/

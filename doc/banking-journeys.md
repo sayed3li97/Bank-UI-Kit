@@ -9,7 +9,7 @@ Purpose: this file is the blueprint for future journey-level APIs in
 Bank UI Kit. Each journey lists its trigger, step sequence, variants,
 and the error states a production implementation must handle. When we
 build journey scaffolds, each step maps to kit components (most steps
-already do: see docs/research/top-20-banking-apps.md for the component
+already do: see doc/research/top-20-banking-apps.md for the component
 coverage matrix).
 
 Cross-cutting patterns every journey should honor:
@@ -24,9 +24,9 @@ Read this catalog as a roadmap, not implied product. Today:
 
 | Layer | Status |
 |---|---|
-| Screen-level widgets | Composable today for every journey below; each step maps to components that exist in the kit (see docs/research/top-20-banking-apps.md) |
+| Screen-level widgets | Composable today for every journey below; each step maps to components that exist in the kit (see doc/research/top-20-banking-apps.md) |
 | Headless flow controllers | Shipped: `BankKycFlowController`, `BankTransferFlowController`, `BankIncomeSorterController`, `BankDisputeFlowController`. All other journeys: planned |
-| Journey scaffolds (wired reference screens) | Planned; sequenced on the release train in docs/enterprise/versioning-and-releases.md |
+| Journey scaffolds (wired reference screens) | Planned; sequenced on the release train in doc/enterprise/versioning-and-releases.md |
 
 ---
 
