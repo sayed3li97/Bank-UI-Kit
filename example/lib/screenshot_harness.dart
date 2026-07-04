@@ -111,7 +111,15 @@ void main() {
 
   // ── Screen mode (existing) ─────────────────────────────────────────────────
   final screenKey = params['screen'] ?? 'home';
-  final builder = _screens[screenKey] ?? _screens['home']!;
+  // The apply flow can be pinned to a specific step via ?step=N so the
+  // documentation walkthrough can capture every stage of the journey.
+  Widget Function() builder;
+  if (screenKey == 'flagship-apply') {
+    final step = int.tryParse(params['step'] ?? '2') ?? 2;
+    builder = () => FlagshipApplyFlow(initialStep: step);
+  } else {
+    builder = _screens[screenKey] ?? _screens['home']!;
+  }
 
   runApp(
     BankUiScope(

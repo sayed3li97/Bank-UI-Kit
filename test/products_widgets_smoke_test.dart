@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Widget _host(Widget child) => BankUiScope(
-      initialData: const BankUiScopeData(),
       child: MaterialApp(
         theme: BankPreset.studio.apply(ThemeData.light(useMaterial3: true)),
         home: Scaffold(body: SingleChildScrollView(child: child)),
@@ -26,9 +25,10 @@ void main() {
           features: const ['No early settlement fee', 'Decision in minutes'],
           badges: const [
             BankProductBadge(
-                label: 'Featured', tone: BankProductBadgeTone.promo),
+              label: 'Featured',
+              tone: BankProductBadgeTone.promo,
+            ),
           ],
-          ctaLabel: 'View details',
           onTap: () => tapped = true,
         ),
       ),

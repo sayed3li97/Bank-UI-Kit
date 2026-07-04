@@ -128,17 +128,19 @@ class _CategoryGrid extends StatelessWidget {
         rows.add(const SizedBox(height: BankTokens.space3));
       }
       rows.add(
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(child: _categoryTile(left)),
-            const SizedBox(width: BankTokens.space3),
-            Expanded(
-              child: right == null
-                  ? const SizedBox.shrink()
-                  : _categoryTile(right),
-            ),
-          ],
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: _categoryTile(left)),
+              const SizedBox(width: BankTokens.space3),
+              Expanded(
+                child: right == null
+                    ? const SizedBox.shrink()
+                    : _categoryTile(right),
+              ),
+            ],
+          ),
         ),
       );
     }

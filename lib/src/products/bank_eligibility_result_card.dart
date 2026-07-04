@@ -523,16 +523,21 @@ class BankEligibilityResultCard extends StatelessWidget {
     return Semantics(
       button: true,
       label: applyLabel,
-      child: FilledButton(
-        onPressed: onApply,
-        style: FilledButton.styleFrom(
-          backgroundColor: theme.primary,
-          foregroundColor: theme.onPrimary,
-          minimumSize: const Size(double.infinity, BankTokens.minTapTarget),
-          shape: RoundedRectangleBorder(borderRadius: theme.buttonRadius),
-          textStyle: BankTokens.labelLarge,
+      child: SizedBox(
+        width: double.infinity,
+        height: BankTokens.space12,
+        child: FilledButton(
+          onPressed: onApply,
+          style: FilledButton.styleFrom(
+            backgroundColor: theme.primary,
+            foregroundColor: theme.onPrimary,
+            shape: RoundedRectangleBorder(borderRadius: theme.buttonRadius),
+          ),
+          child: Text(
+            applyLabel,
+            style: BankTokens.labelLarge.copyWith(color: theme.onPrimary),
+          ),
         ),
-        child: Text(applyLabel),
       ),
     );
   }

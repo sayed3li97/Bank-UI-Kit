@@ -65,7 +65,19 @@ const server = createServer(async (req, res) => {
     let p = decodeURIComponent(url.pathname);
     if (p === '/' || p === '') p = '/index.html';
     let filePath = join(webRoot, p);
-    if (!existsSync(filePath)) filePath = join(webRoot, 'index.html'); // SPA fallback
+    if (!existsSync(filePath)) {
+      // A missing file with an extension is a real asset (e.g. Flutter 3.44
+      // no longer emits FontManifest.json): 404 it so the engine handles the
+      // absence gracefully. Only extensionless paths (navigation routes) fall
+      // back to index.html. Returning index.html for a missing .json asset
+      // makes the bootstrap parse "<!DOCTYPE" as JSON and the app never boots.
+      if (extname(p)) {
+        res.writeHead(404, { 'content-type': 'text/plain' });
+        res.end('not found');
+        return;
+      }
+      filePath = join(webRoot, 'index.html'); // SPA fallback
+    }
     const body = await readFile(filePath);
     res.writeHead(200, {
       'content-type': MIME[extname(filePath)] || 'application/octet-stream',
@@ -132,6 +144,18 @@ if (!componentsOnly) {
   for (const dark of [false, true]) {
     shots.push({ screen: 'heritage', preset: 'heritage', dark, w: 412, h: 900 });
   }
+  // Flagship product-suite demo (Meridian): capture the key journey
+  // screens in Studio light, plus a couple of alternates for the README.
+  const flagshipScreens = [
+    'flagship-home', 'flagship-catalog', 'flagship-product',
+    'flagship-apply', 'flagship-my-products',
+  ];
+  for (const screen of flagshipScreens) {
+    shots.push({ screen, preset: 'studio', dark: false, w: 412, h: 1600 });
+  }
+  shots.push({ screen: 'flagship-home', preset: 'studio', dark: true, w: 412, h: 1600 });
+  shots.push({ screen: 'flagship-product', preset: 'heritage', dark: false, w: 412, h: 1600 });
+  shots.push({ screen: 'flagship-catalog', preset: 'voltage', dark: true, w: 412, h: 1600 });
 
   console.log(`\n── Screens (${shots.length}) ─────────────────────────────────────────────`);
   // Reuse a single page for all screen shots, resizing viewport as needed.
@@ -304,6 +328,14 @@ if (!screensOnly) {
     { name: 'BankConnectivityBanner',     fullScreen: true  },
     { name: 'BankServiceStatusList',      fullScreen: true  },
     { name: 'BankUpdatePromptSheet',      fullScreen: true  },
+    // Products & applications
+    { name: 'BankProductCard',            fullScreen: true  },
+    { name: 'BankProductCategoryTile',    fullScreen: true  },
+    { name: 'BankEligibilityResultCard',  fullScreen: true  },
+    { name: 'BankOfferSummaryCard',       fullScreen: true  },
+    { name: 'BankRatioGauge',             fullScreen: true  },
+    { name: 'BankDisclosureConsentSheet', fullScreen: true  },
+    { name: 'BankESignaturePad',          fullScreen: true  },
   ];
 
   // --only=Name1,Name2 restricts the component sweep (incremental capture).
