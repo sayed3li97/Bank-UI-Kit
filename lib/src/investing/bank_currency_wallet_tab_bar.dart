@@ -54,11 +54,65 @@ class BankCurrencyWalletTabBar extends StatefulWidget {
   /// Called when the user taps a tab, with the tapped tab's index.
   final ValueChanged<int> onSelected;
 
+  /// Overrides the row height. Defaults to `72`.
+  final double? height;
+
+  /// Overrides the horizontal list padding. Defaults to
+  /// `EdgeInsets.symmetric(horizontal: BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the gap between tabs. Defaults to [BankTokens.space2].
+  final double? spacing;
+
+  /// Overrides each tab's corner radius. Defaults to
+  /// `BorderRadius.circular(BankTokens.radiusSmall)`.
+  final BorderRadius? tabRadius;
+
+  /// Overrides the selected tab's accent (bottom border and label/code
+  /// colour). Defaults to the theme primary.
+  final Color? selectedColor;
+
+  /// Overrides the selected tab's background. Defaults to the theme
+  /// surfaceVariant.
+  final Color? selectedBackgroundColor;
+
+  /// Merged over the currency-code label style (BankTokens.labelMedium).
+  final TextStyle? labelStyle;
+
+  /// Merged over the balance style (theme numeralSmall).
+  final TextStyle? balanceStyle;
+
+  /// Overrides the selection animation duration. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Overrides the selection animation curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
+  /// Builds each tab's semantic announcement. Defaults to
+  /// `'{currencyName}, balance {formattedBalance}'`.
+  final String Function(
+    BankCurrencyWallet wallet,
+    String formattedBalance,
+  )? semanticLabelBuilder;
+
   const BankCurrencyWalletTabBar({
     required this.wallets,
     required this.selectedIndex,
     required this.onSelected,
     super.key,
+    this.height,
+    this.padding,
+    this.spacing,
+    this.tabRadius,
+    this.selectedColor,
+    this.selectedBackgroundColor,
+    this.labelStyle,
+    this.balanceStyle,
+    this.animationDuration,
+    this.animationCurve,
+    this.semanticLabelBuilder,
   });
 
   @override
@@ -119,13 +173,15 @@ class _BankCurrencyWalletTabBarState extends State<BankCurrencyWalletTabBar> {
     final scope = BankUiScope.of(context);
 
     return SizedBox(
-      height: 72,
+      height: widget.height ?? 72,
       child: ListView.separated(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: BankTokens.space4),
+        padding: widget.padding ??
+            const EdgeInsets.symmetric(horizontal: BankTokens.space4),
         itemCount: widget.wallets.length,
-        separatorBuilder: (_, __) => const SizedBox(width: BankTokens.space2),
+        separatorBuilder: (_, __) =>
+            SizedBox(width: widget.spacing ?? BankTokens.space2),
         itemBuilder: (context, index) {
           final wallet = widget.wallets[index];
           final isSelected = index == widget.selectedIndex;
@@ -143,7 +199,9 @@ class _BankCurrencyWalletTabBarState extends State<BankCurrencyWalletTabBar> {
           ].join(' ');
 
           return Semantics(
-            label: '${wallet.currencyName}, balance $formattedBalance',
+            label:
+                widget.semanticLabelBuilder?.call(wallet, formattedBalance) ??
+                    '${wallet.currencyName}, balance $formattedBalance',
             selected: isSelected,
             button: true,
             excludeSemantics: true,
@@ -154,6 +212,13 @@ class _BankCurrencyWalletTabBarState extends State<BankCurrencyWalletTabBar> {
               formattedBalance: formattedBalance,
               label: label,
               bankTheme: bankTheme,
+              selectedColor: widget.selectedColor,
+              selectedBackgroundColor: widget.selectedBackgroundColor,
+              tabRadius: widget.tabRadius,
+              labelStyle: widget.labelStyle,
+              balanceStyle: widget.balanceStyle,
+              animationDuration: widget.animationDuration,
+              animationCurve: widget.animationCurve,
               onTap: () {
                 widget.onSelected(index);
                 WidgetsBinding.instance.addPostFrameCallback(
@@ -181,6 +246,13 @@ class _WalletTab extends StatelessWidget {
     required this.label,
     required this.bankTheme,
     required this.onTap,
+    this.selectedColor,
+    this.selectedBackgroundColor,
+    this.tabRadius,
+    this.labelStyle,
+    this.balanceStyle,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   final GlobalKey tabKey;
@@ -190,29 +262,42 @@ class _WalletTab extends StatelessWidget {
   final String label;
   final BankThemeData bankTheme;
   final VoidCallback onTap;
+  final Color? selectedColor;
+  final Color? selectedBackgroundColor;
+  final BorderRadius? tabRadius;
+  final TextStyle? labelStyle;
+  final TextStyle? balanceStyle;
+  final Duration? animationDuration;
+  final Curve? animationCurve;
 
   @override
   Widget build(BuildContext context) {
+    final resolvedRadius =
+        tabRadius ?? BorderRadius.circular(BankTokens.radiusSmall);
+    final accent = selectedColor ?? bankTheme.primary;
+
     return Material(
       key: tabKey,
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(BankTokens.radiusSmall),
+        borderRadius: resolvedRadius,
         child: AnimatedContainer(
-          duration: BankTokens.durationFast,
-          curve: BankTokens.curveStandard,
+          duration: animationDuration ?? BankTokens.durationFast,
+          curve: animationCurve ?? BankTokens.curveStandard,
           constraints: const BoxConstraints(minWidth: BankTokens.minTapTarget),
           padding: const EdgeInsets.symmetric(
             horizontal: BankTokens.space3,
             vertical: BankTokens.space2,
           ),
           decoration: BoxDecoration(
-            color: isSelected ? bankTheme.surfaceVariant : Colors.transparent,
-            borderRadius: BorderRadius.circular(BankTokens.radiusSmall),
+            color: isSelected
+                ? (selectedBackgroundColor ?? bankTheme.surfaceVariant)
+                : Colors.transparent,
+            borderRadius: resolvedRadius,
             border: Border(
               bottom: BorderSide(
-                color: isSelected ? bankTheme.primary : Colors.transparent,
+                color: isSelected ? accent : Colors.transparent,
                 width: 3,
               ),
             ),
@@ -223,22 +308,24 @@ class _WalletTab extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: BankTokens.labelMedium.copyWith(
-                  color: isSelected
-                      ? bankTheme.primary
-                      : bankTheme.onSurfaceVariant,
-                ),
+                style: BankTokens.labelMedium
+                    .copyWith(
+                      color: isSelected ? accent : bankTheme.onSurfaceVariant,
+                    )
+                    .merge(labelStyle),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
               Text(
                 formattedBalance,
-                style: bankTheme.numeralSmall.copyWith(
-                  color: isSelected
-                      ? bankTheme.onSurface
-                      : bankTheme.onSurfaceVariant,
-                ),
+                style: bankTheme.numeralSmall
+                    .copyWith(
+                      color: isSelected
+                          ? bankTheme.onSurface
+                          : bankTheme.onSurfaceVariant,
+                    )
+                    .merge(balanceStyle),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

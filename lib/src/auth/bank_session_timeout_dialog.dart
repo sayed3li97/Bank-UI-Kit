@@ -63,6 +63,42 @@ class BankSessionTimeoutDialog extends StatefulWidget {
   /// Label for the secondary (logout) button. Defaults to `'Log Out'`.
   final String logoutLabel;
 
+  /// Content padding inside the dialog. Defaults to [BankTokens.space6] on
+  /// all sides when null.
+  final EdgeInsetsGeometry? padding;
+
+  /// Corner radius of the dialog. Defaults to the theme `cardRadius` when
+  /// null.
+  final BorderRadius? radius;
+
+  /// Background color of the dialog surface. Defaults to the theme `surface`
+  /// when null.
+  final Color? backgroundColor;
+
+  /// Text style merged over the computed title style (headline small in the
+  /// theme foreground). Null applies no override.
+  final TextStyle? titleStyle;
+
+  /// Text style merged over the computed body style (body medium in the
+  /// theme secondary foreground). Null applies no override.
+  final TextStyle? bodyStyle;
+
+  /// Text style merged over the computed countdown style (display medium in
+  /// the active / expired color). Null applies no override.
+  final TextStyle? countdownStyle;
+
+  /// Color of the countdown while time remains. Defaults to the theme
+  /// `primary` when null.
+  final Color? accentColor;
+
+  /// Color of the countdown once it reaches zero. Defaults to the theme
+  /// `negativeBalance` when null.
+  final Color? expiredColor;
+
+  /// Suffix appended after the countdown in the screen-reader label, joined
+  /// as `'<time> <suffix>'`. Defaults to `'remaining'`.
+  final String remainingLabel;
+
   const BankSessionTimeoutDialog({
     required this.remainingTime,
     required this.onExtend,
@@ -72,6 +108,15 @@ class BankSessionTimeoutDialog extends StatefulWidget {
     this.body = 'Your session will expire soon. Stay logged in?',
     this.extendLabel = 'Stay Logged In',
     this.logoutLabel = 'Log Out',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.titleStyle,
+    this.bodyStyle,
+    this.countdownStyle,
+    this.accentColor,
+    this.expiredColor,
+    this.remainingLabel = 'remaining',
   });
 
   @override
@@ -132,10 +177,12 @@ class _BankSessionTimeoutDialogState extends State<BankSessionTimeoutDialog> {
     final bankTheme = BankThemeData.of(context);
 
     return Dialog(
-      backgroundColor: bankTheme.surface,
-      shape: RoundedRectangleBorder(borderRadius: bankTheme.cardRadius),
+      backgroundColor: widget.backgroundColor ?? bankTheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: widget.radius ?? bankTheme.cardRadius,
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space6),
+        padding: widget.padding ?? const EdgeInsets.all(BankTokens.space6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -143,33 +190,35 @@ class _BankSessionTimeoutDialogState extends State<BankSessionTimeoutDialog> {
             // Title
             Text(
               widget.title,
-              style: BankTokens.headlineSmall.copyWith(
-                color: bankTheme.onSurface,
-              ),
+              style: BankTokens.headlineSmall
+                  .copyWith(color: bankTheme.onSurface)
+                  .merge(widget.titleStyle),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: BankTokens.space4),
             // Body
             Text(
               widget.body,
-              style: BankTokens.bodyMedium.copyWith(
-                color: bankTheme.onSurfaceVariant,
-              ),
+              style: BankTokens.bodyMedium
+                  .copyWith(color: bankTheme.onSurfaceVariant)
+                  .merge(widget.bodyStyle),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: BankTokens.space4),
             // Countdown
             Semantics(
               liveRegion: true,
-              label: '${_formatTime(_secondsRemaining)} remaining',
+              label: '${_formatTime(_secondsRemaining)} '
+                  '${widget.remainingLabel}',
               excludeSemantics: true,
               child: Text(
                 _formatTime(_secondsRemaining),
                 style: BankTokens.displayMedium.copyWith(
-                  color:
-                      _expired ? bankTheme.negativeBalance : bankTheme.primary,
+                  color: _expired
+                      ? (widget.expiredColor ?? bankTheme.negativeBalance)
+                      : (widget.accentColor ?? bankTheme.primary),
                   fontFeatures: const [FontFeature.tabularFigures()],
-                ),
+                ).merge(widget.countdownStyle),
                 textAlign: TextAlign.center,
               ),
             ),

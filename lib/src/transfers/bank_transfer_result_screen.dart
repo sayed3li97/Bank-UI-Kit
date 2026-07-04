@@ -56,6 +56,88 @@ class BankTransferResultScreen extends StatelessWidget {
   /// When non-null, a secondary "New Transfer" button is shown.
   final VoidCallback? onNewTransfer;
 
+  /// Overrides the screen background color. Defaults to the theme background.
+  final Color? backgroundColor;
+
+  /// Overrides the screen content padding. Defaults to
+  /// `EdgeInsets.symmetric(horizontal: space6, vertical: space6)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Merged over the result title style
+  /// (BankTokens.headlineLarge in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the beneficiary line style
+  /// (BankTokens.bodyLarge in onSurfaceVariant).
+  final TextStyle? beneficiaryStyle;
+
+  /// Merged over the amount style
+  /// (BankTokens.headlineMedium in onSurface).
+  final TextStyle? amountStyle;
+
+  /// Merged over the reference line style
+  /// (BankTokens.bodySmall in onSurfaceVariant).
+  final TextStyle? referenceStyle;
+
+  /// Merged over the failure reason style
+  /// (BankTokens.bodyMedium in onSurfaceVariant).
+  final TextStyle? failureReasonStyle;
+
+  /// Overrides the failure icon. Defaults to `Icons.error_outline`.
+  final IconData errorIcon;
+
+  /// Overrides the failure icon color. Defaults to `BankTokens.danger`.
+  final Color? errorColor;
+
+  /// Diameter of the success animation. Defaults to `96`.
+  final double? successAnimationSize;
+
+  /// Whether the success animation shows confetti. Defaults to `true`.
+  final bool showConfetti;
+
+  /// Overrides the share-receipt button icon. Defaults to
+  /// `Icons.share_outlined`.
+  final IconData shareReceiptIcon;
+
+  /// Overrides the new-transfer button icon. Defaults to `Icons.add`.
+  final IconData newTransferIcon;
+
+  /// Overrides the primary button background. Defaults to the theme primary.
+  final Color? buttonColor;
+
+  /// Overrides the primary button foreground. Defaults to the theme
+  /// onPrimary.
+  final Color? buttonForegroundColor;
+
+  /// Overrides the button corner radius. Defaults to the theme buttonRadius.
+  final BorderRadius? buttonRadius;
+
+  /// Semantics label on the success animation. Defaults to
+  /// `'Transfer sent successfully'`.
+  final String successSemanticLabel;
+
+  /// Semantics label on the failure icon. Defaults to `'Transfer failed'`.
+  final String failureSemanticLabel;
+
+  /// Preposition before the beneficiary name. Defaults to `'To'`.
+  final String toLabel;
+
+  /// Prefix before the reference number. Defaults to `'Ref: '`.
+  final String referenceLabel;
+
+  /// Prefix for the reference number semantics label. Defaults to
+  /// `'Reference number: '`.
+  final String referenceSemanticPrefix;
+
+  /// Label of the share-receipt button. Defaults to `'Share Receipt'`.
+  final String shareReceiptLabel;
+
+  /// Label of the new-transfer button. Defaults to `'New Transfer'`.
+  final String newTransferLabel;
+
+  /// Label of the primary done button. Defaults to `'Done'`.
+  final String doneLabel;
+
   const BankTransferResultScreen({
     required this.isSuccess,
     required this.onDone,
@@ -66,6 +148,30 @@ class BankTransferResultScreen extends StatelessWidget {
     this.failureReason,
     this.onShareReceipt,
     this.onNewTransfer,
+    this.backgroundColor,
+    this.padding,
+    this.titleStyle,
+    this.beneficiaryStyle,
+    this.amountStyle,
+    this.referenceStyle,
+    this.failureReasonStyle,
+    this.errorIcon = Icons.error_outline,
+    this.errorColor,
+    this.successAnimationSize,
+    this.showConfetti = true,
+    this.shareReceiptIcon = Icons.share_outlined,
+    this.newTransferIcon = Icons.add,
+    this.buttonColor,
+    this.buttonForegroundColor,
+    this.buttonRadius,
+    this.successSemanticLabel = 'Transfer sent successfully',
+    this.failureSemanticLabel = 'Transfer failed',
+    this.toLabel = 'To',
+    this.referenceLabel = 'Ref: ',
+    this.referenceSemanticPrefix = 'Reference number: ',
+    this.shareReceiptLabel = 'Share Receipt',
+    this.newTransferLabel = 'New Transfer',
+    this.doneLabel = 'Done',
   });
 
   @override
@@ -74,13 +180,14 @@ class BankTransferResultScreen extends StatelessWidget {
     final scope = BankUiScope.of(context);
 
     return Scaffold(
-      backgroundColor: bankTheme.background,
+      backgroundColor: backgroundColor ?? bankTheme.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: BankTokens.space6,
-            vertical: BankTokens.space6,
-          ),
+          padding: padding ??
+              const EdgeInsets.symmetric(
+                horizontal: BankTokens.space6,
+                vertical: BankTokens.space6,
+              ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -92,10 +199,25 @@ class BankTransferResultScreen extends StatelessWidget {
                         referenceNumber: referenceNumber,
                         bankTheme: bankTheme,
                         scope: scope,
+                        semanticLabel: successSemanticLabel,
+                        animationSize: successAnimationSize,
+                        showConfetti: showConfetti,
+                        titleStyle: titleStyle,
+                        toLabel: toLabel,
+                        beneficiaryStyle: beneficiaryStyle,
+                        amountStyle: amountStyle,
+                        referenceLabel: referenceLabel,
+                        referenceSemanticPrefix: referenceSemanticPrefix,
+                        referenceStyle: referenceStyle,
                       )
                     : _FailureContent(
                         failureReason: failureReason,
                         bankTheme: bankTheme,
+                        semanticLabel: failureSemanticLabel,
+                        errorIcon: errorIcon,
+                        errorColor: errorColor ?? BankTokens.danger,
+                        titleStyle: titleStyle,
+                        failureReasonStyle: failureReasonStyle,
                       ),
               ),
               const SizedBox(height: BankTokens.space6),
@@ -105,6 +227,15 @@ class BankTransferResultScreen extends StatelessWidget {
                 onDone: onDone,
                 onShareReceipt: isSuccess ? onShareReceipt : null,
                 onNewTransfer: isSuccess ? onNewTransfer : null,
+                shareReceiptLabel: shareReceiptLabel,
+                shareReceiptIcon: shareReceiptIcon,
+                newTransferLabel: newTransferLabel,
+                newTransferIcon: newTransferIcon,
+                doneLabel: doneLabel,
+                buttonColor: buttonColor ?? bankTheme.primary,
+                buttonForegroundColor:
+                    buttonForegroundColor ?? bankTheme.onPrimary,
+                buttonRadius: buttonRadius ?? bankTheme.buttonRadius,
               ),
             ],
           ),
@@ -125,6 +256,16 @@ class _SuccessContent extends StatelessWidget {
     required this.referenceNumber,
     required this.bankTheme,
     required this.scope,
+    required this.semanticLabel,
+    required this.animationSize,
+    required this.showConfetti,
+    required this.toLabel,
+    required this.referenceLabel,
+    required this.referenceSemanticPrefix,
+    this.titleStyle,
+    this.beneficiaryStyle,
+    this.amountStyle,
+    this.referenceStyle,
   });
 
   final Money? amount;
@@ -132,6 +273,16 @@ class _SuccessContent extends StatelessWidget {
   final String? referenceNumber;
   final BankThemeData bankTheme;
   final BankUiScopeData scope;
+  final String semanticLabel;
+  final double? animationSize;
+  final bool showConfetti;
+  final String toLabel;
+  final String referenceLabel;
+  final String referenceSemanticPrefix;
+  final TextStyle? titleStyle;
+  final TextStyle? beneficiaryStyle;
+  final TextStyle? amountStyle;
+  final TextStyle? referenceStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -147,37 +298,37 @@ class _SuccessContent extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Semantics(
-          label: 'Transfer sent successfully',
-          child: const BankSuccessAnimation(
-            size: 96,
-            showConfetti: true,
+          label: semanticLabel,
+          child: BankSuccessAnimation(
+            size: animationSize ?? 96,
+            showConfetti: showConfetti,
           ),
         ),
         const SizedBox(height: BankTokens.space6),
         Text(
           scope.strings.transferSuccess,
-          style: BankTokens.headlineLarge.copyWith(
-            color: bankTheme.onSurface,
-          ),
+          style: BankTokens.headlineLarge
+              .copyWith(color: bankTheme.onSurface)
+              .merge(titleStyle),
           textAlign: TextAlign.center,
         ),
         if (beneficiaryName != null || formattedAmount != null) ...[
           const SizedBox(height: BankTokens.space3),
           if (beneficiaryName != null)
             Text(
-              'To ${beneficiaryName!}',
-              style: BankTokens.bodyLarge.copyWith(
-                color: bankTheme.onSurfaceVariant,
-              ),
+              '$toLabel ${beneficiaryName!}',
+              style: BankTokens.bodyLarge
+                  .copyWith(color: bankTheme.onSurfaceVariant)
+                  .merge(beneficiaryStyle),
               textAlign: TextAlign.center,
             ),
           if (formattedAmount != null) ...[
             const SizedBox(height: BankTokens.space2),
             Text(
               formattedAmount,
-              style: BankTokens.headlineMedium.copyWith(
-                color: bankTheme.onSurface,
-              ),
+              style: BankTokens.headlineMedium
+                  .copyWith(color: bankTheme.onSurface)
+                  .merge(amountStyle),
               textAlign: TextAlign.center,
             ),
           ],
@@ -185,16 +336,16 @@ class _SuccessContent extends StatelessWidget {
         if (referenceNumber != null) ...[
           const SizedBox(height: BankTokens.space4),
           Semantics(
-            label: 'Reference number: $referenceNumber',
+            label: '$referenceSemanticPrefix$referenceNumber',
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Ref: ',
-                  style: BankTokens.bodySmall.copyWith(
-                    color: bankTheme.onSurfaceVariant,
-                  ),
+                  referenceLabel,
+                  style: BankTokens.bodySmall
+                      .copyWith(color: bankTheme.onSurfaceVariant)
+                      .merge(referenceStyle),
                 ),
                 SelectableText(
                   referenceNumber!,
@@ -204,7 +355,7 @@ class _SuccessContent extends StatelessWidget {
                     fontFeatures: const [
                       FontFeature.tabularFigures(),
                     ],
-                  ),
+                  ).merge(referenceStyle),
                 ),
               ],
             ),
@@ -223,10 +374,20 @@ class _FailureContent extends StatelessWidget {
   const _FailureContent({
     required this.failureReason,
     required this.bankTheme,
+    required this.semanticLabel,
+    required this.errorIcon,
+    required this.errorColor,
+    this.titleStyle,
+    this.failureReasonStyle,
   });
 
   final String? failureReason;
   final BankThemeData bankTheme;
+  final String semanticLabel;
+  final IconData errorIcon;
+  final Color errorColor;
+  final TextStyle? titleStyle;
+  final TextStyle? failureReasonStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -236,28 +397,28 @@ class _FailureContent extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Semantics(
-          label: 'Transfer failed',
-          child: const Icon(
-            Icons.error_outline,
+          label: semanticLabel,
+          child: Icon(
+            errorIcon,
             size: 80,
-            color: BankTokens.danger,
+            color: errorColor,
           ),
         ),
         const SizedBox(height: BankTokens.space6),
         Text(
           scope.strings.transferFailure,
-          style: BankTokens.headlineLarge.copyWith(
-            color: bankTheme.onSurface,
-          ),
+          style: BankTokens.headlineLarge
+              .copyWith(color: bankTheme.onSurface)
+              .merge(titleStyle),
           textAlign: TextAlign.center,
         ),
         if (failureReason != null) ...[
           const SizedBox(height: BankTokens.space3),
           Text(
             failureReason!,
-            style: BankTokens.bodyMedium.copyWith(
-              color: bankTheme.onSurfaceVariant,
-            ),
+            style: BankTokens.bodyMedium
+                .copyWith(color: bankTheme.onSurfaceVariant)
+                .merge(failureReasonStyle),
             textAlign: TextAlign.center,
           ),
         ],
@@ -276,12 +437,28 @@ class _ActionButtons extends StatelessWidget {
     required this.onDone,
     required this.onShareReceipt,
     required this.onNewTransfer,
+    required this.shareReceiptLabel,
+    required this.shareReceiptIcon,
+    required this.newTransferLabel,
+    required this.newTransferIcon,
+    required this.doneLabel,
+    required this.buttonColor,
+    required this.buttonForegroundColor,
+    required this.buttonRadius,
   });
 
   final BankThemeData bankTheme;
   final VoidCallback onDone;
   final VoidCallback? onShareReceipt;
   final VoidCallback? onNewTransfer;
+  final String shareReceiptLabel;
+  final IconData shareReceiptIcon;
+  final String newTransferLabel;
+  final IconData newTransferIcon;
+  final String doneLabel;
+  final Color buttonColor;
+  final Color buttonForegroundColor;
+  final BorderRadius buttonRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -297,11 +474,11 @@ class _ActionButtons extends StatelessWidget {
                 Expanded(
                   child: Semantics(
                     button: true,
-                    label: 'Share Receipt',
+                    label: shareReceiptLabel,
                     child: OutlinedButton.icon(
                       onPressed: onShareReceipt,
-                      icon: const Icon(Icons.share_outlined, size: 18),
-                      label: const Text('Share Receipt'),
+                      icon: Icon(shareReceiptIcon, size: 18),
+                      label: Text(shareReceiptLabel),
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(
                           BankTokens.minTapTarget,
@@ -310,7 +487,7 @@ class _ActionButtons extends StatelessWidget {
                         side: BorderSide(color: bankTheme.outline),
                         foregroundColor: bankTheme.onSurface,
                         shape: RoundedRectangleBorder(
-                          borderRadius: bankTheme.buttonRadius,
+                          borderRadius: buttonRadius,
                         ),
                       ),
                     ),
@@ -322,11 +499,11 @@ class _ActionButtons extends StatelessWidget {
                 Expanded(
                   child: Semantics(
                     button: true,
-                    label: 'New Transfer',
+                    label: newTransferLabel,
                     child: OutlinedButton.icon(
                       onPressed: onNewTransfer,
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('New Transfer'),
+                      icon: Icon(newTransferIcon, size: 18),
+                      label: Text(newTransferLabel),
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(
                           BankTokens.minTapTarget,
@@ -335,7 +512,7 @@ class _ActionButtons extends StatelessWidget {
                         side: BorderSide(color: bankTheme.outline),
                         foregroundColor: bankTheme.onSurface,
                         shape: RoundedRectangleBorder(
-                          borderRadius: bankTheme.buttonRadius,
+                          borderRadius: buttonRadius,
                         ),
                       ),
                     ),
@@ -348,21 +525,21 @@ class _ActionButtons extends StatelessWidget {
         // Primary "Done" button
         Semantics(
           button: true,
-          label: 'Done',
+          label: doneLabel,
           child: FilledButton(
             onPressed: onDone,
             style: FilledButton.styleFrom(
-              backgroundColor: bankTheme.primary,
-              foregroundColor: bankTheme.onPrimary,
+              backgroundColor: buttonColor,
+              foregroundColor: buttonForegroundColor,
               minimumSize: const Size(
                 double.infinity,
                 BankTokens.minTapTarget,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: bankTheme.buttonRadius,
+                borderRadius: buttonRadius,
               ),
             ),
-            child: const Text('Done'),
+            child: Text(doneLabel),
           ),
         ),
       ],

@@ -57,6 +57,11 @@ class BankBatchPaymentReviewSheet extends StatefulWidget {
     this.paymentsChipTemplate = '{n} payments',
     this.errorsOnlyLabel = 'Show errors only',
     this.showAllTemplate = 'Show all {n} rows',
+    this.padding,
+    this.accentColor,
+    this.closeIcon = Icons.close_rounded,
+    this.titleStyle,
+    this.submitStyle,
   });
 
   final String batchName;
@@ -83,6 +88,25 @@ class BankBatchPaymentReviewSheet extends StatefulWidget {
   /// `{n}` is substituted.
   final String showAllTemplate;
 
+  /// Overrides the header content padding. Defaults to
+  /// `EdgeInsets.fromLTRB(space4, space4, space4, space2)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the primary accent used by the payments chip, the
+  /// errors-only switch track, the show-all link, and the submit button.
+  /// Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Glyph for the cancel button. Defaults to [Icons.close_rounded].
+  final IconData closeIcon;
+
+  /// Merged over the batch-name title style
+  /// (BankTokens.headlineSmall in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the submit-button label style (BankTokens.labelLarge).
+  final TextStyle? submitStyle;
+
   /// Presents the review as a 92%-height modal sheet resolving when
   /// dismissed.
   static Future<void> show(
@@ -93,6 +117,11 @@ class BankBatchPaymentReviewSheet extends StatefulWidget {
     VoidCallback? onCancel,
     void Function(BankBatchEntry entry)? onEntryTap,
     int previewCount = 50,
+    EdgeInsetsGeometry? padding,
+    Color? accentColor,
+    IconData closeIcon = Icons.close_rounded,
+    TextStyle? titleStyle,
+    TextStyle? submitStyle,
   }) {
     final theme = BankThemeData.of(context);
     return showModalBottomSheet<void>(
@@ -109,6 +138,11 @@ class BankBatchPaymentReviewSheet extends StatefulWidget {
           onCancel: onCancel,
           onEntryTap: onEntryTap,
           previewCount: previewCount,
+          padding: padding,
+          accentColor: accentColor,
+          closeIcon: closeIcon,
+          titleStyle: titleStyle,
+          submitStyle: submitStyle,
         ),
       ),
     );
@@ -150,6 +184,7 @@ class _BankBatchPaymentReviewSheetState
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final accent = widget.accentColor ?? theme.primary;
     final errorCount = _errorCount;
     final total = _total;
     final visible = _visible;
@@ -170,12 +205,13 @@ class _BankBatchPaymentReviewSheetState
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(
-              BankTokens.space4,
-              BankTokens.space4,
-              BankTokens.space4,
-              BankTokens.space2,
-            ),
+            padding: widget.padding ??
+                const EdgeInsets.fromLTRB(
+                  BankTokens.space4,
+                  BankTokens.space4,
+                  BankTokens.space4,
+                  BankTokens.space2,
+                ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -185,7 +221,8 @@ class _BankBatchPaymentReviewSheetState
                       child: Text(
                         widget.batchName,
                         style: BankTokens.headlineSmall
-                            .copyWith(color: theme.onSurface),
+                            .copyWith(color: theme.onSurface)
+                            .merge(widget.titleStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -197,7 +234,7 @@ class _BankBatchPaymentReviewSheetState
                           Navigator.of(context).pop();
                         },
                         icon: Icon(
-                          Icons.close_rounded,
+                          widget.closeIcon,
                           color: theme.onSurfaceVariant,
                         ),
                       ),
@@ -212,7 +249,7 @@ class _BankBatchPaymentReviewSheetState
                     _SummaryChip(
                       label: widget.paymentsChipTemplate
                           .replaceAll('{n}', '${widget.entries.length}'),
-                      color: theme.primary,
+                      color: accent,
                       theme: theme,
                     ),
                     DecoratedBox(
@@ -255,7 +292,7 @@ class _BankBatchPaymentReviewSheetState
                         Switch(
                           value: _errorsOnly,
                           activeColor: theme.onPrimary,
-                          activeTrackColor: theme.primary,
+                          activeTrackColor: accent,
                           onChanged: (value) =>
                               setState(() => _errorsOnly = value),
                         ),
@@ -276,8 +313,7 @@ class _BankBatchPaymentReviewSheetState
                     child: Text(
                       widget.showAllTemplate
                           .replaceAll('{n}', '$filteredLength'),
-                      style:
-                          BankTokens.labelLarge.copyWith(color: theme.primary),
+                      style: BankTokens.labelLarge.copyWith(color: accent),
                     ),
                   );
                 }
@@ -297,7 +333,7 @@ class _BankBatchPaymentReviewSheetState
               child: FilledButton(
                 onPressed: errorCount > 0 ? null : widget.onSubmit,
                 style: FilledButton.styleFrom(
-                  backgroundColor: theme.primary,
+                  backgroundColor: accent,
                   foregroundColor: theme.onPrimary,
                   disabledBackgroundColor: theme.surfaceVariant,
                   shape: RoundedRectangleBorder(
@@ -306,7 +342,7 @@ class _BankBatchPaymentReviewSheetState
                 ),
                 child: Text(
                   submitLabel,
-                  style: BankTokens.labelLarge,
+                  style: BankTokens.labelLarge.merge(widget.submitStyle),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

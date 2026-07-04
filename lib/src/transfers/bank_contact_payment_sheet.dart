@@ -48,12 +48,176 @@ class BankContactPaymentSheet extends StatefulWidget {
   final Future<void> Function(String contactId, Money amount, String? note)?
       onRequest;
 
+  /// Overrides the sheet background color. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the sheet corner radius. Defaults to the theme sheetRadius.
+  final BorderRadiusGeometry? radius;
+
+  /// Overrides the accent used for buttons, toggles and highlights.
+  /// Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the success result icon color. Defaults to
+  /// `BankTokens.success`.
+  final Color? successColor;
+
+  /// Overrides the error result icon color. Defaults to `BankTokens.danger`.
+  final Color? errorColor;
+
+  /// Merged over the header and step title style
+  /// (BankTokens.headlineSmall in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Fraction of screen height the sheet occupies. Defaults to `0.92`.
+  final double? heightFactor;
+
+  /// Duration of the step transition. Defaults to `BankTokens.durationBase`.
+  final Duration? animationDuration;
+
+  /// Curve for the incoming step. Defaults to `BankTokens.curveEmphasized`.
+  final Curve? animationInCurve;
+
+  /// Curve for the outgoing step. Defaults to `BankTokens.curveStandard`.
+  final Curve? animationOutCurve;
+
+  /// Currency code used for amount parsing and display. Defaults to `'USD'`.
+  final String currencyCode;
+
+  /// Overrides the back navigation icon. Defaults to `Icons.arrow_back`.
+  final IconData backIcon;
+
+  /// Overrides the close icon. Defaults to `Icons.close`.
+  final IconData closeIcon;
+
+  /// Overrides the search field icon. Defaults to `BankIcons.search`.
+  final IconData searchIcon;
+
+  /// Overrides the send segment and button icon. Defaults to
+  /// `Icons.send_outlined`.
+  final IconData sendIcon;
+
+  /// Overrides the request segment and button icon. Defaults to
+  /// `Icons.download_outlined`.
+  final IconData requestIcon;
+
+  /// Overrides the note field icon. Defaults to `Icons.edit_note`.
+  final IconData noteIcon;
+
+  /// Overrides the success result icon. Defaults to
+  /// `Icons.check_circle_outline`.
+  final IconData successIcon;
+
+  /// Overrides the error result icon. Defaults to `Icons.error_outline`.
+  final IconData errorIcon;
+
+  /// Tooltip on the back button. Defaults to `'Back'`.
+  final String backTooltip;
+
+  /// Tooltip on the close button. Defaults to `'Close'`.
+  final String closeTooltip;
+
+  /// Hint for the contact search field. Defaults to `'Search contacts'`.
+  final String searchHint;
+
+  /// Shown when no contacts match. Defaults to `'No contacts found'`.
+  final String emptyContactsLabel;
+
+  /// Title of the contact picker step. Defaults to `'Select Contact'`.
+  final String selectContactTitle;
+
+  /// Title of the amount step in send mode. Defaults to `'Send Money'`.
+  final String sendMoneyTitle;
+
+  /// Title of the amount step in request mode. Defaults to `'Request Money'`.
+  final String requestMoneyTitle;
+
+  /// Title shown while processing. Defaults to `'Processing…'`.
+  final String processingTitle;
+
+  /// Title shown on the success step. Defaults to `'Done'`.
+  final String doneTitle;
+
+  /// Title shown on the failure step. Defaults to `'Something went wrong'`.
+  final String errorTitle;
+
+  /// Label of the send toggle and confirm button. Defaults to `'Send'`.
+  final String sendLabel;
+
+  /// Label of the request toggle and confirm button. Defaults to `'Request'`.
+  final String requestLabel;
+
+  /// Hint for the note field. Defaults to `'Add a note (optional)'`.
+  final String noteHint;
+
+  /// Semantics label on the send confirm button. Defaults to `'Send money'`.
+  final String sendSemanticLabel;
+
+  /// Semantics label on the request confirm button. Defaults to
+  /// `'Request money'`.
+  final String requestSemanticLabel;
+
+  /// Success headline in send mode. Defaults to `'Money Sent!'`.
+  final String sendSuccessTitle;
+
+  /// Success headline in request mode. Defaults to `'Request Sent!'`.
+  final String requestSuccessTitle;
+
+  /// Preposition before the recipient name in send mode. Defaults to `'to'`.
+  final String sentToLabel;
+
+  /// Preposition before the contact name in request mode. Defaults to
+  /// `'from'`.
+  final String requestedFromLabel;
+
+  /// Label of the result step done button. Defaults to `'Done'`.
+  final String doneButtonLabel;
+
   const BankContactPaymentSheet({
     required this.contacts,
     super.key,
     this.onClose,
     this.onSend,
     this.onRequest,
+    this.backgroundColor,
+    this.radius,
+    this.accentColor,
+    this.successColor,
+    this.errorColor,
+    this.titleStyle,
+    this.heightFactor,
+    this.animationDuration,
+    this.animationInCurve,
+    this.animationOutCurve,
+    this.currencyCode = 'USD',
+    this.backIcon = Icons.arrow_back,
+    this.closeIcon = Icons.close,
+    this.searchIcon = BankIcons.search,
+    this.sendIcon = Icons.send_outlined,
+    this.requestIcon = Icons.download_outlined,
+    this.noteIcon = Icons.edit_note,
+    this.successIcon = Icons.check_circle_outline,
+    this.errorIcon = Icons.error_outline,
+    this.backTooltip = 'Back',
+    this.closeTooltip = 'Close',
+    this.searchHint = 'Search contacts',
+    this.emptyContactsLabel = 'No contacts found',
+    this.selectContactTitle = 'Select Contact',
+    this.sendMoneyTitle = 'Send Money',
+    this.requestMoneyTitle = 'Request Money',
+    this.processingTitle = 'Processing…',
+    this.doneTitle = 'Done',
+    this.errorTitle = 'Something went wrong',
+    this.sendLabel = 'Send',
+    this.requestLabel = 'Request',
+    this.noteHint = 'Add a note (optional)',
+    this.sendSemanticLabel = 'Send money',
+    this.requestSemanticLabel = 'Request money',
+    this.sendSuccessTitle = 'Money Sent!',
+    this.requestSuccessTitle = 'Request Sent!',
+    this.sentToLabel = 'to',
+    this.requestedFromLabel = 'from',
+    this.doneButtonLabel = 'Done',
   });
 
   // ---------------------------------------------------------------------------
@@ -139,7 +303,7 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
   Money get _parsedAmount {
     final raw = _amountText.replaceAll(RegExp('[^0-9.]'), '');
     final val = double.tryParse(raw) ?? 0.0;
-    return Money.fromDouble(val, 'USD');
+    return Money.fromDouble(val, widget.currencyCode);
   }
 
   bool get _canConfirm =>
@@ -223,11 +387,13 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
     final bankTheme = BankThemeData.of(context);
     final mediaQuery = MediaQuery.of(context);
 
+    final accent = widget.accentColor ?? bankTheme.primary;
+
     return Container(
-      height: mediaQuery.size.height * 0.92,
+      height: mediaQuery.size.height * (widget.heightFactor ?? 0.92),
       decoration: BoxDecoration(
-        color: bankTheme.surface,
-        borderRadius: bankTheme.sheetRadius,
+        color: widget.backgroundColor ?? bankTheme.surface,
+        borderRadius: widget.radius ?? bankTheme.sheetRadius,
       ),
       child: Column(
         children: [
@@ -255,8 +421,8 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
               children: [
                 if (_step > 0)
                   IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    tooltip: 'Back',
+                    icon: Icon(widget.backIcon),
+                    tooltip: widget.backTooltip,
                     onPressed: () {
                       setState(() {
                         if (_step == 1) {
@@ -278,15 +444,15 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
                 Expanded(
                   child: Text(
                     _stepTitle(),
-                    style: BankTokens.headlineSmall.copyWith(
-                      color: bankTheme.onSurface,
-                    ),
+                    style: BankTokens.headlineSmall
+                        .copyWith(color: bankTheme.onSurface)
+                        .merge(widget.titleStyle),
                     textAlign: TextAlign.center,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close),
-                  tooltip: 'Close',
+                  icon: Icon(widget.closeIcon),
+                  tooltip: widget.closeTooltip,
                   onPressed: _close,
                 ),
               ],
@@ -295,9 +461,11 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
           // Step content
           Expanded(
             child: AnimatedSwitcher(
-              duration: BankTokens.durationBase,
-              switchInCurve: BankTokens.curveEmphasized,
-              switchOutCurve: BankTokens.curveStandard,
+              duration: widget.animationDuration ?? BankTokens.durationBase,
+              switchInCurve:
+                  widget.animationInCurve ?? BankTokens.curveEmphasized,
+              switchOutCurve:
+                  widget.animationOutCurve ?? BankTokens.curveStandard,
               child: KeyedSubtree(
                 key: ValueKey<int>(_step),
                 child: switch (_step) {
@@ -306,6 +474,10 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
                       searchController: _searchController,
                       bankTheme: bankTheme,
                       onSelect: _selectContact,
+                      accentColor: accent,
+                      searchHint: widget.searchHint,
+                      emptyLabel: widget.emptyContactsLabel,
+                      searchIcon: widget.searchIcon,
                     ),
                   1 => _AmountStep(
                       selected: _selected!,
@@ -323,6 +495,16 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
                       onModeChanged: (m) => setState(() => _mode = m),
                       onNoteChanged: (v) => setState(() => _note = v),
                       onConfirm: _confirm,
+                      accentColor: accent,
+                      currencyCode: widget.currencyCode,
+                      sendLabel: widget.sendLabel,
+                      requestLabel: widget.requestLabel,
+                      noteHint: widget.noteHint,
+                      sendIcon: widget.sendIcon,
+                      requestIcon: widget.requestIcon,
+                      noteIcon: widget.noteIcon,
+                      sendSemanticLabel: widget.sendSemanticLabel,
+                      requestSemanticLabel: widget.requestSemanticLabel,
                     ),
                   _ => _ResultStep(
                       loading: _loading,
@@ -332,6 +514,17 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
                       selected: _selected,
                       bankTheme: bankTheme,
                       onDone: _close,
+                      accentColor: accent,
+                      successColor: widget.successColor ?? BankTokens.success,
+                      errorColor: widget.errorColor ?? BankTokens.danger,
+                      successIcon: widget.successIcon,
+                      errorIcon: widget.errorIcon,
+                      errorTitle: widget.errorTitle,
+                      sendSuccessTitle: widget.sendSuccessTitle,
+                      requestSuccessTitle: widget.requestSuccessTitle,
+                      sentToLabel: widget.sentToLabel,
+                      requestedFromLabel: widget.requestedFromLabel,
+                      doneLabel: widget.doneButtonLabel,
                     ),
                 },
               ),
@@ -343,13 +536,15 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
   }
 
   String _stepTitle() => switch (_step) {
-        0 => 'Select Contact',
-        1 => _mode == _PaymentMode.send ? 'Send Money' : 'Request Money',
+        0 => widget.selectContactTitle,
+        1 => _mode == _PaymentMode.send
+            ? widget.sendMoneyTitle
+            : widget.requestMoneyTitle,
         _ => _loading
-            ? 'Processing…'
+            ? widget.processingTitle
             : _success
-                ? 'Done'
-                : 'Something went wrong',
+                ? widget.doneTitle
+                : widget.errorTitle,
       };
 }
 
@@ -363,12 +558,20 @@ class _ContactPickerStep extends StatelessWidget {
     required this.searchController,
     required this.bankTheme,
     required this.onSelect,
+    required this.accentColor,
+    required this.searchHint,
+    required this.emptyLabel,
+    required this.searchIcon,
   });
 
   final List<BankSplitParticipant> contacts;
   final TextEditingController searchController;
   final BankThemeData bankTheme;
   final ValueChanged<BankSplitParticipant> onSelect;
+  final Color accentColor;
+  final String searchHint;
+  final String emptyLabel;
+  final IconData searchIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -387,11 +590,11 @@ class _ContactPickerStep extends StatelessWidget {
             textInputAction: TextInputAction.search,
             style: BankTokens.bodyLarge.copyWith(color: bankTheme.onSurface),
             decoration: InputDecoration(
-              hintText: 'Search contacts',
+              hintText: searchHint,
               hintStyle: BankTokens.bodyLarge
                   .copyWith(color: bankTheme.onSurfaceVariant),
               prefixIcon: Icon(
-                BankIcons.search,
+                searchIcon,
                 color: bankTheme.onSurfaceVariant,
                 size: 20,
               ),
@@ -411,7 +614,7 @@ class _ContactPickerStep extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: bankTheme.chipRadius,
-                borderSide: BorderSide(color: bankTheme.primary, width: 1.5),
+                borderSide: BorderSide(color: accentColor, width: 1.5),
               ),
             ),
           ),
@@ -421,7 +624,7 @@ class _ContactPickerStep extends StatelessWidget {
           child: contacts.isEmpty
               ? Center(
                   child: Text(
-                    'No contacts found',
+                    emptyLabel,
                     style: BankTokens.bodyMedium.copyWith(
                       color: bankTheme.onSurfaceVariant,
                     ),
@@ -539,6 +742,16 @@ class _AmountStep extends StatelessWidget {
     required this.onModeChanged,
     required this.onNoteChanged,
     required this.onConfirm,
+    required this.accentColor,
+    required this.currencyCode,
+    required this.sendLabel,
+    required this.requestLabel,
+    required this.noteHint,
+    required this.sendIcon,
+    required this.requestIcon,
+    required this.noteIcon,
+    required this.sendSemanticLabel,
+    required this.requestSemanticLabel,
   });
 
   final BankSplitParticipant selected;
@@ -556,6 +769,16 @@ class _AmountStep extends StatelessWidget {
   final ValueChanged<_PaymentMode> onModeChanged;
   final ValueChanged<String> onNoteChanged;
   final VoidCallback onConfirm;
+  final Color accentColor;
+  final String currencyCode;
+  final String sendLabel;
+  final String requestLabel;
+  final String noteHint;
+  final IconData sendIcon;
+  final IconData requestIcon;
+  final IconData noteIcon;
+  final String sendSemanticLabel;
+  final String requestSemanticLabel;
 
   String get _initials {
     final parts = selected.name.trim().split(RegExp(r'\s+'));
@@ -616,16 +839,16 @@ class _AmountStep extends StatelessWidget {
           // Send / Request toggle (only show if both callbacks available)
           if (hasSend && hasRequest) ...[
             SegmentedButton<_PaymentMode>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: _PaymentMode.send,
-                  label: Text('Send'),
-                  icon: Icon(Icons.send_outlined, size: 16),
+                  label: Text(sendLabel),
+                  icon: Icon(sendIcon, size: 16),
                 ),
                 ButtonSegment(
                   value: _PaymentMode.request,
-                  label: Text('Request'),
-                  icon: Icon(Icons.download_outlined, size: 16),
+                  label: Text(requestLabel),
+                  icon: Icon(requestIcon, size: 16),
                 ),
               ],
               selected: {mode},
@@ -635,7 +858,7 @@ class _AmountStep extends StatelessWidget {
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.resolveWith(
                   (states) => states.contains(WidgetState.selected)
-                      ? bankTheme.primary
+                      ? accentColor
                       : bankTheme.surface,
                 ),
                 foregroundColor: WidgetStateProperty.resolveWith(
@@ -656,7 +879,7 @@ class _AmountStep extends StatelessWidget {
           // Amount keypad
           BankAmountKeypad(
             amountText: amountText,
-            currencyCode: 'USD',
+            currencyCode: currencyCode,
             onDigit: onDigit,
             onDelete: onDelete,
             onDecimalPoint: onDecimal,
@@ -669,13 +892,13 @@ class _AmountStep extends StatelessWidget {
             maxLength: 100,
             style: BankTokens.bodyMedium.copyWith(color: bankTheme.onSurface),
             decoration: InputDecoration(
-              hintText: 'Add a note (optional)',
+              hintText: noteHint,
               hintStyle: BankTokens.bodyMedium
                   .copyWith(color: bankTheme.onSurfaceVariant),
               filled: true,
               fillColor: bankTheme.surfaceVariant,
               prefixIcon: Icon(
-                Icons.edit_note,
+                noteIcon,
                 size: 20,
                 color: bankTheme.onSurfaceVariant,
               ),
@@ -691,7 +914,7 @@ class _AmountStep extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: bankTheme.chipRadius,
-                borderSide: BorderSide(color: bankTheme.primary, width: 1.5),
+                borderSide: BorderSide(color: accentColor, width: 1.5),
               ),
             ),
           ),
@@ -699,11 +922,13 @@ class _AmountStep extends StatelessWidget {
           // Confirm button
           Semantics(
             button: true,
-            label: mode == _PaymentMode.send ? 'Send money' : 'Request money',
+            label: mode == _PaymentMode.send
+                ? sendSemanticLabel
+                : requestSemanticLabel,
             child: FilledButton(
               onPressed: canConfirm ? onConfirm : null,
               style: FilledButton.styleFrom(
-                backgroundColor: bankTheme.primary,
+                backgroundColor: accentColor,
                 foregroundColor: bankTheme.onPrimary,
                 disabledBackgroundColor:
                     bankTheme.outline.withValues(alpha: 0.3),
@@ -716,7 +941,7 @@ class _AmountStep extends StatelessWidget {
                 ),
               ),
               child: Text(
-                mode == _PaymentMode.send ? 'Send' : 'Request',
+                mode == _PaymentMode.send ? sendLabel : requestLabel,
               ),
             ),
           ),
@@ -739,6 +964,17 @@ class _ResultStep extends StatelessWidget {
     required this.selected,
     required this.bankTheme,
     required this.onDone,
+    required this.accentColor,
+    required this.successColor,
+    required this.errorColor,
+    required this.successIcon,
+    required this.errorIcon,
+    required this.errorTitle,
+    required this.sendSuccessTitle,
+    required this.requestSuccessTitle,
+    required this.sentToLabel,
+    required this.requestedFromLabel,
+    required this.doneLabel,
   });
 
   final bool loading;
@@ -748,13 +984,24 @@ class _ResultStep extends StatelessWidget {
   final BankSplitParticipant? selected;
   final BankThemeData bankTheme;
   final VoidCallback onDone;
+  final Color accentColor;
+  final Color successColor;
+  final Color errorColor;
+  final IconData successIcon;
+  final IconData errorIcon;
+  final String errorTitle;
+  final String sendSuccessTitle;
+  final String requestSuccessTitle;
+  final String sentToLabel;
+  final String requestedFromLabel;
+  final String doneLabel;
 
   @override
   Widget build(BuildContext context) {
     if (loading) {
       return Center(
         child: CircularProgressIndicator(
-          color: bankTheme.primary,
+          color: accentColor,
           strokeWidth: 2.5,
         ),
       );
@@ -768,17 +1015,17 @@ class _ResultStep extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            isError ? Icons.error_outline : Icons.check_circle_outline,
+            isError ? errorIcon : successIcon,
             size: 72,
-            color: isError ? BankTokens.danger : BankTokens.success,
+            color: isError ? errorColor : successColor,
           ),
           const SizedBox(height: BankTokens.space4),
           Text(
             isError
-                ? 'Something went wrong'
+                ? errorTitle
                 : mode == _PaymentMode.send
-                    ? 'Money Sent!'
-                    : 'Request Sent!',
+                    ? sendSuccessTitle
+                    : requestSuccessTitle,
             style: BankTokens.headlineMedium.copyWith(
               color: bankTheme.onSurface,
             ),
@@ -797,8 +1044,8 @@ class _ResultStep extends StatelessWidget {
             const SizedBox(height: BankTokens.space2),
             Text(
               mode == _PaymentMode.send
-                  ? 'to ${selected!.name}'
-                  : 'from ${selected!.name}',
+                  ? '$sentToLabel ${selected!.name}'
+                  : '$requestedFromLabel ${selected!.name}',
               style: BankTokens.bodyMedium.copyWith(
                 color: bankTheme.onSurfaceVariant,
               ),
@@ -809,7 +1056,7 @@ class _ResultStep extends StatelessWidget {
           FilledButton(
             onPressed: onDone,
             style: FilledButton.styleFrom(
-              backgroundColor: bankTheme.primary,
+              backgroundColor: accentColor,
               foregroundColor: bankTheme.onPrimary,
               minimumSize: const Size(
                 double.infinity,
@@ -819,7 +1066,7 @@ class _ResultStep extends StatelessWidget {
                 borderRadius: bankTheme.buttonRadius,
               ),
             ),
-            child: const Text('Done'),
+            child: Text(doneLabel),
           ),
         ],
       ),

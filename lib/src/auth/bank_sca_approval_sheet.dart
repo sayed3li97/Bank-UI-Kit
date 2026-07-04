@@ -73,6 +73,13 @@ class BankScaApprovalSheet extends StatefulWidget {
     this.useBiometricLabel = 'Use biometrics instead',
     this.pushWaitingLabel = 'Approve this payment in your authenticator',
     this.expiresPrefix = 'Expires in',
+    this.padding,
+    this.amountStyle,
+    this.titleStyle,
+    this.headerIcon,
+    this.successIcon,
+    this.successColor,
+    this.amountSemanticPrefix = 'Amount',
   });
 
   /// The exact amount being authorized. Never privacy-masked here.
@@ -110,6 +117,34 @@ class BankScaApprovalSheet extends StatefulWidget {
   final String pushWaitingLabel;
   final String expiresPrefix;
 
+  /// Outer content padding of the sheet. Defaults to symmetric horizontal
+  /// [BankTokens.space5] and vertical [BankTokens.space4] when null.
+  final EdgeInsetsGeometry? padding;
+
+  /// Text style merged over the computed amount style (numeral hero in the
+  /// theme foreground and font family). Null applies no override.
+  final TextStyle? amountStyle;
+
+  /// Text style merged over the computed header title style (headline small
+  /// in the theme foreground). Null applies no override.
+  final TextStyle? titleStyle;
+
+  /// Glyph for the header security icon. Defaults to
+  /// [Icons.gpp_maybe_outlined] when null.
+  final IconData? headerIcon;
+
+  /// Glyph for the success confirmation icon. Defaults to
+  /// [Icons.check_circle_rounded] when null.
+  final IconData? successIcon;
+
+  /// Color of the success confirmation icon. Defaults to the theme
+  /// `positiveBalance` when null.
+  final Color? successColor;
+
+  /// Prefix used in the amount accessibility label, joined as
+  /// `'<prefix>: <amount>'`. Defaults to `'Amount'`.
+  final String amountSemanticPrefix;
+
   /// Presents the sheet modally. Resolves `true` when approved, `false`
   /// when rejected or expired, `null` never (dismissal is disabled).
   static Future<bool?> show(
@@ -132,6 +167,15 @@ class BankScaApprovalSheet extends StatefulWidget {
     String useBiometricLabel = 'Use biometrics instead',
     String pushWaitingLabel = 'Approve this payment in your authenticator',
     String expiresPrefix = 'Expires in',
+    EdgeInsetsGeometry? padding,
+    TextStyle? amountStyle,
+    TextStyle? titleStyle,
+    IconData? headerIcon,
+    IconData? successIcon,
+    Color? successColor,
+    String amountSemanticPrefix = 'Amount',
+    Color? backgroundColor,
+    BorderRadius? sheetRadius,
   }) {
     final theme = BankThemeData.of(context);
     return showModalBottomSheet<bool>(
@@ -139,8 +183,10 @@ class BankScaApprovalSheet extends StatefulWidget {
       isScrollControlled: true,
       isDismissible: false,
       enableDrag: false,
-      backgroundColor: theme.surface,
-      shape: RoundedRectangleBorder(borderRadius: theme.sheetRadius),
+      backgroundColor: backgroundColor ?? theme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: sheetRadius ?? theme.sheetRadius,
+      ),
       builder: (_) => BankScaApprovalSheet(
         amount: amount,
         payeeName: payeeName,
@@ -157,6 +203,13 @@ class BankScaApprovalSheet extends StatefulWidget {
         useBiometricLabel: useBiometricLabel,
         pushWaitingLabel: pushWaitingLabel,
         expiresPrefix: expiresPrefix,
+        padding: padding,
+        amountStyle: amountStyle,
+        titleStyle: titleStyle,
+        headerIcon: headerIcon,
+        successIcon: successIcon,
+        successColor: successColor,
+        amountSemanticPrefix: amountSemanticPrefix,
       ),
     );
   }
@@ -282,12 +335,13 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          BankTokens.space5,
-          BankTokens.space4,
-          BankTokens.space5,
-          BankTokens.space4,
-        ),
+        padding: widget.padding ??
+            const EdgeInsets.fromLTRB(
+              BankTokens.space5,
+              BankTokens.space4,
+              BankTokens.space5,
+              BankTokens.space4,
+            ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -297,17 +351,21 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
               expiryChip: widget.expiresAt == null
                   ? null
                   : '${widget.expiresPrefix} ${_formatRemaining()}',
+              titleStyle: widget.titleStyle,
+              icon: widget.headerIcon,
             ),
             const SizedBox(height: BankTokens.space4),
             Semantics(
-              label: 'Amount: $formattedAmount',
+              label: '${widget.amountSemanticPrefix}: $formattedAmount',
               excludeSemantics: true,
               child: Text(
                 formattedAmount,
-                style: BankTokens.numeralHero.copyWith(
-                  color: theme.onSurface,
-                  fontFamily: theme.fontFamily,
-                ),
+                style: BankTokens.numeralHero
+                    .copyWith(
+                      color: theme.onSurface,
+                      fontFamily: theme.fontFamily,
+                    )
+                    .merge(widget.amountStyle),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -326,9 +384,9 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
                   vertical: BankTokens.space6,
                 ),
                 child: Icon(
-                  Icons.check_circle_rounded,
+                  widget.successIcon ?? Icons.check_circle_rounded,
                   size: 64,
-                  color: theme.positiveBalance,
+                  color: widget.successColor ?? theme.positiveBalance,
                 ),
               )
             else
@@ -441,18 +499,22 @@ class _Header extends StatelessWidget {
     required this.title,
     required this.theme,
     this.expiryChip,
+    this.titleStyle,
+    this.icon,
   });
 
   final String title;
   final BankThemeData theme;
   final String? expiryChip;
+  final TextStyle? titleStyle;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(
-          Icons.gpp_maybe_outlined,
+        Icon(
+          icon ?? Icons.gpp_maybe_outlined,
           size: 22,
           color: BankTokens.warning,
         ),
@@ -460,7 +522,9 @@ class _Header extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: BankTokens.headlineSmall.copyWith(color: theme.onSurface),
+            style: BankTokens.headlineSmall
+                .copyWith(color: theme.onSurface)
+                .merge(titleStyle),
           ),
         ),
         if (expiryChip != null)

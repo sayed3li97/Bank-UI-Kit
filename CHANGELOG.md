@@ -4,46 +4,50 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/) and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## 0.0.1
 
-### Added
-- Custom theming API: `BankThemeData.custom()` factory (only `primary` +
-  `brightness` required) and the `ThemeData.withBankTheme()` extension for
-  wiring a bespoke theme without a preset.
-- Revolut-style full-app demo dashboard (`example/lib/demo/`) composed entirely
-  from kit widgets, plus shared illustration-free sample data.
-- URL-driven screenshot harness (`example/lib/screenshot_harness.dart`) and a
-  Playwright generator (`tools/screenshots.mjs`) that render the real widgets
-  to PNGs for the documentation.
-- Open-source scaffolding: MIT `LICENSE`, `CONTRIBUTING.md`,
-  `CODE_OF_CONDUCT.md`, GitHub Actions CI, and issue/PR templates.
-- Documentation screenshots for every module across the three presets.
+Initial public release: 140+ composable banking widgets across 22 domains,
+four built-in design languages, and one theming engine.
 
-### Fixed
-- **The package did not compile** (770 analyzer errors). Corrected sibling-module
-  import depths in 23 widget files, aligned `decimal`/`collection` constraints,
-  fixed `tokens.dart` (missing `animation` import for `Curve`/`Curves`),
-  `income_sorter_controller` (`Decimal.round` vs removed `toDecimal`),
-  `pot_contribution_sheet` (missing `NumeralStyleX` import), and undefined
-  duration tokens.
-- Brand fonts declared in each preset are now actually applied to the Material
-  text themes (previously bundled but never used). Replaced empty (0-byte) font
-  stubs with real Space Grotesk, Fredoka, and Nunito files.
-- Rewrote all 14 example showcase screens to compile against the real widget and
-  model APIs.
+### Components
 
-## 0.1.0
+- Accounts and balances, cards (virtual, physical, disposable, family),
+  transactions, transfers and payments, savings and goals, social and
+  joint accounts, investing, credit and lending, rewards, Islamic banking,
+  onboarding and KYC, business banking, insights, notifications, support,
+  and app gate and degraded states (maintenance, offline, force update,
+  device and network security blocks, waiting room).
+- Currency engine: 50+ currencies with correct symbols, minor units
+  (3-decimal Gulf currencies, 0-decimal JPY and KRW, crypto precision),
+  symbol placement, and bidi-isolated right-to-left symbols.
+- Hijri (Umm al-Qura) calendar support with dual-calendar formatting.
 
-- Initial release of Bank UI Kit.
-- Core module: accounts, transactions, transfers, cards, authentication, security, states.
-- Saving module: pots, round-ups, income sorter.
-- Social module: peer-to-peer payments, transaction splitting, joint accounts.
-- Investing module: multi-currency wallets, holdings, buy/sell, charts.
-- Credit module: installment plans, credit limit gauge, repayment schedules, perks.
-- Three design presets: BankVoltageTheme, BankStudioTheme (default), BankBloomTheme.
-- Light and dark mode for every preset, WCAG 2.1 AA contrast.
-- First-class RTL support across all widgets.
-- BankUiScope for cross-cutting privacy toggle and preset selection.
-- BankUiStrings localization escape hatch.
-- NumeralStyle for Western and Eastern Arabic-Indic digits.
-- Headless flow controllers: BankKycFlowController, BankTransferFlowController, BankIncomeSorterController.
+### Theming and design
+
+- Four presets: Studio (default), Voltage, Bloom, and Heritage
+  (Islamic-banking ready), each in light and dark.
+- Custom theming: `BankThemeData.custom()` (only `primary` and `brightness`
+  required) and the `ThemeData.withBankTheme()` extension.
+- Every widget's colours, shapes, depth, text styles, icons, strings, and
+  animation timing are overridable through optional constructor parameters
+  that default to the theme.
+
+### Cross-cutting
+
+- Privacy mode: `BankBalanceText` and every money surface mask through
+  `BankUiScope`, verified by a mask-proof test across the render and
+  semantics trees.
+- First-class RTL across all widgets, with Western and Eastern
+  Arabic-Indic numerals via `NumeralStyle`.
+- `BankUiStrings` localization escape hatch; no `gen-l10n` dependency.
+- Lossless `Decimal`-backed `Money` type; no `double` touches an amount.
+- Headless flow controllers (`BankKycFlowController`,
+  `BankTransferFlowController`, `BankIncomeSorterController`) that never
+  touch the network.
+
+### Quality
+
+- `flutter analyze` clean on the package and the example app.
+- Unit and widget tests across presets, both brightnesses, and RTL.
+- Semantics on every control and 44 px minimum touch targets.
+- Interactive component gallery and a full demo dashboard in `example/`.

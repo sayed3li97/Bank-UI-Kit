@@ -101,6 +101,35 @@ class BankValueDiffRow extends StatelessWidget {
   /// (`'label changed from X to Y'`). Supply for non-English locales.
   final String? semanticLabel;
 
+  /// Overrides the row padding. Defaults to
+  /// `EdgeInsets.symmetric(vertical: BankTokens.space2)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the arrow glyph between old and new values. Defaults to
+  /// the direction-aware [BankIcons.forward] (or [BankIcons.back] in RTL).
+  final IconData? arrowIcon;
+
+  /// Overrides the "added" chip colour. Defaults to the theme
+  /// positiveBalance.
+  final Color? addedColor;
+
+  /// Overrides the "removed" chip colour. Defaults to [BankTokens.danger].
+  final Color? removedColor;
+
+  /// Overrides the tint applied to an increased new value when
+  /// [highlightIncrease] is on. Defaults to [BankTokens.warning].
+  final Color? increaseColor;
+
+  /// Merged over the field-label style
+  /// (BankTokens.bodySmall in onSurfaceVariant).
+  final TextStyle? labelStyle;
+
+  /// Merged over the struck-through old-value style.
+  final TextStyle? oldValueStyle;
+
+  /// Merged over the new-value style.
+  final TextStyle? newValueStyle;
+
   /// Creates an old-vs-new change row.
   const BankValueDiffRow({
     required this.label,
@@ -116,6 +145,14 @@ class BankValueDiffRow extends StatelessWidget {
     this.addedLabel = 'Added',
     this.removedLabel = 'Removed',
     this.semanticLabel,
+    this.padding,
+    this.arrowIcon,
+    this.addedColor,
+    this.removedColor,
+    this.increaseColor,
+    this.labelStyle,
+    this.oldValueStyle,
+    this.newValueStyle,
   })  : assert(
           oldValue == null || oldMoney == null,
           'Provide at most one of oldValue or oldMoney.',
@@ -180,37 +217,44 @@ class BankValueDiffRow extends StatelessWidget {
       return BankBalanceText(
         money: oldMoney!,
         size: BankBalanceSize.small,
-        style: struckStyle,
+        style: struckStyle.merge(oldValueStyle),
       );
     }
     return Text(
       oldValue ?? '',
-      style: BankTokens.bodyMedium.copyWith(
-        color: theme.onSurfaceVariant,
-        decoration: TextDecoration.lineThrough,
-        decorationColor: theme.onSurfaceVariant,
-      ),
+      style: BankTokens.bodyMedium
+          .copyWith(
+            color: theme.onSurfaceVariant,
+            decoration: TextDecoration.lineThrough,
+            decorationColor: theme.onSurfaceVariant,
+          )
+          .merge(oldValueStyle),
     );
   }
 
   Widget _buildNewValue(BankThemeData theme) {
-    final color = _isIncrease ? BankTokens.warning : theme.onSurface;
+    final color =
+        _isIncrease ? (increaseColor ?? BankTokens.warning) : theme.onSurface;
     if (newMoney != null) {
       return BankBalanceText(
         money: newMoney!,
         size: BankBalanceSize.small,
-        style: theme.numeralSmall.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
+        style: theme.numeralSmall
+            .copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            )
+            .merge(newValueStyle),
       );
     }
     return Text(
       newValue ?? '',
-      style: BankTokens.bodyMedium.copyWith(
-        color: theme.onSurface,
-        fontWeight: FontWeight.w600,
-      ),
+      style: BankTokens.bodyMedium
+          .copyWith(
+            color: theme.onSurface,
+            fontWeight: FontWeight.w600,
+          )
+          .merge(newValueStyle),
     );
   }
 
@@ -239,7 +283,7 @@ class BankValueDiffRow extends StatelessWidget {
       return [
         _buildOldValue(theme),
         Icon(
-          isRtl ? BankIcons.back : BankIcons.forward,
+          arrowIcon ?? (isRtl ? BankIcons.back : BankIcons.forward),
           size: 14,
           color: theme.onSurfaceVariant,
         ),
@@ -249,12 +293,16 @@ class BankValueDiffRow extends StatelessWidget {
     if (_hasNew) {
       return [
         _buildNewValue(theme),
-        _buildChip(theme, '+ $addedLabel', theme.positiveBalance),
+        _buildChip(
+          theme,
+          '+ $addedLabel',
+          addedColor ?? theme.positiveBalance,
+        ),
       ];
     }
     return [
       _buildOldValue(theme),
-      _buildChip(theme, '– $removedLabel', BankTokens.danger),
+      _buildChip(theme, '– $removedLabel', removedColor ?? BankTokens.danger),
     ];
   }
 
@@ -263,7 +311,9 @@ class BankValueDiffRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+          style: BankTokens.bodySmall
+              .copyWith(color: theme.onSurfaceVariant)
+              .merge(labelStyle),
         ),
         const SizedBox(width: BankTokens.space4),
         Expanded(
@@ -323,7 +373,11 @@ class BankValueDiffRow extends StatelessWidget {
           spacing: BankTokens.space2,
           runSpacing: BankTokens.space1,
           children: [
-            _buildChip(theme, '+ $addedLabel', theme.positiveBalance),
+            _buildChip(
+              theme,
+              '+ $addedLabel',
+              addedColor ?? theme.positiveBalance,
+            ),
             _buildNewValue(theme),
           ],
         ),
@@ -335,7 +389,11 @@ class BankValueDiffRow extends StatelessWidget {
           spacing: BankTokens.space2,
           runSpacing: BankTokens.space1,
           children: [
-            _buildChip(theme, '– $removedLabel', BankTokens.danger),
+            _buildChip(
+              theme,
+              '– $removedLabel',
+              removedColor ?? BankTokens.danger,
+            ),
             _buildOldValue(theme),
           ],
         ),
@@ -348,7 +406,9 @@ class BankValueDiffRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+          style: BankTokens.bodySmall
+              .copyWith(color: theme.onSurfaceVariant)
+              .merge(labelStyle),
         ),
         const SizedBox(height: BankTokens.space1),
         ...lines,
@@ -372,7 +432,8 @@ class BankValueDiffRow extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: BankTokens.minTapTarget),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: BankTokens.space2),
+          padding: padding ??
+              const EdgeInsets.symmetric(vertical: BankTokens.space2),
           child: Align(
             alignment: AlignmentDirectional.centerStart,
             child: content,
@@ -519,6 +580,43 @@ class BankValueDiffList extends StatelessWidget {
   /// See [BankValueDiffRow.removedLabel].
   final String removedLabel;
 
+  /// Overrides the card background colour. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card corner radius. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card border colour. Defaults to the theme outline.
+  final Color? borderColor;
+
+  /// Overrides the inter-row divider colour. Defaults to the theme
+  /// onSurface at 8% opacity.
+  final Color? dividerColor;
+
+  /// Merged over the title style (BankTokens.labelLarge in onSurface).
+  final TextStyle? titleStyle;
+
+  /// See [BankValueDiffRow.arrowIcon].
+  final IconData? arrowIcon;
+
+  /// See [BankValueDiffRow.addedColor].
+  final Color? addedColor;
+
+  /// See [BankValueDiffRow.removedColor].
+  final Color? removedColor;
+
+  /// See [BankValueDiffRow.increaseColor].
+  final Color? increaseColor;
+
+  /// See [BankValueDiffRow.labelStyle].
+  final TextStyle? labelStyle;
+
+  /// See [BankValueDiffRow.oldValueStyle].
+  final TextStyle? oldValueStyle;
+
+  /// See [BankValueDiffRow.newValueStyle].
+  final TextStyle? newValueStyle;
+
   /// Creates a card of old-vs-new change rows.
   const BankValueDiffList({
     required this.items,
@@ -531,6 +629,18 @@ class BankValueDiffList extends StatelessWidget {
     this.newLabel = 'New',
     this.addedLabel = 'Added',
     this.removedLabel = 'Removed',
+    this.backgroundColor,
+    this.radius,
+    this.borderColor,
+    this.dividerColor,
+    this.titleStyle,
+    this.arrowIcon,
+    this.addedColor,
+    this.removedColor,
+    this.increaseColor,
+    this.labelStyle,
+    this.oldValueStyle,
+    this.newValueStyle,
   });
 
   @override
@@ -538,7 +648,8 @@ class BankValueDiffList extends StatelessWidget {
     if (items.isEmpty) return const SizedBox.shrink();
 
     final theme = BankThemeData.of(context);
-    final dividerColor = theme.onSurface.withValues(alpha: 0.08);
+    final resolvedDividerColor =
+        dividerColor ?? theme.onSurface.withValues(alpha: 0.08);
 
     final children = <Widget>[];
     if (title != null) {
@@ -546,7 +657,9 @@ class BankValueDiffList extends StatelessWidget {
         ..add(
           Text(
             title!,
-            style: BankTokens.labelLarge.copyWith(color: theme.onSurface),
+            style: BankTokens.labelLarge
+                .copyWith(color: theme.onSurface)
+                .merge(titleStyle),
           ),
         )
         ..add(const SizedBox(height: BankTokens.space2));
@@ -567,18 +680,27 @@ class BankValueDiffList extends StatelessWidget {
           addedLabel: addedLabel,
           removedLabel: removedLabel,
           semanticLabel: item.semanticLabel,
+          arrowIcon: arrowIcon,
+          addedColor: addedColor,
+          removedColor: removedColor,
+          increaseColor: increaseColor,
+          labelStyle: labelStyle,
+          oldValueStyle: oldValueStyle,
+          newValueStyle: newValueStyle,
         ),
       );
       if (showDividers && i < items.length - 1) {
-        children.add(Divider(height: 1, thickness: 1, color: dividerColor));
+        children.add(
+          Divider(height: 1, thickness: 1, color: resolvedDividerColor),
+        );
       }
     }
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.cardRadius,
-        border: Border.all(color: theme.outline),
+        color: backgroundColor ?? theme.surface,
+        borderRadius: radius ?? theme.cardRadius,
+        border: Border.all(color: borderColor ?? theme.outline),
       ),
       child: Padding(
         padding: padding ?? const EdgeInsets.all(BankTokens.space4),

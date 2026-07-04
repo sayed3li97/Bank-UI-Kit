@@ -1,15 +1,28 @@
 name: bank_ui_kit
-description: Production-grade Flutter UI component library for mobile banking and fintech apps. Independently themeable, testable, RTL-aware widgets that compose into any host app.
-version: 0.1.0
+description: A themeable Flutter UI component library for mobile banking and fintech apps. RTL-aware, privacy-aware, accessible widgets that compose into any host app.
+version: 0.0.1
 homepage: https://github.com/sayed3li97/bank-ui-kit
 repository: https://github.com/sayed3li97/bank-ui-kit
 issue_tracker: https://github.com/sayed3li97/bank-ui-kit/issues
+documentation: https://github.com/sayed3li97/bank-ui-kit#readme
 topics:
   - banking
   - fintech
   - ui
   - widgets
   - design-system
+
+screenshots:
+  - description: Heritage preset, an Islamic-banking-ready design language.
+    path: screenshots/01-heritage-home.png
+  - description: Studio preset, the restrained editorial default.
+    path: screenshots/02-studio-home.png
+  - description: Voltage preset in dark mode, electric and gradient-led.
+    path: screenshots/03-voltage-home.png
+  - description: Bloom preset, warm and consumer-friendly.
+    path: screenshots/04-bloom-home.png
+  - description: Virtual and physical card widgets with controls.
+    path: screenshots/05-cards.png
 
 environment:
   sdk: '>=3.5.0 <4.0.0'

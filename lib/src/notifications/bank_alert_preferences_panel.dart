@@ -72,6 +72,21 @@ class BankAlertPreferencesPanel extends StatelessWidget {
       BankAlertChannel.sms: 'SMS',
     },
     this.typeLabels = const {},
+    this.footer,
+    this.sectionHeaderPadding,
+    this.rowPadding,
+    this.accentColor,
+    this.switchThumbColor,
+    this.iconColor,
+    this.sectionLabelStyle,
+    this.channelLabelStyle,
+    this.titleStyle,
+    this.requiredLabelStyle,
+    this.typeIcons = const {},
+    this.securityIcon,
+    this.lockIcon,
+    this.channelColumnWidth,
+    this.semanticLabel,
   });
 
   final List<BankAlertPreference> preferences;
@@ -97,6 +112,63 @@ class BankAlertPreferencesPanel extends StatelessWidget {
 
   /// Overrides the default English labels per notification type.
   final Map<BankNotificationType, String> typeLabels;
+
+  /// Optional slot below the matrix. Defaults to no footer.
+  final Widget? footer;
+
+  /// Overrides the section header padding. Defaults to
+  /// `EdgeInsets.fromLTRB(space4, space5, space4, space2)`.
+  final EdgeInsetsGeometry? sectionHeaderPadding;
+
+  /// Overrides each preference row padding. Defaults to
+  /// `EdgeInsets.symmetric(horizontal: space4, vertical: space1)`.
+  final EdgeInsetsGeometry? rowPadding;
+
+  /// Overrides the accent used for the security header icon and the switch
+  /// active track. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the switch thumb color when on. Defaults to the theme
+  /// onPrimary.
+  final Color? switchThumbColor;
+
+  /// Overrides the per-row type icon and lock icon color. Defaults to the
+  /// theme onSurfaceVariant.
+  final Color? iconColor;
+
+  /// Merged over the section label style
+  /// (BankTokens.labelMedium in onSurfaceVariant).
+  final TextStyle? sectionLabelStyle;
+
+  /// Merged over the channel column header style
+  /// (BankTokens.labelSmall in onSurfaceVariant).
+  final TextStyle? channelLabelStyle;
+
+  /// Merged over the row title style
+  /// (BankTokens.bodyLarge in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the locked helper label style
+  /// (BankTokens.labelSmall in onSurfaceVariant).
+  final TextStyle? requiredLabelStyle;
+
+  /// Overrides the per-type icon glyphs. Missing entries fall back to the
+  /// built-in defaults.
+  final Map<BankNotificationType, IconData> typeIcons;
+
+  /// Overrides the security section header icon. Defaults to
+  /// `BankIcons.shield`.
+  final IconData? securityIcon;
+
+  /// Overrides the locked row icon. Defaults to `BankIcons.lock`.
+  final IconData? lockIcon;
+
+  /// Overrides the width of each channel column. Defaults to `56`.
+  final double? channelColumnWidth;
+
+  /// When non-null, wraps the panel in a [Semantics] label. Defaults to no
+  /// extra semantics node.
+  final String? semanticLabel;
 
   static const Map<BankNotificationType, BankAlertSection> _sectionOf = {
     BankNotificationType.security: BankAlertSection.security,
@@ -144,32 +216,39 @@ class BankAlertPreferencesPanel extends StatelessWidget {
         .where(availableChannels.contains)
         .toList(growable: false);
 
+    final resolvedAccent = accentColor ?? theme.primary;
+    final resolvedThumb = switchThumbColor ?? theme.onPrimary;
+    final resolvedIconColor = iconColor ?? theme.onSurfaceVariant;
+    final resolvedColumnWidth = channelColumnWidth ?? 56;
+    final resolvedHeaderPadding = sectionHeaderPadding ??
+        const EdgeInsets.fromLTRB(
+          BankTokens.space4,
+          BankTokens.space5,
+          BankTokens.space4,
+          BankTokens.space2,
+        );
+
     final bySection = <BankAlertSection, List<BankAlertPreference>>{};
     for (final pref in preferences) {
       final section = _sectionOf[pref.type] ?? BankAlertSection.account;
       bySection.putIfAbsent(section, () => []).add(pref);
     }
 
-    return Column(
+    final panel = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (header != null) header!,
         for (final section in BankAlertSection.values)
           if (bySection.containsKey(section)) ...[
             Padding(
-              padding: const EdgeInsets.fromLTRB(
-                BankTokens.space4,
-                BankTokens.space5,
-                BankTokens.space4,
-                BankTokens.space2,
-              ),
+              padding: resolvedHeaderPadding,
               child: Row(
                 children: [
                   if (section == BankAlertSection.security) ...[
                     Icon(
-                      BankIcons.shield,
+                      securityIcon ?? BankIcons.shield,
                       size: 14,
-                      color: theme.primary,
+                      color: resolvedAccent,
                     ),
                     const SizedBox(width: BankTokens.space1),
                   ],
@@ -177,17 +256,19 @@ class BankAlertPreferencesPanel extends StatelessWidget {
                     child: Text(
                       sectionLabels[section] ?? '',
                       style: BankTokens.labelMedium
-                          .copyWith(color: theme.onSurfaceVariant),
+                          .copyWith(color: theme.onSurfaceVariant)
+                          .merge(sectionLabelStyle),
                     ),
                   ),
                   for (final channel in channels)
                     SizedBox(
-                      width: 56,
+                      width: resolvedColumnWidth,
                       child: Text(
                         channelLabels[channel] ?? '',
                         textAlign: TextAlign.center,
                         style: BankTokens.labelSmall
-                            .copyWith(color: theme.onSurfaceVariant),
+                            .copyWith(color: theme.onSurfaceVariant)
+                            .merge(channelLabelStyle),
                       ),
                     ),
                 ],
@@ -200,14 +281,26 @@ class BankAlertPreferencesPanel extends StatelessWidget {
                 label: typeLabels[pref.type] ??
                     _defaultTypeLabels[pref.type] ??
                     pref.type.name,
-                icon: _iconFor(pref.type),
+                icon: typeIcons[pref.type] ?? _iconFor(pref.type),
                 requiredLabel: requiredLabel,
                 theme: theme,
                 onChanged: onChanged,
+                padding: rowPadding,
+                titleStyle: titleStyle,
+                requiredLabelStyle: requiredLabelStyle,
+                iconColor: resolvedIconColor,
+                lockIcon: lockIcon ?? BankIcons.lock,
+                trackColor: resolvedAccent,
+                thumbColor: resolvedThumb,
+                columnWidth: resolvedColumnWidth,
               ),
           ],
+        if (footer != null) footer!,
       ],
     );
+
+    if (semanticLabel == null) return panel;
+    return Semantics(label: semanticLabel, child: panel);
   }
 }
 
@@ -223,6 +316,14 @@ class _PreferenceRow extends StatelessWidget {
     required this.requiredLabel,
     required this.theme,
     required this.onChanged,
+    required this.iconColor,
+    required this.lockIcon,
+    required this.trackColor,
+    required this.thumbColor,
+    required this.columnWidth,
+    this.padding,
+    this.titleStyle,
+    this.requiredLabelStyle,
   });
 
   final BankAlertPreference pref;
@@ -232,17 +333,26 @@ class _PreferenceRow extends StatelessWidget {
   final String requiredLabel;
   final BankThemeData theme;
   final void Function(BankNotificationType, BankAlertChannel, bool) onChanged;
+  final Color iconColor;
+  final IconData lockIcon;
+  final Color trackColor;
+  final Color thumbColor;
+  final double columnWidth;
+  final EdgeInsetsGeometry? padding;
+  final TextStyle? titleStyle;
+  final TextStyle? requiredLabelStyle;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: BankTokens.space4,
-        vertical: BankTokens.space1,
-      ),
+      padding: padding ??
+          const EdgeInsets.symmetric(
+            horizontal: BankTokens.space4,
+            vertical: BankTokens.space1,
+          ),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: theme.onSurfaceVariant),
+          Icon(icon, size: 20, color: iconColor),
           const SizedBox(width: BankTokens.space3),
           Expanded(
             child: Column(
@@ -250,21 +360,24 @@ class _PreferenceRow extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: BankTokens.bodyLarge.copyWith(color: theme.onSurface),
+                  style: BankTokens.bodyLarge
+                      .copyWith(color: theme.onSurface)
+                      .merge(titleStyle),
                 ),
                 if (pref.locked)
                   Row(
                     children: [
                       Icon(
-                        BankIcons.lock,
+                        lockIcon,
                         size: 11,
-                        color: theme.onSurfaceVariant,
+                        color: iconColor,
                       ),
                       const SizedBox(width: 2),
                       Text(
                         requiredLabel,
                         style: BankTokens.labelSmall
-                            .copyWith(color: theme.onSurfaceVariant),
+                            .copyWith(color: theme.onSurfaceVariant)
+                            .merge(requiredLabelStyle),
                       ),
                     ],
                   ),
@@ -273,15 +386,15 @@ class _PreferenceRow extends StatelessWidget {
           ),
           for (final channel in channels)
             SizedBox(
-              width: 56,
+              width: columnWidth,
               height: 44,
               child: Center(
                 child: Semantics(
                   label: '$label, ${channel.name}',
                   child: Switch(
                     value: pref.locked || pref.valueFor(channel),
-                    activeColor: theme.onPrimary,
-                    activeTrackColor: theme.primary,
+                    activeColor: thumbColor,
+                    activeTrackColor: trackColor,
                     onChanged: pref.locked
                         ? null
                         : (value) => onChanged(pref.type, channel, value),
