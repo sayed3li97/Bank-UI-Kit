@@ -104,6 +104,11 @@ class BankAddressForm extends StatefulWidget {
     this.postalCodeLabel = 'Postal code',
     this.requiredError = 'Required',
     this.postalCodeError = 'Enter a valid postal code',
+    this.lookupDebounce,
+    this.suggestionBackgroundColor,
+    this.suggestionRadius,
+    this.suggestionStyle,
+    this.fieldSpacing,
   });
 
   /// Emits the complete address, or null while any required field is
@@ -126,6 +131,23 @@ class BankAddressForm extends StatefulWidget {
   final String postalCodeLabel;
   final String requiredError;
   final String postalCodeError;
+
+  /// Overrides the [onLookup] debounce. Defaults to 300 ms.
+  final Duration? lookupDebounce;
+
+  /// Fill of the suggestion dropdown. Defaults to the theme surface.
+  final Color? suggestionBackgroundColor;
+
+  /// Corner radius of the suggestion dropdown. Defaults to the theme
+  /// buttonRadius.
+  final BorderRadius? suggestionRadius;
+
+  /// Merged over the computed suggestion row style (bodyMedium).
+  final TextStyle? suggestionStyle;
+
+  /// Vertical gap between form fields. Defaults to
+  /// [BankTokens.space4].
+  final double? fieldSpacing;
 
   @override
   State<BankAddressForm> createState() => _BankAddressFormState();
@@ -242,7 +264,8 @@ class _BankAddressFormState extends State<BankAddressForm> {
       setState(() => _suggestions = const []);
       return;
     }
-    _lookupDebounce = Timer(const Duration(milliseconds: 300), () async {
+    _lookupDebounce = Timer(
+        widget.lookupDebounce ?? const Duration(milliseconds: 300), () async {
       List<BankAddress> results;
       try {
         results = await lookup(text.trim());
@@ -273,6 +296,7 @@ class _BankAddressFormState extends State<BankAddressForm> {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final gap = widget.fieldSpacing ?? BankTokens.space4;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -289,7 +313,7 @@ class _BankAddressFormState extends State<BankAddressForm> {
           label: widget.countryLabel,
           enabled: widget.countryEditable,
         ),
-        const SizedBox(height: BankTokens.space4),
+        SizedBox(height: gap),
         Focus(
           onFocusChange: (focused) {
             if (!focused) _markTouched('line1');
@@ -304,9 +328,9 @@ class _BankAddressFormState extends State<BankAddressForm> {
         if (_suggestions.isNotEmpty)
           DecoratedBox(
             decoration: BoxDecoration(
-              color: theme.surface,
+              color: widget.suggestionBackgroundColor ?? theme.surface,
               border: Border.all(color: theme.outline),
-              borderRadius: theme.buttonRadius,
+              borderRadius: widget.suggestionRadius ?? theme.buttonRadius,
             ),
             child: Column(
               children: [
@@ -316,7 +340,8 @@ class _BankAddressFormState extends State<BankAddressForm> {
                     title: Text(
                       suggestion.displayLines().join(', '),
                       style: BankTokens.bodyMedium
-                          .copyWith(color: theme.onSurface),
+                          .copyWith(color: theme.onSurface)
+                          .merge(widget.suggestionStyle),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -325,13 +350,13 @@ class _BankAddressFormState extends State<BankAddressForm> {
               ],
             ),
           ),
-        const SizedBox(height: BankTokens.space4),
+        SizedBox(height: gap),
         BankTextField(
           controller: _line2,
           label: widget.line2Label,
           onChanged: (_) => _emit(),
         ),
-        const SizedBox(height: BankTokens.space4),
+        SizedBox(height: gap),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -371,7 +396,7 @@ class _BankAddressFormState extends State<BankAddressForm> {
             ),
           ],
         ),
-        const SizedBox(height: BankTokens.space4),
+        SizedBox(height: gap),
         Focus(
           onFocusChange: (focused) {
             if (!focused) _markTouched('postal');
@@ -465,11 +490,38 @@ class BankAddressPreview extends StatelessWidget {
     super.key,
     this.onEdit,
     this.editLabel = 'Edit',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.shadow,
+    this.lineStyle,
+    this.editLabelStyle,
   });
 
   final BankAddress address;
   final VoidCallback? onEdit;
   final String editLabel;
+
+  /// Overrides the card content padding. Defaults to
+  /// [BankTokens.space4] on all sides.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme
+  /// cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card fill. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
+  /// pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Merged over the computed address line style (bodyMedium).
+  final TextStyle? lineStyle;
+
+  /// Merged over the computed edit button style (labelLarge, primary).
+  final TextStyle? editLabelStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -478,13 +530,13 @@ class BankAddressPreview extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.cardRadius,
+        color: backgroundColor ?? theme.surface,
+        borderRadius: radius ?? theme.cardRadius,
         border: Border.all(color: theme.outline),
-        boxShadow: BankTokens.shadowCard,
+        boxShadow: shadow ?? BankTokens.shadowCard,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space4),
+        padding: padding ?? const EdgeInsets.all(BankTokens.space4),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -501,7 +553,8 @@ class BankAddressPreview extends StatelessWidget {
                     Text(
                       line,
                       style: BankTokens.bodyMedium
-                          .copyWith(color: theme.onSurface),
+                          .copyWith(color: theme.onSurface)
+                          .merge(lineStyle),
                     ),
                 ],
               ),
@@ -511,7 +564,9 @@ class BankAddressPreview extends StatelessWidget {
                 onPressed: onEdit,
                 child: Text(
                   editLabel,
-                  style: BankTokens.labelLarge.copyWith(color: theme.primary),
+                  style: BankTokens.labelLarge
+                      .copyWith(color: theme.primary)
+                      .merge(editLabelStyle),
                 ),
               ),
           ],

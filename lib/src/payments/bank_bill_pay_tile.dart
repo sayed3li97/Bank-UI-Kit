@@ -85,6 +85,17 @@ class BankBillPayTile extends StatelessWidget {
     this.scheduledLabel = 'Scheduled',
     this.paidLabel = 'Paid',
     this.overdueLabel = 'Overdue',
+    this.padding,
+    this.leading,
+    this.accentColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.eBillIcon,
+    this.autopayIcon,
+    this.scheduledIcon,
+    this.paidIcon,
+    this.semanticLabel,
   });
 
   final BankBill bill;
@@ -105,6 +116,40 @@ class BankBillPayTile extends StatelessWidget {
   final String paidLabel;
   final String overdueLabel;
 
+  /// Overrides the row content padding. Defaults to horizontal
+  /// [BankTokens.space4] and vertical [BankTokens.space2].
+  final EdgeInsetsGeometry? padding;
+
+  /// Replaces the leading biller emblem when set.
+  final Widget? leading;
+
+  /// Tint of the inline Pay button. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Merged over the computed biller-name style.
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed due-line style.
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the computed amount style.
+  final TextStyle? amountStyle;
+
+  /// Glyph marking paperless bills. Defaults to [Icons.bolt_outlined].
+  final IconData? eBillIcon;
+
+  /// Glyph on the autopay chip. Defaults to [BankIcons.repeat].
+  final IconData? autopayIcon;
+
+  /// Glyph on the scheduled chip. Defaults to [BankIcons.schedule].
+  final IconData? scheduledIcon;
+
+  /// Glyph on the paid chip. Defaults to [Icons.check_rounded].
+  final IconData? paidIcon;
+
+  /// Overrides the computed row semantics label.
+  final String? semanticLabel;
+
   bool get _payable =>
       onPay != null &&
       (bill.status == BankBillStatus.upcoming ||
@@ -124,24 +169,33 @@ class BankBillPayTile extends StatelessWidget {
         ? '$overdueLabel · ${BankDateFormatter.formatShort(bill.dueDate)}'
         : '$duePrefix ${BankDateFormatter.formatShort(bill.dueDate)}';
 
+    final accent = accentColor ?? theme.primary;
+    final resolvedAmountStyle = amountStyle == null
+        ? null
+        : theme.numeralSmall
+            .copyWith(color: theme.onSurface)
+            .merge(amountStyle);
+
     return Semantics(
       button: onTap != null,
-      label: '${bill.billerName}, $dueText',
+      label: semanticLabel ?? '${bill.billerName}, $dueText',
       child: InkWell(
         onTap: onTap,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 72),
           child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: BankTokens.space4,
-              vertical: BankTokens.space2,
-            ),
+            padding: padding ??
+                const EdgeInsetsDirectional.symmetric(
+                  horizontal: BankTokens.space4,
+                  vertical: BankTokens.space2,
+                ),
             child: Row(
               children: [
-                BankEmblem(
-                  imageUrl: bill.billerLogoUrl,
-                  initialsFrom: bill.billerName,
-                ),
+                leading ??
+                    BankEmblem(
+                      imageUrl: bill.billerLogoUrl,
+                      initialsFrom: bill.billerName,
+                    ),
                 const SizedBox(width: BankTokens.space3),
                 Expanded(
                   child: Column(
@@ -150,7 +204,8 @@ class BankBillPayTile extends StatelessWidget {
                       Text(
                         bill.billerName,
                         style: BankTokens.bodyLarge
-                            .copyWith(color: theme.onSurface),
+                            .copyWith(color: theme.onSurface)
+                            .merge(titleStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -162,7 +217,8 @@ class BankBillPayTile extends StatelessWidget {
                             child: Text(
                               dueText,
                               style: BankTokens.bodySmall
-                                  .copyWith(color: dueColor),
+                                  .copyWith(color: dueColor)
+                                  .merge(subtitleStyle),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -170,7 +226,7 @@ class BankBillPayTile extends StatelessWidget {
                           if (bill.eBill) ...[
                             const SizedBox(width: BankTokens.space1),
                             Icon(
-                              Icons.bolt_outlined,
+                              eBillIcon ?? Icons.bolt_outlined,
                               size: 12,
                               color: theme.onSurfaceVariant,
                             ),
@@ -190,6 +246,7 @@ class BankBillPayTile extends StatelessWidget {
                       BankBalanceText(
                         money: bill.amountDue,
                         size: BankBalanceSize.small,
+                        style: resolvedAmountStyle,
                       ),
                       const SizedBox(height: 2),
                       _StatusChip(
@@ -197,6 +254,9 @@ class BankBillPayTile extends StatelessWidget {
                         autopayLabel: autopayLabel,
                         scheduledLabel: scheduledLabel,
                         paidLabel: paidLabel,
+                        autopayIcon: autopayIcon,
+                        scheduledIcon: scheduledIcon,
+                        paidIcon: paidIcon,
                         theme: theme,
                       ),
                     ],
@@ -206,8 +266,8 @@ class BankBillPayTile extends StatelessWidget {
                     FilledButton.tonal(
                       onPressed: onPay,
                       style: FilledButton.styleFrom(
-                        backgroundColor: theme.primary.withValues(alpha: 0.12),
-                        foregroundColor: theme.primary,
+                        backgroundColor: accent.withValues(alpha: 0.12),
+                        foregroundColor: accent,
                         minimumSize: const Size(0, 36),
                         padding: const EdgeInsets.symmetric(
                           horizontal: BankTokens.space3,
@@ -236,6 +296,9 @@ class _StatusChip extends StatelessWidget {
     required this.scheduledLabel,
     required this.paidLabel,
     required this.theme,
+    this.autopayIcon,
+    this.scheduledIcon,
+    this.paidIcon,
   });
 
   final BankBillStatus status;
@@ -243,6 +306,9 @@ class _StatusChip extends StatelessWidget {
   final String scheduledLabel;
   final String paidLabel;
   final BankThemeData theme;
+  final IconData? autopayIcon;
+  final IconData? scheduledIcon;
+  final IconData? paidIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -250,17 +316,17 @@ class _StatusChip extends StatelessWidget {
       BankBillStatus.autopay => (
           autopayLabel,
           theme.primary,
-          BankIcons.repeat,
+          autopayIcon ?? BankIcons.repeat,
         ),
       BankBillStatus.scheduled => (
           scheduledLabel,
           theme.pending,
-          BankIcons.schedule,
+          scheduledIcon ?? BankIcons.schedule,
         ),
       BankBillStatus.paid => (
           paidLabel,
           theme.positiveBalance,
-          Icons.check_rounded,
+          paidIcon ?? Icons.check_rounded,
         ),
       _ => (null, null, null),
     };
@@ -306,6 +372,12 @@ class BankBillCalendarStrip extends StatelessWidget {
     this.days = 14,
     this.startDate,
     this.onDayTap,
+    this.padding,
+    this.height,
+    this.radius,
+    this.accentColor,
+    this.dayStyle,
+    this.billsDueLabel = 'bills due',
   });
 
   final List<BankBill> bills;
@@ -318,17 +390,40 @@ class BankBillCalendarStrip extends StatelessWidget {
 
   final void Function(DateTime day, List<BankBill> due)? onDayTap;
 
+  /// Overrides the strip's scroll padding. Defaults to horizontal
+  /// [BankTokens.space4].
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the strip height. Defaults to 76.
+  final double? height;
+
+  /// Overrides the day-cell corner radius. Defaults to the theme
+  /// chip radius.
+  final BorderRadius? radius;
+
+  /// Tint of due-day cells and dots. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Merged over the computed day-number style.
+  final TextStyle? dayStyle;
+
+  /// Semantics suffix announced after the due count, e.g. '2 bills due'.
+  final String billsDueLabel;
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final start = startDate ?? DateTime.now();
     final startDay = DateTime(start.year, start.month, start.day);
+    final accent = accentColor ?? theme.primary;
+    final cellRadius = radius ?? theme.chipRadius;
 
     return SizedBox(
-      height: 76,
+      height: height ?? 76,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: BankTokens.space4),
+        padding: padding ??
+            const EdgeInsets.symmetric(horizontal: BankTokens.space4),
         itemCount: days,
         separatorBuilder: (_, __) => const SizedBox(width: BankTokens.space2),
         itemBuilder: (context, index) {
@@ -346,17 +441,17 @@ class BankBillCalendarStrip extends StatelessWidget {
           return Semantics(
             button: onDayTap != null,
             label: '${BankDateFormatter.formatShort(day)}'
-                '${hasDue ? ', ${due.length} bills due' : ''}',
+                '${hasDue ? ', ${due.length} $billsDueLabel' : ''}',
             excludeSemantics: true,
             child: InkWell(
               onTap: onDayTap == null ? null : () => onDayTap!(day, due),
-              borderRadius: theme.chipRadius,
+              borderRadius: cellRadius,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: hasDue
-                      ? theme.primary.withValues(alpha: 0.08)
+                      ? accent.withValues(alpha: 0.08)
                       : Colors.transparent,
-                  borderRadius: theme.chipRadius,
+                  borderRadius: cellRadius,
                 ),
                 child: SizedBox(
                   width: 44,
@@ -365,15 +460,17 @@ class BankBillCalendarStrip extends StatelessWidget {
                     children: [
                       Text(
                         BankDateFormatter.formatShort(day).split(' ').first,
-                        style: BankTokens.labelMedium.copyWith(
-                          color: hasDue ? theme.primary : theme.onSurface,
-                        ),
+                        style: BankTokens.labelMedium
+                            .copyWith(
+                              color: hasDue ? accent : theme.onSurface,
+                            )
+                            .merge(dayStyle),
                       ),
                       const SizedBox(height: 4),
                       if (hasDue)
                         DecoratedBox(
                           decoration: BoxDecoration(
-                            color: theme.primary,
+                            color: accent,
                             shape: BoxShape.circle,
                           ),
                           child: const SizedBox(width: 5, height: 5),

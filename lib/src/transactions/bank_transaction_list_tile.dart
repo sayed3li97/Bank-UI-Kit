@@ -17,11 +17,57 @@ class BankTransactionListTile extends StatelessWidget {
   /// Full override: when provided, replaces the default tile layout entirely.
   final Widget Function(BuildContext, Transaction)? itemBuilder;
 
+  /// Overrides the row content padding. Defaults to horizontal
+  /// [BankTokens.space4] and vertical [BankTokens.space2].
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the ink splash radius. Defaults to the theme card radius.
+  final BorderRadius? radius;
+
+  /// Overrides the minimum row height. Defaults to 72.
+  final double? height;
+
+  /// Replaces the leading category avatar when provided.
+  final Widget? leading;
+
+  /// Replaces the trailing amount text when provided.
+  final Widget? trailing;
+
+  /// Overrides the avatar background. Defaults to the theme surfaceVariant.
+  final Color? avatarBackgroundColor;
+
+  /// Overrides the category icon color. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Merged over the merchant name style ([BankTokens.labelLarge]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the status label style ([BankTokens.bodySmall]).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the computed amount style.
+  final TextStyle? amountStyle;
+
+  /// Overrides the tile semantics label. Defaults to merchant name,
+  /// amount, and status.
+  final String? semanticLabel;
+
   const BankTransactionListTile({
     required this.transaction,
     super.key,
     this.onTap,
     this.itemBuilder,
+    this.padding,
+    this.radius,
+    this.height,
+    this.leading,
+    this.trailing,
+    this.avatarBackgroundColor,
+    this.accentColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.semanticLabel,
   });
 
   // ---------------------------------------------------------------------------
@@ -77,35 +123,43 @@ class BankTransactionListTile extends StatelessWidget {
             ? bankTheme.positiveBalance
             : bankTheme.onSurface;
 
-    final amountStyle = bankTheme.numeralSmall.copyWith(
-      color: amountColor,
-      decoration: isDeclined ? TextDecoration.lineThrough : TextDecoration.none,
-      decorationColor: bankTheme.onSurfaceVariant,
-    );
+    final computedAmountStyle = bankTheme.numeralSmall
+        .copyWith(
+          color: amountColor,
+          decoration:
+              isDeclined ? TextDecoration.lineThrough : TextDecoration.none,
+          decorationColor: bankTheme.onSurfaceVariant,
+        )
+        .merge(amountStyle);
 
-    final semanticLabel = '${transaction.merchantName}, $displayAmount, '
-        '${transaction.status.name}';
+    final resolvedSemanticLabel = semanticLabel ??
+        '${transaction.merchantName}, $displayAmount, '
+            '${transaction.status.name}';
 
     return Semantics(
-      label: semanticLabel,
+      label: resolvedSemanticLabel,
       button: onTap != null,
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
-        borderRadius: bankTheme.cardRadius,
+        borderRadius: radius ?? bankTheme.cardRadius,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 72),
+          constraints: BoxConstraints(minHeight: height ?? 72),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: BankTokens.space4,
-              vertical: BankTokens.space2,
-            ),
+            padding: padding ??
+                const EdgeInsets.symmetric(
+                  horizontal: BankTokens.space4,
+                  vertical: BankTokens.space2,
+                ),
             child: Row(
               children: [
-                _LeadingAvatar(
-                  transaction: transaction,
-                  bankTheme: bankTheme,
-                ),
+                leading ??
+                    _LeadingAvatar(
+                      transaction: transaction,
+                      bankTheme: bankTheme,
+                      backgroundColor: avatarBackgroundColor,
+                      iconColor: accentColor,
+                    ),
                 const SizedBox(width: BankTokens.space3),
                 Expanded(
                   child: Column(
@@ -115,9 +169,9 @@ class BankTransactionListTile extends StatelessWidget {
                     children: [
                       Text(
                         transaction.merchantName,
-                        style: BankTokens.labelLarge.copyWith(
-                          color: bankTheme.onSurface,
-                        ),
+                        style: BankTokens.labelLarge
+                            .copyWith(color: bankTheme.onSurface)
+                            .merge(titleStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -125,9 +179,14 @@ class BankTransactionListTile extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           statusLabel,
-                          style: BankTokens.bodySmall.copyWith(
-                            color: _statusColor(transaction.status, bankTheme),
-                          ),
+                          style: BankTokens.bodySmall
+                              .copyWith(
+                                color: _statusColor(
+                                  transaction.status,
+                                  bankTheme,
+                                ),
+                              )
+                              .merge(subtitleStyle),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -136,11 +195,12 @@ class BankTransactionListTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: BankTokens.space2),
-                Text(
-                  displayAmount,
-                  style: amountStyle,
-                  textAlign: TextAlign.end,
-                ),
+                trailing ??
+                    Text(
+                      displayAmount,
+                      style: computedAmountStyle,
+                      textAlign: TextAlign.end,
+                    ),
               ],
             ),
           ),
@@ -157,10 +217,14 @@ class BankTransactionListTile extends StatelessWidget {
 class _LeadingAvatar extends StatefulWidget {
   final Transaction transaction;
   final BankThemeData bankTheme;
+  final Color? backgroundColor;
+  final Color? iconColor;
 
   const _LeadingAvatar({
     required this.transaction,
     required this.bankTheme,
+    this.backgroundColor,
+    this.iconColor,
   });
 
   @override
@@ -183,11 +247,13 @@ class _LeadingAvatarState extends State<_LeadingAvatar> {
   Widget build(BuildContext context) {
     final bankTheme = widget.bankTheme;
     final logoUrl = widget.transaction.merchantLogoUrl;
+    final resolvedBackground =
+        widget.backgroundColor ?? bankTheme.surfaceVariant;
 
     if (logoUrl != null && !_logoFailed) {
       return CircleAvatar(
         radius: 20,
-        backgroundColor: bankTheme.surfaceVariant,
+        backgroundColor: resolvedBackground,
         backgroundImage: BankUiScope.imageProviderFor(context, logoUrl),
         onBackgroundImageError: (_, __) {
           if (mounted) {
@@ -199,11 +265,11 @@ class _LeadingAvatarState extends State<_LeadingAvatar> {
 
     return CircleAvatar(
       radius: 20,
-      backgroundColor: bankTheme.surfaceVariant,
+      backgroundColor: resolvedBackground,
       child: Icon(
         BankIcons.forCategoryName(widget.transaction.category.name),
         size: 20,
-        color: bankTheme.primary,
+        color: widget.iconColor ?? bankTheme.primary,
       ),
     );
   }

@@ -14,6 +14,39 @@ class BankJointTransactionListTile extends StatelessWidget {
   final VoidCallback? onTap;
   final Widget Function(BuildContext, Transaction)? itemBuilder;
 
+  /// Initiator line template; `{name}` is substituted. Defaults to
+  /// 'by {name}'.
+  final String byTemplate;
+
+  /// Overrides the tile content padding. Defaults to space4 by space3.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the tile minimum height. Defaults to 72.
+  final double? height;
+
+  /// Overrides the debit amount colour. Defaults to
+  /// [BankTokens.investmentLoss].
+  final Color? debitColor;
+
+  /// Overrides the credit amount colour. Defaults to
+  /// [BankTokens.investmentGain].
+  final Color? creditColor;
+
+  /// Merged over the computed merchant-name style
+  /// ([BankTokens.labelMedium] in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed initiator-line style
+  /// ([BankTokens.bodySmall] in onSurfaceVariant).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the computed amount style ([BankTokens.numeralSmall]).
+  final TextStyle? amountStyle;
+
+  /// Overrides the tile semantics. Defaults to a label built from the
+  /// merchant, amount, and initiator.
+  final String? semanticLabel;
+
   const BankJointTransactionListTile({
     required this.transaction,
     super.key,
@@ -21,6 +54,15 @@ class BankJointTransactionListTile extends StatelessWidget {
     this.initiatorAvatarUrl,
     this.onTap,
     this.itemBuilder,
+    this.byTemplate = 'by {name}',
+    this.padding,
+    this.height,
+    this.debitColor,
+    this.creditColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.semanticLabel,
   });
 
   @override
@@ -31,8 +73,9 @@ class BankJointTransactionListTile extends StatelessWidget {
     final scope = BankUiScope.of(context);
 
     final isDebit = transaction.amount.isNegative;
-    final amountColor =
-        isDebit ? BankTokens.investmentLoss : BankTokens.investmentGain;
+    final amountColor = isDebit
+        ? (debitColor ?? BankTokens.investmentLoss)
+        : (creditColor ?? BankTokens.investmentGain);
 
     final amountStr = BankMoneyFormatter.formatSign(
       amount: transaction.amount.amount,
@@ -40,19 +83,26 @@ class BankJointTransactionListTile extends StatelessWidget {
       numeralStyle: scope.numeralStyle,
     );
 
-    final initiatorSuffix = initiatorName != null ? ', by $initiatorName' : '';
+    final byLine = initiatorName != null
+        ? byTemplate.replaceAll('{name}', initiatorName!)
+        : null;
+    final initiatorSuffix = byLine != null ? ', $byLine' : '';
+
+    final resolvedPadding = padding ??
+        const EdgeInsets.symmetric(
+          horizontal: BankTokens.space4,
+          vertical: BankTokens.space3,
+        );
 
     return Semantics(
-      label: '${transaction.merchantName}, $amountStr$initiatorSuffix',
+      label: semanticLabel ??
+          '${transaction.merchantName}, $amountStr$initiatorSuffix',
       child: InkWell(
         onTap: onTap,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 72),
+          constraints: BoxConstraints(minHeight: height ?? 72),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: BankTokens.space4,
-              vertical: BankTokens.space3,
-            ),
+            padding: resolvedPadding,
             child: Row(
               children: [
                 Stack(
@@ -116,22 +166,26 @@ class BankJointTransactionListTile extends StatelessWidget {
                       Text(
                         transaction.merchantName,
                         style: BankTokens.labelMedium
-                            .copyWith(color: theme.onSurface),
+                            .copyWith(color: theme.onSurface)
+                            .merge(titleStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (initiatorName != null)
+                      if (byLine != null)
                         Text(
-                          'by $initiatorName',
+                          byLine,
                           style: BankTokens.bodySmall
-                              .copyWith(color: theme.onSurfaceVariant),
+                              .copyWith(color: theme.onSurfaceVariant)
+                              .merge(subtitleStyle),
                         ),
                     ],
                   ),
                 ),
                 Text(
                   amountStr,
-                  style: BankTokens.numeralSmall.copyWith(color: amountColor),
+                  style: BankTokens.numeralSmall
+                      .copyWith(color: amountColor)
+                      .merge(amountStyle),
                 ),
               ],
             ),

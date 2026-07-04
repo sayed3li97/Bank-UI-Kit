@@ -84,6 +84,33 @@ class BankPeriodSelector extends StatefulWidget {
   /// matching [unit], e.g. `Next month`.
   final String? nextSemanticLabel;
 
+  /// Replaces the default label text for a normalised period start.
+  /// Defaults to `March 2026` / `Q1 2026` / `2026` formatting with
+  /// ambient-numeral conversion; the returned string is shown verbatim.
+  final String Function(DateTime period)? labelFormatter;
+
+  /// Merged over the computed label style (default:
+  /// [BankTokens.headlineSmall] in [BankThemeData.onSurface]).
+  final TextStyle? labelStyle;
+
+  /// Overrides the back chevron glyph (default: a direction-aware
+  /// [Icons.chevron_left], mirrored in RTL). Overrides are not mirrored.
+  final IconData? previousIcon;
+
+  /// Overrides the forward chevron glyph (default: a direction-aware
+  /// [Icons.chevron_right], mirrored in RTL). Overrides are not mirrored.
+  final IconData? nextIcon;
+
+  /// Overrides [BankThemeData.onSurface] as the chevron colour (the
+  /// disabled state keeps its 40 % opacity treatment).
+  final Color? foregroundColor;
+
+  /// Overrides [BankTokens.durationFast] for the label transition.
+  final Duration? animationDuration;
+
+  /// Overrides [BankTokens.curveStandard] for the label transition.
+  final Curve? animationCurve;
+
   const BankPeriodSelector({
     required this.period,
     required this.unit,
@@ -94,6 +121,13 @@ class BankPeriodSelector extends StatefulWidget {
     this.onTapLabel,
     this.previousSemanticLabel,
     this.nextSemanticLabel,
+    this.labelFormatter,
+    this.labelStyle,
+    this.previousIcon,
+    this.nextIcon,
+    this.foregroundColor,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   @override
@@ -187,16 +221,20 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
     final canGoForward = widget.maxPeriod == null ||
         normalized.isBefore(_normalize(widget.maxPeriod!, widget.unit));
 
-    final labelText = _formatLabel(normalized, widget.unit, scope.numeralStyle);
+    final labelText = widget.labelFormatter?.call(normalized) ??
+        _formatLabel(normalized, widget.unit, scope.numeralStyle);
 
     // Slide direction of the label: towards the past or the future,
     // mirrored for RTL so travel always matches reading direction.
     final travel = (_movedForward ? 1.0 : -1.0) * (isRtl ? -1.0 : 1.0);
 
+    final switchCurve = widget.animationCurve ?? BankTokens.curveStandard;
     final label = AnimatedSwitcher(
-      duration: reduceMotion ? Duration.zero : BankTokens.durationFast,
-      switchInCurve: BankTokens.curveStandard,
-      switchOutCurve: BankTokens.curveStandard,
+      duration: reduceMotion
+          ? Duration.zero
+          : widget.animationDuration ?? BankTokens.durationFast,
+      switchInCurve: switchCurve,
+      switchOutCurve: switchCurve,
       transitionBuilder: (Widget child, Animation<double> animation) {
         final incoming = child.key == ValueKey<DateTime>(normalized);
         final beginDx = (incoming ? 0.25 : -0.25) * travel;
@@ -212,7 +250,9 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
       child: Text(
         labelText,
         key: ValueKey<DateTime>(normalized),
-        style: BankTokens.headlineSmall.copyWith(color: theme.onSurface),
+        style: BankTokens.headlineSmall
+            .copyWith(color: theme.onSurface)
+            .merge(widget.labelStyle),
         textAlign: TextAlign.center,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -239,17 +279,21 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
     return Row(
       children: [
         _PeriodChevron(
-          icon: isRtl ? Icons.chevron_right : Icons.chevron_left,
+          icon: widget.previousIcon ??
+              (isRtl ? Icons.chevron_right : Icons.chevron_left),
           semanticLabel: widget.previousSemanticLabel ?? _defaultPreviousLabel,
           enabled: canGoBack,
+          color: widget.foregroundColor,
           onPressed: () =>
               widget.onChanged(_shift(normalized, widget.unit, -1)),
         ),
         Expanded(child: labelArea),
         _PeriodChevron(
-          icon: isRtl ? Icons.chevron_left : Icons.chevron_right,
+          icon: widget.nextIcon ??
+              (isRtl ? Icons.chevron_left : Icons.chevron_right),
           semanticLabel: widget.nextSemanticLabel ?? _defaultNextLabel,
           enabled: canGoForward,
+          color: widget.foregroundColor,
           onPressed: () => widget.onChanged(_shift(normalized, widget.unit, 1)),
         ),
       ],
@@ -269,16 +313,21 @@ class _PeriodChevron extends StatelessWidget {
   final bool enabled;
   final VoidCallback onPressed;
 
+  /// Overrides [BankThemeData.onSurface] as the chevron colour.
+  final Color? color;
+
   const _PeriodChevron({
     required this.icon,
     required this.semanticLabel,
     required this.enabled,
     required this.onPressed,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final fg = color ?? theme.onSurface;
 
     return Semantics(
       button: true,
@@ -287,8 +336,8 @@ class _PeriodChevron extends StatelessWidget {
       child: IconButton(
         onPressed: enabled ? onPressed : null,
         icon: Icon(icon),
-        color: theme.onSurface,
-        disabledColor: theme.onSurface.withValues(alpha: 0.4),
+        color: fg,
+        disabledColor: fg.withValues(alpha: 0.4),
         constraints: const BoxConstraints(
           minWidth: BankTokens.minTapTarget,
           minHeight: BankTokens.minTapTarget,

@@ -52,6 +52,41 @@ class BankFraudAlertBanner extends StatelessWidget {
   /// Called when the user explicitly taps the dismiss button.
   final VoidCallback onDismiss;
 
+  /// Overrides the content padding. Defaults to
+  /// [EdgeInsets.all] of [BankTokens.space4].
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the banner corner radius. Defaults to
+  /// [BankThemeData.cardRadius].
+  final BorderRadius? radius;
+
+  /// Overrides the banner background. Defaults to the accent colour at
+  /// 8% alpha.
+  final Color? backgroundColor;
+
+  /// Overrides the body text colour. Defaults to
+  /// [BankThemeData.onSurface].
+  final Color? foregroundColor;
+
+  /// Accent for the left border, icon, title, and primary button.
+  /// Defaults to [BankTokens.danger].
+  final Color? accentColor;
+
+  /// Overrides the fraud glyph. Defaults to [Icons.gpp_bad_outlined].
+  final IconData? icon;
+
+  /// Merged over the computed title style ([BankTokens.labelLarge] in
+  /// the accent colour).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed body style ([BankTokens.bodySmall] in
+  /// [BankThemeData.onSurface]).
+  final TextStyle? bodyStyle;
+
+  /// Overrides the container semantics label. Defaults to
+  /// 'Fraud alert: $title'.
+  final String? semanticLabel;
+
   const BankFraudAlertBanner({
     required this.title,
     required this.body,
@@ -60,30 +95,41 @@ class BankFraudAlertBanner extends StatelessWidget {
     required this.onPrimaryAction,
     required this.onDismiss,
     super.key,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.accentColor,
+    this.icon,
+    this.titleStyle,
+    this.bodyStyle,
+    this.semanticLabel,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    const dangerColor = BankTokens.danger;
-    final dangerBg = dangerColor.withValues(alpha: 0.08);
+    final accent = accentColor ?? BankTokens.danger;
+    final background = backgroundColor ?? accent.withValues(alpha: 0.08);
+    final bodyColor = foregroundColor ?? theme.onSurface;
+    final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space4);
 
     return Semantics(
-      label: 'Fraud alert: $title',
+      label: semanticLabel ?? 'Fraud alert: $title',
       container: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: dangerBg,
-          borderRadius: theme.cardRadius,
-          border: const Border(
+          color: background,
+          borderRadius: radius ?? theme.cardRadius,
+          border: Border(
             left: BorderSide(
-              color: dangerColor,
+              color: accent,
               width: 4,
             ),
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(BankTokens.space4),
+          padding: resolvedPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -91,9 +137,9 @@ class BankFraudAlertBanner extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.gpp_bad_outlined,
-                    color: dangerColor,
+                  Icon(
+                    icon ?? Icons.gpp_bad_outlined,
+                    color: accent,
                     size: 24,
                   ),
                   const SizedBox(width: BankTokens.space3),
@@ -103,16 +149,16 @@ class BankFraudAlertBanner extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: BankTokens.labelLarge.copyWith(
-                            color: dangerColor,
-                          ),
+                          style: BankTokens.labelLarge
+                              .copyWith(color: accent)
+                              .merge(titleStyle),
                         ),
                         const SizedBox(height: BankTokens.space1),
                         Text(
                           body,
-                          style: BankTokens.bodySmall.copyWith(
-                            color: theme.onSurface,
-                          ),
+                          style: BankTokens.bodySmall
+                              .copyWith(color: bodyColor)
+                              .merge(bodyStyle),
                         ),
                       ],
                     ),
@@ -129,7 +175,7 @@ class BankFraudAlertBanner extends StatelessWidget {
                       child: FilledButton(
                         onPressed: onPrimaryAction,
                         style: FilledButton.styleFrom(
-                          backgroundColor: dangerColor,
+                          backgroundColor: accent,
                           foregroundColor: const Color(0xFFFFFFFF),
                           minimumSize: const Size(
                             double.infinity,

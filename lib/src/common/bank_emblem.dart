@@ -66,6 +66,11 @@ class BankEmblem extends StatelessWidget {
     this.badgeOverlay,
     this.border,
     this.onTap,
+    this.initialsStyle,
+    this.badgeColor,
+    this.semanticLabel,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   /// URL of the entity image (payee photo, merchant logo).
@@ -112,6 +117,24 @@ class BankEmblem extends StatelessWidget {
 
   /// Makes the emblem tappable and exposes it as a semantic button.
   final VoidCallback? onTap;
+
+  /// Merged over the computed initials style (default:
+  /// [BankTokens.labelLarge] sized to 40 % of [size] in the resolved
+  /// foreground colour).
+  final TextStyle? initialsStyle;
+
+  /// Overrides [BankTokens.danger] as the [badgeCount] bubble colour.
+  final Color? badgeColor;
+
+  /// Overrides [initialsFrom] as the semantics label used when [onTap]
+  /// makes the emblem a button.
+  final String? semanticLabel;
+
+  /// Overrides [BankTokens.durationFast] for the image fade-in.
+  final Duration? animationDuration;
+
+  /// Overrides [BankTokens.curveStandard] for the image fade-in.
+  final Curve? animationCurve;
 
   /// Deterministic initials palette: eight hues dark enough to keep the
   /// automatically chosen foreground legible in light and dark themes.
@@ -169,10 +192,12 @@ class BankEmblem extends StatelessWidget {
     final placeholder = hasInitials
         ? Text(
             initials,
-            style: BankTokens.labelLarge.copyWith(
-              color: resolvedForeground,
-              fontSize: size * 0.4,
-            ),
+            style: BankTokens.labelLarge
+                .copyWith(
+                  color: resolvedForeground,
+                  fontSize: size * 0.4,
+                )
+                .merge(initialsStyle),
             maxLines: 1,
           )
         : Icon(
@@ -203,9 +228,10 @@ class BankEmblem extends StatelessWidget {
               if (wasSynchronouslyLoaded) return child;
               return AnimatedOpacity(
                 opacity: frame == null ? 0 : 1,
-                duration:
-                    disableAnimations ? Duration.zero : BankTokens.durationFast,
-                curve: BankTokens.curveStandard,
+                duration: disableAnimations
+                    ? Duration.zero
+                    : animationDuration ?? BankTokens.durationFast,
+                curve: animationCurve ?? BankTokens.curveStandard,
                 child: child,
               );
             },
@@ -238,7 +264,11 @@ class BankEmblem extends StatelessWidget {
             PositionedDirectional(
               top: -BankTokens.space1,
               end: -BankTokens.space1,
-              child: _EmblemCountBadge(count: badgeCount!, theme: theme),
+              child: _EmblemCountBadge(
+                count: badgeCount!,
+                theme: theme,
+                color: badgeColor,
+              ),
             ),
           if (badgeOverlay != null)
             PositionedDirectional(
@@ -259,7 +289,7 @@ class BankEmblem extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: initialsFrom,
+      label: semanticLabel ?? initialsFrom,
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
@@ -280,10 +310,14 @@ class _EmblemCountBadge extends StatelessWidget {
   const _EmblemCountBadge({
     required this.count,
     required this.theme,
+    this.color,
   });
 
   final int count;
   final BankThemeData theme;
+
+  /// Overrides [BankTokens.danger] as the bubble fill.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -292,7 +326,7 @@ class _EmblemCountBadge extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
       padding: const EdgeInsets.symmetric(horizontal: BankTokens.space1),
       decoration: BoxDecoration(
-        color: BankTokens.danger,
+        color: color ?? BankTokens.danger,
         borderRadius: const BorderRadius.all(
           Radius.circular(BankTokens.radiusFull),
         ),

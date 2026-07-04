@@ -46,6 +46,26 @@ class BankErrorStateView extends StatelessWidget {
   /// [BankTokens.danger] colour at 48 px.
   final Widget? icon;
 
+  /// Overrides the content padding. Defaults to
+  /// `EdgeInsets.symmetric(horizontal: BankTokens.space8)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Background of the retry button. Defaults to
+  /// [BankThemeData.primary].
+  final Color? accentColor;
+
+  /// Merged over the computed title style ([BankTokens.headlineSmall]
+  /// in [BankThemeData.onSurface]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed message style ([BankTokens.bodyMedium]
+  /// in [BankThemeData.onSurfaceVariant]).
+  final TextStyle? messageStyle;
+
+  /// Container semantics label for the whole view. Defaults to none
+  /// (children are read individually, as today).
+  final String? semanticLabel;
+
   const BankErrorStateView({
     required this.title,
     required this.message,
@@ -55,6 +75,11 @@ class BankErrorStateView extends StatelessWidget {
     this.onRetry,
     this.onContactSupport,
     this.icon,
+    this.padding,
+    this.accentColor,
+    this.titleStyle,
+    this.messageStyle,
+    this.semanticLabel,
   });
 
   @override
@@ -68,9 +93,12 @@ class BankErrorStateView extends StatelessWidget {
           color: BankTokens.danger,
         );
 
-    return Center(
+    final resolvedPadding =
+        padding ?? const EdgeInsets.symmetric(horizontal: BankTokens.space8);
+
+    Widget content = Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: BankTokens.space8),
+        padding: resolvedPadding,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -78,17 +106,17 @@ class BankErrorStateView extends StatelessWidget {
             const SizedBox(height: BankTokens.space4),
             Text(
               title,
-              style: BankTokens.headlineSmall.copyWith(
-                color: theme.onSurface,
-              ),
+              style: BankTokens.headlineSmall
+                  .copyWith(color: theme.onSurface)
+                  .merge(titleStyle),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: BankTokens.space2),
             Text(
               message,
-              style: BankTokens.bodyMedium.copyWith(
-                color: theme.onSurfaceVariant,
-              ),
+              style: BankTokens.bodyMedium
+                  .copyWith(color: theme.onSurfaceVariant)
+                  .merge(messageStyle),
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
@@ -99,7 +127,7 @@ class BankErrorStateView extends StatelessWidget {
                 child: FilledButton(
                   onPressed: onRetry,
                   style: FilledButton.styleFrom(
-                    backgroundColor: theme.primary,
+                    backgroundColor: accentColor ?? theme.primary,
                     foregroundColor: theme.onPrimary,
                     minimumSize: const Size(double.infinity, 48),
                     shape: RoundedRectangleBorder(
@@ -134,5 +162,14 @@ class BankErrorStateView extends StatelessWidget {
         ),
       ),
     );
+
+    if (semanticLabel != null) {
+      content = Semantics(
+        container: true,
+        label: semanticLabel,
+        child: content,
+      );
+    }
+    return content;
   }
 }

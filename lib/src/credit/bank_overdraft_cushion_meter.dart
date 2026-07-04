@@ -71,6 +71,51 @@ class BankOverdraftCushionMeter extends StatelessWidget {
   /// `false`.
   final String disabledExplainer;
 
+  /// Overrides the card content padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card fill color. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
+  /// pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Accent for the meter fill, track tint, and increase row. Defaults
+  /// to the theme primary (warning/danger thresholds still apply).
+  final Color? accentColor;
+
+  /// Merged over the [title] style (labelLarge, onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the remaining line and [disabledExplainer] text style.
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the money style in the remaining and increase lines.
+  final TextStyle? amountStyle;
+
+  /// Height of the meter track. Defaults to 14.
+  final double? meterHeight;
+
+  /// Overrides the increase row chevron. Defaults to a
+  /// direction-aware `Icons.chevron_right` / `Icons.chevron_left`.
+  final IconData? chevronIcon;
+
+  /// Duration of the meter fill animation. Defaults to
+  /// [BankTokens.durationBase].
+  final Duration? animationDuration;
+
+  /// Curve of the meter fill animation. Defaults to
+  /// [BankTokens.curveEmphasized].
+  final Curve? animationCurve;
+
+  /// Overrides the computed meter semantics label.
+  final String? semanticLabel;
+
   const BankOverdraftCushionMeter({
     required this.limit,
     required this.used,
@@ -85,6 +130,19 @@ class BankOverdraftCushionMeter extends StatelessWidget {
     this.increaseTemplate = 'Increase available: {amount}',
     this.disabledExplainer = 'Your cushion is off. Turn it on to spend a '
         'little past zero without fees.',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.shadow,
+    this.accentColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.meterHeight,
+    this.chevronIcon,
+    this.animationDuration,
+    this.animationCurve,
+    this.semanticLabel,
   });
 
   double get _fraction {
@@ -102,7 +160,7 @@ class BankOverdraftCushionMeter extends StatelessWidget {
     final fraction = _fraction;
     if (fraction > 0.9) return BankTokens.danger;
     if (fraction > 0.7) return BankTokens.warning;
-    return theme.primary;
+    return accentColor ?? theme.primary;
   }
 
   @override
@@ -111,17 +169,19 @@ class BankOverdraftCushionMeter extends StatelessWidget {
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
     final increase = nextEligibleIncrease;
 
+    final resolvedRadius = radius ?? theme.cardRadius;
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.cardRadius,
-        boxShadow: BankTokens.shadowCard,
+        color: backgroundColor ?? theme.surface,
+        borderRadius: resolvedRadius,
+        boxShadow: shadow ?? BankTokens.shadowCard,
       ),
       child: Material(
         type: MaterialType.transparency,
-        borderRadius: theme.cardRadius,
+        borderRadius: resolvedRadius,
         child: Padding(
-          padding: const EdgeInsets.all(BankTokens.space4),
+          padding: padding ?? const EdgeInsets.all(BankTokens.space4),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
@@ -147,15 +207,18 @@ class BankOverdraftCushionMeter extends StatelessWidget {
                   placeholder: '{remaining}',
                   money: _remaining,
                   textStyle: BankTokens.bodyMedium
-                      .copyWith(color: theme.onSurfaceVariant),
-                  moneyStyle:
-                      BankTokens.numeralSmall.copyWith(color: theme.onSurface),
+                      .copyWith(color: theme.onSurfaceVariant)
+                      .merge(subtitleStyle),
+                  moneyStyle: BankTokens.numeralSmall
+                      .copyWith(color: theme.onSurface)
+                      .merge(amountStyle),
                 )
               else
                 Text(
                   disabledExplainer,
                   style: BankTokens.bodySmall
-                      .copyWith(color: theme.onSurfaceVariant),
+                      .copyWith(color: theme.onSurfaceVariant)
+                      .merge(subtitleStyle),
                 ),
               if (enabled && increase != null) ...[
                 const SizedBox(height: BankTokens.space2),
@@ -174,7 +237,9 @@ class BankOverdraftCushionMeter extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: BankTokens.labelLarge.copyWith(color: theme.onSurface),
+            style: BankTokens.labelLarge
+                .copyWith(color: theme.onSurface)
+                .merge(titleStyle),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -218,14 +283,16 @@ class BankOverdraftCushionMeter extends StatelessWidget {
 
   Widget _buildMeter(BankThemeData theme, bool disableAnimations) {
     final percentUsed = (_fraction * 100).round();
-    final semanticLabel =
-        enabled ? '$title: $percentUsed percent used' : '$title is turned off';
+    final resolvedLabel = semanticLabel ??
+        (enabled
+            ? '$title: $percentUsed percent used'
+            : '$title is turned off');
 
     return Semantics(
-      label: semanticLabel,
+      label: resolvedLabel,
       excludeSemantics: true,
       child: SizedBox(
-        height: 14,
+        height: meterHeight ?? 14,
         child: ClipRRect(
           borderRadius:
               const BorderRadius.all(Radius.circular(BankTokens.radiusFull)),
@@ -233,13 +300,14 @@ class BankOverdraftCushionMeter extends StatelessWidget {
             children: [
               Positioned.fill(
                 child: ColoredBox(
-                  color: theme.primary.withValues(alpha: 0.12),
+                  color: (accentColor ?? theme.primary).withValues(alpha: 0.12),
                 ),
               ),
               AnimatedFractionallySizedBox(
-                duration:
-                    disableAnimations ? Duration.zero : BankTokens.durationBase,
-                curve: BankTokens.curveEmphasized,
+                duration: disableAnimations
+                    ? Duration.zero
+                    : animationDuration ?? BankTokens.durationBase,
+                curve: animationCurve ?? BankTokens.curveEmphasized,
                 alignment: AlignmentDirectional.centerStart,
                 widthFactor: _fraction,
                 heightFactor: 1,
@@ -284,9 +352,11 @@ class BankOverdraftCushionMeter extends StatelessWidget {
     BankThemeData theme,
     Money increase,
   ) {
-    final chevron = Directionality.of(context) == TextDirection.rtl
-        ? Icons.chevron_left
-        : Icons.chevron_right;
+    final chevron = chevronIcon ??
+        (Directionality.of(context) == TextDirection.rtl
+            ? Icons.chevron_left
+            : Icons.chevron_right);
+    final accent = accentColor ?? theme.primary;
 
     return Semantics(
       button: onAdjust != null,
@@ -302,17 +372,17 @@ class BankOverdraftCushionMeter extends StatelessWidget {
                   template: increaseTemplate,
                   placeholder: '{amount}',
                   money: increase,
-                  textStyle:
-                      BankTokens.bodyMedium.copyWith(color: theme.primary),
-                  moneyStyle:
-                      BankTokens.numeralSmall.copyWith(color: theme.primary),
+                  textStyle: BankTokens.bodyMedium.copyWith(color: accent),
+                  moneyStyle: BankTokens.numeralSmall
+                      .copyWith(color: accent)
+                      .merge(amountStyle),
                 ),
               ),
               if (onAdjust != null)
                 Icon(
                   chevron,
                   size: 20,
-                  color: theme.primary,
+                  color: accent,
                 ),
             ],
           ),

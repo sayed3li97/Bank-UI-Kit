@@ -46,6 +46,47 @@ class BankLivenessCheckOverlay extends StatefulWidget {
   /// [state] == [BankLivenessState.retry].
   final VoidCallback? onRetry;
 
+  /// Retry button label. Defaults to 'Try Again'.
+  final String retryLabel;
+
+  /// Retry button glyph. Defaults to [Icons.refresh].
+  final IconData? retryIcon;
+
+  /// Center checkmark glyph on success. Defaults to
+  /// [Icons.check_circle_outline].
+  final IconData? successIcon;
+
+  /// Ring color while idle. Defaults to the theme outline.
+  final Color? idleRingColor;
+
+  /// Ring color while detecting. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Ring and checkmark color on success. Defaults to
+  /// [BankTokens.success].
+  final Color? successColor;
+
+  /// Ring color in the retry state. Defaults to [BankTokens.danger].
+  final Color? errorColor;
+
+  /// Overrides the dark scrim around the oval. Defaults to black at
+  /// 55% opacity.
+  final Color? scrimColor;
+
+  /// Overrides the ring track color. Defaults to white at 25% opacity.
+  final Color? trackColor;
+
+  /// Merged over the computed instruction text style (bodyMedium).
+  final TextStyle? instructionStyle;
+
+  /// Duration of the progress arc animation. Defaults to
+  /// [BankTokens.durationSlow].
+  final Duration? animationDuration;
+
+  /// Curve of the progress arc animation. Defaults to
+  /// [BankTokens.curveEmphasized].
+  final Curve? animationCurve;
+
   const BankLivenessCheckOverlay({
     required this.state,
     required this.cameraChild,
@@ -53,6 +94,18 @@ class BankLivenessCheckOverlay extends StatefulWidget {
     this.instruction,
     this.detectionProgress = 0,
     this.onRetry,
+    this.retryLabel = 'Try Again',
+    this.retryIcon,
+    this.successIcon,
+    this.idleRingColor,
+    this.accentColor,
+    this.successColor,
+    this.errorColor,
+    this.scrimColor,
+    this.trackColor,
+    this.instructionStyle,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   @override
@@ -84,7 +137,7 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
 
     _progressController = AnimationController(
       vsync: this,
-      duration: BankTokens.durationSlow,
+      duration: widget.animationDuration ?? BankTokens.durationSlow,
     );
     _progressAnimation = Tween<double>(
       begin: 0,
@@ -92,7 +145,7 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
     ).animate(
       CurvedAnimation(
         parent: _progressController,
-        curve: BankTokens.curveEmphasized,
+        curve: widget.animationCurve ?? BankTokens.curveEmphasized,
       ),
     );
     _progressController.forward();
@@ -127,13 +180,15 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
     super.didUpdateWidget(oldWidget);
 
     // Animate progress arc changes.
+    _progressController.duration =
+        widget.animationDuration ?? BankTokens.durationSlow;
     if (oldWidget.detectionProgress != widget.detectionProgress) {
       final prev = _progressAnimation.value;
       final next = widget.detectionProgress.clamp(0.0, 1.0);
       _progressAnimation = Tween<double>(begin: prev, end: next).animate(
         CurvedAnimation(
           parent: _progressController,
-          curve: BankTokens.curveEmphasized,
+          curve: widget.animationCurve ?? BankTokens.curveEmphasized,
         ),
       );
       _progressController.forward(from: 0);
@@ -175,10 +230,10 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
   // ---------------------------------------------------------------------------
 
   Color _ringColor(BankThemeData bankTheme) => switch (widget.state) {
-        BankLivenessState.idle => bankTheme.outline,
-        BankLivenessState.detecting => bankTheme.primary,
-        BankLivenessState.success => BankTokens.success,
-        BankLivenessState.retry => BankTokens.danger,
+        BankLivenessState.idle => widget.idleRingColor ?? bankTheme.outline,
+        BankLivenessState.detecting => widget.accentColor ?? bankTheme.primary,
+        BankLivenessState.success => widget.successColor ?? BankTokens.success,
+        BankLivenessState.retry => widget.errorColor ?? BankTokens.danger,
       };
 
   @override
@@ -205,6 +260,10 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
                 painter: _LivenessOverlayPainter(
                   progress: _progressAnimation.value,
                   ringColor: ringColor,
+                  scrimColor:
+                      widget.scrimColor ?? Colors.black.withValues(alpha: 0.55),
+                  trackColor:
+                      widget.trackColor ?? Colors.white.withValues(alpha: 0.25),
                   isDetecting: widget.state == BankLivenessState.detecting,
                   pulseOpacity: _pulseOpacity.value,
                   showFullRing: widget.state == BankLivenessState.success ||
@@ -223,9 +282,9 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
               opacity: _successOpacity.value,
               child: Center(
                 child: widget.state == BankLivenessState.success
-                    ? const Icon(
-                        Icons.check_circle_outline,
-                        color: BankTokens.success,
+                    ? Icon(
+                        widget.successIcon ?? Icons.check_circle_outline,
+                        color: widget.successColor ?? BankTokens.success,
                         size: 64,
                       )
                     : const SizedBox.shrink(),
@@ -258,7 +317,7 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
                           blurRadius: 8,
                         ),
                       ],
-                    ),
+                    ).merge(widget.instructionStyle),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -268,8 +327,8 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
                 const SizedBox(height: BankTokens.space5),
                 FilledButton.icon(
                   onPressed: widget.onRetry,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Try Again'),
+                  icon: Icon(widget.retryIcon ?? Icons.refresh),
+                  label: Text(widget.retryLabel),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size(
                       BankTokens.minTapTarget * 2,
@@ -294,6 +353,8 @@ class _LivenessOverlayPainter extends CustomPainter {
   const _LivenessOverlayPainter({
     required this.progress,
     required this.ringColor,
+    required this.scrimColor,
+    required this.trackColor,
     required this.isDetecting,
     required this.pulseOpacity,
     required this.showFullRing,
@@ -301,11 +362,12 @@ class _LivenessOverlayPainter extends CustomPainter {
 
   final double progress;
   final Color ringColor;
+  final Color scrimColor;
+  final Color trackColor;
   final bool isDetecting;
   final double pulseOpacity;
   final bool showFullRing;
 
-  static const double _overlayOpacity = 0.55;
   static const double _ringStroke = 4;
 
   @override
@@ -318,8 +380,7 @@ class _LivenessOverlayPainter extends CustomPainter {
     final ovalRect = Rect.fromLTWH(ovalLeft, ovalTop, ovalW, ovalH);
 
     // ── Dark overlay with oval cutout ──
-    final overlayPaint = Paint()
-      ..color = Colors.black.withValues(alpha: _overlayOpacity);
+    final overlayPaint = Paint()..color = scrimColor;
 
     final bgPath = Path()
       ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -342,7 +403,7 @@ class _LivenessOverlayPainter extends CustomPainter {
 
     // Background track.
     final trackPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.25)
+      ..color = trackColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = _ringStroke;
 
@@ -369,6 +430,8 @@ class _LivenessOverlayPainter extends CustomPainter {
   bool shouldRepaint(_LivenessOverlayPainter old) =>
       old.progress != progress ||
       old.ringColor != ringColor ||
+      old.scrimColor != scrimColor ||
+      old.trackColor != trackColor ||
       old.isDetecting != isDetecting ||
       old.pulseOpacity != pulseOpacity ||
       old.showFullRing != showFullRing;

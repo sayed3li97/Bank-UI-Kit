@@ -157,6 +157,40 @@ class BankAccountNumberText extends StatefulWidget {
   /// Accessibility label for the copy button.
   final String copySemanticLabel;
 
+  /// Merged over the caption style ([BankTokens.labelMedium] in the
+  /// on-surface-variant colour).
+  final TextStyle? labelStyle;
+
+  /// Overrides the copy glyph. Defaults to [BankIcons.copy].
+  final IconData? copyIcon;
+
+  /// Overrides the post-copy success glyph. Defaults to
+  /// [BankIcons.success].
+  final IconData? copiedIcon;
+
+  /// Overrides the idle copy-icon colour. Defaults to the theme
+  /// `onSurfaceVariant`.
+  final Color? copyIconColor;
+
+  /// Overrides the post-copy icon colour. Defaults to
+  /// [BankTokens.success].
+  final Color? copiedIconColor;
+
+  /// Overrides the icon cross-fade duration. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Overrides the icon cross-fade curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
+  /// How long the success check stays visible after a copy. Defaults to
+  /// 1.5 seconds.
+  final Duration? confirmDuration;
+
+  /// Overrides the computed (spelled-out) accessibility label.
+  final String? semanticLabel;
+
   const BankAccountNumberText({
     required this.value,
     required this.kind,
@@ -167,6 +201,15 @@ class BankAccountNumberText extends StatefulWidget {
     this.style,
     this.label,
     this.copySemanticLabel = 'Copy',
+    this.labelStyle,
+    this.copyIcon,
+    this.copiedIcon,
+    this.copyIconColor,
+    this.copiedIconColor,
+    this.animationDuration,
+    this.animationCurve,
+    this.confirmDuration,
+    this.semanticLabel,
   });
 
   @override
@@ -193,7 +236,7 @@ class _BankAccountNumberTextState extends State<BankAccountNumberText> {
     setState(() => _copied = true);
     widget.onCopied?.call();
     _resetTimer?.cancel();
-    _resetTimer = Timer(_confirmFor, () {
+    _resetTimer = Timer(widget.confirmDuration ?? _confirmFor, () {
       if (mounted) setState(() => _copied = false);
     });
   }
@@ -219,8 +262,8 @@ class _BankAccountNumberTextState extends State<BankAccountNumberText> {
         widget.style ?? theme.numeralMedium.copyWith(color: theme.onSurface);
 
     final spelledOut = _spellOut(western);
-    final semanticLabel =
-        widget.label == null ? spelledOut : '${widget.label}: $spelledOut';
+    final semanticLabel = widget.semanticLabel ??
+        (widget.label == null ? spelledOut : '${widget.label}: $spelledOut');
 
     final identifier = Semantics(
       label: semanticLabel,
@@ -232,9 +275,9 @@ class _BankAccountNumberTextState extends State<BankAccountNumberText> {
           if (widget.label != null) ...[
             Text(
               widget.label!,
-              style: BankTokens.labelMedium.copyWith(
-                color: theme.onSurfaceVariant,
-              ),
+              style: BankTokens.labelMedium
+                  .copyWith(color: theme.onSurfaceVariant)
+                  .merge(widget.labelStyle),
             ),
             const SizedBox(height: BankTokens.space1),
           ],
@@ -263,15 +306,20 @@ class _BankAccountNumberTextState extends State<BankAccountNumberText> {
           onTap: _copy,
           radius: BankTokens.minTapTarget / 2,
           child: AnimatedSwitcher(
-            duration:
-                disableAnimations ? Duration.zero : BankTokens.durationFast,
-            switchInCurve: BankTokens.curveStandard,
-            switchOutCurve: BankTokens.curveStandard,
+            duration: disableAnimations
+                ? Duration.zero
+                : widget.animationDuration ?? BankTokens.durationFast,
+            switchInCurve: widget.animationCurve ?? BankTokens.curveStandard,
+            switchOutCurve: widget.animationCurve ?? BankTokens.curveStandard,
             child: Icon(
-              _copied ? BankIcons.success : BankIcons.copy,
+              _copied
+                  ? (widget.copiedIcon ?? BankIcons.success)
+                  : (widget.copyIcon ?? BankIcons.copy),
               key: ValueKey<bool>(_copied),
               size: 20,
-              color: _copied ? BankTokens.success : theme.onSurfaceVariant,
+              color: _copied
+                  ? (widget.copiedIconColor ?? BankTokens.success)
+                  : (widget.copyIconColor ?? theme.onSurfaceVariant),
             ),
           ),
         ),

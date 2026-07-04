@@ -17,6 +17,62 @@ class BankPaymentRequestCard extends StatelessWidget {
   final VoidCallback onAccept;
   final VoidCallback onDecline;
 
+  /// Overrides the card content padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card background color. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card elevation. Defaults to the theme elevationLow.
+  final double? elevation;
+
+  /// Replaces the requester avatar. Defaults to a [CircleAvatar] built from
+  /// [requesterAvatarUrl] or the requester's initial.
+  final Widget? leading;
+
+  /// Merged over the requester name style
+  /// (BankTokens.labelLarge in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the connector text style
+  /// (BankTokens.bodyMedium in onSurfaceVariant).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the amount style (BankTokens.labelLarge in warning).
+  final TextStyle? amountStyle;
+
+  /// Merged over the note style (BankTokens.bodySmall in onSurfaceVariant).
+  final TextStyle? noteStyle;
+
+  /// Merged over the timestamp style
+  /// (BankTokens.bodySmall in onSurfaceVariant).
+  final TextStyle? timestampStyle;
+
+  /// Connector word between the requester name and the amount.
+  /// Defaults to `'requests'`.
+  final String requestsLabel;
+
+  /// Label of the accept button. Defaults to `'Accept'`.
+  final String acceptLabel;
+
+  /// Label of the decline button. Defaults to `'Decline'`.
+  final String declineLabel;
+
+  /// Overrides the accept button background. Defaults to BankTokens.success.
+  final Color? acceptColor;
+
+  /// Replaces the built-in relative "time ago" formatting of [requestedAt].
+  /// Defaults to the built-in English formatter.
+  final String Function(DateTime requestedAt)? timestampFormatter;
+
+  /// When non-null, wraps the card in a [Semantics] label. Defaults to no
+  /// extra semantics node.
+  final String? semanticLabel;
+
   const BankPaymentRequestCard({
     required this.requesterId,
     required this.requesterName,
@@ -27,6 +83,22 @@ class BankPaymentRequestCard extends StatelessWidget {
     super.key,
     this.requesterAvatarUrl,
     this.note,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.elevation,
+    this.leading,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.noteStyle,
+    this.timestampStyle,
+    this.requestsLabel = 'requests',
+    this.acceptLabel = 'Accept',
+    this.declineLabel = 'Decline',
+    this.acceptColor,
+    this.timestampFormatter,
+    this.semanticLabel,
   });
 
   @override
@@ -44,38 +116,42 @@ class BankPaymentRequestCard extends StatelessWidget {
     final displayAmount =
         scope.privacyEnabled ? scope.strings.balanceHidden : formatted;
 
-    final timeAgo = _timeAgo(requestedAt);
+    final timeAgo =
+        timestampFormatter?.call(requestedAt) ?? _timeAgo(requestedAt);
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: theme.cardRadius),
-      color: theme.surface,
-      elevation: theme.elevationLow,
+    final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space4);
+
+    final card = Card(
+      shape: RoundedRectangleBorder(borderRadius: radius ?? theme.cardRadius),
+      color: backgroundColor ?? theme.surface,
+      elevation: elevation ?? theme.elevationLow,
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space4),
+        padding: resolvedPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: theme.surfaceVariant,
-                  backgroundImage: requesterAvatarUrl != null
-                      ? BankUiScope.imageProviderFor(
-                          context,
-                          requesterAvatarUrl!,
-                        )
-                      : null,
-                  child: requesterAvatarUrl == null
-                      ? Text(
-                          requesterName.isNotEmpty
-                              ? requesterName[0].toUpperCase()
-                              : '?',
-                          style: BankTokens.labelLarge
-                              .copyWith(color: theme.primary),
-                        )
-                      : null,
-                ),
+                leading ??
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: theme.surfaceVariant,
+                      backgroundImage: requesterAvatarUrl != null
+                          ? BankUiScope.imageProviderFor(
+                              context,
+                              requesterAvatarUrl!,
+                            )
+                          : null,
+                      child: requesterAvatarUrl == null
+                          ? Text(
+                              requesterName.isNotEmpty
+                                  ? requesterName[0].toUpperCase()
+                                  : '?',
+                              style: BankTokens.labelLarge
+                                  .copyWith(color: theme.primary),
+                            )
+                          : null,
+                    ),
                 const SizedBox(width: BankTokens.space3),
                 Expanded(
                   child: RichText(
@@ -84,18 +160,20 @@ class BankPaymentRequestCard extends StatelessWidget {
                         TextSpan(
                           text: '$requesterName ',
                           style: BankTokens.labelLarge
-                              .copyWith(color: theme.onSurface),
+                              .copyWith(color: theme.onSurface)
+                              .merge(titleStyle),
                         ),
                         TextSpan(
-                          text: 'requests ',
+                          text: '$requestsLabel ',
                           style: BankTokens.bodyMedium
-                              .copyWith(color: theme.onSurfaceVariant),
+                              .copyWith(color: theme.onSurfaceVariant)
+                              .merge(subtitleStyle),
                         ),
                         TextSpan(
                           text: displayAmount,
-                          style: BankTokens.labelLarge.copyWith(
-                            color: BankTokens.warning,
-                          ),
+                          style: BankTokens.labelLarge
+                              .copyWith(color: BankTokens.warning)
+                              .merge(amountStyle),
                         ),
                       ],
                     ),
@@ -108,14 +186,16 @@ class BankPaymentRequestCard extends StatelessWidget {
               Text(
                 note!,
                 style: BankTokens.bodySmall
-                    .copyWith(color: theme.onSurfaceVariant),
+                    .copyWith(color: theme.onSurfaceVariant)
+                    .merge(noteStyle),
               ),
             ],
             const SizedBox(height: BankTokens.space1),
             Text(
               timeAgo,
-              style:
-                  BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+              style: BankTokens.bodySmall
+                  .copyWith(color: theme.onSurfaceVariant)
+                  .merge(timestampStyle),
             ),
             const SizedBox(height: BankTokens.space4),
             Row(
@@ -126,9 +206,9 @@ class BankPaymentRequestCard extends StatelessWidget {
                     child: FilledButton(
                       onPressed: onAccept,
                       style: FilledButton.styleFrom(
-                        backgroundColor: BankTokens.success,
+                        backgroundColor: acceptColor ?? BankTokens.success,
                       ),
-                      child: const Text('Accept'),
+                      child: Text(acceptLabel),
                     ),
                   ),
                 ),
@@ -138,7 +218,7 @@ class BankPaymentRequestCard extends StatelessWidget {
                     height: 44,
                     child: OutlinedButton(
                       onPressed: onDecline,
-                      child: const Text('Decline'),
+                      child: Text(declineLabel),
                     ),
                   ),
                 ),
@@ -148,6 +228,9 @@ class BankPaymentRequestCard extends StatelessWidget {
         ),
       ),
     );
+
+    if (semanticLabel == null) return card;
+    return Semantics(label: semanticLabel, child: card);
   }
 
   String _timeAgo(DateTime date) {

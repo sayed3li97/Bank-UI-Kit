@@ -59,12 +59,58 @@ class BankDeviceTrustBanner extends StatelessWidget {
   /// [BankUiScope.of(context).strings] when null.
   final BankUiStrings? strings;
 
+  /// Overrides the banner content padding. Defaults to [BankTokens.space4]
+  /// horizontal, [BankTokens.space3] vertical.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the banner corner radius. Defaults to
+  /// [BankThemeData.cardRadius].
+  final BorderRadius? radius;
+
+  /// Overrides the banner background. Defaults to
+  /// [BankThemeData.surfaceVariant].
+  final Color? backgroundColor;
+
+  /// Overrides the state accent (left border, icon, learn-more link).
+  /// Defaults to [BankTokens.warning] or [BankTokens.danger] per [state].
+  final Color? accentColor;
+
+  /// Overrides the leading glyph. Defaults to the state-appropriate
+  /// [BankIcons] glyph.
+  final IconData? icon;
+
+  /// Overrides the dismiss glyph. Defaults to [BankIcons.close].
+  final IconData? dismissIcon;
+
+  /// Merged over the computed title style ([BankTokens.labelLarge]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed body style ([BankTokens.bodySmall]).
+  final TextStyle? bodyStyle;
+
+  /// Label of the learn-more link. Defaults to `'Learn more'`.
+  final String learnMoreLabel;
+
+  /// Semantics label of the dismiss button. Defaults to
+  /// `'Dismiss security notice'`.
+  final String dismissSemanticLabel;
+
   const BankDeviceTrustBanner({
     required this.state,
     super.key,
     this.onDismiss,
     this.onLearnMore,
     this.strings,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.accentColor,
+    this.icon,
+    this.dismissIcon,
+    this.titleStyle,
+    this.bodyStyle,
+    this.learnMoreLabel = 'Learn more',
+    this.dismissSemanticLabel = 'Dismiss security notice',
   });
 
   @override
@@ -73,6 +119,7 @@ class BankDeviceTrustBanner extends StatelessWidget {
     final resolvedStrings = strings ?? BankUiScope.of(context).strings;
 
     final config = _configForState(state, resolvedStrings);
+    final resolvedAccent = accentColor ?? config.accentColor;
 
     final semanticLabel = '${config.title}. ${config.body}';
 
@@ -82,19 +129,20 @@ class BankDeviceTrustBanner extends StatelessWidget {
       excludeSemantics: true,
       child: Container(
         decoration: BoxDecoration(
-          color: bankTheme.surfaceVariant,
-          borderRadius: bankTheme.cardRadius,
+          color: backgroundColor ?? bankTheme.surfaceVariant,
+          borderRadius: radius ?? bankTheme.cardRadius,
           border: Border(
             left: BorderSide(
-              color: config.accentColor,
+              color: resolvedAccent,
               width: 4,
             ),
           ),
         ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: BankTokens.space4,
-          vertical: BankTokens.space3,
-        ),
+        padding: padding ??
+            const EdgeInsets.symmetric(
+              horizontal: BankTokens.space4,
+              vertical: BankTokens.space3,
+            ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -102,8 +150,8 @@ class BankDeviceTrustBanner extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 2),
               child: Icon(
-                config.icon,
-                color: config.accentColor,
+                icon ?? config.icon,
+                color: resolvedAccent,
                 size: 20,
               ),
             ),
@@ -116,27 +164,27 @@ class BankDeviceTrustBanner extends StatelessWidget {
                 children: [
                   Text(
                     config.title,
-                    style: BankTokens.labelLarge.copyWith(
-                      color: bankTheme.onSurface,
-                    ),
+                    style: BankTokens.labelLarge
+                        .copyWith(color: bankTheme.onSurface)
+                        .merge(titleStyle),
                   ),
                   const SizedBox(height: BankTokens.space1),
                   Text(
                     config.body,
-                    style: BankTokens.bodySmall.copyWith(
-                      color: bankTheme.onSurfaceVariant,
-                    ),
+                    style: BankTokens.bodySmall
+                        .copyWith(color: bankTheme.onSurfaceVariant)
+                        .merge(bodyStyle),
                   ),
                   if (onLearnMore != null) ...[
                     const SizedBox(height: BankTokens.space2),
                     GestureDetector(
                       onTap: onLearnMore,
                       child: Text(
-                        'Learn more',
+                        learnMoreLabel,
                         style: BankTokens.labelMedium.copyWith(
-                          color: config.accentColor,
+                          color: resolvedAccent,
                           decoration: TextDecoration.underline,
-                          decorationColor: config.accentColor,
+                          decorationColor: resolvedAccent,
                         ),
                       ),
                     ),
@@ -149,7 +197,7 @@ class BankDeviceTrustBanner extends StatelessWidget {
               const SizedBox(width: BankTokens.space2),
               Semantics(
                 button: true,
-                label: 'Dismiss security notice',
+                label: dismissSemanticLabel,
                 excludeSemantics: true,
                 child: GestureDetector(
                   onTap: onDismiss,
@@ -157,7 +205,7 @@ class BankDeviceTrustBanner extends StatelessWidget {
                     width: BankTokens.minTapTarget,
                     height: BankTokens.minTapTarget,
                     child: Icon(
-                      BankIcons.close,
+                      dismissIcon ?? BankIcons.close,
                       size: 18,
                       color: bankTheme.onSurfaceVariant,
                     ),

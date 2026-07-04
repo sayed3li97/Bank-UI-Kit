@@ -51,6 +51,59 @@ class BankBeneficiaryPicker extends StatefulWidget {
   final Widget Function(BuildContext, BankBeneficiary, bool isSelected)?
       itemBuilder;
 
+  /// Hint text inside the search field. Defaults to
+  /// `'Search beneficiaries'`.
+  final String searchHint;
+
+  /// Tooltip of the clear-search button. Defaults to `'Clear search'`.
+  final String clearSearchLabel;
+
+  /// Text of the add-new row. Defaults to `'Add new beneficiary'`.
+  final String addNewLabel;
+
+  /// Overrides the search field fill color. Defaults to the theme
+  /// surfaceVariant.
+  final Color? searchFillColor;
+
+  /// Overrides the search field corner radius. Defaults to the theme
+  /// chipRadius.
+  final BorderRadius? searchRadius;
+
+  /// Overrides the list padding. Defaults to
+  /// `EdgeInsets.only(bottom: BankTokens.space4)`.
+  final EdgeInsetsGeometry? listPadding;
+
+  /// Merged over the beneficiary name style
+  /// (BankTokens.bodyLarge in onSurface, w500).
+  final TextStyle? titleStyle;
+
+  /// Merged over the account details style
+  /// (BankTokens.bodySmall in onSurfaceVariant).
+  final TextStyle? subtitleStyle;
+
+  /// Overrides the search field prefix glyph. Defaults to
+  /// [BankIcons.search].
+  final IconData? searchIcon;
+
+  /// Overrides the clear-search glyph. Defaults to [BankIcons.close].
+  final IconData? clearIcon;
+
+  /// Overrides the add-new row glyph. Defaults to [BankIcons.add].
+  final IconData? addIcon;
+
+  /// Overrides the verified-beneficiary glyph. Defaults to
+  /// [Icons.verified_outlined].
+  final IconData? verifiedIcon;
+
+  /// Overrides the selected-row checkmark glyph. Defaults to
+  /// [Icons.check_circle].
+  final IconData? selectedIcon;
+
+  /// Overrides the accent used for the add-new row, focused search border,
+  /// verified badge, selection checkmark, and avatar fallback. Defaults to
+  /// the theme primary.
+  final Color? accentColor;
+
   const BankBeneficiaryPicker({
     required this.beneficiaries,
     required this.onSelected,
@@ -58,6 +111,20 @@ class BankBeneficiaryPicker extends StatefulWidget {
     this.selectedId,
     this.onAddNew,
     this.itemBuilder,
+    this.searchHint = 'Search beneficiaries',
+    this.clearSearchLabel = 'Clear search',
+    this.addNewLabel = 'Add new beneficiary',
+    this.searchFillColor,
+    this.searchRadius,
+    this.listPadding,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.searchIcon,
+    this.clearIcon,
+    this.addIcon,
+    this.verifiedIcon,
+    this.selectedIcon,
+    this.accentColor,
   });
 
   @override
@@ -96,6 +163,8 @@ class _BankBeneficiaryPickerState extends State<BankBeneficiaryPicker> {
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
     final filtered = _filtered;
+    final resolvedAccent = widget.accentColor ?? bankTheme.primary;
+    final resolvedSearchRadius = widget.searchRadius ?? bankTheme.chipRadius;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -111,50 +180,50 @@ class _BankBeneficiaryPickerState extends State<BankBeneficiaryPicker> {
             BankTokens.space2,
           ),
           child: Semantics(
-            label: 'Search beneficiaries',
+            label: widget.searchHint,
             child: TextField(
               controller: _searchController,
               textInputAction: TextInputAction.search,
               style: BankTokens.bodyLarge.copyWith(color: bankTheme.onSurface),
               decoration: InputDecoration(
-                hintText: 'Search beneficiaries',
+                hintText: widget.searchHint,
                 hintStyle: BankTokens.bodyLarge.copyWith(
                   color: bankTheme.onSurfaceVariant,
                 ),
                 prefixIcon: Icon(
-                  BankIcons.search,
+                  widget.searchIcon ?? BankIcons.search,
                   color: bankTheme.onSurfaceVariant,
                   size: 20,
                 ),
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
                         icon: Icon(
-                          BankIcons.close,
+                          widget.clearIcon ?? BankIcons.close,
                           color: bankTheme.onSurfaceVariant,
                           size: 20,
                         ),
-                        tooltip: 'Clear search',
+                        tooltip: widget.clearSearchLabel,
                         onPressed: _searchController.clear,
                       )
                     : null,
                 filled: true,
-                fillColor: bankTheme.surfaceVariant,
+                fillColor: widget.searchFillColor ?? bankTheme.surfaceVariant,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: BankTokens.space4,
                   vertical: BankTokens.space3,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: bankTheme.chipRadius,
+                  borderRadius: resolvedSearchRadius,
                   borderSide: BorderSide.none,
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: bankTheme.chipRadius,
+                  borderRadius: resolvedSearchRadius,
                   borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: bankTheme.chipRadius,
+                  borderRadius: resolvedSearchRadius,
                   borderSide: BorderSide(
-                    color: bankTheme.primary,
+                    color: resolvedAccent,
                     width: 1.5,
                   ),
                 ),
@@ -167,7 +236,8 @@ class _BankBeneficiaryPickerState extends State<BankBeneficiaryPicker> {
         // ----------------------------------------------------------------
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.only(bottom: BankTokens.space4),
+            padding: widget.listPadding ??
+                const EdgeInsets.only(bottom: BankTokens.space4),
             itemCount: filtered.length + (widget.onAddNew != null ? 1 : 0),
             itemBuilder: (context, index) {
               // "Add new" row pinned at top of list
@@ -175,6 +245,9 @@ class _BankBeneficiaryPickerState extends State<BankBeneficiaryPicker> {
                 return _AddNewRow(
                   bankTheme: bankTheme,
                   onTap: widget.onAddNew!,
+                  label: widget.addNewLabel,
+                  icon: widget.addIcon ?? BankIcons.add,
+                  accentColor: resolvedAccent,
                 );
               }
 
@@ -192,6 +265,11 @@ class _BankBeneficiaryPickerState extends State<BankBeneficiaryPicker> {
                 isSelected: isSelected,
                 bankTheme: bankTheme,
                 onTap: () => widget.onSelected(beneficiary),
+                titleStyle: widget.titleStyle,
+                subtitleStyle: widget.subtitleStyle,
+                verifiedIcon: widget.verifiedIcon ?? Icons.verified_outlined,
+                selectedIcon: widget.selectedIcon ?? Icons.check_circle,
+                accentColor: resolvedAccent,
               );
             },
           ),
@@ -206,16 +284,25 @@ class _BankBeneficiaryPickerState extends State<BankBeneficiaryPicker> {
 // ---------------------------------------------------------------------------
 
 class _AddNewRow extends StatelessWidget {
-  const _AddNewRow({required this.bankTheme, required this.onTap});
+  const _AddNewRow({
+    required this.bankTheme,
+    required this.onTap,
+    required this.label,
+    required this.icon,
+    required this.accentColor,
+  });
 
   final BankThemeData bankTheme;
   final VoidCallback onTap;
+  final String label;
+  final IconData icon;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Add new beneficiary',
+      label: label,
       child: InkWell(
         onTap: onTap,
         child: ConstrainedBox(
@@ -234,21 +321,21 @@ class _AddNewRow extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: bankTheme.primary,
+                      color: accentColor,
                       width: 1.5,
                     ),
                   ),
                   child: Icon(
-                    BankIcons.add,
-                    color: bankTheme.primary,
+                    icon,
+                    color: accentColor,
                     size: 22,
                   ),
                 ),
                 const SizedBox(width: BankTokens.space3),
                 Text(
-                  'Add new beneficiary',
+                  label,
                   style: BankTokens.bodyLarge.copyWith(
-                    color: bankTheme.primary,
+                    color: accentColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -271,12 +358,22 @@ class _BeneficiaryRow extends StatelessWidget {
     required this.isSelected,
     required this.bankTheme,
     required this.onTap,
+    required this.titleStyle,
+    required this.subtitleStyle,
+    required this.verifiedIcon,
+    required this.selectedIcon,
+    required this.accentColor,
   });
 
   final BankBeneficiary beneficiary;
   final bool isSelected;
   final BankThemeData bankTheme;
   final VoidCallback onTap;
+  final TextStyle? titleStyle;
+  final TextStyle? subtitleStyle;
+  final IconData verifiedIcon;
+  final IconData selectedIcon;
+  final Color accentColor;
 
   String get _initials {
     final parts = beneficiary.name.trim().split(RegExp(r'\s+'));
@@ -310,6 +407,7 @@ class _BeneficiaryRow extends StatelessWidget {
                   avatarUrl: beneficiary.avatarUrl,
                   initials: _initials,
                   bankTheme: bankTheme,
+                  accentColor: accentColor,
                 ),
                 const SizedBox(width: BankTokens.space3),
                 // Name + account
@@ -323,10 +421,12 @@ class _BeneficiaryRow extends StatelessWidget {
                           Flexible(
                             child: Text(
                               beneficiary.name,
-                              style: BankTokens.bodyLarge.copyWith(
-                                color: bankTheme.onSurface,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: BankTokens.bodyLarge
+                                  .copyWith(
+                                    color: bankTheme.onSurface,
+                                    fontWeight: FontWeight.w500,
+                                  )
+                                  .merge(titleStyle),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -334,9 +434,9 @@ class _BeneficiaryRow extends StatelessWidget {
                           if (beneficiary.isVerified) ...[
                             const SizedBox(width: BankTokens.space1),
                             Icon(
-                              Icons.verified_outlined,
+                              verifiedIcon,
                               size: 14,
-                              color: bankTheme.primary,
+                              color: accentColor,
                             ),
                           ],
                         ],
@@ -348,9 +448,9 @@ class _BeneficiaryRow extends StatelessWidget {
                           if (beneficiary.bankName != null)
                             beneficiary.bankName!,
                         ].join(' · '),
-                        style: BankTokens.bodySmall.copyWith(
-                          color: bankTheme.onSurfaceVariant,
-                        ),
+                        style: BankTokens.bodySmall
+                            .copyWith(color: bankTheme.onSurfaceVariant)
+                            .merge(subtitleStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -361,8 +461,8 @@ class _BeneficiaryRow extends StatelessWidget {
                 // Checkmark or spacer
                 if (isSelected)
                   Icon(
-                    Icons.check_circle,
-                    color: bankTheme.primary,
+                    selectedIcon,
+                    color: accentColor,
                     size: 22,
                   )
                 else
@@ -385,11 +485,13 @@ class _BeneficiaryAvatar extends StatelessWidget {
     required this.avatarUrl,
     required this.initials,
     required this.bankTheme,
+    required this.accentColor,
   });
 
   final String? avatarUrl;
   final String initials;
   final BankThemeData bankTheme;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
@@ -403,10 +505,10 @@ class _BeneficiaryAvatar extends StatelessWidget {
 
     return CircleAvatar(
       radius: 22,
-      backgroundColor: bankTheme.primary.withValues(alpha: 0.15),
+      backgroundColor: accentColor.withValues(alpha: 0.15),
       child: Text(
         initials,
-        style: BankTokens.labelMedium.copyWith(color: bankTheme.primary),
+        style: BankTokens.labelMedium.copyWith(color: accentColor),
       ),
     );
   }

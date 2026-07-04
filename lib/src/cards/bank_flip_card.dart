@@ -144,6 +144,34 @@ class BankFlipCard extends StatefulWidget {
   /// matching the previous fixed width.
   final double? maxWidth;
 
+  // Customization overrides (all optional; null keeps current behaviour).
+
+  /// Glyph of the default flip button. Defaults to [Icons.flip_outlined].
+  final IconData? flipIcon;
+
+  /// Background of the default flip button. Defaults to black at 30% alpha.
+  final Color? flipButtonBackgroundColor;
+
+  /// Icon and splash colour of the default flip button. Defaults to
+  /// [Colors.white].
+  final Color? flipButtonForegroundColor;
+
+  /// Semantics label of the default flip button. Defaults to
+  /// 'Show card details'.
+  final String? flipButtonSemanticLabel;
+
+  /// Semantics label of the default flip button glyph. Defaults to
+  /// 'Flip card'.
+  final String? flipIconSemanticLabel;
+
+  /// Semantics label announced while the front face shows. Defaults to
+  /// 'Card front'.
+  final String? frontSemanticLabel;
+
+  /// Semantics label announced while the back face shows. Defaults to
+  /// 'Card back'.
+  final String? backSemanticLabel;
+
   const BankFlipCard({
     required this.frontBuilder,
     required this.backBuilder,
@@ -158,6 +186,13 @@ class BankFlipCard extends StatefulWidget {
     this.width,
     this.height,
     this.maxWidth,
+    this.flipIcon,
+    this.flipButtonBackgroundColor,
+    this.flipButtonForegroundColor,
+    this.flipButtonSemanticLabel,
+    this.flipIconSemanticLabel,
+    this.frontSemanticLabel,
+    this.backSemanticLabel,
   });
 
   @override
@@ -308,7 +343,14 @@ class _BankFlipCardState extends State<BankFlipCard>
               right: BankTokens.space2,
               child: widget.flipButtonBuilder != null
                   ? widget.flipButtonBuilder!(context, _handleFlip)
-                  : _DefaultFlipButton(onFlip: _handleFlip),
+                  : _DefaultFlipButton(
+                      onFlip: _handleFlip,
+                      icon: widget.flipIcon,
+                      backgroundColor: widget.flipButtonBackgroundColor,
+                      foregroundColor: widget.flipButtonForegroundColor,
+                      buttonSemanticLabel: widget.flipButtonSemanticLabel,
+                      iconSemanticLabel: widget.flipIconSemanticLabel,
+                    ),
             ),
           ],
         );
@@ -318,8 +360,12 @@ class _BankFlipCardState extends State<BankFlipCard>
         break;
     }
 
+    final resolvedLabel = _isFlipped
+        ? (widget.backSemanticLabel ?? 'Card back')
+        : (widget.frontSemanticLabel ?? 'Card front');
+
     return Semantics(
-      label: _isFlipped ? 'Card back' : 'Card front',
+      label: resolvedLabel,
       button: widget.trigger != BankFlipTrigger.external,
       child: card,
     );
@@ -348,29 +394,45 @@ extension on Matrix4 {
 /// `BankFlipTrigger.builtInButton` is active and no `flipButtonBuilder` is
 /// provided.
 class _DefaultFlipButton extends StatelessWidget {
-  const _DefaultFlipButton({required this.onFlip});
+  const _DefaultFlipButton({
+    required this.onFlip,
+    this.icon,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.buttonSemanticLabel,
+    this.iconSemanticLabel,
+  });
 
   final VoidCallback onFlip;
+  final IconData? icon;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
+  final String? buttonSemanticLabel;
+  final String? iconSemanticLabel;
 
   @override
   Widget build(BuildContext context) {
+    final resolvedBackground =
+        backgroundColor ?? Colors.black.withValues(alpha: 0.30);
+    final resolvedForeground = foregroundColor ?? Colors.white;
+
     return Semantics(
       button: true,
-      label: 'Show card details',
+      label: buttonSemanticLabel ?? 'Show card details',
       child: Material(
-        color: Colors.black.withValues(alpha: 0.30),
+        color: resolvedBackground,
         borderRadius: BorderRadius.circular(BankTokens.radiusFull),
         child: InkWell(
           onTap: onFlip,
           borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          splashColor: Colors.white.withValues(alpha: 0.15),
-          child: const Padding(
-            padding: EdgeInsets.all(BankTokens.space2),
+          splashColor: resolvedForeground.withValues(alpha: 0.15),
+          child: Padding(
+            padding: const EdgeInsets.all(BankTokens.space2),
             child: Icon(
-              Icons.flip_outlined,
+              icon ?? Icons.flip_outlined,
               size: 18,
-              color: Colors.white,
-              semanticLabel: 'Flip card',
+              color: resolvedForeground,
+              semanticLabel: iconSemanticLabel ?? 'Flip card',
             ),
           ),
         ),

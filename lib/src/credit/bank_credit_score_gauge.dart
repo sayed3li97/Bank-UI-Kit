@@ -53,6 +53,15 @@ class BankCreditScoreGauge extends StatefulWidget {
     this.onTap,
     this.size = 180,
     this.updatedPrefix = 'Updated',
+    this.strokeWidth,
+    this.dotColor,
+    this.scoreStyle,
+    this.bandLabelStyle,
+    this.deltaStyle,
+    this.updatedStyle,
+    this.animationDuration,
+    this.animationCurve,
+    this.semanticLabel,
   });
 
   final int score;
@@ -77,6 +86,36 @@ class BankCreditScoreGauge extends StatefulWidget {
   final double size;
 
   final String updatedPrefix;
+
+  /// Stroke thickness of the arc segments. Defaults to 10.
+  final double? strokeWidth;
+
+  /// Fill of the indicator dot. Defaults to the theme surface.
+  final Color? dotColor;
+
+  /// Merged over the score numeral style (numeralHero, onSurface).
+  final TextStyle? scoreStyle;
+
+  /// Merged over the band label style (labelMedium in the band color).
+  final TextStyle? bandLabelStyle;
+
+  /// Merged over the delta chip text style (labelSmall, gain or loss
+  /// color).
+  final TextStyle? deltaStyle;
+
+  /// Merged over the updated/provider line style (bodySmall, variant
+  /// color).
+  final TextStyle? updatedStyle;
+
+  /// Duration of the needle sweep. Defaults to
+  /// [BankTokens.durationXSlow].
+  final Duration? animationDuration;
+
+  /// Curve of the needle sweep. Defaults to `Curves.easeOutCubic`.
+  final Curve? animationCurve;
+
+  /// Overrides the whole computed semantics label.
+  final String? semanticLabel;
 
   List<BankScoreBand> _defaultBands() {
     final range = maxScore - minScore;
@@ -123,11 +162,11 @@ class _BankCreditScoreGaugeState extends State<BankCreditScoreGauge>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: BankTokens.durationXSlow,
+      duration: widget.animationDuration ?? BankTokens.durationXSlow,
     );
     _sweep = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeOutCubic,
+      curve: widget.animationCurve ?? Curves.easeOutCubic,
     );
   }
 
@@ -181,10 +220,11 @@ class _BankCreditScoreGaugeState extends State<BankCreditScoreGauge>
     ].join(' · ');
 
     return Semantics(
-      label: 'Credit score ${widget.score} of ${widget.maxScore}, '
-          '${band.label}'
-          '${delta == 0 ? '' : delta > 0 ? ', up $delta points' : ''}'
-          '${delta < 0 ? ', down ${delta.abs()} points' : ''}',
+      label: widget.semanticLabel ??
+          'Credit score ${widget.score} of ${widget.maxScore}, '
+              '${band.label}'
+              '${delta == 0 ? '' : delta > 0 ? ', up $delta points' : ''}'
+              '${delta < 0 ? ', down ${delta.abs()} points' : ''}',
       button: widget.onTap != null,
       excludeSemantics: true,
       child: GestureDetector(
@@ -207,7 +247,8 @@ class _BankCreditScoreGaugeState extends State<BankCreditScoreGauge>
                       maxScore: widget.maxScore,
                       fraction: fraction,
                       trackColor: theme.surfaceVariant,
-                      dotColor: theme.surface,
+                      dotColor: widget.dotColor ?? theme.surface,
+                      strokeWidth: widget.strokeWidth ?? 10,
                     ),
                     child: Center(
                       child: Column(
@@ -215,15 +256,18 @@ class _BankCreditScoreGaugeState extends State<BankCreditScoreGauge>
                         children: [
                           Text(
                             numeralStyle.convert('${widget.score}'),
-                            style: BankTokens.numeralHero.copyWith(
-                              color: theme.onSurface,
-                              fontFamily: theme.fontFamily,
-                            ),
+                            style: BankTokens.numeralHero
+                                .copyWith(
+                                  color: theme.onSurface,
+                                  fontFamily: theme.fontFamily,
+                                )
+                                .merge(widget.scoreStyle),
                           ),
                           Text(
                             band.label,
                             style: BankTokens.labelMedium
-                                .copyWith(color: band.color),
+                                .copyWith(color: band.color)
+                                .merge(widget.bandLabelStyle),
                           ),
                         ],
                       ),
@@ -249,10 +293,13 @@ class _BankCreditScoreGaugeState extends State<BankCreditScoreGauge>
                     numeralStyle.convert(
                       delta > 0 ? '+$delta' : '−${delta.abs()}',
                     ),
-                    style: BankTokens.labelSmall.copyWith(
-                      color:
-                          delta > 0 ? theme.positiveBalance : BankTokens.danger,
-                    ),
+                    style: BankTokens.labelSmall
+                        .copyWith(
+                          color: delta > 0
+                              ? theme.positiveBalance
+                              : BankTokens.danger,
+                        )
+                        .merge(widget.deltaStyle),
                   ),
                 ),
               ),
@@ -262,7 +309,8 @@ class _BankCreditScoreGaugeState extends State<BankCreditScoreGauge>
               Text(
                 updatedLine,
                 style: BankTokens.bodySmall
-                    .copyWith(color: theme.onSurfaceVariant),
+                    .copyWith(color: theme.onSurfaceVariant)
+                    .merge(widget.updatedStyle),
               ),
             ],
           ],
@@ -280,6 +328,7 @@ class _GaugePainter extends CustomPainter {
     required this.fraction,
     required this.trackColor,
     required this.dotColor,
+    required this.strokeWidth,
   });
 
   final List<BankScoreBand> bands;
@@ -291,6 +340,7 @@ class _GaugePainter extends CustomPainter {
 
   final Color trackColor;
   final Color dotColor;
+  final double strokeWidth;
 
   static const _sweepAngle = math.pi * 1.5; // 270°
   static const _startAngle = math.pi * 0.75; // pointing down-left
@@ -299,10 +349,10 @@ class _GaugePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.shortestSide / 2 - 10;
+    final radius = size.shortestSide / 2 - strokeWidth;
     final stroke = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 10
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
     var bandStart = _startAngle;
@@ -374,5 +424,7 @@ class _GaugePainter extends CustomPainter {
   bool shouldRepaint(_GaugePainter oldDelegate) =>
       oldDelegate.fraction != fraction ||
       oldDelegate.bands != bands ||
-      oldDelegate.trackColor != trackColor;
+      oldDelegate.trackColor != trackColor ||
+      oldDelegate.dotColor != dotColor ||
+      oldDelegate.strokeWidth != strokeWidth;
 }

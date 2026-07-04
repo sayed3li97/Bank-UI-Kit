@@ -79,11 +79,106 @@ class BankTransactionFilterSheet extends StatefulWidget {
   final ValueChanged<BankTransactionFilter> onApply;
   final VoidCallback? onClear;
 
+  /// Overrides the scrollable content padding. Defaults to
+  /// [BankTokens.space4] on all sides.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the sheet corner radius. Defaults to the theme sheetRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the sheet background. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the drag handle color. Defaults to the theme outline.
+  final Color? handleColor;
+
+  /// Overrides the primary accents (selected chips, focused fields,
+  /// apply button). Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Merged over the sheet title style ([BankTokens.headlineSmall]).
+  final TextStyle? titleStyle;
+
+  /// Overrides the close button glyph. Defaults to [Icons.close].
+  final IconData? closeIcon;
+
+  /// Overrides the sheet title. Defaults to 'Filter Transactions'.
+  final String title;
+
+  /// Overrides the category section heading. Defaults to 'Category'.
+  final String categorySectionLabel;
+
+  /// Overrides the date section heading. Defaults to 'Date Range'.
+  final String dateRangeSectionLabel;
+
+  /// Overrides the amount section heading. Defaults to 'Amount Range'.
+  final String amountRangeSectionLabel;
+
+  /// Overrides the empty from-date button text. Defaults to 'From'.
+  final String fromLabel;
+
+  /// Overrides the empty to-date button text. Defaults to 'To'.
+  final String toLabel;
+
+  /// Overrides the from-date semantics prefix. Defaults to 'From date'.
+  final String fromDateSemanticLabel;
+
+  /// Overrides the to-date semantics prefix. Defaults to 'To date'.
+  final String toDateSemanticLabel;
+
+  /// Overrides the clear-dates button text. Defaults to 'Clear dates'.
+  final String clearDatesLabel;
+
+  /// Overrides the minimum amount field label. Defaults to 'Min'.
+  final String minLabel;
+
+  /// Overrides the maximum amount field label. Defaults to 'Max'.
+  final String maxLabel;
+
+  /// Overrides the clear-all button text. Defaults to 'Clear All'.
+  final String clearAllLabel;
+
+  /// Overrides the apply button text. Defaults to 'Apply'.
+  final String applyLabel;
+
+  /// Overrides the apply button semantics. Defaults to 'Apply filters'.
+  final String applySemanticLabel;
+
+  /// Overrides the category display name. Defaults to built-in
+  /// English labels.
+  final String Function(TransactionCategory)? categoryLabelBuilder;
+
+  /// Overrides the button date format. Defaults to dd/mm/yyyy.
+  final String Function(DateTime)? dateFormatter;
+
   const BankTransactionFilterSheet({
     required this.onApply,
     super.key,
     this.initial,
     this.onClear,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.handleColor,
+    this.accentColor,
+    this.titleStyle,
+    this.closeIcon,
+    this.title = 'Filter Transactions',
+    this.categorySectionLabel = 'Category',
+    this.dateRangeSectionLabel = 'Date Range',
+    this.amountRangeSectionLabel = 'Amount Range',
+    this.fromLabel = 'From',
+    this.toLabel = 'To',
+    this.fromDateSemanticLabel = 'From date',
+    this.toDateSemanticLabel = 'To date',
+    this.clearDatesLabel = 'Clear dates',
+    this.minLabel = 'Min',
+    this.maxLabel = 'Max',
+    this.clearAllLabel = 'Clear All',
+    this.applyLabel = 'Apply',
+    this.applySemanticLabel = 'Apply filters',
+    this.categoryLabelBuilder,
+    this.dateFormatter,
   });
 
   /// Convenience helper to push the sheet and await the result.
@@ -234,18 +329,22 @@ class _BankTransactionFilterSheetState
 
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
+    final formatDate = widget.dateFormatter ?? _formatDate;
+    final categoryLabel = widget.categoryLabelBuilder ?? _categoryLabel;
+    final accent = widget.accentColor ?? bankTheme.primary;
+
     final range = _dateRange;
-    final fromLabel = 'From date'
-        '${range != null ? ': ${_formatDate(range.start)}' : ''}';
-    final toLabel = 'To date'
-        '${range != null ? ': ${_formatDate(range.end)}' : ''}';
+    final fromLabel = widget.fromDateSemanticLabel +
+        (range != null ? ': ${formatDate(range.start)}' : '');
+    final toLabel = widget.toDateSemanticLabel +
+        (range != null ? ': ${formatDate(range.end)}' : '');
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomPadding),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: bankTheme.surface,
-          borderRadius: bankTheme.sheetRadius,
+          color: widget.backgroundColor ?? bankTheme.surface,
+          borderRadius: widget.radius ?? bankTheme.sheetRadius,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -258,7 +357,7 @@ class _BankTransactionFilterSheetState
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: bankTheme.outline,
+                    color: widget.handleColor ?? bankTheme.outline,
                     borderRadius: BorderRadius.circular(BankTokens.radiusFull),
                   ),
                 ),
@@ -274,14 +373,14 @@ class _BankTransactionFilterSheetState
                 children: [
                   Expanded(
                     child: Text(
-                      'Filter Transactions',
-                      style: BankTokens.headlineSmall.copyWith(
-                        color: bankTheme.onSurface,
-                      ),
+                      widget.title,
+                      style: BankTokens.headlineSmall
+                          .copyWith(color: bankTheme.onSurface)
+                          .merge(widget.titleStyle),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: Icon(widget.closeIcon ?? Icons.close),
                     color: bankTheme.onSurfaceVariant,
                     onPressed: () => Navigator.of(context).pop(),
                     tooltip: s.cancel,
@@ -293,13 +392,14 @@ class _BankTransactionFilterSheetState
             // Scrollable content
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(BankTokens.space4),
+                padding:
+                    widget.padding ?? const EdgeInsets.all(BankTokens.space4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ---- Category section ----
                     Text(
-                      'Category',
+                      widget.categorySectionLabel,
                       style: BankTokens.labelLarge.copyWith(
                         color: bankTheme.onSurface,
                       ),
@@ -311,24 +411,19 @@ class _BankTransactionFilterSheetState
                       children: TransactionCategory.values.map((cat) {
                         final selected = _categories.contains(cat);
                         return Semantics(
-                          label: _categoryLabel(cat),
+                          label: categoryLabel(cat),
                           selected: selected,
                           child: FilterChip(
-                            label: Text(_categoryLabel(cat)),
+                            label: Text(categoryLabel(cat)),
                             selected: selected,
                             onSelected: (_) => _toggleCategory(cat),
-                            selectedColor:
-                                bankTheme.primary.withValues(alpha: 0.15),
-                            checkmarkColor: bankTheme.primary,
+                            selectedColor: accent.withValues(alpha: 0.15),
+                            checkmarkColor: accent,
                             labelStyle: BankTokens.labelMedium.copyWith(
-                              color: selected
-                                  ? bankTheme.primary
-                                  : bankTheme.onSurface,
+                              color: selected ? accent : bankTheme.onSurface,
                             ),
                             side: BorderSide(
-                              color: selected
-                                  ? bankTheme.primary
-                                  : bankTheme.outline,
+                              color: selected ? accent : bankTheme.outline,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: bankTheme.chipRadius,
@@ -341,7 +436,7 @@ class _BankTransactionFilterSheetState
 
                     // ---- Date range section ----
                     Text(
-                      'Date Range',
+                      widget.dateRangeSectionLabel,
                       style: BankTokens.labelLarge.copyWith(
                         color: bankTheme.onSurface,
                       ),
@@ -368,8 +463,8 @@ class _BankTransactionFilterSheetState
                               ),
                               child: Text(
                                 _dateRange != null
-                                    ? _formatDate(_dateRange!.start)
-                                    : 'From',
+                                    ? formatDate(_dateRange!.start)
+                                    : widget.fromLabel,
                                 style: BankTokens.bodyMedium.copyWith(
                                   color: _dateRange != null
                                       ? bankTheme.onSurface
@@ -399,8 +494,8 @@ class _BankTransactionFilterSheetState
                               ),
                               child: Text(
                                 _dateRange != null
-                                    ? _formatDate(_dateRange!.end)
-                                    : 'To',
+                                    ? formatDate(_dateRange!.end)
+                                    : widget.toLabel,
                                 style: BankTokens.bodyMedium.copyWith(
                                   color: _dateRange != null
                                       ? bankTheme.onSurface
@@ -418,9 +513,9 @@ class _BankTransactionFilterSheetState
                         child: TextButton(
                           onPressed: () => setState(() => _dateRange = null),
                           child: Text(
-                            'Clear dates',
+                            widget.clearDatesLabel,
                             style: BankTokens.labelMedium.copyWith(
-                              color: bankTheme.primary,
+                              color: accent,
                             ),
                           ),
                         ),
@@ -429,7 +524,7 @@ class _BankTransactionFilterSheetState
 
                     // ---- Amount range section ----
                     Text(
-                      'Amount Range',
+                      widget.amountRangeSectionLabel,
                       style: BankTokens.labelLarge.copyWith(
                         color: bankTheme.onSurface,
                       ),
@@ -449,7 +544,7 @@ class _BankTransactionFilterSheetState
                               ),
                             ],
                             decoration: InputDecoration(
-                              labelText: 'Min',
+                              labelText: widget.minLabel,
                               labelStyle: BankTokens.bodyMedium.copyWith(
                                 color: bankTheme.onSurfaceVariant,
                               ),
@@ -465,8 +560,7 @@ class _BankTransactionFilterSheetState
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: bankTheme.buttonRadius,
-                                borderSide:
-                                    BorderSide(color: bankTheme.primary),
+                                borderSide: BorderSide(color: accent),
                               ),
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: BankTokens.space3,
@@ -491,7 +585,7 @@ class _BankTransactionFilterSheetState
                               ),
                             ],
                             decoration: InputDecoration(
-                              labelText: 'Max',
+                              labelText: widget.maxLabel,
                               labelStyle: BankTokens.bodyMedium.copyWith(
                                 color: bankTheme.onSurfaceVariant,
                               ),
@@ -507,8 +601,7 @@ class _BankTransactionFilterSheetState
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: bankTheme.buttonRadius,
-                                borderSide:
-                                    BorderSide(color: bankTheme.primary),
+                                borderSide: BorderSide(color: accent),
                               ),
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: BankTokens.space3,
@@ -551,7 +644,7 @@ class _BankTransactionFilterSheetState
                         ),
                       ),
                       child: Text(
-                        'Clear All',
+                        widget.clearAllLabel,
                         style: BankTokens.labelLarge.copyWith(
                           color: bankTheme.onSurfaceVariant,
                         ),
@@ -562,11 +655,11 @@ class _BankTransactionFilterSheetState
                   Expanded(
                     child: Semantics(
                       button: true,
-                      label: 'Apply filters',
+                      label: widget.applySemanticLabel,
                       child: FilledButton(
                         onPressed: _apply,
                         style: FilledButton.styleFrom(
-                          backgroundColor: bankTheme.primary,
+                          backgroundColor: accent,
                           foregroundColor: bankTheme.onPrimary,
                           minimumSize: const Size(
                             double.infinity,
@@ -577,7 +670,7 @@ class _BankTransactionFilterSheetState
                           ),
                         ),
                         child: Text(
-                          'Apply',
+                          widget.applyLabel,
                           style: BankTokens.labelLarge.copyWith(
                             color: bankTheme.onPrimary,
                           ),

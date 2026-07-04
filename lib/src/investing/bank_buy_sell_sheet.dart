@@ -25,6 +25,53 @@ class BankBuySellSheet extends StatefulWidget {
     double? limitPrice,
   )? onSubmit;
 
+  /// Overrides the sheet content padding. Defaults to space4 all
+  /// round.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the sheet corner radius. Defaults to the theme
+  /// sheetRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the sheet fill colour. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the drag handle colour. Defaults to the theme outline.
+  final Color? handleColor;
+
+  /// Buy segment caption. Defaults to 'Buy'.
+  final String buyLabel;
+
+  /// Sell segment caption. Defaults to 'Sell'.
+  final String sellLabel;
+
+  /// Market order segment caption. Defaults to 'Market'.
+  final String marketLabel;
+
+  /// Limit order segment caption. Defaults to 'Limit'.
+  final String limitLabel;
+
+  /// Overrides the amount field label. Defaults to
+  /// 'Amount (CURRENCY)'.
+  final String? amountLabel;
+
+  /// Limit price field label. Defaults to 'Limit Price'.
+  final String limitPriceLabel;
+
+  /// Estimated units template; `{units}` and `{symbol}` are
+  /// substituted. Defaults to a tilde-prefixed estimate.
+  final String estimateTemplate;
+
+  /// Available balance template; `{amount}` is substituted. Defaults
+  /// to 'Available: {amount}'.
+  final String availableTemplate;
+
+  /// Submit caption when buying. Defaults to 'Review Buy'.
+  final String reviewBuyLabel;
+
+  /// Submit caption when selling. Defaults to 'Review Sell'.
+  final String reviewSellLabel;
+
   const BankBuySellSheet({
     required this.quote,
     super.key,
@@ -32,6 +79,20 @@ class BankBuySellSheet extends StatefulWidget {
     this.allowLimitOrder = false,
     this.availableBalance,
     this.onSubmit,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.handleColor,
+    this.buyLabel = 'Buy',
+    this.sellLabel = 'Sell',
+    this.marketLabel = 'Market',
+    this.limitLabel = 'Limit',
+    this.amountLabel,
+    this.limitPriceLabel = 'Limit Price',
+    this.estimateTemplate = '≈ {units} {symbol}',
+    this.availableTemplate = 'Available: {amount}',
+    this.reviewBuyLabel = 'Review Buy',
+    this.reviewSellLabel = 'Review Sell',
   });
 
   static Future<void> show(
@@ -95,8 +156,8 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.sheetRadius,
+        color: widget.backgroundColor ?? theme.surface,
+        borderRadius: widget.radius ?? theme.sheetRadius,
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.viewInsetsOf(context).bottom,
@@ -104,7 +165,7 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.all(BankTokens.space4),
+          padding: widget.padding ?? const EdgeInsets.all(BankTokens.space4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -115,15 +176,21 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: BankTokens.space4),
                   decoration: BoxDecoration(
-                    color: theme.outline,
+                    color: widget.handleColor ?? theme.outline,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
               SegmentedButton<BankOrderSide>(
-                segments: const [
-                  ButtonSegment(value: BankOrderSide.buy, label: Text('Buy')),
-                  ButtonSegment(value: BankOrderSide.sell, label: Text('Sell')),
+                segments: [
+                  ButtonSegment(
+                    value: BankOrderSide.buy,
+                    label: Text(widget.buyLabel),
+                  ),
+                  ButtonSegment(
+                    value: BankOrderSide.sell,
+                    label: Text(widget.sellLabel),
+                  ),
                 ],
                 selected: {_side},
                 onSelectionChanged: (s) => setState(() => _side = s.first),
@@ -167,14 +234,14 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
               const SizedBox(height: BankTokens.space4),
               if (widget.allowLimitOrder) ...[
                 SegmentedButton<BankOrderType>(
-                  segments: const [
+                  segments: [
                     ButtonSegment(
                       value: BankOrderType.market,
-                      label: Text('Market'),
+                      label: Text(widget.marketLabel),
                     ),
                     ButtonSegment(
                       value: BankOrderType.limit,
-                      label: Text('Limit'),
+                      label: Text(widget.limitLabel),
                     ),
                   ],
                   selected: {_orderType},
@@ -192,7 +259,8 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
                   FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
                 ],
                 decoration: InputDecoration(
-                  labelText: 'Amount (${widget.quote.price.currencyCode})',
+                  labelText: widget.amountLabel ??
+                      'Amount (${widget.quote.price.currencyCode})',
                   border: const OutlineInputBorder(),
                 ),
                 onChanged: (_) => setState(() {}),
@@ -207,9 +275,9 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
                   ],
-                  decoration: const InputDecoration(
-                    labelText: 'Limit Price',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: widget.limitPriceLabel,
+                    border: const OutlineInputBorder(),
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
@@ -217,8 +285,12 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
               const SizedBox(height: BankTokens.space2),
               if (_enteredAmount > 0)
                 Text(
-                  '≈ ${_estimatedUnits.toStringAsFixed(4)} '
-                  '${widget.quote.symbol}',
+                  widget.estimateTemplate
+                      .replaceAll(
+                        '{units}',
+                        _estimatedUnits.toStringAsFixed(4),
+                      )
+                      .replaceAll('{symbol}', widget.quote.symbol),
                   style: BankTokens.bodySmall
                       .copyWith(color: theme.onSurfaceVariant),
                   textAlign: TextAlign.end,
@@ -227,10 +299,13 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
                 Padding(
                   padding: const EdgeInsets.only(top: BankTokens.space1),
                   child: Text(
-                    'Available: ${BankMoneyFormatter.format(
-                      amount: widget.availableBalance!.amount,
-                      currencyCode: widget.availableBalance!.currencyCode,
-                    )}',
+                    widget.availableTemplate.replaceAll(
+                      '{amount}',
+                      BankMoneyFormatter.format(
+                        amount: widget.availableBalance!.amount,
+                        currencyCode: widget.availableBalance!.currencyCode,
+                      ),
+                    ),
                     style: BankTokens.bodySmall
                         .copyWith(color: theme.onSurfaceVariant),
                     textAlign: TextAlign.end,
@@ -265,8 +340,8 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
                         )
                       : Text(
                           _side == BankOrderSide.buy
-                              ? 'Review Buy'
-                              : 'Review Sell',
+                              ? widget.reviewBuyLabel
+                              : widget.reviewSellLabel,
                         ),
                 ),
               ),

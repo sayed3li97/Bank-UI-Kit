@@ -56,6 +56,20 @@ class BankHelpFaqList extends StatefulWidget {
     this.thanksLabel = 'Thanks for the feedback',
     this.emptyTitle = 'No results',
     this.emptyBody = 'Try a different search term, or reach out directly.',
+    this.accentColor,
+    this.dividerColor,
+    this.questionStyle,
+    this.answerStyle,
+    this.highlightStyle,
+    this.searchIcon,
+    this.clearIcon,
+    this.expandIcon,
+    this.contactIcon,
+    this.chevronIcon,
+    this.thumbUpIcon,
+    this.thumbDownIcon,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   final List<BankFaqItem> items;
@@ -75,6 +89,56 @@ class BankHelpFaqList extends StatefulWidget {
   final String thanksLabel;
   final String emptyTitle;
   final String emptyBody;
+
+  /// Overrides the accent used for search-match highlights and the
+  /// contact-row icon. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the divider colour between items. Defaults to the theme
+  /// outline.
+  final Color? dividerColor;
+
+  /// Merged over the question style (BankTokens.bodyLarge in onSurface).
+  final TextStyle? questionStyle;
+
+  /// Merged over the answer style (BankTokens.bodyMedium in
+  /// onSurfaceVariant).
+  final TextStyle? answerStyle;
+
+  /// Merged over the search-match highlight style (accent, w700).
+  final TextStyle? highlightStyle;
+
+  /// Glyph inside the search field. Defaults to [BankIcons.search].
+  final IconData? searchIcon;
+
+  /// Glyph of the clear-search affordance. Defaults to
+  /// [BankIcons.close].
+  final IconData? clearIcon;
+
+  /// Expand chevron on each item. Defaults to [BankIcons.expand].
+  final IconData? expandIcon;
+
+  /// Leading glyph of the contact-support row. Defaults to
+  /// [Icons.forum_outlined].
+  final IconData? contactIcon;
+
+  /// Trailing glyph of the contact-support row. Defaults to
+  /// [Icons.chevron_right].
+  final IconData? chevronIcon;
+
+  /// Helpful-vote glyph. Defaults to [Icons.thumb_up_outlined].
+  final IconData? thumbUpIcon;
+
+  /// Not-helpful-vote glyph. Defaults to [Icons.thumb_down_outlined].
+  final IconData? thumbDownIcon;
+
+  /// Overrides the expand/collapse animation duration. Defaults to
+  /// [BankTokens.durationBase] (chevron: [BankTokens.durationFast]).
+  final Duration? animationDuration;
+
+  /// Overrides the expand/collapse animation curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
 
   @override
   State<BankHelpFaqList> createState() => _BankHelpFaqListState();
@@ -128,7 +192,7 @@ class _BankHelpFaqListState extends State<BankHelpFaqList> {
               controller: _search,
               hint: widget.searchHint,
               prefixIcon: Icon(
-                BankIcons.search,
+                widget.searchIcon ?? BankIcons.search,
                 size: 20,
                 color: theme.onSurfaceVariant,
               ),
@@ -136,7 +200,7 @@ class _BankHelpFaqListState extends State<BankHelpFaqList> {
                   ? null
                   : IconButton(
                       icon: Icon(
-                        BankIcons.close,
+                        widget.clearIcon ?? BankIcons.close,
                         size: 18,
                         color: theme.onSurfaceVariant,
                       ),
@@ -166,6 +230,7 @@ class _BankHelpFaqListState extends State<BankHelpFaqList> {
               helpfulPrompt: widget.helpfulPrompt,
               thanksLabel: widget.thanksLabel,
               theme: theme,
+              host: widget,
               onToggle: () => setState(
                 () => _expandedId = _expandedId == item.id ? null : item.id,
               ),
@@ -173,7 +238,7 @@ class _BankHelpFaqListState extends State<BankHelpFaqList> {
             ),
             Divider(
               height: 1,
-              color: theme.outline,
+              color: widget.dividerColor ?? theme.outline,
               indent: BankTokens.space4,
               endIndent: BankTokens.space4,
             ),
@@ -185,7 +250,11 @@ class _BankHelpFaqListState extends State<BankHelpFaqList> {
               padding: const EdgeInsets.all(BankTokens.space4),
               child: Row(
                 children: [
-                  Icon(Icons.forum_outlined, size: 20, color: theme.primary),
+                  Icon(
+                    widget.contactIcon ?? Icons.forum_outlined,
+                    size: 20,
+                    color: widget.accentColor ?? theme.primary,
+                  ),
                   const SizedBox(width: BankTokens.space3),
                   Expanded(
                     child: Text(
@@ -195,7 +264,7 @@ class _BankHelpFaqListState extends State<BankHelpFaqList> {
                     ),
                   ),
                   Icon(
-                    Icons.chevron_right,
+                    widget.chevronIcon ?? Icons.chevron_right,
                     color: theme.onSurfaceVariant,
                   ),
                 ],
@@ -216,6 +285,7 @@ class _FaqTile extends StatelessWidget {
     required this.helpfulPrompt,
     required this.thanksLabel,
     required this.theme,
+    required this.host,
     required this.onToggle,
     required this.onVote,
   });
@@ -227,11 +297,14 @@ class _FaqTile extends StatelessWidget {
   final String helpfulPrompt;
   final String thanksLabel;
   final BankThemeData theme;
+  final BankHelpFaqList host;
   final VoidCallback onToggle;
   final ValueChanged<bool> onVote;
 
   InlineSpan _highlighted(String text) {
-    final base = BankTokens.bodyLarge.copyWith(color: theme.onSurface);
+    final base = BankTokens.bodyLarge
+        .copyWith(color: theme.onSurface)
+        .merge(host.questionStyle);
     if (highlight.isEmpty) return TextSpan(text: text, style: base);
     final lower = text.toLowerCase();
     final query = highlight.toLowerCase();
@@ -250,9 +323,9 @@ class _FaqTile extends StatelessWidget {
         TextSpan(
           text: text.substring(index, index + query.length),
           style: TextStyle(
-            color: theme.primary,
+            color: host.accentColor ?? theme.primary,
             fontWeight: FontWeight.w700,
-          ),
+          ).merge(host.highlightStyle),
         ),
       );
       start = index + query.length;
@@ -287,9 +360,10 @@ class _FaqTile extends StatelessWidget {
                     ),
                     AnimatedRotation(
                       turns: expanded ? 0.5 : 0,
-                      duration: BankTokens.durationFast,
+                      duration:
+                          host.animationDuration ?? BankTokens.durationFast,
                       child: Icon(
-                        BankIcons.expand,
+                        host.expandIcon ?? BankIcons.expand,
                         color: theme.onSurfaceVariant,
                       ),
                     ),
@@ -299,8 +373,8 @@ class _FaqTile extends StatelessWidget {
             ),
           ),
           AnimatedSize(
-            duration: BankTokens.durationBase,
-            curve: BankTokens.curveStandard,
+            duration: host.animationDuration ?? BankTokens.durationBase,
+            curve: host.animationCurve ?? BankTokens.curveStandard,
             alignment: Alignment.topCenter,
             child: expanded
                 ? Padding(
@@ -316,9 +390,9 @@ class _FaqTile extends StatelessWidget {
                         item.richAnswer ??
                             Text(
                               item.answer,
-                              style: BankTokens.bodyMedium.copyWith(
-                                color: theme.onSurfaceVariant,
-                              ),
+                              style: BankTokens.bodyMedium
+                                  .copyWith(color: theme.onSurfaceVariant)
+                                  .merge(host.answerStyle),
                             ),
                         const SizedBox(height: BankTokens.space3),
                         if (voted)
@@ -341,7 +415,7 @@ class _FaqTile extends StatelessWidget {
                                 onPressed: () => onVote(true),
                                 iconSize: 18,
                                 icon: Icon(
-                                  Icons.thumb_up_outlined,
+                                  host.thumbUpIcon ?? Icons.thumb_up_outlined,
                                   color: theme.onSurfaceVariant,
                                 ),
                               ),
@@ -349,7 +423,8 @@ class _FaqTile extends StatelessWidget {
                                 onPressed: () => onVote(false),
                                 iconSize: 18,
                                 icon: Icon(
-                                  Icons.thumb_down_outlined,
+                                  host.thumbDownIcon ??
+                                      Icons.thumb_down_outlined,
                                   color: theme.onSurfaceVariant,
                                 ),
                               ),

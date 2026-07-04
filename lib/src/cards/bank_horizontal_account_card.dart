@@ -159,6 +159,77 @@ class BankHorizontalAccountCard extends StatelessWidget {
   /// matching the previous fixed width.
   final double? maxWidth;
 
+  // Customization overrides (all optional; null keeps current behaviour).
+
+  /// Content padding of both faces. Defaults to
+  /// `EdgeInsets.all(BankTokens.space5)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Corner radius of the card. Defaults to `BorderRadius.circular(16)`.
+  final BorderRadius? radius;
+
+  /// Overrides the gradient painted in
+  /// [BankHorizontalCardBackground.themeGradient] mode. Defaults to
+  /// [BankThemeData.accentGradient], with a [primaryColor] to
+  /// [secondaryColor] fallback.
+  final Gradient? gradient;
+
+  /// Base colour of all text and icons on the card. Defaults to
+  /// [Colors.white]; secondary elements use it at 72% alpha.
+  final Color? foregroundColor;
+
+  /// Merged over the account-name style ([BankTokens.labelLarge]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the balance style ([BankThemeData.numeralLarge]).
+  final TextStyle? amountStyle;
+
+  /// Merged over the masked-number style ([BankTokens.bodySmall]).
+  final TextStyle? maskedNumberStyle;
+
+  /// Merged over the fallback network-badge text style
+  /// ([BankTokens.labelSmall]) shown when [networkLogoAsset] is null.
+  final TextStyle? networkLabelStyle;
+
+  /// Merged over the back-face detail-label style ([BankTokens.labelSmall]).
+  final TextStyle? detailLabelStyle;
+
+  /// Merged over the back-face detail-value style ([BankTokens.bodySmall]).
+  final TextStyle? detailValueStyle;
+
+  /// Merged over the copy-hint text style ([BankTokens.labelSmall]).
+  final TextStyle? copyHintStyle;
+
+  /// Overrides the account-type glyph. Defaults to the [BankIcons] glyph
+  /// derived from [BankAccount.type].
+  final IconData? typeIcon;
+
+  /// Copy-action glyph on back-face rows. Defaults to [Icons.copy_outlined].
+  final IconData? copyIcon;
+
+  /// Glyph next to the copy hint. Defaults to [Icons.touch_app_outlined].
+  final IconData? copyHintIcon;
+
+  /// Label of the IBAN / account number row. Defaults to 'IBAN / Account'.
+  final String? ibanLabel;
+
+  /// Label of the sort code / BIC row. Defaults to 'Sort Code / BIC'.
+  final String? sortCodeLabel;
+
+  /// Label of the currency row. Defaults to 'Currency'.
+  final String? currencyLabel;
+
+  /// Copy hint shown on the back face. Defaults to 'Tap values to copy'.
+  final String? copyHintLabel;
+
+  /// Verb used in the copy-icon semantics, read as `<verb> <row label>`.
+  /// Defaults to 'Copy'.
+  final String? copyActionLabel;
+
+  /// Overrides the card semantics label. Defaults to
+  /// `Account card: <account name>, balance <balance>`.
+  final String? semanticLabel;
+
   static const double _cardRadius = 16;
 
   const BankHorizontalAccountCard({
@@ -183,17 +254,38 @@ class BankHorizontalAccountCard extends StatelessWidget {
     this.width,
     this.height,
     this.maxWidth,
+    this.padding,
+    this.radius,
+    this.gradient,
+    this.foregroundColor,
+    this.titleStyle,
+    this.amountStyle,
+    this.maskedNumberStyle,
+    this.networkLabelStyle,
+    this.detailLabelStyle,
+    this.detailValueStyle,
+    this.copyHintStyle,
+    this.typeIcon,
+    this.copyIcon,
+    this.copyHintIcon,
+    this.ibanLabel,
+    this.sortCodeLabel,
+    this.currencyLabel,
+    this.copyHintLabel,
+    this.copyActionLabel,
+    this.semanticLabel,
   });
 
   // ── Decoration helpers ────────────────────────────────────────────────────
 
   BoxDecoration _buildDecoration(BankThemeData bankTheme) {
-    final baseRadius = BorderRadius.circular(_cardRadius);
+    final baseRadius = radius ?? BorderRadius.circular(_cardRadius);
 
     switch (background) {
       case BankHorizontalCardBackground.themeGradient:
         return BoxDecoration(
-          gradient: bankTheme.accentGradient ??
+          gradient: gradient ??
+              bankTheme.accentGradient ??
               LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -247,12 +339,13 @@ class BankHorizontalAccountCard extends StatelessWidget {
   // ── Front face ────────────────────────────────────────────────────────────
 
   Widget _buildFront(BuildContext context, BankThemeData bankTheme) {
-    const primary = Colors.white;
-    final secondary = Colors.white.withValues(alpha: 0.72);
+    final primary = foregroundColor ?? Colors.white;
+    final secondary = primary.withValues(alpha: 0.72);
+    final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space5);
     final dec = _buildDecoration(bankTheme);
 
-    final typeIcon = Icon(
-      _iconForType(account.type),
+    final typeIconWidget = Icon(
+      typeIcon ?? _iconForType(account.type),
       color: secondary,
       size: 22,
     );
@@ -260,14 +353,16 @@ class BankHorizontalAccountCard extends StatelessWidget {
         ? Image.asset(networkLogoAsset!, height: 26, fit: BoxFit.contain)
         : Text(
             account.type.name.toUpperCase(),
-            style: BankTokens.labelSmall.copyWith(
-              color: secondary,
-              letterSpacing: 1,
-            ),
+            style: BankTokens.labelSmall
+                .copyWith(
+                  color: secondary,
+                  letterSpacing: 1,
+                )
+                .merge(networkLabelStyle),
           );
     final balanceWidget = BankBalanceText(
       money: account.balance,
-      style: bankTheme.numeralLarge.copyWith(color: primary),
+      style: bankTheme.numeralLarge.copyWith(color: primary).merge(amountStyle),
     );
     final maskedNumber = Text(
       account.maskedNumber,
@@ -275,12 +370,12 @@ class BankHorizontalAccountCard extends StatelessWidget {
         color: secondary,
         letterSpacing: 2,
         fontFeatures: const [FontFeature.tabularFigures()],
-      ),
+      ).merge(maskedNumberStyle),
       textDirection: TextDirection.ltr,
     );
     final accountName = Text(
       cardholderName ?? account.name,
-      style: BankTokens.labelLarge.copyWith(color: primary),
+      style: BankTokens.labelLarge.copyWith(color: primary).merge(titleStyle),
       overflow: TextOverflow.ellipsis,
       maxLines: 1,
     );
@@ -289,7 +384,7 @@ class BankHorizontalAccountCard extends StatelessWidget {
     switch (layout) {
       case BankHorizontalCardLayout.balanceLeft:
         content = Padding(
-          padding: const EdgeInsets.all(BankTokens.space5),
+          padding: resolvedPadding,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -298,7 +393,7 @@ class BankHorizontalAccountCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    typeIcon,
+                    typeIconWidget,
                     const Spacer(),
                     balanceWidget,
                     const SizedBox(height: BankTokens.space1),
@@ -322,13 +417,13 @@ class BankHorizontalAccountCard extends StatelessWidget {
 
       case BankHorizontalCardLayout.centred:
         content = Padding(
-          padding: const EdgeInsets.all(BankTokens.space5),
+          padding: resolvedPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [typeIcon, networkBadge],
+                children: [typeIconWidget, networkBadge],
               ),
               const Spacer(),
               Center(child: accountName),
@@ -345,7 +440,7 @@ class BankHorizontalAccountCard extends StatelessWidget {
 
       case BankHorizontalCardLayout.balanceBottom:
         content = Padding(
-          padding: const EdgeInsets.all(BankTokens.space5),
+          padding: resolvedPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -354,7 +449,7 @@ class BankHorizontalAccountCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      typeIcon,
+                      typeIconWidget,
                       const SizedBox(width: BankTokens.space2),
                       accountName,
                     ],
@@ -383,8 +478,11 @@ class BankHorizontalAccountCard extends StatelessWidget {
   // ── Back face ─────────────────────────────────────────────────────────────
 
   Widget _buildBack(BuildContext context, BankThemeData bankTheme) {
-    const primary = Colors.white;
-    final secondary = Colors.white.withValues(alpha: 0.72);
+    final primary = foregroundColor ?? Colors.white;
+    final secondary = primary.withValues(alpha: 0.72);
+    final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space5);
+    final resolvedCopyIcon = copyIcon ?? Icons.copy_outlined;
+    final resolvedCopyAction = copyActionLabel ?? 'Copy';
     final dec = _buildDecoration(bankTheme);
     final holder = cardholderName ?? account.name;
 
@@ -398,7 +496,9 @@ class BankHorizontalAccountCard extends StatelessWidget {
         children: [
           Text(
             label,
-            style: BankTokens.labelSmall.copyWith(color: secondary),
+            style: BankTokens.labelSmall
+                .copyWith(color: secondary)
+                .merge(detailLabelStyle),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -410,7 +510,7 @@ class BankHorizontalAccountCard extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                   letterSpacing: value.contains(' ') ? 1.0 : 0,
                   fontFeatures: const [FontFeature.tabularFigures()],
-                ),
+                ).merge(detailValueStyle),
                 textDirection: TextDirection.ltr,
               ),
               if (copyable) ...[
@@ -420,10 +520,10 @@ class BankHorizontalAccountCard extends StatelessWidget {
                     Clipboard.setData(ClipboardData(text: value));
                   },
                   child: Icon(
-                    Icons.copy_outlined,
+                    resolvedCopyIcon,
                     size: 14,
                     color: secondary,
-                    semanticLabel: 'Copy $label',
+                    semanticLabel: '$resolvedCopyAction $label',
                   ),
                 ),
               ],
@@ -439,20 +539,22 @@ class BankHorizontalAccountCard extends StatelessWidget {
       decoration: dec,
       clipBehavior: Clip.antiAlias,
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space5),
+        padding: resolvedPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               holder,
-              style: BankTokens.labelLarge.copyWith(color: primary),
+              style: BankTokens.labelLarge
+                  .copyWith(color: primary)
+                  .merge(titleStyle),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
             ),
             const Spacer(),
             if (account.ibanOrAccountNumber != null) ...[
               detailRow(
-                label: 'IBAN / Account',
+                label: ibanLabel ?? 'IBAN / Account',
                 value: account.ibanOrAccountNumber!,
                 copyable: true,
               ),
@@ -460,14 +562,14 @@ class BankHorizontalAccountCard extends StatelessWidget {
             ],
             if (account.sortCodeOrBic != null) ...[
               detailRow(
-                label: 'Sort Code / BIC',
+                label: sortCodeLabel ?? 'Sort Code / BIC',
                 value: account.sortCodeOrBic!,
                 copyable: true,
               ),
               const SizedBox(height: BankTokens.space3),
             ],
             detailRow(
-              label: 'Currency',
+              label: currencyLabel ?? 'Currency',
               value: account.currencyCode,
             ),
             const Spacer(),
@@ -475,14 +577,20 @@ class BankHorizontalAccountCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Icon(Icons.touch_app_outlined, size: 12, color: secondary),
+                Icon(
+                  copyHintIcon ?? Icons.touch_app_outlined,
+                  size: 12,
+                  color: secondary,
+                ),
                 const SizedBox(width: BankTokens.space1),
                 Text(
-                  'Tap values to copy',
-                  style: BankTokens.labelSmall.copyWith(
-                    color: secondary,
-                    fontSize: 10,
-                  ),
+                  copyHintLabel ?? 'Tap values to copy',
+                  style: BankTokens.labelSmall
+                      .copyWith(
+                        color: secondary,
+                        fontSize: 10,
+                      )
+                      .merge(copyHintStyle),
                 ),
               ],
             ),
@@ -502,9 +610,11 @@ class BankHorizontalAccountCard extends StatelessWidget {
     final semanticBalance = scope.privacyEnabled
         ? scope.strings.balanceHidden
         : '${account.balance.amount} ${account.balance.currencyCode}';
+    final resolvedSemanticLabel = semanticLabel ??
+        'Account card: ${account.name}, balance $semanticBalance';
 
     return Semantics(
-      label: 'Account card: ${account.name}, balance $semanticBalance',
+      label: resolvedSemanticLabel,
       child: BankFlipCard(
         isFlipped: isFlipped,
         onFlip: onFlip,

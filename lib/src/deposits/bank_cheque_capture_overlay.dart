@@ -42,6 +42,15 @@ class BankChequeCaptureOverlay extends StatelessWidget {
     this.captureLabel = 'Capture',
     this.retakeLabel = 'Retake',
     this.alignHint = 'Fit the check inside the frame',
+    this.scrimColor,
+    this.foregroundColor,
+    this.accentColor,
+    this.warningColor,
+    this.chipBackgroundColor,
+    this.chipRadius,
+    this.frameAspectRatio,
+    this.labelStyle,
+    this.animationDuration,
   });
 
   /// The host's camera preview.
@@ -68,32 +77,73 @@ class BankChequeCaptureOverlay extends StatelessWidget {
   final String retakeLabel;
   final String alignHint;
 
+  /// Overrides the darkening scrim over the camera preview. Defaults to
+  /// black at 45 % opacity.
+  final Color? scrimColor;
+
+  /// Overrides the white chrome colour (texts, idle frame, shutter ring).
+  final Color? foregroundColor;
+
+  /// Overrides [BankThemeData.positiveBalance] on the aligned frame and
+  /// the enabled shutter fill.
+  final Color? accentColor;
+
+  /// Overrides [BankTokens.warning] on the misaligned frame and the
+  /// endorsement reminder chip.
+  final Color? warningColor;
+
+  /// Overrides the side indicator chip fill. Defaults to black at 50 %
+  /// opacity.
+  final Color? chipBackgroundColor;
+
+  /// Overrides the chip corner radius. Defaults to
+  /// [BankThemeData.chipRadius].
+  final BorderRadius? chipRadius;
+
+  /// Overrides the 2.2:1 cheque frame aspect ratio.
+  final double? frameAspectRatio;
+
+  /// Merged over the computed styles of the side chip, endorsement
+  /// reminder, align hint, and retake texts.
+  final TextStyle? labelStyle;
+
+  /// Overrides the shutter state-change animation duration. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  Color get _foreground => foregroundColor ?? const Color(0xFFFFFFFF);
+
   Color _frameColor(BankThemeData theme) => switch (framingState) {
-        BankDocumentFramingState.aligned => theme.positiveBalance,
+        BankDocumentFramingState.aligned =>
+          accentColor ?? theme.positiveBalance,
         BankDocumentFramingState.idle ||
         BankDocumentFramingState.detecting =>
-          const Color(0xFFFFFFFF),
-        _ => BankTokens.warning,
+          _foreground,
+        _ => warningColor ?? BankTokens.warning,
       };
 
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final aligned = framingState == BankDocumentFramingState.aligned;
+    final resolvedChipRadius = chipRadius ?? theme.chipRadius;
 
     return Stack(
       fit: StackFit.expand,
       children: [
         cameraChild,
-        ColoredBox(color: const Color(0xFF000000).withValues(alpha: 0.45)),
+        ColoredBox(
+          color: scrimColor ?? const Color(0xFF000000).withValues(alpha: 0.45),
+        ),
         SafeArea(
           child: Column(
             children: [
               const SizedBox(height: BankTokens.space4),
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF000000).withValues(alpha: 0.5),
-                  borderRadius: theme.chipRadius,
+                  color: chipBackgroundColor ??
+                      const Color(0xFF000000).withValues(alpha: 0.5),
+                  borderRadius: resolvedChipRadius,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -103,7 +153,8 @@ class BankChequeCaptureOverlay extends StatelessWidget {
                   child: Text(
                     side == BankChequeSide.front ? frontLabel : backLabel,
                     style: BankTokens.labelMedium
-                        .copyWith(color: const Color(0xFFFFFFFF)),
+                        .copyWith(color: _foreground)
+                        .merge(labelStyle),
                   ),
                 ),
               ),
@@ -113,7 +164,7 @@ class BankChequeCaptureOverlay extends StatelessWidget {
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: theme.surface,
-                      borderRadius: theme.chipRadius,
+                      borderRadius: resolvedChipRadius,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
@@ -129,7 +180,7 @@ class BankChequeCaptureOverlay extends StatelessWidget {
                 ),
               const Spacer(),
               AspectRatio(
-                aspectRatio: 2.2,
+                aspectRatio: frameAspectRatio ?? 2.2,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: BankTokens.space5,
@@ -145,8 +196,9 @@ class BankChequeCaptureOverlay extends StatelessWidget {
               if (side == BankChequeSide.back)
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    color: BankTokens.warning.withValues(alpha: 0.9),
-                    borderRadius: theme.chipRadius,
+                    color: (warningColor ?? BankTokens.warning)
+                        .withValues(alpha: 0.9),
+                    borderRadius: resolvedChipRadius,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -156,7 +208,8 @@ class BankChequeCaptureOverlay extends StatelessWidget {
                     child: Text(
                       endorseReminder,
                       style: BankTokens.labelMedium
-                          .copyWith(color: const Color(0xFF000000)),
+                          .copyWith(color: const Color(0xFF000000))
+                          .merge(labelStyle),
                     ),
                   ),
                 )
@@ -164,7 +217,8 @@ class BankChequeCaptureOverlay extends StatelessWidget {
                 Text(
                   alignHint,
                   style: BankTokens.bodyMedium
-                      .copyWith(color: const Color(0xFFFFFFFF)),
+                      .copyWith(color: _foreground)
+                      .merge(labelStyle),
                 ),
               const Spacer(),
               Row(
@@ -176,7 +230,8 @@ class BankChequeCaptureOverlay extends StatelessWidget {
                       child: Text(
                         retakeLabel,
                         style: BankTokens.labelLarge
-                            .copyWith(color: const Color(0xFFFFFFFF)),
+                            .copyWith(color: _foreground)
+                            .merge(labelStyle),
                       ),
                     ),
                     const SizedBox(width: BankTokens.space5),
@@ -188,16 +243,16 @@ class BankChequeCaptureOverlay extends StatelessWidget {
                     child: GestureDetector(
                       onTap: aligned ? onCapture : null,
                       child: AnimatedContainer(
-                        duration: BankTokens.durationFast,
+                        duration: animationDuration ?? BankTokens.durationFast,
                         width: 68,
                         height: 68,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: aligned
-                              ? theme.positiveBalance
-                              : const Color(0xFFFFFFFF).withValues(alpha: 0.4),
+                              ? (accentColor ?? theme.positiveBalance)
+                              : _foreground.withValues(alpha: 0.4),
                           border: Border.all(
-                            color: const Color(0xFFFFFFFF),
+                            color: _foreground,
                             width: 4,
                           ),
                         ),
@@ -274,6 +329,10 @@ class BankChequeDepositSummary extends StatelessWidget {
     this.submitLabel = 'Deposit check',
     this.frontLabel = 'Front',
     this.backLabel = 'Back',
+    this.submitBackgroundColor,
+    this.submitForegroundColor,
+    this.submitLabelStyle,
+    this.placeholderIcon,
   });
 
   final Money amount;
@@ -291,6 +350,20 @@ class BankChequeDepositSummary extends StatelessWidget {
   final String submitLabel;
   final String frontLabel;
   final String backLabel;
+
+  /// Overrides the submit button fill. Defaults to [BankThemeData.primary].
+  final Color? submitBackgroundColor;
+
+  /// Overrides the submit button text colour. Defaults to
+  /// [BankThemeData.onPrimary].
+  final Color? submitForegroundColor;
+
+  /// Merged over the computed submit label style ([BankTokens.labelLarge]).
+  final TextStyle? submitLabelStyle;
+
+  /// Overrides the empty-thumbnail glyph. Defaults to
+  /// [Icons.image_outlined].
+  final IconData? placeholderIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -312,6 +385,7 @@ class BankChequeDepositSummary extends StatelessWidget {
               child: _Thumbnail(
                 label: frontLabel,
                 theme: theme,
+                placeholderIcon: placeholderIcon,
                 child: frontThumbnail,
               ),
             ),
@@ -320,6 +394,7 @@ class BankChequeDepositSummary extends StatelessWidget {
               child: _Thumbnail(
                 label: backLabel,
                 theme: theme,
+                placeholderIcon: placeholderIcon,
                 child: backThumbnail,
               ),
             ),
@@ -343,8 +418,8 @@ class BankChequeDepositSummary extends StatelessWidget {
           child: FilledButton(
             onPressed: submitting ? null : onSubmit,
             style: FilledButton.styleFrom(
-              backgroundColor: theme.primary,
-              foregroundColor: theme.onPrimary,
+              backgroundColor: submitBackgroundColor ?? theme.primary,
+              foregroundColor: submitForegroundColor ?? theme.onPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: theme.buttonRadius,
               ),
@@ -357,8 +432,11 @@ class BankChequeDepositSummary extends StatelessWidget {
                   )
                 : Text(
                     submitLabel,
-                    style:
-                        BankTokens.labelLarge.copyWith(color: theme.onPrimary),
+                    style: BankTokens.labelLarge
+                        .copyWith(
+                          color: submitForegroundColor ?? theme.onPrimary,
+                        )
+                        .merge(submitLabelStyle),
                   ),
           ),
         ),
@@ -372,11 +450,13 @@ class _Thumbnail extends StatelessWidget {
     required this.label,
     required this.theme,
     required this.child,
+    this.placeholderIcon,
   });
 
   final String label;
   final BankThemeData theme;
   final Widget? child;
+  final IconData? placeholderIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -393,7 +473,7 @@ class _Thumbnail extends StatelessWidget {
             ),
             child: child == null
                 ? Icon(
-                    Icons.image_outlined,
+                    placeholderIcon ?? Icons.image_outlined,
                     color: theme.onSurfaceVariant,
                   )
                 : ClipRRect(

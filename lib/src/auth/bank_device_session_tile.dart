@@ -89,6 +89,16 @@ class BankDeviceSessionTile extends StatefulWidget {
     this.revokeConfirmBody =
         'The device will need to sign in again to access the account.',
     this.cancelLabel = 'Cancel',
+    this.padding,
+    this.minHeight,
+    this.accentColor,
+    this.dangerColor,
+    this.deviceIcon,
+    this.trustedIcon,
+    this.leading,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.semanticLabel,
   });
 
   final BankDeviceSession session;
@@ -109,6 +119,42 @@ class BankDeviceSessionTile extends StatefulWidget {
   final String revokeConfirmTitle;
   final String revokeConfirmBody;
   final String cancelLabel;
+
+  /// Overrides the row content padding. Defaults to [BankTokens.space4]
+  /// horizontal, [BankTokens.space2] vertical.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the minimum row height. Defaults to `64`.
+  final double? minHeight;
+
+  /// Overrides the device icon accent. Defaults to
+  /// [BankThemeData.primary], or the danger colour when [flagged].
+  final Color? accentColor;
+
+  /// Overrides the danger colour used for the revoke affordances and the
+  /// [flagged] accent. Defaults to [BankTokens.danger].
+  final Color? dangerColor;
+
+  /// Overrides the device-kind glyph. Defaults to a glyph matched to
+  /// [BankDeviceSession.kind].
+  final IconData? deviceIcon;
+
+  /// Overrides the trusted-device micro glyph. Defaults to
+  /// [Icons.verified_user_outlined].
+  final IconData? trustedIcon;
+
+  /// Replaces the leading device icon box entirely when non-null.
+  final Widget? leading;
+
+  /// Merged over the computed device name style ([BankTokens.bodyLarge]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed secondary line style
+  /// ([BankTokens.bodySmall]).
+  final TextStyle? subtitleStyle;
+
+  /// Overrides the computed semantics label for the row.
+  final String? semanticLabel;
 
   @override
   State<BankDeviceSessionTile> createState() => _BankDeviceSessionTileState();
@@ -148,7 +194,7 @@ class _BankDeviceSessionTileState extends State<BankDeviceSessionTile> {
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(
               widget.revokeLabel,
-              style: const TextStyle(color: BankTokens.danger),
+              style: TextStyle(color: widget.dangerColor ?? BankTokens.danger),
             ),
           ),
         ],
@@ -170,7 +216,9 @@ class _BankDeviceSessionTileState extends State<BankDeviceSessionTile> {
     final theme = BankThemeData.of(context);
     final session = widget.session;
 
-    final accent = widget.flagged ? BankTokens.danger : theme.primary;
+    final danger = widget.dangerColor ?? BankTokens.danger;
+    final accent =
+        widget.accentColor ?? (widget.flagged ? danger : theme.primary);
     final secondary = [
       if (session.location != null) session.location!,
       BankDateFormatter.formatRelative(session.lastActiveAt),
@@ -181,31 +229,38 @@ class _BankDeviceSessionTileState extends State<BankDeviceSessionTile> {
     return Opacity(
       opacity: _revoking ? 0.4 : 1,
       child: Semantics(
-        label: '${session.deviceName}, $secondary'
-            '${session.isCurrentDevice ? ', ' : ''}'
-            '${session.isCurrentDevice ? widget.currentDeviceLabel : ''}',
+        label: widget.semanticLabel ??
+            '${session.deviceName}, $secondary'
+                '${session.isCurrentDevice ? ', ' : ''}'
+                '${session.isCurrentDevice ? widget.currentDeviceLabel : ''}',
         child: InkWell(
           onTap: _revoking ? null : widget.onTap,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 64),
+            constraints: BoxConstraints(minHeight: widget.minHeight ?? 64),
             child: Padding(
-              padding: const EdgeInsetsDirectional.symmetric(
-                horizontal: BankTokens.space4,
-                vertical: BankTokens.space2,
-              ),
+              padding: widget.padding ??
+                  const EdgeInsetsDirectional.symmetric(
+                    horizontal: BankTokens.space4,
+                    vertical: BankTokens.space2,
+                  ),
               child: Row(
                 children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.08),
-                      borderRadius: theme.chipRadius,
-                    ),
-                    child: SizedBox(
-                      width: 40,
-                      height: 40,
-                      child: Icon(_kindIcon, size: 22, color: accent),
-                    ),
-                  ),
+                  widget.leading ??
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: accent.withValues(alpha: 0.08),
+                          borderRadius: theme.chipRadius,
+                        ),
+                        child: SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: Icon(
+                            widget.deviceIcon ?? _kindIcon,
+                            size: 22,
+                            color: accent,
+                          ),
+                        ),
+                      ),
                   const SizedBox(width: BankTokens.space3),
                   Expanded(
                     child: Column(
@@ -217,7 +272,8 @@ class _BankDeviceSessionTileState extends State<BankDeviceSessionTile> {
                               child: Text(
                                 session.deviceName,
                                 style: BankTokens.bodyLarge
-                                    .copyWith(color: theme.onSurface),
+                                    .copyWith(color: theme.onSurface)
+                                    .merge(widget.titleStyle),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -225,7 +281,8 @@ class _BankDeviceSessionTileState extends State<BankDeviceSessionTile> {
                             if (session.isTrusted) ...[
                               const SizedBox(width: BankTokens.space1),
                               Icon(
-                                Icons.verified_user_outlined,
+                                widget.trustedIcon ??
+                                    Icons.verified_user_outlined,
                                 size: 14,
                                 color: theme.positiveBalance,
                               ),
@@ -256,7 +313,8 @@ class _BankDeviceSessionTileState extends State<BankDeviceSessionTile> {
                         Text(
                           secondary,
                           style: BankTokens.bodySmall
-                              .copyWith(color: theme.onSurfaceVariant),
+                              .copyWith(color: theme.onSurfaceVariant)
+                              .merge(widget.subtitleStyle),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -277,8 +335,7 @@ class _BankDeviceSessionTileState extends State<BankDeviceSessionTile> {
                       onPressed: _confirmRevoke,
                       child: Text(
                         widget.revokeLabel,
-                        style: BankTokens.labelLarge
-                            .copyWith(color: BankTokens.danger),
+                        style: BankTokens.labelLarge.copyWith(color: danger),
                       ),
                     ),
                 ],

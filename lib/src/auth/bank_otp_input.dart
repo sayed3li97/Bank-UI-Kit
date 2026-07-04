@@ -120,6 +120,50 @@ class BankOtpInput extends StatefulWidget {
   /// Semantic label describing the input to assistive technology.
   final String semanticLabel;
 
+  /// Overrides the size of each code box. Defaults to
+  /// [BankTokens.space12].
+  final double? boxSize;
+
+  /// Overrides the gap between code boxes. Defaults to
+  /// [BankTokens.space2].
+  final double? boxSpacing;
+
+  /// Overrides the box corner radius. Defaults to
+  /// [BankThemeData.chipRadius].
+  final BorderRadius? radius;
+
+  /// Overrides the box fill colour. Defaults to
+  /// [BankThemeData.surfaceVariant].
+  final Color? backgroundColor;
+
+  /// Overrides the resting box border colour. Defaults to
+  /// [BankThemeData.outline].
+  final Color? borderColor;
+
+  /// Overrides the focused box border colour. Defaults to
+  /// [BankThemeData.primary].
+  final Color? focusedBorderColor;
+
+  /// Overrides the error border and digit colour. Defaults to
+  /// [BankTokens.danger].
+  final Color? errorColor;
+
+  /// Merged over the computed digit style
+  /// ([BankThemeData.numeralLarge]).
+  final TextStyle? digitStyle;
+
+  /// Character used to mask digits when [obscure] is `true`. Defaults to
+  /// a bullet.
+  final String obscuringCharacter;
+
+  /// Overrides the box focus/fill transition duration. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Overrides the box focus/fill transition curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
   const BankOtpInput({
     required this.onCompleted,
     super.key,
@@ -137,6 +181,17 @@ class BankOtpInput extends StatefulWidget {
     this.errorAnnouncement = 'Incorrect code, try again',
     this.resendAvailableAnnouncement = 'You can request a new code now',
     this.semanticLabel = 'One-time code',
+    this.boxSize,
+    this.boxSpacing,
+    this.radius,
+    this.backgroundColor,
+    this.borderColor,
+    this.focusedBorderColor,
+    this.errorColor,
+    this.digitStyle,
+    this.obscuringCharacter = '●',
+    this.animationDuration,
+    this.animationCurve,
   }) : assert(length > 0, 'length must be greater than 0');
 
   @override
@@ -254,7 +309,7 @@ class _BankOtpInputState extends State<BankOtpInput> {
         children: List.generate(widget.length, (index) {
           return Padding(
             padding: EdgeInsets.only(
-              left: index == 0 ? 0 : BankTokens.space2,
+              left: index == 0 ? 0 : widget.boxSpacing ?? BankTokens.space2,
             ),
             child: _buildBox(theme, numeralStyle, text, index),
           );
@@ -342,7 +397,7 @@ class _BankOtpInputState extends State<BankOtpInput> {
     final display = !filled
         ? ''
         : widget.obscure
-            ? '●'
+            ? widget.obscuringCharacter
             : numeralStyle.convert(text[index]);
 
     final focusedIndex =
@@ -350,30 +405,33 @@ class _BankOtpInputState extends State<BankOtpInput> {
     final isFocused =
         widget.enabled && _focusNode.hasFocus && index == focusedIndex;
 
+    final resolvedError = widget.errorColor ?? BankTokens.danger;
+    final resolvedFill = widget.backgroundColor ?? theme.surfaceVariant;
+    final resolvedBoxSize = widget.boxSize ?? _boxSize;
+
     final Color borderColor;
     if (widget.error) {
-      borderColor = BankTokens.danger;
+      borderColor = resolvedError;
     } else if (isFocused) {
-      borderColor = theme.primary;
+      borderColor = widget.focusedBorderColor ?? theme.primary;
     } else {
-      borderColor = theme.outline;
+      borderColor = widget.borderColor ?? theme.outline;
     }
 
     final textColor = widget.enabled
-        ? (widget.error ? BankTokens.danger : theme.onSurface)
+        ? (widget.error ? resolvedError : theme.onSurface)
         : theme.onSurfaceVariant;
 
     return AnimatedContainer(
-      duration: BankTokens.durationFast,
-      curve: BankTokens.curveStandard,
-      width: _boxSize,
-      height: _boxSize,
+      duration: widget.animationDuration ?? BankTokens.durationFast,
+      curve: widget.animationCurve ?? BankTokens.curveStandard,
+      width: resolvedBoxSize,
+      height: resolvedBoxSize,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: widget.enabled
-            ? theme.surfaceVariant
-            : theme.surfaceVariant.withValues(alpha: 0.5),
-        borderRadius: theme.chipRadius,
+        color:
+            widget.enabled ? resolvedFill : resolvedFill.withValues(alpha: 0.5),
+        borderRadius: widget.radius ?? theme.chipRadius,
         border: Border.all(
           color: borderColor,
           width: isFocused || widget.error ? 2 : 1,
@@ -381,7 +439,9 @@ class _BankOtpInputState extends State<BankOtpInput> {
       ),
       child: Text(
         display,
-        style: theme.numeralLarge.copyWith(color: textColor),
+        style: theme.numeralLarge
+            .copyWith(color: textColor)
+            .merge(widget.digitStyle),
       ),
     );
   }

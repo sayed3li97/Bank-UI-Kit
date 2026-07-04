@@ -173,6 +173,94 @@ class BankSavingsPotCard extends StatelessWidget {
   /// Defaults to 'expected profit'.
   final String profitRateSuffix;
 
+  /// Target line template; `{amount}` is substituted. Defaults to
+  /// 'of {amount} goal'.
+  final String goalTemplate;
+
+  /// Caption of the own-account badge. Defaults to 'Own account'.
+  final String ownAccountLabel;
+
+  /// Shared badge template; `{n}` is substituted with the member
+  /// count. Defaults to '{n} members'.
+  final String membersTemplate;
+
+  /// Caption of the add action. Defaults to 'Add'.
+  final String addLabel;
+
+  /// Caption of the withdraw action. Defaults to 'Withdraw'.
+  final String withdrawLabel;
+
+  /// Overrides the card-level semantics. Defaults to a label built
+  /// from the pot name, amounts, and progress.
+  final String? semanticLabel;
+
+  /// Semantics of the own-account badge. Defaults to
+  /// 'Has own account number'.
+  final String ownAccountSemanticLabel;
+
+  /// Shared badge semantics template; `{n}` is substituted. Defaults
+  /// to 'Shared pot with {n} members'.
+  final String sharedSemanticTemplate;
+
+  /// Add action semantics template; `{pot}` is substituted. Defaults
+  /// to 'Add money to {pot}'.
+  final String addSemanticTemplate;
+
+  /// Withdraw action semantics template; `{pot}` is substituted.
+  /// Defaults to 'Withdraw from {pot}'.
+  final String withdrawSemanticTemplate;
+
+  /// Overrides the card content padding. Defaults to space4 all round.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme
+  /// cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card fill colour. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the ring, balance, and add-action accent. Defaults to
+  /// the theme primary colour.
+  final Color? accentColor;
+
+  /// Overrides the progress ring gradient. Defaults to the theme
+  /// accentGradient.
+  final Gradient? gradient;
+
+  /// Overrides the card shadow. Defaults to the theme glow when
+  /// enabled, else a soft drop shadow; pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Merged over the computed pot-name style ([BankTokens.labelLarge]
+  /// in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed target-line style
+  /// ([BankTokens.bodySmall] in onSurfaceVariant).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the computed balance numeral style.
+  final TextStyle? amountStyle;
+
+  /// Overrides the own-account badge glyph. Defaults to
+  /// [BankIcons.account].
+  final IconData? ownAccountIcon;
+
+  /// Overrides the shared badge glyph. Defaults to
+  /// [BankIcons.accountJoint].
+  final IconData? sharedIcon;
+
+  /// Overrides the add action glyph. Defaults to [BankIcons.add].
+  final IconData? addIcon;
+
+  /// Overrides the withdraw action glyph. Defaults to
+  /// [BankIcons.receive].
+  final IconData? withdrawIcon;
+
+  /// Diameter of the progress ring. Defaults to 56.
+  final double? ringSize;
+
   const BankSavingsPotCard({
     required this.pot,
     super.key,
@@ -182,6 +270,30 @@ class BankSavingsPotCard extends StatelessWidget {
     this.itemBuilder,
     this.rateSuffix = 'AER',
     this.profitRateSuffix = 'expected profit',
+    this.goalTemplate = 'of {amount} goal',
+    this.ownAccountLabel = 'Own account',
+    this.membersTemplate = '{n} members',
+    this.addLabel = 'Add',
+    this.withdrawLabel = 'Withdraw',
+    this.semanticLabel,
+    this.ownAccountSemanticLabel = 'Has own account number',
+    this.sharedSemanticTemplate = 'Shared pot with {n} members',
+    this.addSemanticTemplate = 'Add money to {pot}',
+    this.withdrawSemanticTemplate = 'Withdraw from {pot}',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.accentColor,
+    this.gradient,
+    this.shadow,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.ownAccountIcon,
+    this.sharedIcon,
+    this.addIcon,
+    this.withdrawIcon,
+    this.ringSize,
   });
 
   // Diameter of the progress ring.
@@ -217,16 +329,17 @@ class BankSavingsPotCard extends StatelessWidget {
 
     final showActions = onAddMoney != null || onWithdraw != null;
     final isShared = pot.memberIds.length > 1;
-    final semanticLabel =
+    final resolvedSemanticLabel = semanticLabel ??
         'Pot: ${pot.name}, $formattedCurrent of $formattedTarget goal, '
-        '${(pot.progressFraction * 100).round()}% complete';
+            '${(pot.progressFraction * 100).round()}% complete';
 
-    final Widget card = Container(
-      constraints: const BoxConstraints(minHeight: 120),
-      decoration: BoxDecoration(
-        color: bankTheme.surface,
-        borderRadius: bankTheme.cardRadius,
-        boxShadow: bankTheme.useGlow && bankTheme.glowColor != null
+    final accent = accentColor ?? bankTheme.primary;
+    final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space4);
+    final resolvedRadius = radius ?? bankTheme.cardRadius;
+    final resolvedBackground = backgroundColor ?? bankTheme.surface;
+    final resolvedRingSize = ringSize ?? _ringDiameter;
+    final resolvedShadow = shadow ??
+        (bankTheme.useGlow && bankTheme.glowColor != null
             ? [
                 BoxShadow(
                   color: bankTheme.glowColor!.withValues(alpha: 0.25),
@@ -240,18 +353,25 @@ class BankSavingsPotCard extends StatelessWidget {
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
-              ],
+              ]);
+
+    final Widget card = Container(
+      constraints: const BoxConstraints(minHeight: 120),
+      decoration: BoxDecoration(
+        color: resolvedBackground,
+        borderRadius: resolvedRadius,
+        boxShadow: resolvedShadow,
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: bankTheme.cardRadius,
+        borderRadius: resolvedRadius,
         child: InkWell(
           onTap: onTap,
-          borderRadius: bankTheme.cardRadius,
-          splashColor: bankTheme.primary.withValues(alpha: 0.08),
-          highlightColor: bankTheme.primary.withValues(alpha: 0.04),
+          borderRadius: resolvedRadius,
+          splashColor: accent.withValues(alpha: 0.08),
+          highlightColor: accent.withValues(alpha: 0.04),
           child: Padding(
-            padding: const EdgeInsets.all(BankTokens.space4),
+            padding: resolvedPadding,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -261,20 +381,20 @@ class BankSavingsPotCard extends StatelessWidget {
                   children: [
                     // Progress ring
                     SizedBox(
-                      width: _ringDiameter,
-                      height: _ringDiameter,
+                      width: resolvedRingSize,
+                      height: resolvedRingSize,
                       child: CustomPaint(
                         painter: _ProgressRingPainter(
                           progress: pot.progressFraction,
                           trackColor: bankTheme.surfaceVariant,
-                          progressColor: bankTheme.primary,
-                          gradient: bankTheme.accentGradient,
+                          progressColor: accent,
+                          gradient: gradient ?? bankTheme.accentGradient,
                         ),
                         child: Center(
                           child: Text(
                             '${(pot.progressFraction * 100).round()}%',
                             style: BankTokens.labelSmall.copyWith(
-                              color: bankTheme.primary,
+                              color: accent,
                             ),
                           ),
                         ),
@@ -291,9 +411,9 @@ class BankSavingsPotCard extends StatelessWidget {
                           // Pot name
                           Text(
                             pot.name,
-                            style: BankTokens.labelLarge.copyWith(
-                              color: bankTheme.onSurface,
-                            ),
+                            style: BankTokens.labelLarge
+                                .copyWith(color: bankTheme.onSurface)
+                                .merge(titleStyle),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -304,19 +424,22 @@ class BankSavingsPotCard extends StatelessWidget {
                           BankBalanceText(
                             money: pot.current,
                             size: BankBalanceSize.medium,
-                            style: bankTheme.numeralMedium.copyWith(
-                              color: bankTheme.primary,
-                            ),
+                            style: bankTheme.numeralMedium
+                                .copyWith(color: accent)
+                                .merge(amountStyle),
                           ),
 
                           const SizedBox(height: 2),
 
                           // Target label
                           Text(
-                            'of $formattedTarget goal',
-                            style: BankTokens.bodySmall.copyWith(
-                              color: bankTheme.onSurfaceVariant,
+                            goalTemplate.replaceAll(
+                              '{amount}',
+                              formattedTarget,
                             ),
+                            style: BankTokens.bodySmall
+                                .copyWith(color: bankTheme.onSurfaceVariant)
+                                .merge(subtitleStyle),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -343,21 +466,27 @@ class BankSavingsPotCard extends StatelessWidget {
                                   ),
                                 if (pot.hasOwnAccountNumber)
                                   Semantics(
-                                    label: 'Has own account number',
+                                    label: ownAccountSemanticLabel,
                                     child: _BadgeChip(
-                                      label: 'Own account',
-                                      color: bankTheme.primary,
-                                      icon: BankIcons.account,
+                                      label: ownAccountLabel,
+                                      color: accent,
+                                      icon: ownAccountIcon ?? BankIcons.account,
                                     ),
                                   ),
                                 if (isShared)
                                   Semantics(
-                                    label: 'Shared pot with '
-                                        '${pot.memberIds.length} members',
+                                    label: sharedSemanticTemplate.replaceAll(
+                                      '{n}',
+                                      '${pot.memberIds.length}',
+                                    ),
                                     child: _BadgeChip(
-                                      label: '${pot.memberIds.length} members',
+                                      label: membersTemplate.replaceAll(
+                                        '{n}',
+                                        '${pot.memberIds.length}',
+                                      ),
                                       color: bankTheme.onSurfaceVariant,
-                                      icon: BankIcons.accountJoint,
+                                      icon:
+                                          sharedIcon ?? BankIcons.accountJoint,
                                     ),
                                   ),
                               ],
@@ -380,18 +509,21 @@ class BankSavingsPotCard extends StatelessWidget {
                         Expanded(
                           child: Semantics(
                             button: true,
-                            label: 'Add money to ${pot.name}',
+                            label: addSemanticTemplate.replaceAll(
+                              '{pot}',
+                              pot.name,
+                            ),
                             child: TextButton.icon(
                               onPressed: onAddMoney,
                               icon: Icon(
-                                BankIcons.add,
+                                addIcon ?? BankIcons.add,
                                 size: 18,
-                                color: bankTheme.primary,
+                                color: accent,
                               ),
                               label: Text(
-                                'Add',
+                                addLabel,
                                 style: BankTokens.labelMedium.copyWith(
-                                  color: bankTheme.primary,
+                                  color: accent,
                                 ),
                               ),
                               style: TextButton.styleFrom(
@@ -399,7 +531,7 @@ class BankSavingsPotCard extends StatelessWidget {
                                   BankTokens.minTapTarget,
                                   BankTokens.minTapTarget,
                                 ),
-                                foregroundColor: bankTheme.primary,
+                                foregroundColor: accent,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: bankTheme.buttonRadius,
                                 ),
@@ -417,16 +549,19 @@ class BankSavingsPotCard extends StatelessWidget {
                         Expanded(
                           child: Semantics(
                             button: true,
-                            label: 'Withdraw from ${pot.name}',
+                            label: withdrawSemanticTemplate.replaceAll(
+                              '{pot}',
+                              pot.name,
+                            ),
                             child: TextButton.icon(
                               onPressed: onWithdraw,
                               icon: Icon(
-                                BankIcons.receive,
+                                withdrawIcon ?? BankIcons.receive,
                                 size: 18,
                                 color: bankTheme.onSurfaceVariant,
                               ),
                               label: Text(
-                                'Withdraw',
+                                withdrawLabel,
                                 style: BankTokens.labelMedium.copyWith(
                                   color: bankTheme.onSurfaceVariant,
                                 ),
@@ -455,7 +590,7 @@ class BankSavingsPotCard extends StatelessWidget {
     );
 
     return Semantics(
-      label: semanticLabel,
+      label: resolvedSemanticLabel,
       button: onTap != null,
       child: card,
     );

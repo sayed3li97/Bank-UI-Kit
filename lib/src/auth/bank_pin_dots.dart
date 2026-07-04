@@ -140,6 +140,21 @@ class BankPinDots extends StatelessWidget {
   /// Diameter of each dot in logical pixels. Defaults to `12`.
   final double dotSize;
 
+  /// Overrides the gap between dots. Defaults to [BankTokens.space2].
+  final double? spacing;
+
+  /// Overrides the computed semantics label. Defaults to
+  /// `'N of M digits entered'`.
+  final String? semanticLabel;
+
+  /// Overrides the dot fill transition duration. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Overrides the dot fill transition curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
   const BankPinDots({
     required this.filled,
     super.key,
@@ -149,6 +164,10 @@ class BankPinDots extends StatelessWidget {
     this.filledColor,
     this.emptyColor,
     this.dotSize = 12,
+    this.spacing,
+    this.semanticLabel,
+    this.animationDuration,
+    this.animationCurve,
   }) : assert(length > 0, 'length must be greater than 0');
 
   @override
@@ -165,20 +184,22 @@ class BankPinDots extends StatelessWidget {
         final isFilled = index < clampedFilled;
         return Padding(
           padding: EdgeInsets.only(
-            left: index == 0 ? 0 : BankTokens.space2,
+            left: index == 0 ? 0 : spacing ?? BankTokens.space2,
           ),
           child: _PinDot(
             filled: isFilled,
             size: dotSize,
             filledColor: resolvedFilled,
             emptyColor: resolvedEmpty,
+            duration: animationDuration ?? BankTokens.durationFast,
+            curve: animationCurve ?? BankTokens.curveStandard,
           ),
         );
       }),
     );
 
     return Semantics(
-      label: '$clampedFilled of $length digits entered',
+      label: semanticLabel ?? '$clampedFilled of $length digits entered',
       excludeSemantics: true,
       child: _ShakeWidget(
         shake: error,
@@ -198,18 +219,22 @@ class _PinDot extends StatelessWidget {
     required this.size,
     required this.filledColor,
     required this.emptyColor,
+    required this.duration,
+    required this.curve,
   });
 
   final bool filled;
   final double size;
   final Color filledColor;
   final Color emptyColor;
+  final Duration duration;
+  final Curve curve;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: BankTokens.durationFast,
-      curve: BankTokens.curveStandard,
+      duration: duration,
+      curve: curve,
       width: size,
       height: size,
       decoration: filled

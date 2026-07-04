@@ -37,11 +37,68 @@ class BankTransactionCostSplitSheet extends StatefulWidget {
   /// Called when the user confirms; maps participantId → allocated [Money].
   final ValueChanged<Map<String, Money>> onConfirm;
 
+  /// Overrides the sheet corner radius. Defaults to the theme sheetRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the sheet background. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the drag handle color. Defaults to the theme outline.
+  final Color? handleColor;
+
+  /// Overrides the primary accents (active toggle, initials, confirm
+  /// button). Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the participant avatar background. Defaults to the theme
+  /// surfaceVariant.
+  final Color? avatarBackgroundColor;
+
+  /// Merged over the sheet title style ([BankTokens.headlineSmall]).
+  final TextStyle? titleStyle;
+
+  /// Overrides the max sheet height as a screen fraction. Defaults to
+  /// 0.88.
+  final double? maxHeightFraction;
+
+  /// Overrides the close button glyph. Defaults to [Icons.close].
+  final IconData? closeIcon;
+
+  /// Overrides the sheet title. Defaults to 'Split Cost'.
+  final String title;
+
+  /// Overrides the total prefix. Defaults to 'Total: '.
+  final String totalLabel;
+
+  /// Overrides the running total label. Defaults to 'Allocated'.
+  final String allocatedLabel;
+
+  /// Overrides the toggle animation duration. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Overrides the toggle animation curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
   const BankTransactionCostSplitSheet({
     required this.transaction,
     required this.participants,
     required this.onConfirm,
     super.key,
+    this.radius,
+    this.backgroundColor,
+    this.handleColor,
+    this.accentColor,
+    this.avatarBackgroundColor,
+    this.titleStyle,
+    this.maxHeightFraction,
+    this.closeIcon,
+    this.title = 'Split Cost',
+    this.totalLabel = 'Total: ',
+    this.allocatedLabel = 'Allocated',
+    this.animationDuration,
+    this.animationCurve,
   });
 
   /// Convenience helper to push the sheet.
@@ -135,7 +192,9 @@ class _BankTransactionCostSplitSheetState
 
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom +
         MediaQuery.of(context).padding.bottom;
-    final maxHeight = MediaQuery.of(context).size.height * 0.88;
+    final maxHeight =
+        MediaQuery.of(context).size.height * (widget.maxHeightFraction ?? 0.88);
+    final accent = widget.accentColor ?? bankTheme.primary;
 
     final formattedTotal = BankMoneyFormatter.format(
       amount: _totalAmount,
@@ -148,8 +207,8 @@ class _BankTransactionCostSplitSheetState
       child: Container(
         constraints: BoxConstraints(maxHeight: maxHeight),
         decoration: BoxDecoration(
-          color: bankTheme.surface,
-          borderRadius: bankTheme.sheetRadius,
+          color: widget.backgroundColor ?? bankTheme.surface,
+          borderRadius: widget.radius ?? bankTheme.sheetRadius,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -162,7 +221,7 @@ class _BankTransactionCostSplitSheetState
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: bankTheme.outline,
+                    color: widget.handleColor ?? bankTheme.outline,
                     borderRadius: BorderRadius.circular(BankTokens.radiusFull),
                   ),
                 ),
@@ -178,14 +237,14 @@ class _BankTransactionCostSplitSheetState
                 children: [
                   Expanded(
                     child: Text(
-                      'Split Cost',
-                      style: BankTokens.headlineSmall.copyWith(
-                        color: bankTheme.onSurface,
-                      ),
+                      widget.title,
+                      style: BankTokens.headlineSmall
+                          .copyWith(color: bankTheme.onSurface)
+                          .merge(widget.titleStyle),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: Icon(widget.closeIcon ?? Icons.close),
                     color: bankTheme.onSurfaceVariant,
                     onPressed: () => Navigator.of(context).pop(),
                     tooltip: s.cancel,
@@ -201,7 +260,7 @@ class _BankTransactionCostSplitSheetState
               child: Row(
                 children: [
                   Text(
-                    'Total: ',
+                    widget.totalLabel,
                     style: BankTokens.bodyMedium.copyWith(
                       color: bankTheme.onSurfaceVariant,
                     ),
@@ -232,6 +291,9 @@ class _BankTransactionCostSplitSheetState
                         label: s.splitEqually,
                         active: _equalSplit,
                         bankTheme: bankTheme,
+                        activeColor: accent,
+                        duration: widget.animationDuration,
+                        curve: widget.animationCurve,
                         onTap: () => setState(() => _equalSplit = true),
                         isLeading: true,
                       ),
@@ -246,6 +308,9 @@ class _BankTransactionCostSplitSheetState
                         label: s.custom,
                         active: !_equalSplit,
                         bankTheme: bankTheme,
+                        activeColor: accent,
+                        duration: widget.animationDuration,
+                        curve: widget.animationCurve,
                         onTap: () => setState(() => _equalSplit = false),
                         isLeading: false,
                       ),
@@ -275,6 +340,8 @@ class _BankTransactionCostSplitSheetState
                     ),
                     controller: _controllers[p.id]!,
                     bankTheme: bankTheme,
+                    accentColor: accent,
+                    avatarBackgroundColor: widget.avatarBackgroundColor,
                     onChanged: (_) => setState(() {}),
                   );
                 },
@@ -292,7 +359,7 @@ class _BankTransactionCostSplitSheetState
                   children: [
                     Expanded(
                       child: Text(
-                        'Allocated',
+                        widget.allocatedLabel,
                         style: BankTokens.bodySmall.copyWith(
                           color: bankTheme.onSurfaceVariant,
                         ),
@@ -336,10 +403,9 @@ class _BankTransactionCostSplitSheetState
                 child: FilledButton(
                   onPressed: _isValid ? _confirm : null,
                   style: FilledButton.styleFrom(
-                    backgroundColor: bankTheme.primary,
+                    backgroundColor: accent,
                     foregroundColor: bankTheme.onPrimary,
-                    disabledBackgroundColor:
-                        bankTheme.primary.withValues(alpha: 0.38),
+                    disabledBackgroundColor: accent.withValues(alpha: 0.38),
                     minimumSize: const Size(
                       double.infinity,
                       BankTokens.minTapTarget,
@@ -372,6 +438,9 @@ class _ToggleButton extends StatelessWidget {
   final String label;
   final bool active;
   final BankThemeData bankTheme;
+  final Color activeColor;
+  final Duration? duration;
+  final Curve? curve;
   final VoidCallback onTap;
   final bool isLeading;
 
@@ -379,8 +448,11 @@ class _ToggleButton extends StatelessWidget {
     required this.label,
     required this.active,
     required this.bankTheme,
+    required this.activeColor,
     required this.onTap,
     required this.isLeading,
+    this.duration,
+    this.curve,
   });
 
   @override
@@ -388,11 +460,11 @@ class _ToggleButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: BankTokens.durationFast,
-        curve: BankTokens.curveStandard,
+        duration: duration ?? BankTokens.durationFast,
+        curve: curve ?? BankTokens.curveStandard,
         height: BankTokens.minTapTarget,
         decoration: BoxDecoration(
-          color: active ? bankTheme.primary : bankTheme.surfaceVariant,
+          color: active ? activeColor : bankTheme.surfaceVariant,
           borderRadius: isLeading
               ? BorderRadius.only(
                   topLeft: bankTheme.buttonRadius.topLeft,
@@ -422,6 +494,8 @@ class _ParticipantRow extends StatefulWidget {
   final String equalAmount;
   final TextEditingController controller;
   final BankThemeData bankTheme;
+  final Color accentColor;
+  final Color? avatarBackgroundColor;
   final ValueChanged<String> onChanged;
 
   const _ParticipantRow({
@@ -430,7 +504,9 @@ class _ParticipantRow extends StatefulWidget {
     required this.equalAmount,
     required this.controller,
     required this.bankTheme,
+    required this.accentColor,
     required this.onChanged,
+    this.avatarBackgroundColor,
   });
 
   @override
@@ -445,11 +521,14 @@ class _ParticipantRowState extends State<_ParticipantRow> {
     final bankTheme = widget.bankTheme;
     final p = widget.participant;
 
+    final avatarBackground =
+        widget.avatarBackgroundColor ?? bankTheme.surfaceVariant;
+
     Widget avatar;
     if (p.avatarUrl != null && !_avatarFailed) {
       avatar = CircleAvatar(
         radius: 20,
-        backgroundColor: bankTheme.surfaceVariant,
+        backgroundColor: avatarBackground,
         backgroundImage: BankUiScope.imageProviderFor(context, p.avatarUrl!),
         onBackgroundImageError: (_, __) {
           if (mounted) setState(() => _avatarFailed = true);
@@ -458,11 +537,11 @@ class _ParticipantRowState extends State<_ParticipantRow> {
     } else {
       avatar = CircleAvatar(
         radius: 20,
-        backgroundColor: bankTheme.surfaceVariant,
+        backgroundColor: avatarBackground,
         child: Text(
           p.name.isNotEmpty ? p.name[0].toUpperCase() : '?',
           style: BankTokens.labelLarge.copyWith(
-            color: bankTheme.primary,
+            color: widget.accentColor,
           ),
         ),
       );
@@ -526,7 +605,7 @@ class _ParticipantRowState extends State<_ParticipantRow> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: bankTheme.buttonRadius,
-                        borderSide: BorderSide(color: bankTheme.primary),
+                        borderSide: BorderSide(color: widget.accentColor),
                       ),
                     ),
                     style: bankTheme.numeralSmall.copyWith(

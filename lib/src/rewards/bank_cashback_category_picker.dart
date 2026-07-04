@@ -102,6 +102,15 @@ class BankCashbackCategoryPicker extends StatefulWidget {
     this.onConfirm,
     this.confirmLabel = 'Confirm choices',
     this.lockedUntilTemplate = 'Locked until {date}',
+    this.crossAxisCount,
+    this.radius,
+    this.backgroundColor,
+    this.shadow,
+    this.accentColor,
+    this.titleStyle,
+    this.counterStyle,
+    this.checkIcon,
+    this.animationDuration,
   }) : assert(maxSelections > 0, 'maxSelections must be at least 1');
 
   /// Categories to display, in grid order.
@@ -136,6 +145,38 @@ class BankCashbackCategoryPicker extends StatefulWidget {
   /// the `{date}` placeholder is replaced with the formatted date.
   final String lockedUntilTemplate;
 
+  /// Number of grid columns. Defaults to 3.
+  final int? crossAxisCount;
+
+  /// Overrides the category-card corner radius. Defaults to the theme
+  /// card radius.
+  final BorderRadius? radius;
+
+  /// Background of unselected category cards. Defaults to the theme
+  /// surface.
+  final Color? backgroundColor;
+
+  /// Overrides the category-card shadow. Defaults to
+  /// [BankTokens.shadowCard]; pass `const []` to flatten the cards.
+  final List<BoxShadow>? shadow;
+
+  /// Tint of selected cards, icon discs, and the confirm button.
+  /// Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Merged over the computed header-title style.
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed selection-counter style.
+  final TextStyle? counterStyle;
+
+  /// Glyph of the selected-card badge. Defaults to [Icons.check].
+  final IconData? checkIcon;
+
+  /// Duration of the over-limit shake. Defaults to
+  /// [BankTokens.durationSlow].
+  final Duration? animationDuration;
+
   @override
   State<BankCashbackCategoryPicker> createState() =>
       _BankCashbackCategoryPickerState();
@@ -155,13 +196,17 @@ class _BankCashbackCategoryPickerState extends State<BankCashbackCategoryPicker>
         widget.categories.where((c) => c.selected).map((c) => c.id).toSet();
     _shakeController = AnimationController(
       vsync: this,
-      duration: BankTokens.durationSlow,
+      duration: widget.animationDuration ?? BankTokens.durationSlow,
     );
   }
 
   @override
   void didUpdateWidget(BankCashbackCategoryPicker oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.animationDuration != oldWidget.animationDuration) {
+      _shakeController.duration =
+          widget.animationDuration ?? BankTokens.durationSlow;
+    }
     if (!listEquals(widget.categories, oldWidget.categories)) {
       final ids = widget.categories.map((c) => c.id).toSet();
       _selectedIds.retainAll(ids);
@@ -220,6 +265,7 @@ class _BankCashbackCategoryPickerState extends State<BankCashbackCategoryPicker>
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
     final showLock = _confirmed && widget.effectiveUntil != null;
+    final accent = widget.accentColor ?? theme.primary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,25 +276,29 @@ class _BankCashbackCategoryPickerState extends State<BankCashbackCategoryPicker>
             Expanded(
               child: Text(
                 widget.title,
-                style: BankTokens.headlineSmall.copyWith(
-                  color: theme.onSurface,
-                ),
+                style: BankTokens.headlineSmall
+                    .copyWith(
+                      color: theme.onSurface,
+                    )
+                    .merge(widget.titleStyle),
               ),
             ),
             const SizedBox(width: BankTokens.space3),
             Text(
               _counterText(scope),
-              style: BankTokens.labelMedium.copyWith(
-                color: _selectedIds.length >= widget.maxSelections
-                    ? theme.primary
-                    : theme.onSurfaceVariant,
-              ),
+              style: BankTokens.labelMedium
+                  .copyWith(
+                    color: _selectedIds.length >= widget.maxSelections
+                        ? accent
+                        : theme.onSurfaceVariant,
+                  )
+                  .merge(widget.counterStyle),
             ),
           ],
         ),
         const SizedBox(height: BankTokens.space4),
         GridView.count(
-          crossAxisCount: 3,
+          crossAxisCount: widget.crossAxisCount ?? 3,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: BankTokens.space3,
@@ -261,6 +311,11 @@ class _BankCashbackCategoryPickerState extends State<BankCashbackCategoryPicker>
                 selected: _selectedIds.contains(category.id),
                 shakeAnimation:
                     _shakingId == category.id ? _shakeController : null,
+                accent: accent,
+                radius: widget.radius,
+                backgroundColor: widget.backgroundColor,
+                shadow: widget.shadow,
+                checkIcon: widget.checkIcon,
                 onTap: () => _handleTap(category),
               ),
           ],
@@ -273,7 +328,7 @@ class _BankCashbackCategoryPickerState extends State<BankCashbackCategoryPicker>
             child: FilledButton(
               onPressed: _selectedIds.isEmpty ? null : _handleConfirm,
               style: FilledButton.styleFrom(
-                backgroundColor: theme.primary,
+                backgroundColor: accent,
                 foregroundColor: theme.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: theme.buttonRadius,
@@ -308,7 +363,12 @@ class _CategoryCard extends StatelessWidget {
     required this.category,
     required this.selected,
     required this.shakeAnimation,
+    required this.accent,
     required this.onTap,
+    this.radius,
+    this.backgroundColor,
+    this.shadow,
+    this.checkIcon,
   });
 
   final BankCashbackCategory category;
@@ -317,29 +377,37 @@ class _CategoryCard extends StatelessWidget {
   /// Non-null while this card is the one being shaken for exceeding the
   /// selection limit.
   final Animation<double>? shakeAnimation;
+  final Color accent;
+  final BorderRadius? radius;
+  final Color? backgroundColor;
+  final List<BoxShadow>? shadow;
+  final IconData? checkIcon;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final cardRadius = radius ?? theme.cardRadius;
 
     final card = DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: theme.cardRadius,
-        boxShadow: BankTokens.shadowCard,
+        borderRadius: cardRadius,
+        boxShadow: shadow ?? BankTokens.shadowCard,
       ),
       child: Material(
-        color: selected ? theme.primary.withValues(alpha: 0.08) : theme.surface,
+        color: selected
+            ? accent.withValues(alpha: 0.08)
+            : backgroundColor ?? theme.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: theme.cardRadius,
+          borderRadius: cardRadius,
           side: selected
-              ? BorderSide(color: theme.primary, width: 2)
+              ? BorderSide(color: accent, width: 2)
               : BorderSide(color: theme.outline),
         ),
         child: InkWell(
           onTap: onTap,
           customBorder: RoundedRectangleBorder(
-            borderRadius: theme.cardRadius,
+            borderRadius: cardRadius,
           ),
           child: Stack(
             children: [
@@ -351,13 +419,13 @@ class _CategoryCard extends StatelessWidget {
                     DecoratedBox(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: theme.primary.withValues(alpha: 0.12),
+                        color: accent.withValues(alpha: 0.12),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(BankTokens.space2),
                         child: Icon(
                           category.icon,
-                          color: theme.primary,
+                          color: accent,
                         ),
                       ),
                     ),
@@ -375,7 +443,7 @@ class _CategoryCard extends StatelessWidget {
                     DecoratedBox(
                       decoration: BoxDecoration(
                         color: selected
-                            ? theme.primary.withValues(alpha: 0.16)
+                            ? accent.withValues(alpha: 0.16)
                             : theme.surfaceVariant,
                         borderRadius: theme.chipRadius,
                       ),
@@ -387,9 +455,7 @@ class _CategoryCard extends StatelessWidget {
                         child: Text(
                           category.rateLabel,
                           style: BankTokens.labelSmall.copyWith(
-                            color: selected
-                                ? theme.primary
-                                : theme.onSurfaceVariant,
+                            color: selected ? accent : theme.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -404,12 +470,12 @@ class _CategoryCard extends StatelessWidget {
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: theme.primary,
+                      color: accent,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(2),
                       child: Icon(
-                        Icons.check,
+                        checkIcon ?? Icons.check,
                         size: 14,
                         color: theme.onPrimary,
                       ),

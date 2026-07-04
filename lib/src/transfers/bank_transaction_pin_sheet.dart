@@ -47,6 +47,36 @@ class BankTransactionPinSheet extends StatefulWidget {
   /// `'Enter your PIN to confirm this transfer'`.
   final String subtitle;
 
+  /// Label of the cancel button. Defaults to `'Cancel'`.
+  final String cancelLabel;
+
+  /// Semantics label of the sheet. Defaults to `'Transaction PIN sheet'`.
+  final String semanticLabel;
+
+  /// Overrides the sheet background color. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the sheet corner radius. Defaults to the theme sheetRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the sheet content padding (keyboard insets are still added
+  /// below it). Defaults to space6 sides, space4 top, space6 bottom.
+  final EdgeInsetsGeometry? padding;
+
+  /// Merged over the title style (BankTokens.headlineMedium in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the subtitle style
+  /// (BankTokens.bodyMedium in onSurfaceVariant).
+  final TextStyle? subtitleStyle;
+
+  /// Overrides the loading indicator color. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// How long the error state is shown before the PIN clears after a wrong
+  /// entry. Defaults to 800 milliseconds.
+  final Duration? errorResetDelay;
+
   const BankTransactionPinSheet({
     required this.onSubmit,
     super.key,
@@ -54,6 +84,15 @@ class BankTransactionPinSheet extends StatefulWidget {
     this.onCancel,
     this.title = 'Enter PIN',
     this.subtitle = 'Enter your PIN to confirm this transfer',
+    this.cancelLabel = 'Cancel',
+    this.semanticLabel = 'Transaction PIN sheet',
+    this.backgroundColor,
+    this.radius,
+    this.padding,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.accentColor,
+    this.errorResetDelay,
   });
 
   // ---------------------------------------------------------------------------
@@ -137,7 +176,9 @@ class _BankTransactionPinSheetState extends State<BankTransactionPinSheet> {
       _error = true;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 800));
+    await Future<void>.delayed(
+      widget.errorResetDelay ?? const Duration(milliseconds: 800),
+    );
     if (!mounted) return;
     setState(() {
       _pin = '';
@@ -161,19 +202,23 @@ class _BankTransactionPinSheetState extends State<BankTransactionPinSheet> {
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
     final mediaQuery = MediaQuery.of(context);
+    final basePadding = widget.padding ??
+        const EdgeInsets.fromLTRB(
+          BankTokens.space6,
+          BankTokens.space4,
+          BankTokens.space6,
+          BankTokens.space6,
+        );
 
     return Semantics(
-      label: 'Transaction PIN sheet',
+      label: widget.semanticLabel,
       child: Container(
         decoration: BoxDecoration(
-          color: bankTheme.surface,
-          borderRadius: bankTheme.sheetRadius,
+          color: widget.backgroundColor ?? bankTheme.surface,
+          borderRadius: widget.radius ?? bankTheme.sheetRadius,
         ),
-        padding: EdgeInsets.only(
-          left: BankTokens.space6,
-          right: BankTokens.space6,
-          top: BankTokens.space4,
-          bottom: BankTokens.space6 + mediaQuery.viewInsets.bottom,
+        padding: basePadding.add(
+          EdgeInsets.only(bottom: mediaQuery.viewInsets.bottom),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -193,9 +238,9 @@ class _BankTransactionPinSheetState extends State<BankTransactionPinSheet> {
               header: true,
               child: Text(
                 widget.title,
-                style: BankTokens.headlineMedium.copyWith(
-                  color: bankTheme.onSurface,
-                ),
+                style: BankTokens.headlineMedium
+                    .copyWith(color: bankTheme.onSurface)
+                    .merge(widget.titleStyle),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -203,9 +248,9 @@ class _BankTransactionPinSheetState extends State<BankTransactionPinSheet> {
             // Subtitle
             Text(
               widget.subtitle,
-              style: BankTokens.bodyMedium.copyWith(
-                color: bankTheme.onSurfaceVariant,
-              ),
+              style: BankTokens.bodyMedium
+                  .copyWith(color: bankTheme.onSurfaceVariant)
+                  .merge(widget.subtitleStyle),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: BankTokens.space6),
@@ -222,7 +267,7 @@ class _BankTransactionPinSheetState extends State<BankTransactionPinSheet> {
                 height: _keypadApproxHeight,
                 child: Center(
                   child: CircularProgressIndicator(
-                    color: bankTheme.primary,
+                    color: widget.accentColor ?? bankTheme.primary,
                     strokeWidth: 2.5,
                   ),
                 ),
@@ -246,7 +291,7 @@ class _BankTransactionPinSheetState extends State<BankTransactionPinSheet> {
                     BankTokens.minTapTarget,
                   ),
                 ),
-                child: const Text('Cancel'),
+                child: Text(widget.cancelLabel),
               ),
             ),
           ],

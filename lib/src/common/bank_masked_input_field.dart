@@ -455,6 +455,14 @@ class BankMaskedInputField extends StatefulWidget {
     this.validationErrorText,
     this.textInputAction,
     this.focusNode,
+    this.contentPadding,
+    this.radius,
+    this.backgroundColor,
+    this.textStyle,
+    this.labelStyle,
+    this.helperStyle,
+    this.errorStyle,
+    this.semanticLabel,
   });
 
   /// The mask that filters, formats, and validates input.
@@ -493,6 +501,37 @@ class BankMaskedInputField extends StatefulWidget {
 
   /// Optional external focus node. When omitted the field manages its own.
   final FocusNode? focusNode;
+
+  /// Overrides the field's inner content padding (default:
+  /// [BankTokens.space4] horizontal by [BankTokens.space3] vertical).
+  final EdgeInsetsGeometry? contentPadding;
+
+  /// Overrides [BankThemeData.buttonRadius] as the field border radius.
+  final BorderRadius? radius;
+
+  /// Overrides [BankThemeData.surface] as the fill while enabled
+  /// (the disabled fill stays [BankThemeData.surfaceVariant]).
+  final Color? backgroundColor;
+
+  /// Merged over the computed entry style (default:
+  /// [BankThemeData.numeralMedium] in [BankThemeData.onSurface]).
+  final TextStyle? textStyle;
+
+  /// Merged over the computed [label] style (default:
+  /// [BankTokens.labelMedium] coloured per the error state).
+  final TextStyle? labelStyle;
+
+  /// Merged over the computed [helperText] style (default:
+  /// [BankTokens.bodySmall] in [BankThemeData.onSurfaceVariant]).
+  final TextStyle? helperStyle;
+
+  /// Merged over the computed error message style (default:
+  /// [BankTokens.bodySmall] in [BankTokens.danger]).
+  final TextStyle? errorStyle;
+
+  /// Semantics label for the input. Defaults to none (the visible
+  /// [label] describes the field).
+  final String? semanticLabel;
 
   @override
   State<BankMaskedInputField> createState() => _BankMaskedInputFieldState();
@@ -591,19 +630,60 @@ class _BankMaskedInputFieldState extends State<BankMaskedInputField> {
 
     final borderColor = hasError ? BankTokens.danger : theme.outline;
     final focusedColor = hasError ? BankTokens.danger : theme.primary;
+    final borderRadius = widget.radius ?? theme.buttonRadius;
 
     final border = OutlineInputBorder(
-      borderRadius: theme.buttonRadius,
+      borderRadius: borderRadius,
       borderSide: BorderSide(color: borderColor),
     );
     final focusedBorder = OutlineInputBorder(
-      borderRadius: theme.buttonRadius,
+      borderRadius: borderRadius,
       borderSide: BorderSide(color: focusedColor, width: 2),
     );
     final disabledBorder = OutlineInputBorder(
-      borderRadius: theme.buttonRadius,
+      borderRadius: borderRadius,
       borderSide: BorderSide(color: theme.outline.withValues(alpha: 0.4)),
     );
+
+    Widget field = TextField(
+      controller: _controller,
+      focusNode: _focusNode,
+      enabled: widget.enabled,
+      keyboardType: widget.mask._keyboardType,
+      textCapitalization: widget.mask._textCapitalization,
+      textInputAction: widget.textInputAction,
+      // Account and card numbers read left-to-right in every locale.
+      textDirection: TextDirection.ltr,
+      autocorrect: false,
+      enableSuggestions: false,
+      inputFormatters: [_formatter],
+      onChanged: _handleTextChanged,
+      style: theme.numeralMedium
+          .copyWith(color: theme.onSurface)
+          .merge(widget.textStyle),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: widget.enabled
+            ? (widget.backgroundColor ?? theme.surface)
+            : theme.surfaceVariant,
+        contentPadding: widget.contentPadding ??
+            const EdgeInsets.symmetric(
+              horizontal: BankTokens.space4,
+              vertical: BankTokens.space3,
+            ),
+        border: border,
+        enabledBorder: border,
+        focusedBorder: focusedBorder,
+        disabledBorder: disabledBorder,
+      ),
+    );
+
+    if (widget.semanticLabel != null) {
+      field = Semantics(
+        label: widget.semanticLabel,
+        child: field,
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -614,38 +694,14 @@ class _BankMaskedInputFieldState extends State<BankMaskedInputField> {
             padding: const EdgeInsets.only(bottom: BankTokens.space2),
             child: Text(
               widget.label!,
-              style: BankTokens.labelMedium.copyWith(
-                color: hasError ? BankTokens.danger : theme.onSurface,
-              ),
+              style: BankTokens.labelMedium
+                  .copyWith(
+                    color: hasError ? BankTokens.danger : theme.onSurface,
+                  )
+                  .merge(widget.labelStyle),
             ),
           ),
-        TextField(
-          controller: _controller,
-          focusNode: _focusNode,
-          enabled: widget.enabled,
-          keyboardType: widget.mask._keyboardType,
-          textCapitalization: widget.mask._textCapitalization,
-          textInputAction: widget.textInputAction,
-          // Account and card numbers read left-to-right in every locale.
-          textDirection: TextDirection.ltr,
-          autocorrect: false,
-          enableSuggestions: false,
-          inputFormatters: [_formatter],
-          onChanged: _handleTextChanged,
-          style: theme.numeralMedium.copyWith(color: theme.onSurface),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: widget.enabled ? theme.surface : theme.surfaceVariant,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: BankTokens.space4,
-              vertical: BankTokens.space3,
-            ),
-            border: border,
-            enabledBorder: border,
-            focusedBorder: focusedBorder,
-            disabledBorder: disabledBorder,
-          ),
-        ),
+        field,
         if (effectiveError != null)
           Padding(
             padding: const EdgeInsetsDirectional.only(
@@ -654,7 +710,9 @@ class _BankMaskedInputFieldState extends State<BankMaskedInputField> {
             ),
             child: Text(
               effectiveError,
-              style: BankTokens.bodySmall.copyWith(color: BankTokens.danger),
+              style: BankTokens.bodySmall
+                  .copyWith(color: BankTokens.danger)
+                  .merge(widget.errorStyle),
             ),
           )
         else if (widget.helperText != null)
@@ -665,8 +723,9 @@ class _BankMaskedInputFieldState extends State<BankMaskedInputField> {
             ),
             child: Text(
               widget.helperText!,
-              style:
-                  BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+              style: BankTokens.bodySmall
+                  .copyWith(color: theme.onSurfaceVariant)
+                  .merge(widget.helperStyle),
             ),
           ),
       ],

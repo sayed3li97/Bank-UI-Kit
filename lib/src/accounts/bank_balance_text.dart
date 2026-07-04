@@ -44,6 +44,18 @@ class BankBalanceText extends StatelessWidget {
   /// When `true`, uses compact notation (e.g. `£1.2K` instead of `£1,200.00`).
   final bool compact;
 
+  /// Overrides the hidden/visible cross-fade duration. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Overrides the hidden/visible cross-fade curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
+  /// Overrides the computed accessibility label (`'Balance: X'`, or
+  /// `'Balance hidden'` while privacy mode is active).
+  final String? semanticLabel;
+
   const BankBalanceText({
     required this.money,
     super.key,
@@ -51,6 +63,9 @@ class BankBalanceText extends StatelessWidget {
     this.size = BankBalanceSize.large,
     this.showSign = false,
     this.compact = false,
+    this.animationDuration,
+    this.animationCurve,
+    this.semanticLabel,
   });
 
   TextStyle _baseStyleForSize(BankThemeData bankTheme) {
@@ -80,16 +95,16 @@ class BankBalanceText extends StatelessWidget {
     );
 
     final displayText = hidden ? data.strings.balanceHidden : formattedBalance;
-    final semanticLabel =
-        hidden ? 'Balance hidden' : 'Balance: $formattedBalance';
+    final resolvedSemanticLabel = semanticLabel ??
+        (hidden ? 'Balance hidden' : 'Balance: $formattedBalance');
 
     return Semantics(
-      label: semanticLabel,
+      label: resolvedSemanticLabel,
       excludeSemantics: true,
       child: AnimatedSwitcher(
-        duration: BankTokens.durationFast,
-        switchInCurve: BankTokens.curveStandard,
-        switchOutCurve: BankTokens.curveStandard,
+        duration: animationDuration ?? BankTokens.durationFast,
+        switchInCurve: animationCurve ?? BankTokens.curveStandard,
+        switchOutCurve: animationCurve ?? BankTokens.curveStandard,
         transitionBuilder: (Widget child, Animation<double> animation) {
           return FadeTransition(
             opacity: animation,

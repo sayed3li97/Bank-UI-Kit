@@ -44,12 +44,69 @@ class BankAccountSwitcher extends StatelessWidget {
   final Widget Function(BuildContext, BankAccount, bool isSelected)?
       itemBuilder;
 
+  /// Overrides the sheet background colour. Defaults to the theme
+  /// `surface`.
+  final Color? backgroundColor;
+
+  /// Overrides the sheet corner radius. Defaults to the theme
+  /// `sheetRadius`.
+  final BorderRadius? radius;
+
+  /// Overrides the drag-handle colour. Defaults to the theme `outline`.
+  final Color? handleColor;
+
+  /// Optional widget rendered between the drag handle and the list,
+  /// e.g. a sheet title. Defaults to nothing.
+  final Widget? header;
+
+  /// Overrides the list padding. Defaults to a bottom inset covering the
+  /// safe area plus [BankTokens.space4].
+  final EdgeInsetsGeometry? padding;
+
+  /// Fraction of the screen height the sheet may grow to. Defaults to
+  /// 0.70.
+  final double? maxHeightFraction;
+
+  /// Minimum height of each default row. Defaults to 72.
+  final double? rowHeight;
+
+  /// Merged over each row's account-name style
+  /// ([BankTokens.labelLarge]).
+  final TextStyle? titleStyle;
+
+  /// Merged over each row's masked-number style
+  /// ([BankTokens.bodySmall]).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over each row's balance style ([BankTokens.numeralSmall]).
+  final TextStyle? amountStyle;
+
+  /// Overrides the selected-row checkmark glyph. Defaults to
+  /// [Icons.check_circle].
+  final IconData? selectedIcon;
+
+  /// Overrides the accent used for the checkmark and ink splash.
+  /// Defaults to the theme `primary`.
+  final Color? accentColor;
+
   const BankAccountSwitcher({
     required this.accounts,
     required this.onSelected,
     super.key,
     this.selectedAccountId,
     this.itemBuilder,
+    this.backgroundColor,
+    this.radius,
+    this.handleColor,
+    this.header,
+    this.padding,
+    this.maxHeightFraction,
+    this.rowHeight,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.selectedIcon,
+    this.accentColor,
   });
 
   // ---------------------------------------------------------------------------
@@ -84,7 +141,7 @@ class BankAccountSwitcher extends StatelessWidget {
 
     // Calculate an intrinsic max height: sheet fills up to 70 % of the screen.
     final screenHeight = MediaQuery.sizeOf(context).height;
-    final maxSheetHeight = screenHeight * 0.70;
+    final maxSheetHeight = screenHeight * (maxHeightFraction ?? 0.70);
 
     // The drag-handle bar at the top of the sheet.
     final Widget handleBar = Center(
@@ -93,7 +150,7 @@ class BankAccountSwitcher extends StatelessWidget {
         height: 4,
         margin: const EdgeInsets.symmetric(vertical: BankTokens.space3),
         decoration: BoxDecoration(
-          color: bankTheme.outline,
+          color: handleColor ?? bankTheme.outline,
           borderRadius:
               const BorderRadius.all(Radius.circular(BankTokens.radiusFull)),
         ),
@@ -103,8 +160,8 @@ class BankAccountSwitcher extends StatelessWidget {
     return Container(
       constraints: BoxConstraints(maxHeight: maxSheetHeight),
       decoration: BoxDecoration(
-        color: bankTheme.surface,
-        borderRadius: bankTheme.sheetRadius,
+        color: backgroundColor ?? bankTheme.surface,
+        borderRadius: radius ?? bankTheme.sheetRadius,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -112,13 +169,17 @@ class BankAccountSwitcher extends StatelessWidget {
           // Drag handle
           handleBar,
 
+          // Optional header (e.g. a sheet title)
+          if (header != null) header!,
+
           // Account list
           Flexible(
             child: ListView.builder(
-              padding: EdgeInsets.only(
-                bottom:
-                    MediaQuery.paddingOf(context).bottom + BankTokens.space4,
-              ),
+              padding: padding ??
+                  EdgeInsets.only(
+                    bottom: MediaQuery.paddingOf(context).bottom +
+                        BankTokens.space4,
+                  ),
               shrinkWrap: true,
               itemCount: accounts.length,
               itemBuilder: (BuildContext ctx, int index) {
@@ -134,6 +195,12 @@ class BankAccountSwitcher extends StatelessWidget {
                   isSelected: isSelected,
                   onTap: () => onSelected(account),
                   bankTheme: bankTheme,
+                  minHeight: rowHeight,
+                  titleStyle: titleStyle,
+                  subtitleStyle: subtitleStyle,
+                  amountStyle: amountStyle,
+                  selectedIcon: selectedIcon,
+                  accentColor: accentColor,
                 );
               },
             ),
@@ -157,12 +224,24 @@ class _AccountRow extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final BankThemeData bankTheme;
+  final double? minHeight;
+  final TextStyle? titleStyle;
+  final TextStyle? subtitleStyle;
+  final TextStyle? amountStyle;
+  final IconData? selectedIcon;
+  final Color? accentColor;
 
   const _AccountRow({
     required this.account,
     required this.isSelected,
     required this.onTap,
     required this.bankTheme,
+    this.minHeight,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.selectedIcon,
+    this.accentColor,
   });
 
   IconData _iconForType(BankAccountType type) => switch (type) {
@@ -191,17 +270,19 @@ class _AccountRow extends StatelessWidget {
         '${privacyEnabled ? "Balance hidden" : "Balance: $balanceText"}'
         '${isSelected ? ", selected" : ""}';
 
+    final accent = accentColor ?? bankTheme.primary;
+
     return Semantics(
       label: semanticLabel,
       button: true,
       selected: isSelected,
       child: InkWell(
         onTap: onTap,
-        splashColor: bankTheme.primary.withValues(alpha: 0.08),
-        highlightColor: bankTheme.primary.withValues(alpha: 0.04),
+        splashColor: accent.withValues(alpha: 0.08),
+        highlightColor: accent.withValues(alpha: 0.04),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: 72,
+          constraints: BoxConstraints(
+            minHeight: minHeight ?? 72,
             minWidth: double.infinity,
           ),
           child: Padding(
@@ -236,18 +317,18 @@ class _AccountRow extends StatelessWidget {
                     children: [
                       Text(
                         account.name,
-                        style: BankTokens.labelLarge.copyWith(
-                          color: bankTheme.onSurface,
-                        ),
+                        style: BankTokens.labelLarge
+                            .copyWith(color: bankTheme.onSurface)
+                            .merge(titleStyle),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
                       const SizedBox(height: 2),
                       Text(
                         account.maskedNumber,
-                        style: BankTokens.bodySmall.copyWith(
-                          color: bankTheme.onSurfaceVariant,
-                        ),
+                        style: BankTokens.bodySmall
+                            .copyWith(color: bankTheme.onSurfaceVariant)
+                            .merge(subtitleStyle),
                         // Masked numbers are always LTR regardless of locale.
                         textDirection: TextDirection.ltr,
                       ),
@@ -264,16 +345,16 @@ class _AccountRow extends StatelessWidget {
                   children: [
                     Text(
                       balanceText,
-                      style: BankTokens.numeralSmall.copyWith(
-                        color: bankTheme.onSurface,
-                      ),
+                      style: BankTokens.numeralSmall
+                          .copyWith(color: bankTheme.onSurface)
+                          .merge(amountStyle),
                       textDirection: TextDirection.ltr,
                     ),
                     if (isSelected) ...[
                       const SizedBox(height: 2),
                       Icon(
-                        Icons.check_circle,
-                        color: bankTheme.primary,
+                        selectedIcon ?? Icons.check_circle,
+                        color: accent,
                         size: 18,
                       ),
                     ],

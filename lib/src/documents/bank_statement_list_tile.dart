@@ -118,6 +118,19 @@ class BankStatementListTile extends StatelessWidget {
     this.downloadLabel = 'Download',
     this.retryLabel = 'Retry download',
     this.shareLabel = 'Share',
+    this.padding,
+    this.accentColor,
+    this.iconBackgroundColor,
+    this.icon,
+    this.downloadIcon,
+    this.shareIcon,
+    this.doneIcon,
+    this.retryIcon,
+    this.chevronIcon,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.minHeight,
+    this.semanticLabel,
   });
 
   final BankDocument document;
@@ -150,6 +163,54 @@ class BankStatementListTile extends StatelessWidget {
   /// Semantics label for the share affordance.
   final String shareLabel;
 
+  /// Overrides the row's inner padding. Defaults to a symmetric
+  /// [BankTokens.space4] by [BankTokens.space2] inset.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides [BankThemeData.primary] as the document icon tint and the
+  /// "New" chip colour.
+  final Color? accentColor;
+
+  /// Overrides the document icon box fill. Defaults to the accent colour
+  /// at 8 % opacity.
+  final Color? iconBackgroundColor;
+
+  /// Overrides the type-derived document glyph (see [BankIcons]).
+  final IconData? icon;
+
+  /// Overrides the idle download glyph. Defaults to [BankIcons.download].
+  final IconData? downloadIcon;
+
+  /// Overrides the share glyph. Defaults to [BankIcons.share].
+  final IconData? shareIcon;
+
+  /// Overrides the download-complete glyph. Defaults to
+  /// [Icons.check_circle_rounded].
+  final IconData? doneIcon;
+
+  /// Overrides the failed-state retry glyph. Defaults to
+  /// [Icons.refresh_rounded].
+  final IconData? retryIcon;
+
+  /// Overrides the chevron shown when [onDownload] is null. Defaults to
+  /// [Icons.chevron_right].
+  final IconData? chevronIcon;
+
+  /// Merged over the computed title style ([BankTokens.bodyLarge] in
+  /// [BankThemeData.onSurface]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed subtitle style ([BankTokens.bodySmall] in
+  /// [BankThemeData.onSurfaceVariant]).
+  final TextStyle? subtitleStyle;
+
+  /// Overrides the row's 64 px minimum height.
+  final double? minHeight;
+
+  /// Overrides the row's computed semantics label (title, subtitle, and
+  /// the "New" marker).
+  final String? semanticLabel;
+
   IconData get _typeIcon => switch (document.type) {
         BankDocumentType.statement => BankIcons.document,
         BankDocumentType.taxDocument => BankIcons.tax,
@@ -169,6 +230,7 @@ class BankStatementListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final accent = accentColor ?? theme.primary;
 
     final sizeSuffix = document.fileSizeBytes == null
         ? ''
@@ -178,28 +240,31 @@ class BankStatementListTile extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: '${document.title}, $subtitle'
-          '${document.isNew ? ', $newLabel' : ''}',
+      label: semanticLabel ??
+          '${document.title}, $subtitle'
+              '${document.isNew ? ', $newLabel' : ''}',
       child: InkWell(
         onTap: onView,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 64),
+          constraints: BoxConstraints(minHeight: minHeight ?? 64),
           child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: BankTokens.space4,
-              vertical: BankTokens.space2,
-            ),
+            padding: padding ??
+                const EdgeInsetsDirectional.symmetric(
+                  horizontal: BankTokens.space4,
+                  vertical: BankTokens.space2,
+                ),
             child: Row(
               children: [
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    color: theme.primary.withValues(alpha: 0.08),
+                    color:
+                        iconBackgroundColor ?? accent.withValues(alpha: 0.08),
                     borderRadius: theme.chipRadius,
                   ),
                   child: SizedBox(
                     width: 40,
                     height: 40,
-                    child: Icon(_typeIcon, size: 22, color: theme.primary),
+                    child: Icon(icon ?? _typeIcon, size: 22, color: accent),
                   ),
                 ),
                 const SizedBox(width: BankTokens.space3),
@@ -213,14 +278,19 @@ class BankStatementListTile extends StatelessWidget {
                             child: Text(
                               document.title,
                               style: BankTokens.bodyLarge
-                                  .copyWith(color: theme.onSurface),
+                                  .copyWith(color: theme.onSurface)
+                                  .merge(titleStyle),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (document.isNew) ...[
                             const SizedBox(width: BankTokens.space2),
-                            _NewChip(label: newLabel, theme: theme),
+                            _NewChip(
+                              label: newLabel,
+                              theme: theme,
+                              accent: accent,
+                            ),
                           ],
                         ],
                       ),
@@ -228,7 +298,8 @@ class BankStatementListTile extends StatelessWidget {
                       Text(
                         subtitle,
                         style: BankTokens.bodySmall
-                            .copyWith(color: theme.onSurfaceVariant),
+                            .copyWith(color: theme.onSurfaceVariant)
+                            .merge(subtitleStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -241,7 +312,7 @@ class BankStatementListTile extends StatelessWidget {
                     onPressed: onShare,
                     tooltip: shareLabel,
                     icon: Icon(
-                      BankIcons.share,
+                      shareIcon ?? BankIcons.share,
                       size: 20,
                       color: theme.onSurfaceVariant,
                     ),
@@ -253,6 +324,10 @@ class BankStatementListTile extends StatelessWidget {
                   downloadLabel: downloadLabel,
                   retryLabel: retryLabel,
                   theme: theme,
+                  downloadIcon: downloadIcon,
+                  doneIcon: doneIcon,
+                  retryIcon: retryIcon,
+                  chevronIcon: chevronIcon,
                 ),
               ],
             ),
@@ -264,16 +339,21 @@ class BankStatementListTile extends StatelessWidget {
 }
 
 class _NewChip extends StatelessWidget {
-  const _NewChip({required this.label, required this.theme});
+  const _NewChip({
+    required this.label,
+    required this.theme,
+    required this.accent,
+  });
 
   final String label;
   final BankThemeData theme;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.primary.withValues(alpha: 0.12),
+        color: accent.withValues(alpha: 0.12),
         borderRadius: theme.chipRadius,
       ),
       child: Padding(
@@ -283,7 +363,7 @@ class _NewChip extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: BankTokens.labelSmall.copyWith(color: theme.primary),
+          style: BankTokens.labelSmall.copyWith(color: accent),
         ),
       ),
     );
@@ -298,6 +378,10 @@ class _TrailingAction extends StatelessWidget {
     required this.downloadLabel,
     required this.retryLabel,
     required this.theme,
+    this.downloadIcon,
+    this.doneIcon,
+    this.retryIcon,
+    this.chevronIcon,
   });
 
   final BankDocumentDownloadState state;
@@ -306,20 +390,24 @@ class _TrailingAction extends StatelessWidget {
   final String downloadLabel;
   final String retryLabel;
   final BankThemeData theme;
+  final IconData? downloadIcon;
+  final IconData? doneIcon;
+  final IconData? retryIcon;
+  final IconData? chevronIcon;
 
   @override
   Widget build(BuildContext context) {
     return switch (state) {
       BankDocumentDownloadState.idle => onDownload == null
           ? Icon(
-              Icons.chevron_right,
+              chevronIcon ?? Icons.chevron_right,
               color: theme.onSurfaceVariant,
             )
           : IconButton(
               onPressed: onDownload,
               tooltip: downloadLabel,
               icon: Icon(
-                BankIcons.download,
+                downloadIcon ?? BankIcons.download,
                 size: 20,
                 color: theme.onSurfaceVariant,
               ),
@@ -339,7 +427,7 @@ class _TrailingAction extends StatelessWidget {
       BankDocumentDownloadState.done => Padding(
           padding: const EdgeInsets.all(BankTokens.space3),
           child: Icon(
-            Icons.check_circle_rounded,
+            doneIcon ?? Icons.check_circle_rounded,
             size: 20,
             color: theme.positiveBalance,
           ),
@@ -347,8 +435,8 @@ class _TrailingAction extends StatelessWidget {
       BankDocumentDownloadState.failed => IconButton(
           onPressed: onDownload,
           tooltip: retryLabel,
-          icon: const Icon(
-            Icons.refresh_rounded,
+          icon: Icon(
+            retryIcon ?? Icons.refresh_rounded,
             size: 20,
             color: BankTokens.danger,
           ),

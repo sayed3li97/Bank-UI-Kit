@@ -102,6 +102,63 @@ class BankProductItemTile extends StatelessWidget {
   /// Amount of the credit line already used.
   final Money? outstanding;
 
+  /// Overrides the content padding. Defaults to a symmetric
+  /// [BankTokens.space3] / [BankTokens.space2] inset.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the tile corner radius. Defaults to the theme
+  /// `cardRadius`.
+  final BorderRadius? radius;
+
+  /// Overrides the tile background colour. Defaults to the theme
+  /// `surface`.
+  final Color? backgroundColor;
+
+  /// Overrides the accent used for the leading tint, icon, selected
+  /// outline and checkmark. Defaults to the theme `primary`.
+  final Color? accentColor;
+
+  /// Overrides the minimum row height. Defaults to 64.
+  final double? minHeight;
+
+  /// Replaces the default leading icon container entirely.
+  final Widget? leading;
+
+  /// Overrides the product-type glyph derived from the variant.
+  final IconData? icon;
+
+  /// Overrides the selection checkmark glyph. Defaults to
+  /// [BankIcons.success].
+  final IconData? selectedIcon;
+
+  /// Merged over the account-name style ([BankTokens.labelLarge]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the secondary-line style ([BankTokens.bodySmall]).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the balance style (theme `numeralSmall`).
+  final TextStyle? amountStyle;
+
+  /// Overrides the used portion of the credit bar. Defaults to
+  /// [BankTokens.creditUsed].
+  final Color? creditUsedColor;
+
+  /// Overrides the track of the credit bar. Defaults to
+  /// [BankTokens.creditAvailable] at 24% opacity.
+  final Color? creditAvailableColor;
+
+  /// Status chip label for closed accounts. Defaults to `'Closed'`.
+  final String closedLabel;
+
+  /// Accessibility label template for the credit bar; `{percent}` is
+  /// replaced with the rounded usage percentage. Defaults to
+  /// `'Credit used: {percent}%'`.
+  final String creditUsedSemanticTemplate;
+
+  /// Overrides the computed accessibility label of the whole row.
+  final String? semanticLabel;
+
   const BankProductItemTile({
     required this.account,
     super.key,
@@ -113,6 +170,22 @@ class BankProductItemTile extends StatelessWidget {
     this.rateLabel,
     this.creditLimit,
     this.outstanding,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.accentColor,
+    this.minHeight,
+    this.leading,
+    this.icon,
+    this.selectedIcon,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.creditUsedColor,
+    this.creditAvailableColor,
+    this.closedLabel = 'Closed',
+    this.creditUsedSemanticTemplate = 'Credit used: {percent}%',
+    this.semanticLabel,
   });
 
   // ---------------------------------------------------------------------------
@@ -184,7 +257,7 @@ class BankProductItemTile extends StatelessWidget {
         ),
       BankAccountStatus.closed => (
           const Color(0xFFEEEEEE), // neutral grey
-          'Closed',
+          closedLabel,
         ),
       BankAccountStatus.active => (Colors.transparent, ''),
     };
@@ -231,7 +304,10 @@ class BankProductItemTile extends StatelessWidget {
 
   Widget _buildCreditBar(double usedFraction) {
     return Semantics(
-      label: 'Credit used: ${(usedFraction * 100).round()}%',
+      label: creditUsedSemanticTemplate.replaceAll(
+        '{percent}',
+        '${(usedFraction * 100).round()}',
+      ),
       child: SizedBox(
         height: BankTokens.space1,
         child: ClipRRect(
@@ -239,13 +315,16 @@ class BankProductItemTile extends StatelessWidget {
             Radius.circular(BankTokens.radiusSmall),
           ),
           child: ColoredBox(
-            color: BankTokens.creditAvailable.withValues(alpha: 0.24),
+            color: creditAvailableColor ??
+                BankTokens.creditAvailable.withValues(alpha: 0.24),
             child: Align(
               alignment: AlignmentDirectional.centerStart,
               child: FractionallySizedBox(
                 widthFactor: usedFraction,
                 heightFactor: 1,
-                child: const ColoredBox(color: BankTokens.creditUsed),
+                child: ColoredBox(
+                  color: creditUsedColor ?? BankTokens.creditUsed,
+                ),
               ),
             ),
           ),
@@ -265,26 +344,30 @@ class BankProductItemTile extends StatelessWidget {
     final variant = _variant;
     final detail = _secondaryDetail(data);
     final usedFraction = _creditUsedFraction;
+    final accent = accentColor ?? bankTheme.primary;
+    final resolvedRadius = radius ?? bankTheme.cardRadius;
 
     // ── Leading 40px type icon on an 8% primary tint ──────────────────────
-    final leading = DecoratedBox(
-      decoration: BoxDecoration(
-        color: bankTheme.primary.withValues(alpha: 0.08),
-        borderRadius: bankTheme.chipRadius,
-      ),
-      child: SizedBox.square(
-        dimension: _leadingSize,
-        child: Icon(
-          _iconForVariant(variant),
-          color: bankTheme.primary,
-          size: BankTokens.space5,
-        ),
-      ),
-    );
+    final leadingWidget = leading ??
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: accent.withValues(alpha: 0.08),
+            borderRadius: bankTheme.chipRadius,
+          ),
+          child: SizedBox.square(
+            dimension: _leadingSize,
+            child: Icon(
+              icon ?? _iconForVariant(variant),
+              color: accent,
+              size: BankTokens.space5,
+            ),
+          ),
+        );
 
     // ── Secondary line: masked number (+ variant detail) ──────────────────
-    final secondaryStyle =
-        BankTokens.bodySmall.copyWith(color: bankTheme.onSurfaceVariant);
+    final secondaryStyle = BankTokens.bodySmall
+        .copyWith(color: bankTheme.onSurfaceVariant)
+        .merge(subtitleStyle);
     final secondaryLine = Row(
       children: [
         Text(
@@ -314,8 +397,9 @@ class BankProductItemTile extends StatelessWidget {
             Flexible(
               child: Text(
                 account.name,
-                style:
-                    BankTokens.labelLarge.copyWith(color: bankTheme.onSurface),
+                style: BankTokens.labelLarge
+                    .copyWith(color: bankTheme.onSurface)
+                    .merge(titleStyle),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -337,13 +421,14 @@ class BankProductItemTile extends StatelessWidget {
 
     // ── Assemble the row ───────────────────────────────────────────────────
     final content = Padding(
-      padding: const EdgeInsetsDirectional.symmetric(
-        horizontal: BankTokens.space3,
-        vertical: BankTokens.space2,
-      ),
+      padding: padding ??
+          const EdgeInsetsDirectional.symmetric(
+            horizontal: BankTokens.space3,
+            vertical: BankTokens.space2,
+          ),
       child: Row(
         children: [
-          leading,
+          leadingWidget,
           const SizedBox(width: BankTokens.space3),
           Expanded(child: middle),
           if (showBalance) ...[
@@ -351,11 +436,13 @@ class BankProductItemTile extends StatelessWidget {
             BankBalanceText(
               money: account.balance,
               size: BankBalanceSize.small,
-              style: bankTheme.numeralSmall.copyWith(
-                color: account.balance.isNegative
-                    ? bankTheme.negativeBalance
-                    : bankTheme.onSurface,
-              ),
+              style: bankTheme.numeralSmall
+                  .copyWith(
+                    color: account.balance.isNegative
+                        ? bankTheme.negativeBalance
+                        : bankTheme.onSurface,
+                  )
+                  .merge(amountStyle),
             ),
           ],
           if (trailing != null) ...[
@@ -365,8 +452,8 @@ class BankProductItemTile extends StatelessWidget {
           if (selected) ...[
             const SizedBox(width: BankTokens.space2),
             Icon(
-              BankIcons.success,
-              color: bankTheme.primary,
+              selectedIcon ?? BankIcons.success,
+              color: accent,
               size: BankTokens.space5,
             ),
           ],
@@ -375,10 +462,10 @@ class BankProductItemTile extends StatelessWidget {
     );
 
     final decoration = BoxDecoration(
-      color: bankTheme.surface,
-      borderRadius: bankTheme.cardRadius,
+      color: backgroundColor ?? bankTheme.surface,
+      borderRadius: resolvedRadius,
       border: Border.all(
-        color: selected ? bankTheme.primary : Colors.transparent,
+        color: selected ? accent : Colors.transparent,
         width: 1.5,
       ),
     );
@@ -387,25 +474,26 @@ class BankProductItemTile extends StatelessWidget {
       decoration: decoration,
       child: Material(
         color: Colors.transparent,
-        borderRadius: bankTheme.cardRadius,
+        borderRadius: resolvedRadius,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          borderRadius: bankTheme.cardRadius,
+          borderRadius: resolvedRadius,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: _minHeight),
+            constraints: BoxConstraints(minHeight: minHeight ?? _minHeight),
             child: content,
           ),
         ),
       ),
     );
 
-    final semanticLabel = '${account.name}, ${variant.name} product, '
-        '${account.maskedNumber}, '
-        'Status: ${account.status.name}';
+    final resolvedSemanticLabel = semanticLabel ??
+        '${account.name}, ${variant.name} product, '
+            '${account.maskedNumber}, '
+            'Status: ${account.status.name}';
 
     return Semantics(
-      label: semanticLabel,
+      label: resolvedSemanticLabel,
       button: onTap != null,
       selected: selected,
       child: tile,

@@ -34,6 +34,14 @@ class BankShariahBadge extends StatelessWidget {
     this.label = 'Shariah Compliant',
     this.size = BankShariahBadgeSize.medium,
     this.accentColor,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.borderColor,
+    this.icon,
+    this.iconSize,
+    this.labelStyle,
+    this.semanticLabel,
   });
 
   /// Badge text. Defaults to `'Shariah Compliant'`.
@@ -44,37 +52,71 @@ class BankShariahBadge extends StatelessWidget {
   /// Overrides [BankThemeData.primary] as the icon and text colour.
   final Color? accentColor;
 
+  /// Overrides the badge's inner padding. Defaults to a [size]-driven
+  /// symmetric inset.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the badge corner radius. Defaults to
+  /// [BankThemeData.chipRadius].
+  final BorderRadius? radius;
+
+  /// Overrides the badge fill. Defaults to the accent colour at 8 % opacity.
+  final Color? backgroundColor;
+
+  /// Overrides the badge outline colour. Defaults to the accent colour at
+  /// 35 % opacity.
+  final Color? borderColor;
+
+  /// Overrides the leading glyph. Defaults to [Icons.verified_rounded].
+  final IconData? icon;
+
+  /// Overrides the icon size. Defaults to 10 (small) or 12 (medium).
+  final double? iconSize;
+
+  /// Merged over the computed label style ([BankTokens.labelSmall] or
+  /// [BankTokens.labelMedium] in the accent colour).
+  final TextStyle? labelStyle;
+
+  /// Overrides the badge's semantics label. Defaults to [label].
+  final String? semanticLabel;
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final color = accentColor ?? theme.primary;
     final isSmall = size == BankShariahBadgeSize.small;
 
-    return Semantics(
-      label: label,
-      child: Container(
-        padding: EdgeInsets.symmetric(
+    final resolvedPadding = padding ??
+        EdgeInsets.symmetric(
           horizontal: isSmall ? BankTokens.space2 : BankTokens.space3,
           vertical: isSmall ? 2 : 4,
-        ),
+        );
+
+    return Semantics(
+      label: semanticLabel ?? label,
+      child: Container(
+        padding: resolvedPadding,
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          border: Border.all(color: color.withValues(alpha: 0.35)),
-          borderRadius: theme.chipRadius,
+          color: backgroundColor ?? color.withValues(alpha: 0.08),
+          border: Border.all(
+            color: borderColor ?? color.withValues(alpha: 0.35),
+          ),
+          borderRadius: radius ?? theme.chipRadius,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.verified_rounded,
-              size: isSmall ? 10 : 12,
+              icon ?? Icons.verified_rounded,
+              size: iconSize ?? (isSmall ? 10 : 12),
               color: color,
             ),
             const SizedBox(width: 4),
             Text(
               label,
               style: (isSmall ? BankTokens.labelSmall : BankTokens.labelMedium)
-                  .copyWith(color: color, letterSpacing: 0),
+                  .copyWith(color: color, letterSpacing: 0)
+                  .merge(labelStyle),
             ),
           ],
         ),

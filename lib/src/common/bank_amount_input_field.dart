@@ -54,6 +54,14 @@ class BankAmountInputField extends StatefulWidget {
     this.focusNode,
     this.displaySize = BankBalanceSize.large,
     this.numeralStyle,
+    this.contentPadding,
+    this.radius,
+    this.backgroundColor,
+    this.amountStyle,
+    this.labelStyle,
+    this.helperStyle,
+    this.errorStyle,
+    this.semanticLabel,
   });
 
   /// ISO 4217 currency code, e.g. `'USD'`, `'JPY'`. Determines the prefix
@@ -101,6 +109,36 @@ class BankAmountInputField extends StatefulWidget {
   /// Numeral script for the entered digits. Falls back to
   /// [BankUiScopeData.numeralStyle] when `null`.
   final NumeralStyle? numeralStyle;
+
+  /// Overrides the field's inner content padding (default:
+  /// [BankTokens.space4] horizontal by [BankTokens.space3] vertical).
+  final EdgeInsetsGeometry? contentPadding;
+
+  /// Overrides [BankThemeData.buttonRadius] as the field border radius.
+  final BorderRadius? radius;
+
+  /// Overrides [BankThemeData.surface] as the fill while enabled
+  /// (the disabled fill stays [BankThemeData.surfaceVariant]).
+  final Color? backgroundColor;
+
+  /// Merged over the computed entry style (the [displaySize] numeral
+  /// tier coloured per the in-range state).
+  final TextStyle? amountStyle;
+
+  /// Merged over the computed [label] style (default:
+  /// [BankTokens.labelMedium] coloured per the error state).
+  final TextStyle? labelStyle;
+
+  /// Merged over the computed [helperText] style (default:
+  /// [BankTokens.bodySmall] coloured per the in-range state).
+  final TextStyle? helperStyle;
+
+  /// Merged over the computed [errorText] style (default:
+  /// [BankTokens.bodySmall] in [BankTokens.danger]).
+  final TextStyle? errorStyle;
+
+  /// Overrides [label] as the field's semantics label.
+  final String? semanticLabel;
 
   @override
   State<BankAmountInputField> createState() => _BankAmountInputFieldState();
@@ -195,7 +233,9 @@ class _BankAmountInputFieldState extends State<BankAmountInputField> {
     final hasError = widget.errorText != null;
 
     final entryColor = _outOfRange ? BankTokens.danger : theme.onSurface;
-    final entryStyle = _entryStyle(theme).copyWith(color: entryColor);
+    final entryStyle = _entryStyle(theme)
+        .copyWith(color: entryColor)
+        .merge(widget.amountStyle);
     final symbol = _currencySymbolFor(widget.currencyCode);
     final zeroHint = _appliedStyle.convert(
       _precision == 0 ? '0' : '0.${'0' * _precision}',
@@ -203,17 +243,18 @@ class _BankAmountInputFieldState extends State<BankAmountInputField> {
 
     final borderColor = hasError ? BankTokens.danger : theme.outline;
     final focusedColor = hasError ? BankTokens.danger : theme.primary;
+    final borderRadius = widget.radius ?? theme.buttonRadius;
 
     final border = OutlineInputBorder(
-      borderRadius: theme.buttonRadius,
+      borderRadius: borderRadius,
       borderSide: BorderSide(color: borderColor),
     );
     final focusedBorder = OutlineInputBorder(
-      borderRadius: theme.buttonRadius,
+      borderRadius: borderRadius,
       borderSide: BorderSide(color: focusedColor, width: 2),
     );
     final disabledBorder = OutlineInputBorder(
-      borderRadius: theme.buttonRadius,
+      borderRadius: borderRadius,
       borderSide: BorderSide(color: theme.outline.withValues(alpha: 0.4)),
     );
 
@@ -248,29 +289,33 @@ class _BankAmountInputFieldState extends State<BankAmountInputField> {
           ),
         ),
         filled: true,
-        fillColor: widget.enabled ? theme.surface : theme.surfaceVariant,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: BankTokens.space4,
-          vertical: BankTokens.space3,
-        ),
+        fillColor: widget.enabled
+            ? (widget.backgroundColor ?? theme.surface)
+            : theme.surfaceVariant,
+        contentPadding: widget.contentPadding ??
+            const EdgeInsets.symmetric(
+              horizontal: BankTokens.space4,
+              vertical: BankTokens.space3,
+            ),
         border: border,
         enabledBorder: border,
         focusedBorder: focusedBorder,
         errorBorder: OutlineInputBorder(
-          borderRadius: theme.buttonRadius,
+          borderRadius: borderRadius,
           borderSide: const BorderSide(color: BankTokens.danger),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: theme.buttonRadius,
+          borderRadius: borderRadius,
           borderSide: const BorderSide(color: BankTokens.danger, width: 2),
         ),
         disabledBorder: disabledBorder,
       ),
     );
 
-    if (widget.label != null) {
+    final semanticsLabel = widget.semanticLabel ?? widget.label;
+    if (semanticsLabel != null) {
       field = Semantics(
-        label: widget.label,
+        label: semanticsLabel,
         child: field,
       );
     }
@@ -289,9 +334,11 @@ class _BankAmountInputFieldState extends State<BankAmountInputField> {
               padding: const EdgeInsets.only(bottom: BankTokens.space2),
               child: Text(
                 widget.label!,
-                style: BankTokens.labelMedium.copyWith(
-                  color: hasError ? BankTokens.danger : theme.onSurface,
-                ),
+                style: BankTokens.labelMedium
+                    .copyWith(
+                      color: hasError ? BankTokens.danger : theme.onSurface,
+                    )
+                    .merge(widget.labelStyle),
               ),
             ),
           field,
@@ -303,9 +350,9 @@ class _BankAmountInputFieldState extends State<BankAmountInputField> {
               ),
               child: Text(
                 widget.errorText!,
-                style: BankTokens.bodySmall.copyWith(
-                  color: BankTokens.danger,
-                ),
+                style: BankTokens.bodySmall
+                    .copyWith(color: BankTokens.danger)
+                    .merge(widget.errorStyle),
               ),
             )
           else if (widget.helperText != null)
@@ -316,7 +363,9 @@ class _BankAmountInputFieldState extends State<BankAmountInputField> {
               ),
               child: Text(
                 widget.helperText!,
-                style: BankTokens.bodySmall.copyWith(color: helperColor),
+                style: BankTokens.bodySmall
+                    .copyWith(color: helperColor)
+                    .merge(widget.helperStyle),
               ),
             ),
         ],

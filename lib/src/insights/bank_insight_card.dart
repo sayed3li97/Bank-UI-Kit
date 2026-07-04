@@ -12,6 +12,41 @@ class BankInsightCard extends StatelessWidget {
   final VoidCallback? onAction;
   final String? actionLabel;
 
+  /// Overrides the card content padding. Defaults to space4 all round.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme
+  /// cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card fill colour. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card elevation. Defaults to the theme elevationLow.
+  final double? elevation;
+
+  /// Overrides the confidence-driven tint (icon, dots, badge circle).
+  final Color? accentColor;
+
+  /// Overrides the confidence-driven leading glyph.
+  final IconData? icon;
+
+  /// Merged over the insight title style (labelLarge, onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the insight body style (bodySmall, onSurfaceVariant).
+  final TextStyle? bodyStyle;
+
+  /// Overrides the dismiss glyph. Defaults to [Icons.close].
+  final IconData? dismissIcon;
+
+  /// Semantics label for the dismiss button. Defaults to
+  /// 'Dismiss insight'.
+  final String dismissLabel;
+
+  /// Overrides the card semantics label. Defaults to title and body.
+  final String? semanticLabel;
+
   const BankInsightCard({
     required this.insight,
     super.key,
@@ -19,6 +54,17 @@ class BankInsightCard extends StatelessWidget {
     this.onDismiss,
     this.onAction,
     this.actionLabel,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.elevation,
+    this.accentColor,
+    this.icon,
+    this.titleStyle,
+    this.bodyStyle,
+    this.dismissIcon,
+    this.dismissLabel = 'Dismiss insight',
+    this.semanticLabel,
   });
 
   static IconData _iconFor(InsightConfidence confidence) =>
@@ -41,20 +87,21 @@ class BankInsightCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final color = _confidenceColor(insight.confidence, theme);
+    final color = accentColor ?? _confidenceColor(insight.confidence, theme);
+    final resolvedRadius = radius ?? theme.cardRadius;
 
     return Semantics(
-      label: '${insight.title}. ${insight.body}',
+      label: semanticLabel ?? '${insight.title}. ${insight.body}',
       button: onTap != null,
       child: Card(
-        shape: RoundedRectangleBorder(borderRadius: theme.cardRadius),
-        color: theme.surface,
-        elevation: theme.elevationLow,
+        shape: RoundedRectangleBorder(borderRadius: resolvedRadius),
+        color: backgroundColor ?? theme.surface,
+        elevation: elevation ?? theme.elevationLow,
         child: InkWell(
           onTap: onTap,
-          borderRadius: theme.cardRadius,
+          borderRadius: resolvedRadius,
           child: Padding(
-            padding: const EdgeInsets.all(BankTokens.space4),
+            padding: padding ?? const EdgeInsets.all(BankTokens.space4),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -69,7 +116,7 @@ class BankInsightCard extends StatelessWidget {
                         color: color.withValues(alpha: 0.12),
                       ),
                       child: Icon(
-                        _iconFor(insight.confidence),
+                        icon ?? _iconFor(insight.confidence),
                         size: 20,
                         color: color,
                       ),
@@ -82,13 +129,15 @@ class BankInsightCard extends StatelessWidget {
                           Text(
                             insight.title,
                             style: BankTokens.labelLarge
-                                .copyWith(color: theme.onSurface),
+                                .copyWith(color: theme.onSurface)
+                                .merge(titleStyle),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             insight.body,
                             style: BankTokens.bodySmall
-                                .copyWith(color: theme.onSurfaceVariant),
+                                .copyWith(color: theme.onSurfaceVariant)
+                                .merge(bodyStyle),
                           ),
                         ],
                       ),
@@ -96,14 +145,14 @@ class BankInsightCard extends StatelessWidget {
                     if (onDismiss != null)
                       Semantics(
                         button: true,
-                        label: 'Dismiss insight',
+                        label: dismissLabel,
                         child: InkWell(
                           onTap: onDismiss,
                           borderRadius: BorderRadius.circular(20),
                           child: Padding(
                             padding: const EdgeInsets.all(4),
                             child: Icon(
-                              Icons.close,
+                              dismissIcon ?? Icons.close,
                               size: 16,
                               color: theme.onSurfaceVariant,
                             ),

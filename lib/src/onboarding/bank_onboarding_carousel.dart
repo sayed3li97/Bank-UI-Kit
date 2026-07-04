@@ -55,6 +55,17 @@ class BankOnboardingCarousel extends StatefulWidget {
     this.skipLabel = 'Skip',
     this.autoAdvance = false,
     this.autoAdvanceInterval = const Duration(seconds: 5),
+    this.buttonBackgroundColor,
+    this.buttonForegroundColor,
+    this.buttonRadius,
+    this.buttonLabelStyle,
+    this.activeDotColor,
+    this.inactiveDotColor,
+    this.titleStyle,
+    this.bodyStyle,
+    this.skipLabelStyle,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   final List<BankOnboardingPage> pages;
@@ -73,6 +84,44 @@ class BankOnboardingCarousel extends StatefulWidget {
   final bool autoAdvance;
 
   final Duration autoAdvanceInterval;
+
+  /// Overrides the primary button fill. Defaults to the theme primary.
+  final Color? buttonBackgroundColor;
+
+  /// Overrides the primary button text color. Defaults to the theme
+  /// onPrimary.
+  final Color? buttonForegroundColor;
+
+  /// Overrides the primary button radius. Defaults to the theme
+  /// buttonRadius.
+  final BorderRadius? buttonRadius;
+
+  /// Merged over the computed button label style (labelLarge).
+  final TextStyle? buttonLabelStyle;
+
+  /// Overrides the active dot color. Defaults to the page accent, or
+  /// the theme primary.
+  final Color? activeDotColor;
+
+  /// Overrides the inactive dot color. Defaults to the theme outline.
+  final Color? inactiveDotColor;
+
+  /// Merged over the computed page title style (headlineLarge).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed page body style (bodyMedium).
+  final TextStyle? bodyStyle;
+
+  /// Merged over the computed skip label style (labelLarge).
+  final TextStyle? skipLabelStyle;
+
+  /// Duration of page-turn, dot, and label animations. Defaults to
+  /// [BankTokens.durationBase].
+  final Duration? animationDuration;
+
+  /// Curve of page-turn and dot animations. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
 
   @override
   State<BankOnboardingCarousel> createState() => _BankOnboardingCarouselState();
@@ -121,8 +170,8 @@ class _BankOnboardingCarouselState extends State<BankOnboardingCarousel> {
     }
     unawaited(
       _controller.nextPage(
-        duration: BankTokens.durationBase,
-        curve: BankTokens.curveStandard,
+        duration: widget.animationDuration ?? BankTokens.durationBase,
+        curve: widget.animationCurve ?? BankTokens.curveStandard,
       ),
     );
   }
@@ -130,6 +179,9 @@ class _BankOnboardingCarouselState extends State<BankOnboardingCarousel> {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final duration = widget.animationDuration ?? BankTokens.durationBase;
+    final curve = widget.animationCurve ?? BankTokens.curveStandard;
+    final buttonForeground = widget.buttonForegroundColor ?? theme.onPrimary;
 
     return Listener(
       onPointerDown: (_) => _touching = true,
@@ -150,7 +202,8 @@ class _BankOnboardingCarouselState extends State<BankOnboardingCarousel> {
                         child: Text(
                           widget.skipLabel,
                           style: BankTokens.labelLarge
-                              .copyWith(color: theme.onSurfaceVariant),
+                              .copyWith(color: theme.onSurfaceVariant)
+                              .merge(widget.skipLabelStyle),
                         ),
                       ),
                     )
@@ -173,6 +226,8 @@ class _BankOnboardingCarouselState extends State<BankOnboardingCarousel> {
                 controller: _controller,
                 index: index,
                 theme: theme,
+                titleStyle: widget.titleStyle,
+                bodyStyle: widget.bodyStyle,
               ),
             ),
           ),
@@ -180,8 +235,12 @@ class _BankOnboardingCarouselState extends State<BankOnboardingCarousel> {
           _DotIndicator(
             count: widget.pages.length,
             active: _page,
-            color: widget.pages[_page].accentColor ?? theme.primary,
-            inactiveColor: theme.outline,
+            color: widget.activeDotColor ??
+                widget.pages[_page].accentColor ??
+                theme.primary,
+            inactiveColor: widget.inactiveDotColor ?? theme.outline,
+            duration: duration,
+            curve: curve,
           ),
           Padding(
             padding: const EdgeInsets.all(BankTokens.space5),
@@ -191,19 +250,21 @@ class _BankOnboardingCarouselState extends State<BankOnboardingCarousel> {
               child: FilledButton(
                 onPressed: _onNext,
                 style: FilledButton.styleFrom(
-                  backgroundColor: theme.primary,
-                  foregroundColor: theme.onPrimary,
+                  backgroundColor:
+                      widget.buttonBackgroundColor ?? theme.primary,
+                  foregroundColor: buttonForeground,
                   shape: RoundedRectangleBorder(
-                    borderRadius: theme.buttonRadius,
+                    borderRadius: widget.buttonRadius ?? theme.buttonRadius,
                   ),
                 ),
                 child: AnimatedSwitcher(
-                  duration: BankTokens.durationBase,
+                  duration: duration,
                   child: Text(
                     _isLast ? widget.doneLabel : widget.nextLabel,
                     key: ValueKey<bool>(_isLast),
-                    style:
-                        BankTokens.labelLarge.copyWith(color: theme.onPrimary),
+                    style: BankTokens.labelLarge
+                        .copyWith(color: buttonForeground)
+                        .merge(widget.buttonLabelStyle),
                   ),
                 ),
               ),
@@ -221,12 +282,16 @@ class _ParallaxPage extends StatelessWidget {
     required this.controller,
     required this.index,
     required this.theme,
+    required this.titleStyle,
+    required this.bodyStyle,
   });
 
   final BankOnboardingPage page;
   final PageController controller;
   final int index;
   final BankThemeData theme;
+  final TextStyle? titleStyle;
+  final TextStyle? bodyStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -254,14 +319,17 @@ class _ParallaxPage extends StatelessWidget {
           ),
           Text(
             page.title,
-            style: BankTokens.headlineLarge.copyWith(color: theme.onSurface),
+            style: BankTokens.headlineLarge
+                .copyWith(color: theme.onSurface)
+                .merge(titleStyle),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: BankTokens.space3),
           Text(
             page.body,
-            style:
-                BankTokens.bodyMedium.copyWith(color: theme.onSurfaceVariant),
+            style: BankTokens.bodyMedium
+                .copyWith(color: theme.onSurfaceVariant)
+                .merge(bodyStyle),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: BankTokens.space4),
@@ -277,12 +345,16 @@ class _DotIndicator extends StatelessWidget {
     required this.active,
     required this.color,
     required this.inactiveColor,
+    required this.duration,
+    required this.curve,
   });
 
   final int count;
   final int active;
   final Color color;
   final Color inactiveColor;
+  final Duration duration;
+  final Curve curve;
 
   @override
   Widget build(BuildContext context) {
@@ -291,8 +363,8 @@ class _DotIndicator extends StatelessWidget {
       children: [
         for (var i = 0; i < count; i++)
           AnimatedContainer(
-            duration: BankTokens.durationBase,
-            curve: BankTokens.curveStandard,
+            duration: duration,
+            curve: curve,
             margin: const EdgeInsets.symmetric(horizontal: 3),
             width: i == active ? 24 : 8,
             height: 8,

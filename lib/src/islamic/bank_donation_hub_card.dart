@@ -107,6 +107,17 @@ class BankDonationHubCard extends StatefulWidget {
     this.customAmountLabel = 'Custom',
     this.donateLabel = 'Donate',
     this.verifiedLabel = 'Verified charity',
+    this.padding,
+    this.margin,
+    this.radius,
+    this.backgroundColor,
+    this.elevation,
+    this.accentColor,
+    this.titleStyle,
+    this.roundUpIcon,
+    this.verifiedIcon,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   /// Charities available for selection, in display order.
@@ -143,6 +154,47 @@ class BankDonationHubCard extends StatefulWidget {
 
   /// Semantics suffix announced for verified charities.
   final String verifiedLabel;
+
+  /// Overrides the content padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the outer card margin. Defaults to [EdgeInsets.zero].
+  final EdgeInsetsGeometry? margin;
+
+  /// Overrides the card corner radius. Defaults to the theme
+  /// `cardRadius`.
+  final BorderRadius? radius;
+
+  /// Overrides the card background colour. Defaults to the theme
+  /// `surface`.
+  final Color? backgroundColor;
+
+  /// Overrides the card elevation. Defaults to the theme
+  /// `elevationLow`; pass `0` to flatten.
+  final double? elevation;
+
+  /// Overrides the accent used for the selection ring, donate button,
+  /// round-up icon and switch. Defaults to the theme `primary` (muted
+  /// gold under the heritage preset for the ring).
+  final Color? accentColor;
+
+  /// Merged over the heading style ([BankTokens.headlineSmall]).
+  final TextStyle? titleStyle;
+
+  /// Overrides the round-up row glyph. Defaults to [BankIcons.roundUp].
+  final IconData? roundUpIcon;
+
+  /// Overrides the verified badge glyph. Defaults to [Icons.check].
+  final IconData? verifiedIcon;
+
+  /// Overrides the custom-amount reveal duration. Defaults to
+  /// [BankTokens.durationBase].
+  final Duration? animationDuration;
+
+  /// Overrides the custom-amount reveal curve. Defaults to
+  /// [BankTokens.curveEmphasized].
+  final Curve? animationCurve;
 
   @override
   State<BankDonationHubCard> createState() => _BankDonationHubCardState();
@@ -222,30 +274,34 @@ class _BankDonationHubCardState extends State<BankDonationHubCard> {
     final disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
-    final ringColor = scope.preset == BankPreset.heritage
-        ? BankHeritageTheme.gold
-        : theme.primary;
+    final accent = widget.accentColor ?? theme.primary;
+    final ringColor = widget.accentColor ??
+        (scope.preset == BankPreset.heritage
+            ? BankHeritageTheme.gold
+            : theme.primary);
 
     final amount = _resolvedAmount;
     final canDonate =
         _selectedCharityId != null && amount != null && amount > Decimal.zero;
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: theme.cardRadius),
-      color: theme.surface,
-      elevation: theme.elevationLow,
-      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: widget.radius ?? theme.cardRadius,
+      ),
+      color: widget.backgroundColor ?? theme.surface,
+      elevation: widget.elevation ?? theme.elevationLow,
+      margin: widget.margin ?? EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space4),
+        padding: widget.padding ?? const EdgeInsets.all(BankTokens.space4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               widget.title,
-              style: BankTokens.headlineSmall.copyWith(
-                color: theme.onSurface,
-              ),
+              style: BankTokens.headlineSmall
+                  .copyWith(color: theme.onSurface)
+                  .merge(widget.titleStyle),
             ),
             const SizedBox(height: BankTokens.space3),
             SingleChildScrollView(
@@ -259,6 +315,7 @@ class _BankDonationHubCardState extends State<BankDonationHubCard> {
                       ringColor: ringColor,
                       verifiedLabel: widget.verifiedLabel,
                       onTap: () => _selectCharity(charity.id),
+                      verifiedIcon: widget.verifiedIcon,
                     ),
                     if (charity != widget.charities.last)
                       const SizedBox(width: BankTokens.space2),
@@ -285,9 +342,10 @@ class _BankDonationHubCardState extends State<BankDonationHubCard> {
               ],
             ),
             AnimatedSize(
-              duration:
-                  disableAnimations ? Duration.zero : BankTokens.durationBase,
-              curve: BankTokens.curveEmphasized,
+              duration: disableAnimations
+                  ? Duration.zero
+                  : widget.animationDuration ?? BankTokens.durationBase,
+              curve: widget.animationCurve ?? BankTokens.curveEmphasized,
               alignment: AlignmentDirectional.topStart,
               child: _customRevealed
                   ? Padding(
@@ -310,7 +368,7 @@ class _BankDonationHubCardState extends State<BankDonationHubCard> {
               child: FilledButton(
                 onPressed: canDonate ? _handleDonate : null,
                 style: FilledButton.styleFrom(
-                  backgroundColor: theme.primary,
+                  backgroundColor: accent,
                   foregroundColor: theme.onPrimary,
                   disabledBackgroundColor: theme.surfaceVariant,
                   disabledForegroundColor: theme.onSurfaceVariant,
@@ -328,9 +386,9 @@ class _BankDonationHubCardState extends State<BankDonationHubCard> {
                 child: Row(
                   children: [
                     Icon(
-                      BankIcons.roundUp,
+                      widget.roundUpIcon ?? BankIcons.roundUp,
                       size: BankTokens.space5,
-                      color: theme.primary,
+                      color: accent,
                     ),
                     const SizedBox(width: BankTokens.space3),
                     Expanded(
@@ -345,7 +403,7 @@ class _BankDonationHubCardState extends State<BankDonationHubCard> {
                     Switch(
                       value: widget.roundUpEnabled,
                       onChanged: widget.onRoundUpChanged,
-                      activeTrackColor: theme.primary,
+                      activeTrackColor: accent,
                       thumbColor:
                           WidgetStatePropertyAll<Color>(theme.onPrimary),
                     ),
@@ -369,6 +427,7 @@ class _CharityChip extends StatelessWidget {
     required this.ringColor,
     required this.verifiedLabel,
     required this.onTap,
+    this.verifiedIcon,
   });
 
   final BankCharity charity;
@@ -376,6 +435,7 @@ class _CharityChip extends StatelessWidget {
   final Color ringColor;
   final String verifiedLabel;
   final VoidCallback onTap;
+  final IconData? verifiedIcon;
 
   static const double _emblemSize = 56;
   static const double _chipWidth = 84;
@@ -394,7 +454,7 @@ class _CharityChip extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(2),
               child: Icon(
-                Icons.check,
+                verifiedIcon ?? Icons.check,
                 size: 10,
                 color: theme.onPrimary,
               ),

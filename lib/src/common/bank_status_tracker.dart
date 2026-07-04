@@ -129,6 +129,59 @@ class BankStatusTracker extends StatefulWidget {
   /// Semantic status word for not-yet-reached stages.
   final String upcomingLabel;
 
+  /// Overrides [BankThemeData.primary] on completed/current circles and
+  /// completed connectors.
+  final Color? accentColor;
+
+  /// Overrides [BankThemeData.outline] on upcoming circles and on
+  /// upcoming/dashed connectors.
+  final Color? inactiveColor;
+
+  /// Overrides [BankTokens.danger] on the failed circle and the
+  /// [failureReason] text.
+  final Color? failureColor;
+
+  /// Overrides the check glyph inside completed circles. Defaults to
+  /// [Icons.check].
+  final IconData? completedIcon;
+
+  /// Overrides the X glyph inside the failed circle. Defaults to
+  /// [BankIcons.close].
+  final IconData? failedIcon;
+
+  /// Merged over the computed stage title style ([BankTokens.labelLarge]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed subtitle style ([BankTokens.bodySmall] in
+  /// [BankThemeData.onSurfaceVariant]).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the computed timestamp style ([BankTokens.bodySmall] in
+  /// [BankThemeData.onSurfaceVariant]).
+  final TextStyle? timestampStyle;
+
+  /// Merged over the computed failure reason style ([BankTokens.bodySmall]
+  /// in [BankTokens.danger]).
+  final TextStyle? failureReasonStyle;
+
+  /// Overrides the pulse cycle duration of the current-stage ring.
+  /// Defaults to 1600 ms.
+  final Duration? animationDuration;
+
+  /// Overrides the pulse easing curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
+  /// Builds each stage row's semantics label. Receives the 1-based stage
+  /// number, the stage count, the stage, and its status word. Defaults to
+  /// an English `'Stage <n> of <count>: <title>, <status>'`.
+  final String Function(
+    int stageNumber,
+    int stageCount,
+    BankTrackerStage stage,
+    String statusLabel,
+  )? semanticLabelBuilder;
+
   const BankStatusTracker({
     required this.stages,
     super.key,
@@ -140,6 +193,18 @@ class BankStatusTracker extends StatefulWidget {
     this.inProgressLabel = 'in progress',
     this.failedLabel = 'failed',
     this.upcomingLabel = 'upcoming',
+    this.accentColor,
+    this.inactiveColor,
+    this.failureColor,
+    this.completedIcon,
+    this.failedIcon,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.timestampStyle,
+    this.failureReasonStyle,
+    this.animationDuration,
+    this.animationCurve,
+    this.semanticLabelBuilder,
   })  : assert(stages.length > 0, 'stages must not be empty'),
         assert(
           currentIndex >= 0 && currentIndex < stages.length,
@@ -164,7 +229,7 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: _pulseDuration,
+      duration: widget.animationDuration ?? _pulseDuration,
     );
   }
 
@@ -177,6 +242,9 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
   @override
   void didUpdateWidget(BankStatusTracker oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.animationDuration != oldWidget.animationDuration) {
+      _pulseController.duration = widget.animationDuration ?? _pulseDuration;
+    }
     _syncPulse();
   }
 
@@ -199,6 +267,12 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
         ..value = 0;
     }
   }
+
+  Color _accent(BankThemeData theme) => widget.accentColor ?? theme.primary;
+
+  Color _inactive(BankThemeData theme) => widget.inactiveColor ?? theme.outline;
+
+  Color get _failure => widget.failureColor ?? BankTokens.danger;
 
   String _statusLabel(int index) {
     if (widget.failed && index == widget.currentIndex) {
@@ -229,8 +303,14 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
 
     return Semantics(
       container: true,
-      label: 'Stage ${index + 1} of $total: '
-          '${stage.title}, ${_statusLabel(index)}',
+      label: widget.semanticLabelBuilder?.call(
+            index + 1,
+            total,
+            stage,
+            _statusLabel(index),
+          ) ??
+          'Stage ${index + 1} of $total: '
+              '${stage.title}, ${_statusLabel(index)}',
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -281,26 +361,34 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
       height: _circleSize,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.primary,
+          color: _accent(theme),
           shape: BoxShape.circle,
         ),
-        child: Icon(Icons.check, size: 14, color: theme.onPrimary),
+        child: Icon(
+          widget.completedIcon ?? Icons.check,
+          size: 14,
+          color: theme.onPrimary,
+        ),
       ),
     );
   }
 
   Widget _buildFailedCircle(BankThemeData theme) {
-    return const SizedBox(
+    return SizedBox(
       width: _circleSize,
       height: _circleSize,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: BankTokens.danger,
+          color: _failure,
           shape: BoxShape.circle,
         ),
         // White is the only legible foreground on the fixed danger red;
         // matches the precedent set by BankFraudAlertBanner.
-        child: Icon(BankIcons.close, size: 14, color: Color(0xFFFFFFFF)),
+        child: Icon(
+          widget.failedIcon ?? BankIcons.close,
+          size: 14,
+          color: const Color(0xFFFFFFFF),
+        ),
       ),
     );
   }
@@ -312,7 +400,7 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
       child: DecoratedBox(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: theme.outline, width: 2),
+          border: Border.all(color: _inactive(theme), width: 2),
         ),
       ),
     );
@@ -329,9 +417,8 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
         child: AnimatedBuilder(
           animation: _pulseController,
           builder: (context, _) {
-            final t = BankTokens.curveStandard.transform(
-              _pulseController.value,
-            );
+            final t = (widget.animationCurve ?? BankTokens.curveStandard)
+                .transform(_pulseController.value);
             return Stack(
               alignment: Alignment.center,
               children: [
@@ -344,7 +431,7 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: theme.primary.withValues(
+                          color: _accent(theme).withValues(
                             alpha: 0.65 - 0.5 * t,
                           ),
                           width: 2,
@@ -358,7 +445,7 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
                   height: _circleSize / 2,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: theme.primary,
+                      color: _accent(theme),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -383,13 +470,14 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
           width: _connectorWidth,
           height: double.infinity,
           child: CustomPaint(
-            painter: _DashedConnectorPainter(color: theme.outline),
+            painter: _DashedConnectorPainter(color: _inactive(theme)),
           ),
         ),
       );
     }
 
-    final color = index < widget.currentIndex ? theme.primary : theme.outline;
+    final color =
+        index < widget.currentIndex ? _accent(theme) : _inactive(theme);
     return Center(
       child: SizedBox(
         width: _connectorWidth,
@@ -428,16 +516,18 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
               Expanded(
                 child: Text(
                   stage.title,
-                  style: BankTokens.labelLarge.copyWith(color: titleColor),
+                  style: BankTokens.labelLarge
+                      .copyWith(color: titleColor)
+                      .merge(widget.titleStyle),
                 ),
               ),
               if (stage.timestamp != null) ...[
                 const SizedBox(width: BankTokens.space2),
                 Text(
                   BankDateFormatter.formatShort(stage.timestamp!),
-                  style: BankTokens.bodySmall.copyWith(
-                    color: theme.onSurfaceVariant,
-                  ),
+                  style: BankTokens.bodySmall
+                      .copyWith(color: theme.onSurfaceVariant)
+                      .merge(widget.timestampStyle),
                 ),
               ],
               if (stage.trailing != null) ...[
@@ -450,16 +540,18 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
             const SizedBox(height: BankTokens.space1),
             Text(
               stage.subtitle!,
-              style: BankTokens.bodySmall.copyWith(
-                color: theme.onSurfaceVariant,
-              ),
+              style: BankTokens.bodySmall
+                  .copyWith(color: theme.onSurfaceVariant)
+                  .merge(widget.subtitleStyle),
             ),
           ],
           if (isFailedStage && widget.failureReason != null) ...[
             const SizedBox(height: BankTokens.space1),
             Text(
               widget.failureReason!,
-              style: BankTokens.bodySmall.copyWith(color: BankTokens.danger),
+              style: BankTokens.bodySmall
+                  .copyWith(color: _failure)
+                  .merge(widget.failureReasonStyle),
             ),
           ],
         ],

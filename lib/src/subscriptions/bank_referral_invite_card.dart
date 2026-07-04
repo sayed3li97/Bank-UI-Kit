@@ -26,6 +26,60 @@ class BankReferralInviteCard extends StatelessWidget {
   final VoidCallback? onShare;
   final VoidCallback? onCopyCode;
 
+  /// Overrides the card content padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card background. Defaults to the accent at 8% alpha.
+  final Color? backgroundColor;
+
+  /// Overrides the accent used for the gift icon, card border, copy icon
+  /// and share button. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Merged over the heading style (BankTokens.headlineSmall).
+  final TextStyle? titleStyle;
+
+  /// Merged over the referral-code style (BankTokens.numeralMedium in
+  /// monospace).
+  final TextStyle? codeStyle;
+
+  /// Card heading. Defaults to `'Invite Friends'`.
+  final String title;
+
+  /// Share button label. Defaults to `'Share Invite'`.
+  final String shareLabel;
+
+  /// Rewarded overlay badge text. Defaults to `'Rewarded'`.
+  final String rewardedLabel;
+
+  /// Expired overlay text. Defaults to `'Offer Expired'`.
+  final String expiredLabel;
+
+  /// Replaces the generated invite-count line
+  /// (`'<n> friends invited [of <max>]'`). Supply for localisation.
+  final String? countLabel;
+
+  /// Glyph next to the heading. Defaults to [BankIcons.gift].
+  final IconData? giftIcon;
+
+  /// Glyph on the share button. Defaults to [BankIcons.share].
+  final IconData? shareIcon;
+
+  /// Glyph of the copy-code affordance. Defaults to
+  /// [Icons.copy_outlined].
+  final IconData? copyIcon;
+
+  /// Glyph inside the rewarded badge. Defaults to [Icons.check_circle].
+  final IconData? rewardedIcon;
+
+  /// Overrides the generated card semantics label. Supply for
+  /// non-English locales.
+  final String? semanticLabel;
+
   const BankReferralInviteCard({
     required this.referralCode,
     super.key,
@@ -35,6 +89,22 @@ class BankReferralInviteCard extends StatelessWidget {
     this.state = BankReferralState.pending,
     this.onShare,
     this.onCopyCode,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.accentColor,
+    this.titleStyle,
+    this.codeStyle,
+    this.title = 'Invite Friends',
+    this.shareLabel = 'Share Invite',
+    this.rewardedLabel = 'Rewarded',
+    this.expiredLabel = 'Offer Expired',
+    this.countLabel,
+    this.giftIcon,
+    this.shareIcon,
+    this.copyIcon,
+    this.rewardedIcon,
+    this.semanticLabel,
   });
 
   bool get _isExpired => state == BankReferralState.expired;
@@ -43,30 +113,33 @@ class BankReferralInviteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
-    final cardBg = bankTheme.primary.withValues(alpha: 0.08);
+    final accent = accentColor ?? bankTheme.primary;
+    final cardBg = backgroundColor ?? accent.withValues(alpha: 0.08);
+    final cardRadius = radius ?? bankTheme.cardRadius;
     final contentColor =
         _isExpired ? bankTheme.onSurfaceVariant : bankTheme.onSurface;
 
-    final semanticLabel = 'Referral invite card. Code: $referralCode. '
-        '${rewardDescription ?? ''}. '
-        '$referralCount friend${referralCount == 1 ? '' : 's'} invited. '
-        'Status: ${state.name}.';
+    final resolvedSemanticLabel = semanticLabel ??
+        'Referral invite card. Code: $referralCode. '
+            '${rewardDescription ?? ''}. '
+            '$referralCount friend${referralCount == 1 ? '' : 's'} invited. '
+            'Status: ${state.name}.';
 
     return Semantics(
-      label: semanticLabel,
+      label: resolvedSemanticLabel,
       child: Stack(
         children: [
           Container(
             decoration: BoxDecoration(
               color: cardBg,
-              borderRadius: bankTheme.cardRadius,
+              borderRadius: cardRadius,
               border: Border.all(
                 color: _isExpired
                     ? bankTheme.outline.withValues(alpha: 0.3)
-                    : bankTheme.primary.withValues(alpha: 0.2),
+                    : accent.withValues(alpha: 0.2),
               ),
             ),
-            padding: const EdgeInsets.all(BankTokens.space4),
+            padding: padding ?? const EdgeInsets.all(BankTokens.space4),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -75,18 +148,16 @@ class BankReferralInviteCard extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      BankIcons.gift,
+                      giftIcon ?? BankIcons.gift,
                       size: 22,
-                      color: _isExpired
-                          ? bankTheme.onSurfaceVariant
-                          : bankTheme.primary,
+                      color: _isExpired ? bankTheme.onSurfaceVariant : accent,
                     ),
                     const SizedBox(width: BankTokens.space2),
                     Text(
-                      'Invite Friends',
-                      style: BankTokens.headlineSmall.copyWith(
-                        color: contentColor,
-                      ),
+                      title,
+                      style: BankTokens.headlineSmall
+                          .copyWith(color: contentColor)
+                          .merge(titleStyle),
                     ),
                   ],
                 ),
@@ -112,13 +183,16 @@ class BankReferralInviteCard extends StatelessWidget {
                   bankTheme: bankTheme,
                   isExpired: _isExpired,
                   onCopyCode: onCopyCode,
+                  accent: accent,
+                  copyIcon: copyIcon,
+                  codeStyle: codeStyle,
                 ),
 
                 const SizedBox(height: BankTokens.space3),
 
                 // Referral count label
                 Text(
-                  _countLabel,
+                  countLabel ?? _countLabel,
                   style: BankTokens.bodySmall.copyWith(
                     color: bankTheme.onSurfaceVariant,
                   ),
@@ -136,18 +210,18 @@ class BankReferralInviteCard extends StatelessWidget {
                       child: FilledButton.icon(
                         onPressed: onShare,
                         icon: Icon(
-                          BankIcons.share,
+                          shareIcon ?? BankIcons.share,
                           size: 18,
                           color: bankTheme.onPrimary,
                         ),
                         label: Text(
-                          'Share Invite',
+                          shareLabel,
                           style: BankTokens.labelLarge.copyWith(
                             color: bankTheme.onPrimary,
                           ),
                         ),
                         style: FilledButton.styleFrom(
-                          backgroundColor: bankTheme.primary,
+                          backgroundColor: accent,
                           foregroundColor: bankTheme.onPrimary,
                           minimumSize: const Size(
                             double.infinity,
@@ -168,7 +242,11 @@ class BankReferralInviteCard extends StatelessWidget {
           if (_isRewarded)
             Positioned.fill(
               child: IgnorePointer(
-                child: _RewardedOverlay(bankTheme: bankTheme),
+                child: _RewardedOverlay(
+                  bankTheme: bankTheme,
+                  label: rewardedLabel,
+                  icon: rewardedIcon,
+                ),
               ),
             ),
 
@@ -176,7 +254,11 @@ class BankReferralInviteCard extends StatelessWidget {
           if (_isExpired)
             Positioned.fill(
               child: IgnorePointer(
-                child: _ExpiredOverlay(bankTheme: bankTheme),
+                child: _ExpiredOverlay(
+                  bankTheme: bankTheme,
+                  label: expiredLabel,
+                  radius: cardRadius,
+                ),
               ),
             ),
         ],
@@ -203,12 +285,18 @@ class _ReferralCodeBox extends StatelessWidget {
   final BankThemeData bankTheme;
   final bool isExpired;
   final VoidCallback? onCopyCode;
+  final Color accent;
+  final IconData? copyIcon;
+  final TextStyle? codeStyle;
 
   const _ReferralCodeBox({
     required this.code,
     required this.bankTheme,
     required this.isExpired,
     required this.onCopyCode,
+    required this.accent,
+    required this.copyIcon,
+    required this.codeStyle,
   });
 
   @override
@@ -230,13 +318,15 @@ class _ReferralCodeBox extends StatelessWidget {
           Expanded(
             child: Text(
               code,
-              style: BankTokens.numeralMedium.copyWith(
-                fontFamily: 'monospace',
-                color: isExpired
-                    ? bankTheme.onSurfaceVariant
-                    : bankTheme.onSurface,
-                letterSpacing: 2,
-              ),
+              style: BankTokens.numeralMedium
+                  .copyWith(
+                    fontFamily: 'monospace',
+                    color: isExpired
+                        ? bankTheme.onSurfaceVariant
+                        : bankTheme.onSurface,
+                    letterSpacing: 2,
+                  )
+                  .merge(codeStyle),
             ),
           ),
           Semantics(
@@ -256,11 +346,9 @@ class _ReferralCodeBox extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(BankTokens.space2),
                   child: Icon(
-                    Icons.copy_outlined,
+                    copyIcon ?? Icons.copy_outlined,
                     size: 20,
-                    color: isExpired
-                        ? bankTheme.onSurfaceVariant
-                        : bankTheme.primary,
+                    color: isExpired ? bankTheme.onSurfaceVariant : accent,
                   ),
                 ),
               ),
@@ -278,8 +366,14 @@ class _ReferralCodeBox extends StatelessWidget {
 
 class _RewardedOverlay extends StatelessWidget {
   final BankThemeData bankTheme;
+  final String label;
+  final IconData? icon;
 
-  const _RewardedOverlay({required this.bankTheme});
+  const _RewardedOverlay({
+    required this.bankTheme,
+    required this.label,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -299,10 +393,10 @@ class _RewardedOverlay extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.check_circle, size: 14, color: Colors.white),
+              Icon(icon ?? Icons.check_circle, size: 14, color: Colors.white),
               const SizedBox(width: 4),
               Text(
-                'Rewarded',
+                label,
                 style: BankTokens.labelSmall.copyWith(color: Colors.white),
               ),
             ],
@@ -315,8 +409,14 @@ class _RewardedOverlay extends StatelessWidget {
 
 class _ExpiredOverlay extends StatelessWidget {
   final BankThemeData bankTheme;
+  final String label;
+  final BorderRadius radius;
 
-  const _ExpiredOverlay({required this.bankTheme});
+  const _ExpiredOverlay({
+    required this.bankTheme,
+    required this.label,
+    required this.radius,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -325,7 +425,7 @@ class _ExpiredOverlay extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: bankTheme.surface.withValues(alpha: 0.75),
-          borderRadius: bankTheme.cardRadius,
+          borderRadius: radius,
         ),
         alignment: Alignment.center,
         child: Container(
@@ -341,7 +441,7 @@ class _ExpiredOverlay extends StatelessWidget {
             ),
           ),
           child: Text(
-            'Offer Expired',
+            label,
             style: BankTokens.labelLarge.copyWith(
               color: bankTheme.onSurfaceVariant,
             ),

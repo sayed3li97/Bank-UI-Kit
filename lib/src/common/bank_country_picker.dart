@@ -357,6 +357,16 @@ class BankCountryPicker extends StatelessWidget {
     this.searchHint = 'Search by name, code, or dial code',
     this.recentLabel = 'Recent',
     this.emptyLabel = 'No countries found',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.labelStyle,
+    this.valueStyle,
+    this.expandIcon,
+    this.searchIcon,
+    this.selectedIcon,
+    this.sheetHeightFactor,
+    this.semanticLabel,
   });
 
   /// Called with the country the user picked from the sheet.
@@ -395,6 +405,42 @@ class BankCountryPicker extends StatelessWidget {
   /// Message shown when the search query matches no country.
   final String emptyLabel;
 
+  /// Overrides the field's inner content padding (default:
+  /// [BankTokens.space4] horizontal by [BankTokens.space3] vertical).
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides [BankThemeData.buttonRadius] as the field radius.
+  final BorderRadius? radius;
+
+  /// Overrides [BankThemeData.surface] as the field fill while enabled
+  /// (the disabled fill stays [BankThemeData.surfaceVariant]).
+  final Color? backgroundColor;
+
+  /// Merged over the computed [label] style (default:
+  /// [BankTokens.labelMedium] in [BankThemeData.onSurface]).
+  final TextStyle? labelStyle;
+
+  /// Merged over the computed value / placeholder style (default:
+  /// [BankTokens.bodyLarge] coloured per the selection state).
+  final TextStyle? valueStyle;
+
+  /// Overrides [BankIcons.expand] as the field's trailing glyph.
+  final IconData? expandIcon;
+
+  /// Overrides [BankIcons.search] as the sheet's search-field glyph.
+  final IconData? searchIcon;
+
+  /// Overrides [Icons.check_circle] as the selected-row checkmark glyph
+  /// in the sheet.
+  final IconData? selectedIcon;
+
+  /// Overrides the sheet's screen-height fraction (default: `0.70`).
+  final double? sheetHeightFactor;
+
+  /// Overrides the computed field semantics label (default: the label
+  /// or placeholder followed by the selection).
+  final String? semanticLabel;
+
   // ---------------------------------------------------------------------------
   // Static helper: modal presentation
   // ---------------------------------------------------------------------------
@@ -414,6 +460,9 @@ class BankCountryPicker extends StatelessWidget {
     String searchHint = 'Search by name, code, or dial code',
     String recentLabel = 'Recent',
     String emptyLabel = 'No countries found',
+    IconData? searchIcon,
+    IconData? selectedIcon,
+    double? sheetHeightFactor,
   }) =>
       showModalBottomSheet<BankCountry>(
         context: context,
@@ -431,6 +480,9 @@ class BankCountryPicker extends StatelessWidget {
             searchHint: searchHint,
             recentLabel: recentLabel,
             emptyLabel: emptyLabel,
+            searchIcon: searchIcon,
+            selectedIcon: selectedIcon,
+            heightFactor: sheetHeightFactor,
             onSelected: (BankCountry country) =>
                 Navigator.of(sheetContext).pop(country),
           ),
@@ -447,6 +499,9 @@ class BankCountryPicker extends StatelessWidget {
       searchHint: searchHint,
       recentLabel: recentLabel,
       emptyLabel: emptyLabel,
+      searchIcon: searchIcon,
+      selectedIcon: selectedIcon,
+      sheetHeightFactor: sheetHeightFactor,
     );
     if (result != null) onSelected(result);
   }
@@ -465,7 +520,7 @@ class BankCountryPicker extends StatelessWidget {
         ? (hasValue ? theme.onSurface : theme.onSurfaceVariant)
         : theme.onSurfaceVariant;
 
-    final semanticLabel = StringBuffer()
+    final computedSemanticLabel = StringBuffer()
       ..write(label ?? placeholder)
       ..write(
         hasValue
@@ -483,17 +538,21 @@ class BankCountryPicker extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: BankTokens.space2),
             child: Text(
               label!,
-              style: BankTokens.labelMedium.copyWith(color: theme.onSurface),
+              style: BankTokens.labelMedium
+                  .copyWith(color: theme.onSurface)
+                  .merge(labelStyle),
             ),
           ),
         Semantics(
-          label: semanticLabel.toString(),
+          label: semanticLabel ?? computedSemanticLabel.toString(),
           button: true,
           enabled: enabled,
           child: Material(
-            color: enabled ? theme.surface : theme.surfaceVariant,
+            color: enabled
+                ? (backgroundColor ?? theme.surface)
+                : theme.surfaceVariant,
             shape: RoundedRectangleBorder(
-              borderRadius: theme.buttonRadius,
+              borderRadius: radius ?? theme.buttonRadius,
               side: BorderSide(
                 color: enabled
                     ? theme.outline
@@ -502,7 +561,7 @@ class BankCountryPicker extends StatelessWidget {
             ),
             child: InkWell(
               onTap: enabled ? () => _openSheet(context) : null,
-              borderRadius: theme.buttonRadius,
+              borderRadius: radius ?? theme.buttonRadius,
               splashColor: theme.primary.withValues(alpha: 0.08),
               highlightColor: theme.primary.withValues(alpha: 0.04),
               child: ConstrainedBox(
@@ -510,10 +569,11 @@ class BankCountryPicker extends StatelessWidget {
                   minHeight: BankTokens.minTapTarget + BankTokens.space1,
                 ),
                 child: Padding(
-                  padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: BankTokens.space4,
-                    vertical: BankTokens.space3,
-                  ),
+                  padding: padding ??
+                      const EdgeInsetsDirectional.symmetric(
+                        horizontal: BankTokens.space4,
+                        vertical: BankTokens.space3,
+                      ),
                   child: Row(
                     children: [
                       if (hasValue) ...[
@@ -528,9 +588,9 @@ class BankCountryPicker extends StatelessWidget {
                       Expanded(
                         child: Text(
                           hasValue ? country.name : placeholder,
-                          style: BankTokens.bodyLarge.copyWith(
-                            color: valueColor,
-                          ),
+                          style: BankTokens.bodyLarge
+                              .copyWith(color: valueColor)
+                              .merge(valueStyle),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -548,7 +608,7 @@ class BankCountryPicker extends StatelessWidget {
                       ],
                       const SizedBox(width: BankTokens.space2),
                       Icon(
-                        BankIcons.expand,
+                        expandIcon ?? BankIcons.expand,
                         color: theme.onSurfaceVariant,
                         size: 20,
                       ),
@@ -580,6 +640,9 @@ class _BankCountrySheet extends StatefulWidget {
     required this.emptyLabel,
     required this.onSelected,
     this.selectedIsoCode,
+    this.searchIcon,
+    this.selectedIcon,
+    this.heightFactor,
   });
 
   final List<BankCountry> countries;
@@ -590,6 +653,15 @@ class _BankCountrySheet extends StatefulWidget {
   final String emptyLabel;
   final ValueChanged<BankCountry> onSelected;
   final String? selectedIsoCode;
+
+  /// Overrides [BankIcons.search] as the search-field glyph.
+  final IconData? searchIcon;
+
+  /// Overrides [Icons.check_circle] as the selected-row glyph.
+  final IconData? selectedIcon;
+
+  /// Overrides the sheet's screen-height fraction (default: `0.70`).
+  final double? heightFactor;
 
   @override
   State<_BankCountrySheet> createState() => _BankCountrySheetState();
@@ -628,7 +700,8 @@ class _BankCountrySheetState extends State<_BankCountrySheet> {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final sheetHeight = MediaQuery.sizeOf(context).height * 0.70;
+    final sheetHeight =
+        MediaQuery.sizeOf(context).height * (widget.heightFactor ?? 0.70);
 
     final filtered = _filtered;
     final queryEmpty = _query.trim().isEmpty;
@@ -682,7 +755,7 @@ class _BankCountrySheetState extends State<_BankCountrySheet> {
             ),
             child: BankTextField(
               hint: widget.searchHint,
-              prefixIcon: const Icon(BankIcons.search),
+              prefixIcon: Icon(widget.searchIcon ?? BankIcons.search),
               onChanged: (String value) => setState(() => _query = value),
             ),
           ),
@@ -743,6 +816,7 @@ class _BankCountrySheetState extends State<_BankCountrySheet> {
                 isSelected: country.isoCode == widget.selectedIsoCode,
                 showDialCode: widget.showDialCode,
                 theme: theme,
+                selectedIcon: widget.selectedIcon,
                 onTap: () => widget.onSelected(country),
               );
             },
@@ -816,6 +890,7 @@ class _CountryRow extends StatelessWidget {
     required this.showDialCode,
     required this.theme,
     required this.onTap,
+    this.selectedIcon,
   });
 
   final BankCountry country;
@@ -823,6 +898,9 @@ class _CountryRow extends StatelessWidget {
   final bool showDialCode;
   final BankThemeData theme;
   final VoidCallback onTap;
+
+  /// Overrides [Icons.check_circle] as the selected-row glyph.
+  final IconData? selectedIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -876,7 +954,7 @@ class _CountryRow extends StatelessWidget {
                 if (isSelected) ...[
                   const SizedBox(width: BankTokens.space2),
                   Icon(
-                    Icons.check_circle,
+                    selectedIcon ?? Icons.check_circle,
                     color: theme.primary,
                     size: 18,
                   ),

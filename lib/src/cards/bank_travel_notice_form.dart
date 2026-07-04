@@ -53,6 +53,22 @@ class BankTravelNoticeForm extends StatefulWidget {
     this.cancelLabel = 'Cancel',
     this.dateError = 'End date must be after the start date',
     this.selectionError = 'Pick at least one card and destination',
+    this.accentColor,
+    this.foregroundColor,
+    this.chipRadius,
+    this.buttonRadius,
+    this.labelStyle,
+    this.errorStyle,
+    this.submitLabelStyle,
+    this.cancelLabelStyle,
+    this.addDestinationIcon = Icons.add_rounded,
+    this.removeDestinationIcon = Icons.close_rounded,
+    this.selectedCardIcon = Icons.check_circle_rounded,
+    this.cardIcon = Icons.credit_card_outlined,
+    this.calendarIcon = Icons.calendar_today_outlined,
+    this.animationDuration,
+    this.animationCurve,
+    this.semanticLabel,
   });
 
   /// Cards eligible for a notice (host pre-filters ineligible types).
@@ -76,6 +92,68 @@ class BankTravelNoticeForm extends StatefulWidget {
   final String cancelLabel;
   final String dateError;
   final String selectionError;
+
+  /// Overrides the accent of chips, the add action, the selected card
+  /// border, and the submit button; defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the content color of card chips and the submit button;
+  /// defaults to the theme onPrimary color.
+  final Color? foregroundColor;
+
+  /// Overrides the card and destination chip radius; defaults to the
+  /// theme chipRadius.
+  final BorderRadius? chipRadius;
+
+  /// Overrides the date field and submit button radius; defaults to
+  /// the theme buttonRadius.
+  final BorderRadius? buttonRadius;
+
+  /// Merged over the section label style, [BankTokens.labelMedium].
+  final TextStyle? labelStyle;
+
+  /// Merged over the validation error style, [BankTokens.bodySmall].
+  final TextStyle? errorStyle;
+
+  /// Merged over the submit button label style,
+  /// [BankTokens.labelLarge].
+  final TextStyle? submitLabelStyle;
+
+  /// Merged over the cancel button label style,
+  /// [BankTokens.labelLarge].
+  final TextStyle? cancelLabelStyle;
+
+  /// Glyph on the add destination chip; defaults to
+  /// [Icons.add_rounded].
+  final IconData addDestinationIcon;
+
+  /// Glyph that removes a destination chip; defaults to
+  /// [Icons.close_rounded].
+  final IconData removeDestinationIcon;
+
+  /// Glyph on a selected card chip; defaults to
+  /// [Icons.check_circle_rounded].
+  final IconData selectedCardIcon;
+
+  /// Glyph on an unselected card chip; defaults to
+  /// [Icons.credit_card_outlined].
+  final IconData cardIcon;
+
+  /// Glyph inside the date fields; defaults to
+  /// [Icons.calendar_today_outlined].
+  final IconData calendarIcon;
+
+  /// Duration of the card chip selection animation; defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Curve of the card chip selection animation; defaults to
+  /// [Curves.linear].
+  final Curve? animationCurve;
+
+  /// Optional semantics label wrapped around the form; defaults to
+  /// none.
+  final String? semanticLabel;
 
   @override
   State<BankTravelNoticeForm> createState() => _BankTravelNoticeFormState();
@@ -176,191 +254,213 @@ class _BankTravelNoticeFormState extends State<BankTravelNoticeForm> {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final resolvedAccent = widget.accentColor ?? theme.primary;
+    final resolvedForeground = widget.foregroundColor ?? theme.onPrimary;
+    final resolvedChipRadius = widget.chipRadius ?? theme.chipRadius;
+    final resolvedButtonRadius = widget.buttonRadius ?? theme.buttonRadius;
+    final resolvedDuration =
+        widget.animationDuration ?? BankTokens.durationFast;
+    final resolvedCurve = widget.animationCurve ?? Curves.linear;
+    final sectionStyle = BankTokens.labelMedium
+        .copyWith(color: theme.onSurface)
+        .merge(widget.labelStyle);
+    final errorStyle = BankTokens.bodySmall
+        .copyWith(color: BankTokens.danger)
+        .merge(widget.errorStyle);
 
+    final Widget body;
     if (_succeeded) {
-      return const Center(
+      body = const Center(
         child: Padding(
           padding: EdgeInsets.all(BankTokens.space6),
           child: BankSuccessAnimation(),
         ),
       );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          widget.cardsLabel,
-          style: BankTokens.labelMedium.copyWith(color: theme.onSurface),
-        ),
-        const SizedBox(height: BankTokens.space2),
-        Wrap(
-          spacing: BankTokens.space2,
-          runSpacing: BankTokens.space2,
-          children: [
-            for (final card in widget.cards)
-              _CardChip(
-                account: card,
-                selected: _selectedCards.contains(card.id),
-                theme: theme,
-                onTap: () => setState(() {
-                  if (!_selectedCards.add(card.id)) {
-                    _selectedCards.remove(card.id);
-                  }
-                }),
-              ),
-          ],
-        ),
-        const SizedBox(height: BankTokens.space4),
-        Text(
-          widget.destinationsLabel,
-          style: BankTokens.labelMedium.copyWith(color: theme.onSurface),
-        ),
-        const SizedBox(height: BankTokens.space2),
-        Wrap(
-          spacing: BankTokens.space2,
-          runSpacing: BankTokens.space2,
-          children: [
-            for (final country in _destinations)
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: theme.primary.withValues(alpha: 0.08),
-                  borderRadius: theme.chipRadius,
+    } else {
+      body = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.cardsLabel, style: sectionStyle),
+          const SizedBox(height: BankTokens.space2),
+          Wrap(
+            spacing: BankTokens.space2,
+            runSpacing: BankTokens.space2,
+            children: [
+              for (final card in widget.cards)
+                _CardChip(
+                  account: card,
+                  selected: _selectedCards.contains(card.id),
+                  theme: theme,
+                  onTap: () => setState(() {
+                    if (!_selectedCards.add(card.id)) {
+                      _selectedCards.remove(card.id);
+                    }
+                  }),
+                  selectedIcon: widget.selectedCardIcon,
+                  unselectedIcon: widget.cardIcon,
+                  radius: resolvedChipRadius,
+                  accentColor: resolvedAccent,
+                  foregroundColor: resolvedForeground,
+                  duration: resolvedDuration,
+                  curve: resolvedCurve,
                 ),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: BankTokens.space3,
+            ],
+          ),
+          const SizedBox(height: BankTokens.space4),
+          Text(widget.destinationsLabel, style: sectionStyle),
+          const SizedBox(height: BankTokens.space2),
+          Wrap(
+            spacing: BankTokens.space2,
+            runSpacing: BankTokens.space2,
+            children: [
+              for (final country in _destinations)
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: resolvedAccent.withValues(alpha: 0.08),
+                    borderRadius: resolvedChipRadius,
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(country.flagEmoji),
-                      const SizedBox(width: BankTokens.space1),
-                      Text(
-                        country.name,
-                        style: BankTokens.labelMedium
-                            .copyWith(color: theme.onSurface),
-                      ),
-                      IconButton(
-                        onPressed: () => setState(
-                          () => _destinations.remove(country),
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      start: BankTokens.space3,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(country.flagEmoji),
+                        const SizedBox(width: BankTokens.space1),
+                        Text(
+                          country.name,
+                          style: BankTokens.labelMedium
+                              .copyWith(color: theme.onSurface),
                         ),
-                        iconSize: 14,
-                        visualDensity: VisualDensity.compact,
-                        icon: Icon(
-                          Icons.close_rounded,
-                          color: theme.onSurfaceVariant,
+                        IconButton(
+                          onPressed: () => setState(
+                            () => _destinations.remove(country),
+                          ),
+                          iconSize: 14,
+                          visualDensity: VisualDensity.compact,
+                          icon: Icon(
+                            widget.removeDestinationIcon,
+                            color: theme.onSurfaceVariant,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
+              ActionChip(
+                avatar: Icon(
+                  widget.addDestinationIcon,
+                  size: 16,
+                  color: resolvedAccent,
+                ),
+                label: Text(
+                  widget.addDestinationLabel,
+                  style: BankTokens.labelMedium.copyWith(color: resolvedAccent),
+                ),
+                backgroundColor: theme.surface,
+                side: BorderSide(color: theme.outline),
+                onPressed: _addDestination,
               ),
-            ActionChip(
-              avatar: Icon(Icons.add_rounded, size: 16, color: theme.primary),
-              label: Text(
-                widget.addDestinationLabel,
-                style: BankTokens.labelMedium.copyWith(color: theme.primary),
-              ),
-              backgroundColor: theme.surface,
-              side: BorderSide(color: theme.outline),
-              onPressed: _addDestination,
-            ),
-          ],
-        ),
-        const SizedBox(height: BankTokens.space4),
-        Text(
-          widget.datesLabel,
-          style: BankTokens.labelMedium.copyWith(color: theme.onSurface),
-        ),
-        const SizedBox(height: BankTokens.space2),
-        Row(
-          children: [
-            Expanded(
-              child: _DateField(
-                label: widget.startLabel,
-                value: _start,
-                theme: theme,
-                onTap: () => _pickDate(start: true),
-              ),
-            ),
-            const SizedBox(width: BankTokens.space3),
-            Expanded(
-              child: _DateField(
-                label: widget.endLabel,
-                value: _end,
-                theme: theme,
-                onTap: () => _pickDate(start: false),
-              ),
-            ),
-          ],
-        ),
-        if (_showErrors && !_datesValid)
-          Padding(
-            padding: const EdgeInsets.only(top: BankTokens.space1),
-            child: Text(
-              widget.dateError,
-              style: BankTokens.bodySmall.copyWith(color: BankTokens.danger),
-            ),
+            ],
           ),
-        if (_showErrors && !_selectionValid)
-          Padding(
-            padding: const EdgeInsets.only(top: BankTokens.space1),
-            child: Text(
-              widget.selectionError,
-              style: BankTokens.bodySmall.copyWith(color: BankTokens.danger),
-            ),
-          ),
-        const SizedBox(height: BankTokens.space4),
-        BankTextField(
-          controller: _note,
-          label: widget.noteLabel,
-          maxLines: 2,
-        ),
-        const SizedBox(height: BankTokens.space5),
-        Row(
-          children: [
-            if (widget.onCancel != null) ...[
-              TextButton(
-                onPressed: _submitting ? null : widget.onCancel,
-                child: Text(
-                  widget.cancelLabel,
-                  style: BankTokens.labelLarge
-                      .copyWith(color: theme.onSurfaceVariant),
+          const SizedBox(height: BankTokens.space4),
+          Text(widget.datesLabel, style: sectionStyle),
+          const SizedBox(height: BankTokens.space2),
+          Row(
+            children: [
+              Expanded(
+                child: _DateField(
+                  label: widget.startLabel,
+                  value: _start,
+                  theme: theme,
+                  onTap: () => _pickDate(start: true),
+                  icon: widget.calendarIcon,
+                  radius: resolvedButtonRadius,
                 ),
               ),
               const SizedBox(width: BankTokens.space3),
-            ],
-            Expanded(
-              child: SizedBox(
-                height: BankTokens.space12,
-                child: FilledButton(
-                  onPressed: _submitting ? null : _submit,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: theme.primary,
-                    foregroundColor: theme.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: theme.buttonRadius,
-                    ),
-                  ),
-                  child: _submitting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(
-                          widget.submitLabel,
-                          style: BankTokens.labelLarge
-                              .copyWith(color: theme.onPrimary),
-                        ),
+              Expanded(
+                child: _DateField(
+                  label: widget.endLabel,
+                  value: _end,
+                  theme: theme,
+                  onTap: () => _pickDate(start: false),
+                  icon: widget.calendarIcon,
+                  radius: resolvedButtonRadius,
                 ),
               ),
+            ],
+          ),
+          if (_showErrors && !_datesValid)
+            Padding(
+              padding: const EdgeInsets.only(top: BankTokens.space1),
+              child: Text(widget.dateError, style: errorStyle),
             ),
-          ],
-        ),
-      ],
-    );
+          if (_showErrors && !_selectionValid)
+            Padding(
+              padding: const EdgeInsets.only(top: BankTokens.space1),
+              child: Text(widget.selectionError, style: errorStyle),
+            ),
+          const SizedBox(height: BankTokens.space4),
+          BankTextField(
+            controller: _note,
+            label: widget.noteLabel,
+            maxLines: 2,
+          ),
+          const SizedBox(height: BankTokens.space5),
+          Row(
+            children: [
+              if (widget.onCancel != null) ...[
+                TextButton(
+                  onPressed: _submitting ? null : widget.onCancel,
+                  child: Text(
+                    widget.cancelLabel,
+                    style: BankTokens.labelLarge
+                        .copyWith(color: theme.onSurfaceVariant)
+                        .merge(widget.cancelLabelStyle),
+                  ),
+                ),
+                const SizedBox(width: BankTokens.space3),
+              ],
+              Expanded(
+                child: SizedBox(
+                  height: BankTokens.space12,
+                  child: FilledButton(
+                    onPressed: _submitting ? null : _submit,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: resolvedAccent,
+                      foregroundColor: resolvedForeground,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: resolvedButtonRadius,
+                      ),
+                    ),
+                    child: _submitting
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: widget.foregroundColor,
+                            ),
+                          )
+                        : Text(
+                            widget.submitLabel,
+                            style: BankTokens.labelLarge
+                                .copyWith(color: resolvedForeground)
+                                .merge(widget.submitLabelStyle),
+                          ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    if (widget.semanticLabel == null) return body;
+    return Semantics(label: widget.semanticLabel, child: body);
   }
 }
 
@@ -370,12 +470,26 @@ class _CardChip extends StatelessWidget {
     required this.selected,
     required this.theme,
     required this.onTap,
+    required this.selectedIcon,
+    required this.unselectedIcon,
+    required this.radius,
+    required this.accentColor,
+    required this.foregroundColor,
+    required this.duration,
+    required this.curve,
   });
 
   final BankAccount account;
   final bool selected;
   final BankThemeData theme;
   final VoidCallback onTap;
+  final IconData selectedIcon;
+  final IconData unselectedIcon;
+  final BorderRadius radius;
+  final Color accentColor;
+  final Color foregroundColor;
+  final Duration duration;
+  final Curve curve;
 
   @override
   Widget build(BuildContext context) {
@@ -385,17 +499,18 @@ class _CardChip extends StatelessWidget {
       label: account.name,
       child: InkWell(
         onTap: onTap,
-        borderRadius: theme.chipRadius,
+        borderRadius: radius,
         child: AnimatedContainer(
-          duration: BankTokens.durationFast,
+          duration: duration,
+          curve: curve,
           width: 92,
           height: 58,
           decoration: BoxDecoration(
             gradient: theme.accentGradient,
             color: theme.accentGradient == null ? theme.surfaceVariant : null,
-            borderRadius: theme.chipRadius,
+            borderRadius: radius,
             border: Border.all(
-              color: selected ? theme.primary : theme.outline,
+              color: selected ? accentColor : theme.outline,
               width: selected ? 2 : 1,
             ),
           ),
@@ -406,15 +521,13 @@ class _CardChip extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Icon(
-                  selected
-                      ? Icons.check_circle_rounded
-                      : Icons.credit_card_outlined,
+                  selected ? selectedIcon : unselectedIcon,
                   size: 16,
-                  color: theme.onPrimary,
+                  color: foregroundColor,
                 ),
                 Text(
                   account.maskedNumber,
-                  style: BankTokens.labelSmall.copyWith(color: theme.onPrimary),
+                  style: BankTokens.labelSmall.copyWith(color: foregroundColor),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -433,12 +546,16 @@ class _DateField extends StatelessWidget {
     required this.value,
     required this.theme,
     required this.onTap,
+    required this.icon,
+    required this.radius,
   });
 
   final String label;
   final DateTime? value;
   final BankThemeData theme;
   final VoidCallback onTap;
+  final IconData icon;
+  final BorderRadius radius;
 
   @override
   Widget build(BuildContext context) {
@@ -449,11 +566,11 @@ class _DateField extends StatelessWidget {
           : '$label: ${BankDateFormatter.formatFull(value!)}',
       child: InkWell(
         onTap: onTap,
-        borderRadius: theme.buttonRadius,
+        borderRadius: radius,
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: theme.surface,
-            borderRadius: theme.buttonRadius,
+            borderRadius: radius,
             border: Border.all(color: theme.outline),
           ),
           child: Padding(
@@ -463,11 +580,7 @@ class _DateField extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.calendar_today_outlined,
-                  size: 16,
-                  color: theme.onSurfaceVariant,
-                ),
+                Icon(icon, size: 16, color: theme.onSurfaceVariant),
                 const SizedBox(width: BankTokens.space2),
                 Expanded(
                   child: Text(

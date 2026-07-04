@@ -99,6 +99,16 @@ class BankAtmLocatorTile extends StatelessWidget {
     this.feeFreeLabel = 'Fee-free',
     this.depositLabel = 'Accepts deposits',
     this.navigateLabel = 'Directions',
+    this.padding,
+    this.height,
+    this.leading,
+    this.accentColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.locationIcon,
+    this.depositIcon,
+    this.navigateIcon,
+    this.semanticLabel,
   });
 
   /// The ATM to display.
@@ -119,6 +129,41 @@ class BankAtmLocatorTile extends StatelessWidget {
 
   /// Accessibility / tooltip label for the directions button.
   final String navigateLabel;
+
+  /// Overrides the row content padding. Defaults to horizontal
+  /// [BankTokens.space4].
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the row height. Defaults to 64.
+  final double? height;
+
+  /// Replaces the leading tinted pin block when set.
+  final Widget? leading;
+
+  /// Tint of the pin block and directions button. Defaults to the
+  /// theme primary.
+  final Color? accentColor;
+
+  /// Merged over the computed ATM-name style.
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed address style.
+  final TextStyle? subtitleStyle;
+
+  /// Glyph inside the leading pin block. Defaults to
+  /// [BankIcons.location].
+  final IconData? locationIcon;
+
+  /// Glyph marking deposit-capable ATMs. Defaults to
+  /// [BankIcons.receive].
+  final IconData? depositIcon;
+
+  /// Glyph of the directions button. Defaults to
+  /// [Icons.directions_outlined].
+  final IconData? navigateIcon;
+
+  /// Overrides the computed row semantics label.
+  final String? semanticLabel;
 
   /// Formats [BankAtmLocation.distanceMeters] as '350 m' below one
   /// kilometre and '1.2 km' above, then converts digits to [numeralStyle].
@@ -141,8 +186,9 @@ class BankAtmLocatorTile extends StatelessWidget {
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
     final distance = _formatDistance(atm.distanceMeters, scope.numeralStyle);
+    final accent = accentColor ?? theme.primary;
 
-    final semanticLabel = [
+    final computedSemantics = [
       atm.name,
       atm.address,
       distance,
@@ -152,34 +198,36 @@ class BankAtmLocatorTile extends StatelessWidget {
 
     return Semantics(
       button: onTap != null,
-      label: semanticLabel,
+      label: semanticLabel ?? computedSemantics,
       child: InkWell(
         onTap: onTap,
         child: SizedBox(
-          height: 64,
+          height: height ?? 64,
           child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: BankTokens.space4,
-            ),
+            padding: padding ??
+                const EdgeInsetsDirectional.symmetric(
+                  horizontal: BankTokens.space4,
+                ),
             child: Row(
               children: [
-                SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: theme.primary.withValues(alpha: 0.12),
-                      borderRadius: theme.chipRadius,
-                    ),
-                    child: Center(
-                      child: Icon(
-                        BankIcons.location,
-                        size: 22,
-                        color: theme.primary,
+                leading ??
+                    SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: accent.withValues(alpha: 0.12),
+                          borderRadius: theme.chipRadius,
+                        ),
+                        child: Center(
+                          child: Icon(
+                            locationIcon ?? BankIcons.location,
+                            size: 22,
+                            color: accent,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
                 const SizedBox(width: BankTokens.space3),
                 Expanded(
                   child: Column(
@@ -189,7 +237,8 @@ class BankAtmLocatorTile extends StatelessWidget {
                       Text(
                         atm.name,
                         style: BankTokens.bodyLarge
-                            .copyWith(color: theme.onSurface),
+                            .copyWith(color: theme.onSurface)
+                            .merge(titleStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -197,7 +246,8 @@ class BankAtmLocatorTile extends StatelessWidget {
                       Text(
                         atm.address,
                         style: BankTokens.bodySmall
-                            .copyWith(color: theme.onSurfaceVariant),
+                            .copyWith(color: theme.onSurfaceVariant)
+                            .merge(subtitleStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -225,7 +275,7 @@ class BankAtmLocatorTile extends StatelessWidget {
                   Tooltip(
                     message: depositLabel,
                     child: Icon(
-                      BankIcons.receive,
+                      depositIcon ?? BankIcons.receive,
                       size: 16,
                       color: theme.onSurfaceVariant,
                     ),
@@ -243,8 +293,8 @@ class BankAtmLocatorTile extends StatelessWidget {
                       ),
                     ),
                     icon: Icon(
-                      Icons.directions_outlined,
-                      color: theme.primary,
+                      navigateIcon ?? Icons.directions_outlined,
+                      color: accent,
                     ),
                   ),
                 ],
@@ -327,6 +377,15 @@ class BankCardlessCashCode extends StatefulWidget {
     this.expiredLabel = 'Code expired',
     this.expiresPrefix = 'Expires at',
     this.codeSemanticLabel = 'Cardless cash code',
+    this.timeRemainingLabel = 'Time remaining',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.shadow,
+    this.accentColor,
+    this.ringSize,
+    this.codeStyle,
+    this.amountStyle,
   });
 
   /// The one-time withdrawal code (digits only).
@@ -356,6 +415,37 @@ class BankCardlessCashCode extends StatefulWidget {
 
   /// Accessibility prefix announced before the code digits.
   final String codeSemanticLabel;
+
+  /// Accessibility prefix announced before the remaining time.
+  final String timeRemainingLabel;
+
+  /// Overrides the card content padding. Defaults to
+  /// [BankTokens.space5] on all sides.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme card
+  /// radius.
+  final BorderRadius? radius;
+
+  /// Overrides the card background. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
+  /// pass `const []` to flatten the card.
+  final List<BoxShadow>? shadow;
+
+  /// Colour of the countdown ring while active. Defaults to the theme
+  /// primary; the expired state keeps [BankTokens.danger].
+  final Color? accentColor;
+
+  /// Diameter of the countdown ring. Defaults to 72.
+  final double? ringSize;
+
+  /// Merged over the computed hero code style.
+  final TextStyle? codeStyle;
+
+  /// Merged over the computed amount style.
+  final TextStyle? amountStyle;
 
   @override
   State<BankCardlessCashCode> createState() => _BankCardlessCashCodeState();
@@ -453,16 +543,18 @@ class _BankCardlessCashCodeState extends State<BankCardlessCashCode> {
         .convert(BankDateFormatter.formatTime(widget.expiresAt));
     final progress =
         _window.inSeconds == 0 ? 0.0 : _remaining.inSeconds / _window.inSeconds;
-    final ringColor = expired ? BankTokens.danger : theme.primary;
+    final ringColor =
+        expired ? BankTokens.danger : widget.accentColor ?? theme.primary;
+    final ringSize = widget.ringSize ?? _ringSize;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.cardRadius,
-        boxShadow: BankTokens.shadowCard,
+        color: widget.backgroundColor ?? theme.surface,
+        borderRadius: widget.radius ?? theme.cardRadius,
+        boxShadow: widget.shadow ?? BankTokens.shadowCard,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space5),
+        padding: widget.padding ?? const EdgeInsets.all(BankTokens.space5),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -474,10 +566,12 @@ class _BankCardlessCashCodeState extends State<BankCardlessCashCode> {
                 // A numeric code reads as a fixed digit sequence in
                 // every locale, so pin the run direction.
                 textDirection: TextDirection.ltr,
-                style: theme.numeralHero.copyWith(
-                  color: expired ? theme.onSurfaceVariant : theme.onSurface,
-                  letterSpacing: 2,
-                ),
+                style: theme.numeralHero
+                    .copyWith(
+                      color: expired ? theme.onSurfaceVariant : theme.onSurface,
+                      letterSpacing: 2,
+                    )
+                    .merge(widget.codeStyle),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -486,17 +580,22 @@ class _BankCardlessCashCodeState extends State<BankCardlessCashCode> {
             BankBalanceText(
               money: widget.amount,
               size: BankBalanceSize.medium,
+              style: widget.amountStyle == null
+                  ? null
+                  : theme.numeralMedium
+                      .copyWith(color: theme.onSurface)
+                      .merge(widget.amountStyle),
             ),
             const SizedBox(height: BankTokens.space4),
             Semantics(
               label: expired
                   ? widget.expiredLabel
-                  : 'Time remaining '
+                  : '${widget.timeRemainingLabel} '
                       '${_formatRemaining(_remaining, NumeralStyle.western)}',
               excludeSemantics: true,
               child: SizedBox(
-                width: _ringSize,
-                height: _ringSize,
+                width: ringSize,
+                height: ringSize,
                 child: CustomPaint(
                   painter: _CountdownRingPainter(
                     progress: progress,

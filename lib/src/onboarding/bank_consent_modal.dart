@@ -40,6 +40,36 @@ class BankConsentModal extends StatefulWidget {
   /// Called when the user taps the Decline button.
   final VoidCallback onDecline;
 
+  /// Hint shown until the user reaches the bottom of the terms.
+  /// Defaults to 'Scroll to read all terms'.
+  final String scrollHintLabel;
+
+  /// Glyph next to the scroll hint. Defaults to
+  /// [Icons.keyboard_arrow_down_rounded].
+  final IconData? scrollHintIcon;
+
+  /// Merged over the computed title style (headlineSmall).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed terms body style (bodyMedium).
+  final TextStyle? termsStyle;
+
+  /// Merged over the computed checkbox label style (bodySmall).
+  final TextStyle? checkboxLabelStyle;
+
+  /// Corner radius of the modal. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Maximum modal width. Defaults to 560.
+  final double? maxWidth;
+
+  /// Active checkbox color. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Duration of the scroll hint fade. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
   const BankConsentModal({
     required this.title,
     required this.termsContent,
@@ -50,6 +80,15 @@ class BankConsentModal extends StatefulWidget {
     this.checkboxLabel = 'I have read and agree to the terms above',
     this.acceptLabel = 'Accept',
     this.declineLabel = 'Decline',
+    this.scrollHintLabel = 'Scroll to read all terms',
+    this.scrollHintIcon,
+    this.titleStyle,
+    this.termsStyle,
+    this.checkboxLabelStyle,
+    this.radius,
+    this.maxWidth,
+    this.accentColor,
+    this.animationDuration,
   });
 
   // ---------------------------------------------------------------------------
@@ -135,17 +174,21 @@ class _BankConsentModalState extends State<BankConsentModal> {
 
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxWidth: 560,
+        maxWidth: widget.maxWidth ?? 560,
         maxHeight: MediaQuery.sizeOf(context).height * 0.85,
       ),
       child: ClipRRect(
-        borderRadius: bankTheme.cardRadius,
+        borderRadius: widget.radius ?? bankTheme.cardRadius,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // ── Title bar ──
-            _TitleBar(title: widget.title, bankTheme: bankTheme),
+            _TitleBar(
+              title: widget.title,
+              titleStyle: widget.titleStyle,
+              bankTheme: bankTheme,
+            ),
 
             // ── Scrollable terms body ──
             Flexible(
@@ -153,6 +196,7 @@ class _BankConsentModalState extends State<BankConsentModal> {
                 scrollController: _scrollController,
                 termsContent: widget.termsContent,
                 richTermsContent: widget.richTermsContent,
+                termsStyle: widget.termsStyle,
                 bankTheme: bankTheme,
               ),
             ),
@@ -160,6 +204,9 @@ class _BankConsentModalState extends State<BankConsentModal> {
             // ── Scroll-to-bottom hint ──
             _ScrollHint(
               hasScrolledToBottom: _hasScrolledToBottom,
+              label: widget.scrollHintLabel,
+              icon: widget.scrollHintIcon ?? Icons.keyboard_arrow_down_rounded,
+              duration: widget.animationDuration ?? BankTokens.durationFast,
               bankTheme: bankTheme,
             ),
 
@@ -171,6 +218,8 @@ class _BankConsentModalState extends State<BankConsentModal> {
               checked: _isChecked,
               enabled: _hasScrolledToBottom,
               onChanged: _onCheckboxChanged,
+              accentColor: widget.accentColor,
+              labelStyle: widget.checkboxLabelStyle,
               bankTheme: bankTheme,
             ),
 
@@ -197,9 +246,14 @@ class _BankConsentModalState extends State<BankConsentModal> {
 // ---------------------------------------------------------------------------
 
 class _TitleBar extends StatelessWidget {
-  const _TitleBar({required this.title, required this.bankTheme});
+  const _TitleBar({
+    required this.title,
+    required this.titleStyle,
+    required this.bankTheme,
+  });
 
   final String title;
+  final TextStyle? titleStyle;
   final BankThemeData bankTheme;
 
   @override
@@ -213,7 +267,9 @@ class _TitleBar extends StatelessWidget {
       ),
       child: Text(
         title,
-        style: BankTokens.headlineSmall.copyWith(color: bankTheme.onSurface),
+        style: BankTokens.headlineSmall
+            .copyWith(color: bankTheme.onSurface)
+            .merge(titleStyle),
       ),
     );
   }
@@ -224,12 +280,14 @@ class _TermsScrollBody extends StatelessWidget {
     required this.scrollController,
     required this.termsContent,
     required this.richTermsContent,
+    required this.termsStyle,
     required this.bankTheme,
   });
 
   final ScrollController scrollController;
   final String termsContent;
   final Widget? richTermsContent;
+  final TextStyle? termsStyle;
   final BankThemeData bankTheme;
 
   @override
@@ -243,10 +301,12 @@ class _TermsScrollBody extends StatelessWidget {
       child: richTermsContent ??
           Text(
             termsContent,
-            style: BankTokens.bodyMedium.copyWith(
-              color: bankTheme.onSurface,
-              height: 1.6,
-            ),
+            style: BankTokens.bodyMedium
+                .copyWith(
+                  color: bankTheme.onSurface,
+                  height: 1.6,
+                )
+                .merge(termsStyle),
           ),
     );
   }
@@ -255,16 +315,22 @@ class _TermsScrollBody extends StatelessWidget {
 class _ScrollHint extends StatelessWidget {
   const _ScrollHint({
     required this.hasScrolledToBottom,
+    required this.label,
+    required this.icon,
+    required this.duration,
     required this.bankTheme,
   });
 
   final bool hasScrolledToBottom;
+  final String label;
+  final IconData icon;
+  final Duration duration;
   final BankThemeData bankTheme;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedCrossFade(
-      duration: BankTokens.durationFast,
+      duration: duration,
       firstChild: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: BankTokens.space6,
@@ -273,13 +339,13 @@ class _ScrollHint extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              Icons.keyboard_arrow_down_rounded,
+              icon,
               size: 16,
               color: bankTheme.onSurfaceVariant,
             ),
             const SizedBox(width: BankTokens.space1),
             Text(
-              'Scroll to read all terms',
+              label,
               style: BankTokens.bodySmall.copyWith(
                 color: bankTheme.onSurfaceVariant,
               ),
@@ -301,6 +367,8 @@ class _CheckboxRow extends StatelessWidget {
     required this.checked,
     required this.enabled,
     required this.onChanged,
+    required this.accentColor,
+    required this.labelStyle,
     required this.bankTheme,
   });
 
@@ -308,6 +376,8 @@ class _CheckboxRow extends StatelessWidget {
   final bool checked;
   final bool enabled;
   final ValueChanged<bool?> onChanged;
+  final Color? accentColor;
+  final TextStyle? labelStyle;
   final BankThemeData bankTheme;
 
   @override
@@ -328,7 +398,7 @@ class _CheckboxRow extends StatelessWidget {
               Checkbox(
                 value: checked,
                 onChanged: enabled ? onChanged : null,
-                activeColor: bankTheme.primary,
+                activeColor: accentColor ?? bankTheme.primary,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
               ),
@@ -336,11 +406,13 @@ class _CheckboxRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: BankTokens.bodySmall.copyWith(
-                    color: enabled
-                        ? bankTheme.onSurface
-                        : bankTheme.onSurfaceVariant,
-                  ),
+                  style: BankTokens.bodySmall
+                      .copyWith(
+                        color: enabled
+                            ? bankTheme.onSurface
+                            : bankTheme.onSurfaceVariant,
+                      )
+                      .merge(labelStyle),
                 ),
               ),
             ],

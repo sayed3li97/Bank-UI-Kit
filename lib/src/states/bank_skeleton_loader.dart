@@ -50,12 +50,41 @@ class BankSkeletonLoader extends StatefulWidget {
   /// Explicit height for [BankSkeletonVariant.generic]. Defaults to `80`.
   final double? height;
 
+  /// Overrides the shimmer base colour. Defaults to
+  /// [BankThemeData.onSurface] at 6% alpha.
+  final Color? baseColor;
+
+  /// Overrides the shimmer highlight colour. Defaults to
+  /// [BankThemeData.onSurface] at 14% alpha.
+  final Color? highlightColor;
+
+  /// Overrides the placeholder corner radius. Defaults to
+  /// [BankThemeData.cardRadius] for the card variants and
+  /// [BankTokens.radiusMedium] otherwise.
+  final BorderRadius? radius;
+
+  /// Vertical gap between stacked copies. Defaults to
+  /// [BankTokens.space2].
+  final double? itemSpacing;
+
+  /// Duration of one shimmer sweep. Defaults to 1400 milliseconds.
+  final Duration? animationDuration;
+
+  /// Semantics label announced while loading. Defaults to 'Loading…'.
+  final String semanticLabel;
+
   const BankSkeletonLoader({
     super.key,
     this.variant = BankSkeletonVariant.generic,
     this.count = 1,
     this.width,
     this.height,
+    this.baseColor,
+    this.highlightColor,
+    this.radius,
+    this.itemSpacing,
+    this.animationDuration,
+    this.semanticLabel = 'Loading…',
   }) : assert(count >= 1, 'count must be at least 1');
 
   @override
@@ -64,6 +93,8 @@ class BankSkeletonLoader extends StatefulWidget {
 
 class _BankSkeletonLoaderState extends State<BankSkeletonLoader>
     with SingleTickerProviderStateMixin {
+  static const Duration _defaultShimmerDuration = Duration(milliseconds: 1400);
+
   late final AnimationController _controller;
 
   @override
@@ -71,8 +102,19 @@ class _BankSkeletonLoaderState extends State<BankSkeletonLoader>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: widget.animationDuration ?? _defaultShimmerDuration,
     )..repeat();
+  }
+
+  @override
+  void didUpdateWidget(BankSkeletonLoader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.animationDuration != oldWidget.animationDuration) {
+      _controller
+        ..stop()
+        ..duration = widget.animationDuration ?? _defaultShimmerDuration
+        ..repeat();
+    }
   }
 
   @override
@@ -85,11 +127,12 @@ class _BankSkeletonLoaderState extends State<BankSkeletonLoader>
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
 
-    final base = theme.onSurface.withValues(alpha: 0.06);
-    final highlight = theme.onSurface.withValues(alpha: 0.14);
+    final base = widget.baseColor ?? theme.onSurface.withValues(alpha: 0.06);
+    final highlight =
+        widget.highlightColor ?? theme.onSurface.withValues(alpha: 0.14);
 
     return Semantics(
-      label: 'Loading…',
+      label: widget.semanticLabel,
       child: ExcludeSemantics(
         child: RepaintBoundary(
           child: AnimatedBuilder(
@@ -100,7 +143,9 @@ class _BankSkeletonLoaderState extends State<BankSkeletonLoader>
                 children: List.generate(widget.count, (index) {
                   return Padding(
                     padding: EdgeInsets.only(
-                      top: index == 0 ? 0.0 : BankTokens.space2,
+                      top: index == 0
+                          ? 0.0
+                          : widget.itemSpacing ?? BankTokens.space2,
                     ),
                     child: _buildVariantShell(
                       context,
@@ -130,20 +175,22 @@ class _BankSkeletonLoaderState extends State<BankSkeletonLoader>
           progress: _controller.value,
           base: base,
           highlight: highlight,
-          cardRadius: theme.cardRadius,
+          cardRadius: widget.radius ?? theme.cardRadius,
         );
       case BankSkeletonVariant.transactionTile:
         return _TransactionTileSkeleton(
           progress: _controller.value,
           base: base,
           highlight: highlight,
+          borderRadius:
+              widget.radius ?? BorderRadius.circular(BankTokens.radiusMedium),
         );
       case BankSkeletonVariant.potCard:
         return _PotCardSkeleton(
           progress: _controller.value,
           base: base,
           highlight: highlight,
-          cardRadius: theme.cardRadius,
+          cardRadius: widget.radius ?? theme.cardRadius,
         );
       case BankSkeletonVariant.generic:
         return _GenericSkeleton(
@@ -152,6 +199,8 @@ class _BankSkeletonLoaderState extends State<BankSkeletonLoader>
           highlight: highlight,
           width: widget.width ?? double.infinity,
           height: widget.height ?? 80,
+          borderRadius:
+              widget.radius ?? BorderRadius.circular(BankTokens.radiusMedium),
         );
     }
   }
@@ -322,16 +371,18 @@ class _TransactionTileSkeleton extends StatelessWidget {
     required this.progress,
     required this.base,
     required this.highlight,
+    required this.borderRadius,
   });
 
   final double progress;
   final Color base;
   final Color highlight;
+  final BorderRadius borderRadius;
 
   @override
   Widget build(BuildContext context) {
     return _shimmerClip(
-      borderRadius: BorderRadius.circular(BankTokens.radiusMedium),
+      borderRadius: borderRadius,
       width: double.infinity,
       height: 72,
       progress: progress,
@@ -471,6 +522,7 @@ class _GenericSkeleton extends StatelessWidget {
     required this.highlight,
     required this.width,
     required this.height,
+    required this.borderRadius,
   });
 
   final double progress;
@@ -478,11 +530,12 @@ class _GenericSkeleton extends StatelessWidget {
   final Color highlight;
   final double width;
   final double height;
+  final BorderRadius borderRadius;
 
   @override
   Widget build(BuildContext context) {
     return _shimmerClip(
-      borderRadius: BorderRadius.circular(BankTokens.radiusMedium),
+      borderRadius: borderRadius,
       width: width,
       height: height,
       progress: progress,

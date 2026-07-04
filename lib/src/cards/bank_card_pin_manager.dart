@@ -39,12 +39,142 @@ class BankCardPinManager extends StatefulWidget {
   /// Called after a successful [onSubmit] response.
   final VoidCallback? onSuccess;
 
+  /// Overrides the outer padding around the flow. Defaults to none.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the submit spinner colour. Defaults to
+  /// [BankThemeData.primary].
+  final Color? accentColor;
+
+  /// Overrides the step title and back icon colour. Defaults to
+  /// [BankThemeData.onSurface].
+  final Color? foregroundColor;
+
+  /// Overrides the success badge and icon colour. Defaults to
+  /// [BankTokens.success].
+  final Color? successColor;
+
+  /// Merged over the computed title style ([BankTokens.headlineMedium]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed subtitle style ([BankTokens.bodyMedium]).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the computed error style ([BankTokens.bodySmall] in
+  /// [BankTokens.danger]).
+  final TextStyle? errorTextStyle;
+
+  /// Merged over the step indicator style ([BankTokens.labelMedium]).
+  final TextStyle? stepLabelStyle;
+
+  /// Icon of the back button. Defaults to [Icons.arrow_back].
+  final IconData backIcon;
+
+  /// Icon shown in the success badge. Defaults to
+  /// [Icons.check_circle_outline].
+  final IconData successIcon;
+
+  /// Duration of the error message switcher. Defaults to
+  /// [BankTokens.durationBase].
+  final Duration? animationDuration;
+
+  /// Curve of the error message switcher. Defaults to [Curves.linear].
+  final Curve? animationCurve;
+
+  /// Title of the current PIN step. Defaults to `'Enter current PIN'`.
+  final String currentPinTitle;
+
+  /// Title of the new PIN step. Defaults to `'Enter new PIN'`.
+  final String newPinTitle;
+
+  /// Title of the confirm step. Defaults to `'Confirm new PIN'`.
+  final String confirmPinTitle;
+
+  /// Subtitle of the current PIN step. Defaults to
+  /// `'Enter the PIN for your card'`.
+  final String currentPinSubtitle;
+
+  /// Subtitle of the new PIN step. Defaults to
+  /// `'Choose a new <pinLength>-digit PIN'`.
+  final String? newPinSubtitle;
+
+  /// Subtitle of the confirm step. Defaults to
+  /// `'Re-enter your new PIN to confirm'`.
+  final String confirmPinSubtitle;
+
+  /// Error shown when the two new PINs differ. Defaults to
+  /// `"PINs don't match. Please try again."`.
+  final String mismatchErrorText;
+
+  /// Error shown when the current PIN is rejected. Defaults to
+  /// `'Incorrect current PIN. Please try again.'`.
+  final String incorrectPinErrorText;
+
+  /// Error shown when [onSubmit] throws. Defaults to
+  /// `'Something went wrong. Please try again.'`.
+  final String genericErrorText;
+
+  /// Step indicator on the current PIN step. Defaults to `'Step 1 of 3'`.
+  final String currentPinStepLabel;
+
+  /// Step indicator on the new PIN step. Defaults to `'Step 2 of 3'`.
+  final String newPinStepLabel;
+
+  /// Step indicator on the confirm step. Defaults to `'Step 3 of 3'`.
+  final String confirmPinStepLabel;
+
+  /// Semantics label of the back button. Defaults to `'Go back'`.
+  final String backSemanticLabel;
+
+  /// Heading of the success view. Defaults to `'PIN Changed'`.
+  final String successTitle;
+
+  /// Body text of the success view. Defaults to
+  /// `'Your card PIN has been updated successfully.'`.
+  final String successMessage;
+
+  /// Semantics label of the success view. Defaults to
+  /// `'PIN changed successfully'`.
+  final String successSemanticLabel;
+
+  /// Overrides the root semantics label. Defaults to the current step title.
+  final String? semanticLabel;
+
   const BankCardPinManager({
     required this.onSubmit,
     super.key,
     this.pinLength = 4,
     this.onCancel,
     this.onSuccess,
+    this.padding,
+    this.accentColor,
+    this.foregroundColor,
+    this.successColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.errorTextStyle,
+    this.stepLabelStyle,
+    this.backIcon = Icons.arrow_back,
+    this.successIcon = Icons.check_circle_outline,
+    this.animationDuration,
+    this.animationCurve,
+    this.currentPinTitle = 'Enter current PIN',
+    this.newPinTitle = 'Enter new PIN',
+    this.confirmPinTitle = 'Confirm new PIN',
+    this.currentPinSubtitle = 'Enter the PIN for your card',
+    this.newPinSubtitle,
+    this.confirmPinSubtitle = 'Re-enter your new PIN to confirm',
+    this.mismatchErrorText = "PINs don't match. Please try again.",
+    this.incorrectPinErrorText = 'Incorrect current PIN. Please try again.',
+    this.genericErrorText = 'Something went wrong. Please try again.',
+    this.currentPinStepLabel = 'Step 1 of 3',
+    this.newPinStepLabel = 'Step 2 of 3',
+    this.confirmPinStepLabel = 'Step 3 of 3',
+    this.backSemanticLabel = 'Go back',
+    this.successTitle = 'PIN Changed',
+    this.successMessage = 'Your card PIN has been updated successfully.',
+    this.successSemanticLabel = 'PIN changed successfully',
+    this.semanticLabel,
   });
 
   @override
@@ -89,15 +219,22 @@ class _BankCardPinManagerState extends State<BankCardPinManager> {
   // ---------------------------------------------------------------------------
 
   String get _stepTitle => switch (_step) {
-        _PinStep.current => 'Enter current PIN',
-        _PinStep.newPin => 'Enter new PIN',
-        _PinStep.confirm => 'Confirm new PIN',
+        _PinStep.current => widget.currentPinTitle,
+        _PinStep.newPin => widget.newPinTitle,
+        _PinStep.confirm => widget.confirmPinTitle,
       };
 
   String get _stepSubtitle => switch (_step) {
-        _PinStep.current => 'Enter the PIN for your card',
-        _PinStep.newPin => 'Choose a new ${widget.pinLength}-digit PIN',
-        _PinStep.confirm => 'Re-enter your new PIN to confirm',
+        _PinStep.current => widget.currentPinSubtitle,
+        _PinStep.newPin =>
+          widget.newPinSubtitle ?? 'Choose a new ${widget.pinLength}-digit PIN',
+        _PinStep.confirm => widget.confirmPinSubtitle,
+      };
+
+  String get _stepIndicatorLabel => switch (_step) {
+        _PinStep.current => widget.currentPinStepLabel,
+        _PinStep.newPin => widget.newPinStepLabel,
+        _PinStep.confirm => widget.confirmPinStepLabel,
       };
 
   // ---------------------------------------------------------------------------
@@ -171,7 +308,7 @@ class _BankCardPinManagerState extends State<BankCardPinManager> {
     if (_newPin != _confirmPin) {
       setState(() {
         _showError = true;
-        _errorMessage = "PINs don't match. Please try again.";
+        _errorMessage = widget.mismatchErrorText;
         _confirmPin = '';
       });
       unawaited(HapticFeedback.heavyImpact());
@@ -199,7 +336,7 @@ class _BankCardPinManagerState extends State<BankCardPinManager> {
           _newPin = '';
           _confirmPin = '';
           _showError = true;
-          _errorMessage = 'Incorrect current PIN. Please try again.';
+          _errorMessage = widget.incorrectPinErrorText;
         });
         unawaited(HapticFeedback.heavyImpact());
       }
@@ -208,7 +345,7 @@ class _BankCardPinManagerState extends State<BankCardPinManager> {
       setState(() {
         _isSubmitting = false;
         _showError = true;
-        _errorMessage = 'Something went wrong. Please try again.';
+        _errorMessage = widget.genericErrorText;
       });
     }
   }
@@ -245,100 +382,125 @@ class _BankCardPinManagerState extends State<BankCardPinManager> {
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
+    final resolvedForeground = widget.foregroundColor ?? bankTheme.onSurface;
+    final resolvedAccent = widget.accentColor ?? bankTheme.primary;
+    final resolvedDuration =
+        widget.animationDuration ?? BankTokens.durationBase;
+    final resolvedCurve = widget.animationCurve ?? Curves.linear;
 
+    final Widget body;
     if (_success) {
-      return _SuccessView(bankTheme: bankTheme);
+      body = _SuccessView(
+        bankTheme: bankTheme,
+        icon: widget.successIcon,
+        color: widget.successColor ?? BankTokens.success,
+        foregroundColor: resolvedForeground,
+        title: widget.successTitle,
+        message: widget.successMessage,
+        semanticLabel: widget.successSemanticLabel,
+        titleStyle: widget.titleStyle,
+        messageStyle: widget.subtitleStyle,
+      );
+    } else {
+      body = Semantics(
+        label: widget.semanticLabel ?? _stepTitle,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ── Navigation bar ───────────────────────────────────────────────
+            _PinStepNavBar(
+              onBack: _goBack,
+              bankTheme: bankTheme,
+              backIcon: widget.backIcon,
+              backSemanticLabel: widget.backSemanticLabel,
+              iconColor: resolvedForeground,
+              stepLabel: _stepIndicatorLabel,
+              stepLabelStyle: widget.stepLabelStyle,
+            ),
+
+            const SizedBox(height: BankTokens.space8),
+
+            // ── Title & subtitle ─────────────────────────────────────────────
+            Text(
+              _stepTitle,
+              style: BankTokens.headlineMedium
+                  .copyWith(color: resolvedForeground)
+                  .merge(widget.titleStyle),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: BankTokens.space1),
+
+            Text(
+              _stepSubtitle,
+              style: BankTokens.bodyMedium
+                  .copyWith(color: bankTheme.onSurfaceVariant)
+                  .merge(widget.subtitleStyle),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: BankTokens.space8),
+
+            // ── PIN dots ─────────────────────────────────────────────────────
+            BankPinDots(
+              length: widget.pinLength,
+              filled: _activePin.length,
+              error: _showError,
+            ),
+
+            // ── Error message ────────────────────────────────────────────────
+            AnimatedSwitcher(
+              duration: resolvedDuration,
+              switchInCurve: resolvedCurve,
+              switchOutCurve: resolvedCurve,
+              child: _showError && _errorMessage.isNotEmpty
+                  ? Padding(
+                      key: ValueKey(_errorMessage),
+                      padding: const EdgeInsets.only(top: BankTokens.space3),
+                      child: Text(
+                        _errorMessage,
+                        style: BankTokens.bodySmall
+                            .copyWith(color: BankTokens.danger)
+                            .merge(widget.errorTextStyle),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : const SizedBox(
+                      key: ValueKey('no-error'),
+                      height: BankTokens.space6,
+                    ),
+            ),
+
+            const SizedBox(height: BankTokens.space6),
+
+            // ── Keypad ───────────────────────────────────────────────────────
+            BankPinKeypad(
+              onDigit: _onDigit,
+              onDelete: _onDelete,
+              enabled: !_isSubmitting,
+            ),
+
+            // ── Loading indicator ────────────────────────────────────────────
+            if (_isSubmitting) ...[
+              const SizedBox(height: BankTokens.space4),
+              SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: resolvedAccent,
+                ),
+              ),
+            ],
+
+            const SizedBox(height: BankTokens.space6),
+          ],
+        ),
+      );
     }
 
-    return Semantics(
-      label: _stepTitle,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // ── Navigation bar ─────────────────────────────────────────────────
-          _PinStepNavBar(
-            step: _step,
-            onBack: _goBack,
-            bankTheme: bankTheme,
-          ),
-
-          const SizedBox(height: BankTokens.space8),
-
-          // ── Title & subtitle ───────────────────────────────────────────────
-          Text(
-            _stepTitle,
-            style: BankTokens.headlineMedium.copyWith(
-              color: bankTheme.onSurface,
-            ),
-            textAlign: TextAlign.center,
-          ),
-
-          const SizedBox(height: BankTokens.space1),
-
-          Text(
-            _stepSubtitle,
-            style: BankTokens.bodyMedium.copyWith(
-              color: bankTheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-
-          const SizedBox(height: BankTokens.space8),
-
-          // ── PIN dots ───────────────────────────────────────────────────────
-          BankPinDots(
-            length: widget.pinLength,
-            filled: _activePin.length,
-            error: _showError,
-          ),
-
-          // ── Error message ──────────────────────────────────────────────────
-          AnimatedSwitcher(
-            duration: BankTokens.durationBase,
-            child: _showError && _errorMessage.isNotEmpty
-                ? Padding(
-                    key: ValueKey(_errorMessage),
-                    padding: const EdgeInsets.only(top: BankTokens.space3),
-                    child: Text(
-                      _errorMessage,
-                      style: BankTokens.bodySmall.copyWith(
-                        color: BankTokens.danger,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                : const SizedBox(
-                    key: ValueKey('no-error'),
-                    height: BankTokens.space6,
-                  ),
-          ),
-
-          const SizedBox(height: BankTokens.space6),
-
-          // ── Keypad ────────────────────────────────────────────────────────
-          BankPinKeypad(
-            onDigit: _onDigit,
-            onDelete: _onDelete,
-            enabled: !_isSubmitting,
-          ),
-
-          // ── Loading indicator ─────────────────────────────────────────────
-          if (_isSubmitting) ...[
-            const SizedBox(height: BankTokens.space4),
-            SizedBox(
-              height: 24,
-              width: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: bankTheme.primary,
-              ),
-            ),
-          ],
-
-          const SizedBox(height: BankTokens.space6),
-        ],
-      ),
-    );
+    if (widget.padding == null) return body;
+    return Padding(padding: widget.padding!, child: body);
   }
 }
 
@@ -348,21 +510,23 @@ class _BankCardPinManagerState extends State<BankCardPinManager> {
 
 /// Step navigation bar with a back arrow and a step indicator.
 class _PinStepNavBar extends StatelessWidget {
-  final _PinStep step;
   final VoidCallback onBack;
   final BankThemeData bankTheme;
+  final IconData backIcon;
+  final String backSemanticLabel;
+  final Color iconColor;
+  final String stepLabel;
+  final TextStyle? stepLabelStyle;
 
   const _PinStepNavBar({
-    required this.step,
     required this.onBack,
     required this.bankTheme,
+    required this.backIcon,
+    required this.backSemanticLabel,
+    required this.iconColor,
+    required this.stepLabel,
+    this.stepLabelStyle,
   });
-
-  String get _stepLabel => switch (step) {
-        _PinStep.current => 'Step 1 of 3',
-        _PinStep.newPin => 'Step 2 of 3',
-        _PinStep.confirm => 'Step 3 of 3',
-      };
 
   @override
   Widget build(BuildContext context) {
@@ -371,7 +535,7 @@ class _PinStepNavBar extends StatelessWidget {
         // Back button: min 44×44
         Semantics(
           button: true,
-          label: 'Go back',
+          label: backSemanticLabel,
           child: InkWell(
             onTap: onBack,
             borderRadius: BorderRadius.circular(BankTokens.radiusFull),
@@ -380,8 +544,8 @@ class _PinStepNavBar extends StatelessWidget {
               height: BankTokens.minTapTarget,
               child: Center(
                 child: Icon(
-                  Icons.arrow_back,
-                  color: bankTheme.onSurface,
+                  backIcon,
+                  color: iconColor,
                   size: 22,
                 ),
               ),
@@ -390,10 +554,10 @@ class _PinStepNavBar extends StatelessWidget {
         ),
         const Spacer(),
         Text(
-          _stepLabel,
-          style: BankTokens.labelMedium.copyWith(
-            color: bankTheme.onSurfaceVariant,
-          ),
+          stepLabel,
+          style: BankTokens.labelMedium
+              .copyWith(color: bankTheme.onSurfaceVariant)
+              .merge(stepLabelStyle),
         ),
         const Spacer(),
         // Placeholder to keep the step label centred.
@@ -409,13 +573,31 @@ class _PinStepNavBar extends StatelessWidget {
 
 class _SuccessView extends StatelessWidget {
   final BankThemeData bankTheme;
+  final IconData icon;
+  final Color color;
+  final Color foregroundColor;
+  final String title;
+  final String message;
+  final String semanticLabel;
+  final TextStyle? titleStyle;
+  final TextStyle? messageStyle;
 
-  const _SuccessView({required this.bankTheme});
+  const _SuccessView({
+    required this.bankTheme,
+    required this.icon,
+    required this.color,
+    required this.foregroundColor,
+    required this.title,
+    required this.message,
+    required this.semanticLabel,
+    this.titleStyle,
+    this.messageStyle,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'PIN changed successfully',
+      label: semanticLabel,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -424,30 +606,30 @@ class _SuccessView extends StatelessWidget {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: BankTokens.success.withValues(alpha: 0.12),
+              color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Center(
+            child: Center(
               child: Icon(
-                Icons.check_circle_outline,
+                icon,
                 size: 40,
-                color: BankTokens.success,
+                color: color,
               ),
             ),
           ),
           const SizedBox(height: BankTokens.space5),
           Text(
-            'PIN Changed',
-            style: BankTokens.headlineMedium.copyWith(
-              color: bankTheme.onSurface,
-            ),
+            title,
+            style: BankTokens.headlineMedium
+                .copyWith(color: foregroundColor)
+                .merge(titleStyle),
           ),
           const SizedBox(height: BankTokens.space2),
           Text(
-            'Your card PIN has been updated successfully.',
-            style: BankTokens.bodyMedium.copyWith(
-              color: bankTheme.onSurfaceVariant,
-            ),
+            message,
+            style: BankTokens.bodyMedium
+                .copyWith(color: bankTheme.onSurfaceVariant)
+                .merge(messageStyle),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: BankTokens.space12),

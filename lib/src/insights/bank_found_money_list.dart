@@ -144,6 +144,44 @@ class BankFoundMoneyList extends StatefulWidget {
   /// Label shown once a row has been claimed.
   final String claimedLabel;
 
+  /// Overrides the header fill. Defaults to the theme accentGradient
+  /// (or a primary-to-primaryVariant fallback).
+  final Gradient? gradient;
+
+  /// Overrides the header celebration glyph. Defaults to
+  /// [Icons.celebration_outlined].
+  final IconData? headerIcon;
+
+  /// Merged over the header text style (headlineSmall, onPrimary).
+  final TextStyle? headerTextStyle;
+
+  /// Overrides the header and list corner radius. Defaults to the
+  /// theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the list card fill. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the header and list shadow. Defaults to
+  /// [BankTokens.shadowCard]; pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Overrides the row divider colour. Defaults to the theme outline.
+  final Color? dividerColor;
+
+  /// Overrides the claim button fill. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Merged over each row title style (labelLarge, onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over each row subtitle style (bodySmall, onSurfaceVariant).
+  final TextStyle? subtitleStyle;
+
+  /// Overrides the claimed-row fade duration. Defaults to
+  /// [BankTokens.durationBase].
+  final Duration? animationDuration;
+
   /// Creates a recoverable-money discovery list.
   const BankFoundMoneyList({
     required this.items,
@@ -152,6 +190,17 @@ class BankFoundMoneyList extends StatefulWidget {
     this.headerTemplate = 'We found {total} you can claim',
     this.claimLabel = 'Claim',
     this.claimedLabel = 'Claimed',
+    this.gradient,
+    this.headerIcon,
+    this.headerTextStyle,
+    this.radius,
+    this.backgroundColor,
+    this.shadow,
+    this.dividerColor,
+    this.accentColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.animationDuration,
   });
 
   @override
@@ -209,13 +258,18 @@ class _BankFoundMoneyListState extends State<BankFoundMoneyList> {
         _BankFoundMoneyHeader(
           total: _unclaimedTotal,
           template: widget.headerTemplate,
+          gradient: widget.gradient,
+          icon: widget.headerIcon,
+          textStyle: widget.headerTextStyle,
+          radius: widget.radius,
+          shadow: widget.shadow,
         ),
         const SizedBox(height: BankTokens.space3),
         DecoratedBox(
           decoration: BoxDecoration(
-            color: theme.surface,
-            borderRadius: theme.cardRadius,
-            boxShadow: BankTokens.shadowCard,
+            color: widget.backgroundColor ?? theme.surface,
+            borderRadius: widget.radius ?? theme.cardRadius,
+            boxShadow: widget.shadow ?? BankTokens.shadowCard,
           ),
           child: Column(
             children: [
@@ -227,10 +281,18 @@ class _BankFoundMoneyListState extends State<BankFoundMoneyList> {
                   failed: _failedIds.contains(widget.items[i].id),
                   claimLabel: widget.claimLabel,
                   claimedLabel: widget.claimedLabel,
+                  accentColor: widget.accentColor,
+                  titleStyle: widget.titleStyle,
+                  subtitleStyle: widget.subtitleStyle,
+                  fadeDuration: widget.animationDuration,
                   onClaim: () => _handleClaim(widget.items[i].id),
                 ),
                 if (i < widget.items.length - 1)
-                  Divider(height: 1, thickness: 1, color: theme.outline),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: widget.dividerColor ?? theme.outline,
+                  ),
               ],
             ],
           ),
@@ -247,13 +309,27 @@ class _BankFoundMoneyListState extends State<BankFoundMoneyList> {
 class _BankFoundMoneyHeader extends StatelessWidget {
   final Money total;
   final String template;
+  final Gradient? gradient;
+  final IconData? icon;
+  final TextStyle? textStyle;
+  final BorderRadius? radius;
+  final List<BoxShadow>? shadow;
 
-  const _BankFoundMoneyHeader({required this.total, required this.template});
+  const _BankFoundMoneyHeader({
+    required this.total,
+    required this.template,
+    this.gradient,
+    this.icon,
+    this.textStyle,
+    this.radius,
+    this.shadow,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final gradient = theme.accentGradient ??
+    final resolvedGradient = gradient ??
+        theme.accentGradient ??
         LinearGradient(colors: [theme.primary, theme.primaryVariant]);
 
     const placeholder = '{total}';
@@ -263,13 +339,15 @@ class _BankFoundMoneyHeader extends StatelessWidget {
     final after =
         index >= 0 ? template.substring(index + placeholder.length).trim() : '';
 
-    final textStyle = BankTokens.headlineSmall.copyWith(color: theme.onPrimary);
+    final resolvedTextStyle = BankTokens.headlineSmall
+        .copyWith(color: theme.onPrimary)
+        .merge(textStyle);
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: theme.cardRadius,
-        boxShadow: BankTokens.shadowCard,
+        gradient: resolvedGradient,
+        borderRadius: radius ?? theme.cardRadius,
+        boxShadow: shadow ?? BankTokens.shadowCard,
       ),
       child: Padding(
         padding: const EdgeInsets.all(BankTokens.space5),
@@ -283,7 +361,7 @@ class _BankFoundMoneyHeader extends StatelessWidget {
                 color: theme.onPrimary.withValues(alpha: 0.16),
               ),
               child: Icon(
-                Icons.celebration_outlined,
+                icon ?? Icons.celebration_outlined,
                 size: 22,
                 color: theme.onPrimary,
               ),
@@ -295,14 +373,14 @@ class _BankFoundMoneyHeader extends StatelessWidget {
                 runSpacing: BankTokens.space1,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  if (before.isNotEmpty) Text(before, style: textStyle),
+                  if (before.isNotEmpty) Text(before, style: resolvedTextStyle),
                   if (index >= 0)
                     BankBalanceText(
                       money: total,
                       style:
                           theme.numeralLarge.copyWith(color: theme.onPrimary),
                     ),
-                  if (after.isNotEmpty) Text(after, style: textStyle),
+                  if (after.isNotEmpty) Text(after, style: resolvedTextStyle),
                 ],
               ),
             ),
@@ -324,6 +402,10 @@ class _BankFoundMoneyRow extends StatelessWidget {
   final bool failed;
   final String claimLabel;
   final String claimedLabel;
+  final Color? accentColor;
+  final TextStyle? titleStyle;
+  final TextStyle? subtitleStyle;
+  final Duration? fadeDuration;
   final VoidCallback onClaim;
 
   const _BankFoundMoneyRow({
@@ -334,6 +416,10 @@ class _BankFoundMoneyRow extends StatelessWidget {
     required this.claimLabel,
     required this.claimedLabel,
     required this.onClaim,
+    this.accentColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.fadeDuration,
   });
 
   static IconData _kindIcon(BankFoundMoneyKind kind) => switch (kind) {
@@ -361,7 +447,9 @@ class _BankFoundMoneyRow extends StatelessWidget {
 
     return AnimatedOpacity(
       opacity: claimed ? 0.6 : 1,
-      duration: disableAnimations ? Duration.zero : BankTokens.durationBase,
+      duration: disableAnimations
+          ? Duration.zero
+          : fadeDuration ?? BankTokens.durationBase,
       curve: BankTokens.curveStandard,
       child: Padding(
         padding: const EdgeInsets.all(BankTokens.space4),
@@ -383,15 +471,17 @@ class _BankFoundMoneyRow extends StatelessWidget {
                 children: [
                   Text(
                     item.title,
-                    style:
-                        BankTokens.labelLarge.copyWith(color: theme.onSurface),
+                    style: BankTokens.labelLarge
+                        .copyWith(color: theme.onSurface)
+                        .merge(titleStyle),
                   ),
                   if (item.subtitle != null) ...[
                     const SizedBox(height: 2),
                     Text(
                       item.subtitle!,
                       style: BankTokens.bodySmall
-                          .copyWith(color: theme.onSurfaceVariant),
+                          .copyWith(color: theme.onSurfaceVariant)
+                          .merge(subtitleStyle),
                     ),
                   ],
                 ],
@@ -414,6 +504,7 @@ class _BankFoundMoneyRow extends StatelessWidget {
                     itemTitle: item.title,
                     pending: pending,
                     failed: failed,
+                    accentColor: accentColor,
                     onPressed: onClaim,
                   ),
               ],
@@ -434,6 +525,7 @@ class _ClaimButton extends StatelessWidget {
   final String itemTitle;
   final bool pending;
   final bool failed;
+  final Color? accentColor;
   final VoidCallback onPressed;
 
   const _ClaimButton({
@@ -442,6 +534,7 @@ class _ClaimButton extends StatelessWidget {
     required this.pending,
     required this.failed,
     required this.onPressed,
+    this.accentColor,
   });
 
   @override
@@ -458,7 +551,8 @@ class _ClaimButton extends StatelessWidget {
           child: FilledButton(
             onPressed: pending ? null : onPressed,
             style: FilledButton.styleFrom(
-              backgroundColor: failed ? BankTokens.danger : theme.primary,
+              backgroundColor:
+                  failed ? BankTokens.danger : accentColor ?? theme.primary,
               foregroundColor: theme.onPrimary,
               minimumSize: const Size(72, BankTokens.minTapTarget),
               padding:

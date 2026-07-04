@@ -73,6 +73,50 @@ class BankBiometricPromptButton extends StatefulWidget {
   /// [BankBiometricType.fingerprint].
   final BankBiometricType type;
 
+  /// Overrides the idle glyph. Defaults to the [type]-appropriate
+  /// [BankIcons] glyph.
+  final IconData? icon;
+
+  /// Overrides the success glyph. Defaults to [BankIcons.success].
+  final IconData? successIcon;
+
+  /// Overrides the error glyph. Defaults to [BankIcons.error].
+  final IconData? errorIcon;
+
+  /// Overrides the glyph size. Defaults to `48`.
+  final double? iconSize;
+
+  /// Overrides the idle icon and spinner colour. Defaults to
+  /// [BankThemeData.primary].
+  final Color? accentColor;
+
+  /// Overrides the success icon colour. Defaults to
+  /// [BankThemeData.positiveBalance].
+  final Color? successColor;
+
+  /// Overrides the error icon colour. Defaults to
+  /// [BankThemeData.negativeBalance].
+  final Color? errorColor;
+
+  /// Merged over the computed label style ([BankTokens.labelLarge] in
+  /// [BankThemeData.onSurface]).
+  final TextStyle? labelStyle;
+
+  /// Overrides the semantics label. Defaults to [label].
+  final String? semanticLabel;
+
+  /// Message passed to [onError] on failure. Defaults to
+  /// `'Authentication failed'`.
+  final String errorMessage;
+
+  /// Overrides the press-scale and icon-switch duration. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Overrides the press-scale and icon-switch curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
   const BankBiometricPromptButton({
     required this.onAuthenticate,
     super.key,
@@ -80,6 +124,18 @@ class BankBiometricPromptButton extends StatefulWidget {
     this.onError,
     this.label = 'Use Biometrics',
     this.type = BankBiometricType.fingerprint,
+    this.icon,
+    this.successIcon,
+    this.errorIcon,
+    this.iconSize,
+    this.accentColor,
+    this.successColor,
+    this.errorColor,
+    this.labelStyle,
+    this.semanticLabel,
+    this.errorMessage = 'Authentication failed',
+    this.animationDuration,
+    this.animationCurve,
   });
 
   @override
@@ -92,22 +148,42 @@ class _BankBiometricPromptButtonState extends State<BankBiometricPromptButton>
   _ButtonState _state = _ButtonState.idle;
 
   late final AnimationController _scaleController;
-  late final Animation<double> _scaleAnimation;
+  late Animation<double> _scaleAnimation;
+
+  Duration get _resolvedDuration =>
+      widget.animationDuration ?? BankTokens.durationFast;
+
+  Curve get _resolvedCurve => widget.animationCurve ?? BankTokens.curveStandard;
 
   @override
   void initState() {
     super.initState();
     _scaleController = AnimationController(
       vsync: this,
-      duration: BankTokens.durationFast,
+      duration: _resolvedDuration,
       value: 1,
     );
-    _scaleAnimation = Tween<double>(begin: 1, end: 0.92).animate(
+    _scaleAnimation = _buildScaleAnimation();
+  }
+
+  Animation<double> _buildScaleAnimation() {
+    return Tween<double>(begin: 1, end: 0.92).animate(
       CurvedAnimation(
         parent: _scaleController,
-        curve: BankTokens.curveStandard,
+        curve: _resolvedCurve,
       ),
     );
+  }
+
+  @override
+  void didUpdateWidget(BankBiometricPromptButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.animationDuration != oldWidget.animationDuration) {
+      _scaleController.duration = _resolvedDuration;
+    }
+    if (widget.animationCurve != oldWidget.animationCurve) {
+      _scaleAnimation = _buildScaleAnimation();
+    }
   }
 
   @override
@@ -143,7 +219,7 @@ class _BankBiometricPromptButtonState extends State<BankBiometricPromptButton>
       widget.onSuccess?.call();
     } else {
       setState(() => _state = _ButtonState.error);
-      widget.onError?.call('Authentication failed');
+      widget.onError?.call(widget.errorMessage);
       await Future<void>.delayed(const Duration(milliseconds: 500));
       if (!mounted) return;
       setState(() => _state = _ButtonState.idle);
@@ -156,7 +232,7 @@ class _BankBiometricPromptButtonState extends State<BankBiometricPromptButton>
 
     return Semantics(
       button: true,
-      label: widget.label,
+      label: widget.semanticLabel ?? widget.label,
       child: ScaleTransition(
         scale: _scaleAnimation,
         child: GestureDetector(
@@ -182,36 +258,39 @@ class _BankBiometricPromptButtonState extends State<BankBiometricPromptButton>
   }
 
   Widget _buildIconArea(BankThemeData bankTheme) {
+    final resolvedAccent = widget.accentColor ?? bankTheme.primary;
+    final resolvedIconSize = widget.iconSize ?? 48;
+
     return SizedBox(
       width: 64,
       height: 64,
       child: AnimatedSwitcher(
-        duration: BankTokens.durationFast,
-        switchInCurve: BankTokens.curveStandard,
-        switchOutCurve: BankTokens.curveStandard,
+        duration: _resolvedDuration,
+        switchInCurve: _resolvedCurve,
+        switchOutCurve: _resolvedCurve,
         child: switch (_state) {
           _ButtonState.loading => CircularProgressIndicator(
               key: const ValueKey<String>('loading'),
-              color: bankTheme.primary,
+              color: resolvedAccent,
               strokeWidth: 2.5,
             ),
           _ButtonState.success => Icon(
-              BankIcons.success,
+              widget.successIcon ?? BankIcons.success,
               key: const ValueKey<String>('success'),
-              size: 48,
-              color: bankTheme.positiveBalance,
+              size: resolvedIconSize,
+              color: widget.successColor ?? bankTheme.positiveBalance,
             ),
           _ButtonState.error => Icon(
-              BankIcons.error,
+              widget.errorIcon ?? BankIcons.error,
               key: const ValueKey<String>('error'),
-              size: 48,
-              color: bankTheme.negativeBalance,
+              size: resolvedIconSize,
+              color: widget.errorColor ?? bankTheme.negativeBalance,
             ),
           _ButtonState.idle => Icon(
-              _iconForType,
+              widget.icon ?? _iconForType,
               key: const ValueKey<String>('idle'),
-              size: 48,
-              color: bankTheme.primary,
+              size: resolvedIconSize,
+              color: resolvedAccent,
             ),
         },
       ),
@@ -221,9 +300,9 @@ class _BankBiometricPromptButtonState extends State<BankBiometricPromptButton>
   Widget _buildLabel(BankThemeData bankTheme) {
     return Text(
       widget.label,
-      style: BankTokens.labelLarge.copyWith(
-        color: bankTheme.onSurface,
-      ),
+      style: BankTokens.labelLarge
+          .copyWith(color: bankTheme.onSurface)
+          .merge(widget.labelStyle),
       textAlign: TextAlign.center,
     );
   }

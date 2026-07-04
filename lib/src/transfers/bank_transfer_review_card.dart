@@ -54,6 +54,87 @@ class BankTransferReviewCard extends StatelessWidget {
   /// T&C links, or exchange-rate freshness notes.
   final Widget? additionalInfo;
 
+  /// Overrides the card content padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card background color. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card elevation. Defaults to the theme elevationLow.
+  final double? elevation;
+
+  /// Replaces the beneficiary header row. Defaults to the built-in
+  /// avatar-name-account header.
+  final Widget? header;
+
+  /// Merged over the beneficiary name style
+  /// (BankTokens.headlineSmall in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the account details style
+  /// (BankTokens.bodySmall in onSurfaceVariant).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over each row label style
+  /// (BankTokens.bodyMedium in onSurfaceVariant).
+  final TextStyle? labelStyle;
+
+  /// Merged over each plain row value style
+  /// (BankTokens.bodyMedium, w500).
+  final TextStyle? valueStyle;
+
+  /// Merged over the highlighted money styles of the amount and
+  /// "They receive" rows (theme numeralMedium).
+  final TextStyle? amountStyle;
+
+  /// Label of the amount row. Defaults to `'Amount'`.
+  final String amountLabel;
+
+  /// Label of the fee row. Defaults to `'Fee'`.
+  final String feeLabel;
+
+  /// Value shown when the fee is zero or null. Defaults to `'Free'`.
+  final String freeLabel;
+
+  /// Label of the exchange-rate row. Defaults to `'Exchange Rate'`.
+  final String exchangeRateLabel;
+
+  /// Label of the sent-amount row. Defaults to `'You send'`.
+  final String youSendLabel;
+
+  /// Label of the converted-amount row. Defaults to `'They receive'`.
+  final String theyReceiveLabel;
+
+  /// Label of the arrival row. Defaults to `'Arrives'`.
+  final String arrivesLabel;
+
+  /// Prefix of the scheduled arrival value. Defaults to `'Scheduled:'`.
+  final String scheduledPrefix;
+
+  /// Arrival value when no arrival information is available. Defaults to
+  /// `'-'`.
+  final String noArrivalLabel;
+
+  /// Overrides the verified-beneficiary glyph. Defaults to
+  /// [Icons.verified_outlined].
+  final IconData? verifiedIcon;
+
+  /// Overrides the accent of the avatar fallback and verified badge.
+  /// Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the color of the free fee value. Defaults to
+  /// BankTokens.positiveBalance.
+  final Color? freeColor;
+
+  /// When non-null, wraps the card in a [Semantics] label. Defaults to no
+  /// extra semantics node.
+  final String? semanticLabel;
+
   const BankTransferReviewCard({
     required this.amount,
     required this.beneficiary,
@@ -64,6 +145,29 @@ class BankTransferReviewCard extends StatelessWidget {
     this.isScheduled = false,
     this.scheduledDate,
     this.additionalInfo,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.elevation,
+    this.header,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.labelStyle,
+    this.valueStyle,
+    this.amountStyle,
+    this.amountLabel = 'Amount',
+    this.feeLabel = 'Fee',
+    this.freeLabel = 'Free',
+    this.exchangeRateLabel = 'Exchange Rate',
+    this.youSendLabel = 'You send',
+    this.theyReceiveLabel = 'They receive',
+    this.arrivesLabel = 'Arrives',
+    this.scheduledPrefix = 'Scheduled:',
+    this.noArrivalLabel = '-',
+    this.verifiedIcon,
+    this.accentColor,
+    this.freeColor,
+    this.semanticLabel,
   });
 
   // ---------------------------------------------------------------------------
@@ -84,9 +188,9 @@ class BankTransferReviewCard extends StatelessWidget {
 
   String _formatArrival(BankUiScopeData scope) {
     if (isScheduled && scheduledDate != null) {
-      return 'Scheduled: ${BankDateFormatter.formatFull(scheduledDate!)}';
+      return '$scheduledPrefix ${BankDateFormatter.formatFull(scheduledDate!)}';
     }
-    return estimatedArrival ?? '-';
+    return estimatedArrival ?? noArrivalLabel;
   }
 
   String _formatRate() {
@@ -117,13 +221,16 @@ class BankTransferReviewCard extends StatelessWidget {
     final hasExchangeRate = exchangeRate != null;
     final convertedAmount =
         hasExchangeRate ? exchangeRate!.convert(amount) : null;
+    final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space4);
 
-    return Card(
-      elevation: bankTheme.elevationLow,
-      color: bankTheme.surface,
-      shape: RoundedRectangleBorder(borderRadius: bankTheme.cardRadius),
+    final card = Card(
+      elevation: elevation ?? bankTheme.elevationLow,
+      color: backgroundColor ?? bankTheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: radius ?? bankTheme.cardRadius,
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space4),
+        padding: resolvedPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -131,11 +238,16 @@ class BankTransferReviewCard extends StatelessWidget {
             // ----------------------------------------------------------------
             // Beneficiary header
             // ----------------------------------------------------------------
-            _BeneficiaryHeader(
-              beneficiary: beneficiary,
-              initials: _initials,
-              bankTheme: bankTheme,
-            ),
+            header ??
+                _BeneficiaryHeader(
+                  beneficiary: beneficiary,
+                  initials: _initials,
+                  bankTheme: bankTheme,
+                  titleStyle: titleStyle,
+                  subtitleStyle: subtitleStyle,
+                  verifiedIcon: verifiedIcon ?? Icons.verified_outlined,
+                  accentColor: accentColor ?? bankTheme.primary,
+                ),
             const SizedBox(height: BankTokens.space4),
             Divider(color: bankTheme.outline.withValues(alpha: 0.4), height: 1),
             const SizedBox(height: BankTokens.space4),
@@ -143,23 +255,28 @@ class BankTransferReviewCard extends StatelessWidget {
             // Amount row
             // ----------------------------------------------------------------
             _ReviewRow(
-              label: 'Amount',
+              label: amountLabel,
               value: _formatMoney(amount, scope),
               bankTheme: bankTheme,
               valueStyle: bankTheme.numeralMedium.copyWith(
                 color: bankTheme.onSurface,
               ),
+              labelStyle: labelStyle,
+              valueOverride: amountStyle,
             ),
             const SizedBox(height: BankTokens.space3),
             // ----------------------------------------------------------------
             // Fee row
             // ----------------------------------------------------------------
             _ReviewRow(
-              label: 'Fee',
-              value: _isFree ? 'Free' : _formatMoney(fee!, scope),
+              label: feeLabel,
+              value: _isFree ? freeLabel : _formatMoney(fee!, scope),
               bankTheme: bankTheme,
-              valueColor:
-                  _isFree ? BankTokens.positiveBalance : bankTheme.onSurface,
+              valueColor: _isFree
+                  ? (freeColor ?? BankTokens.positiveBalance)
+                  : bankTheme.onSurface,
+              labelStyle: labelStyle,
+              valueOverride: valueStyle,
             ),
             // ----------------------------------------------------------------
             // Exchange rate rows (international transfers)
@@ -167,24 +284,30 @@ class BankTransferReviewCard extends StatelessWidget {
             if (hasExchangeRate) ...[
               const SizedBox(height: BankTokens.space3),
               _ReviewRow(
-                label: 'Exchange Rate',
+                label: exchangeRateLabel,
                 value: _formatRate(),
                 bankTheme: bankTheme,
+                labelStyle: labelStyle,
+                valueOverride: valueStyle,
               ),
               const SizedBox(height: BankTokens.space3),
               _ReviewRow(
-                label: 'You send',
+                label: youSendLabel,
                 value: _formatMoney(amount, scope),
                 bankTheme: bankTheme,
+                labelStyle: labelStyle,
+                valueOverride: valueStyle,
               ),
               const SizedBox(height: BankTokens.space3),
               _ReviewRow(
-                label: 'They receive',
+                label: theyReceiveLabel,
                 value: _formatMoney(convertedAmount!, scope),
                 bankTheme: bankTheme,
                 valueStyle: bankTheme.numeralMedium.copyWith(
                   color: bankTheme.positiveBalance,
                 ),
+                labelStyle: labelStyle,
+                valueOverride: amountStyle,
               ),
             ],
             // ----------------------------------------------------------------
@@ -192,9 +315,11 @@ class BankTransferReviewCard extends StatelessWidget {
             // ----------------------------------------------------------------
             const SizedBox(height: BankTokens.space3),
             _ReviewRow(
-              label: 'Arrives',
+              label: arrivesLabel,
               value: _formatArrival(scope),
               bankTheme: bankTheme,
+              labelStyle: labelStyle,
+              valueOverride: valueStyle,
             ),
             // ----------------------------------------------------------------
             // Additional info slot
@@ -212,6 +337,9 @@ class BankTransferReviewCard extends StatelessWidget {
         ),
       ),
     );
+
+    if (semanticLabel == null) return card;
+    return Semantics(label: semanticLabel, child: card);
   }
 }
 
@@ -224,11 +352,19 @@ class _BeneficiaryHeader extends StatelessWidget {
     required this.beneficiary,
     required this.initials,
     required this.bankTheme,
+    required this.titleStyle,
+    required this.subtitleStyle,
+    required this.verifiedIcon,
+    required this.accentColor,
   });
 
   final BankBeneficiary beneficiary;
   final String initials;
   final BankThemeData bankTheme;
+  final TextStyle? titleStyle;
+  final TextStyle? subtitleStyle;
+  final IconData verifiedIcon;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
@@ -247,11 +383,11 @@ class _BeneficiaryHeader extends StatelessWidget {
         else
           CircleAvatar(
             radius: 24,
-            backgroundColor: bankTheme.primary.withValues(alpha: 0.15),
+            backgroundColor: accentColor.withValues(alpha: 0.15),
             child: Text(
               initials,
               style: BankTokens.labelLarge.copyWith(
-                color: bankTheme.primary,
+                color: accentColor,
               ),
             ),
           ),
@@ -266,9 +402,9 @@ class _BeneficiaryHeader extends StatelessWidget {
                   Flexible(
                     child: Text(
                       beneficiary.name,
-                      style: BankTokens.headlineSmall.copyWith(
-                        color: bankTheme.onSurface,
-                      ),
+                      style: BankTokens.headlineSmall
+                          .copyWith(color: bankTheme.onSurface)
+                          .merge(titleStyle),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -276,9 +412,9 @@ class _BeneficiaryHeader extends StatelessWidget {
                   if (beneficiary.isVerified) ...[
                     const SizedBox(width: BankTokens.space1),
                     Icon(
-                      Icons.verified_outlined,
+                      verifiedIcon,
                       size: 14,
-                      color: bankTheme.primary,
+                      color: accentColor,
                     ),
                   ],
                 ],
@@ -289,9 +425,9 @@ class _BeneficiaryHeader extends StatelessWidget {
                   beneficiary.maskedAccount,
                   if (beneficiary.bankName != null) beneficiary.bankName!,
                 ].join(' · '),
-                style: BankTokens.bodySmall.copyWith(
-                  color: bankTheme.onSurfaceVariant,
-                ),
+                style: BankTokens.bodySmall
+                    .copyWith(color: bankTheme.onSurfaceVariant)
+                    .merge(subtitleStyle),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -314,6 +450,8 @@ class _ReviewRow extends StatelessWidget {
     required this.bankTheme,
     this.valueStyle,
     this.valueColor,
+    this.labelStyle,
+    this.valueOverride,
   });
 
   final String label;
@@ -321,14 +459,17 @@ class _ReviewRow extends StatelessWidget {
   final BankThemeData bankTheme;
   final TextStyle? valueStyle;
   final Color? valueColor;
+  final TextStyle? labelStyle;
+  final TextStyle? valueOverride;
 
   @override
   Widget build(BuildContext context) {
-    final resolvedValueStyle = valueStyle ??
-        BankTokens.bodyMedium.copyWith(
-          color: valueColor ?? bankTheme.onSurface,
-          fontWeight: FontWeight.w500,
-        );
+    final resolvedValueStyle = (valueStyle ??
+            BankTokens.bodyMedium.copyWith(
+              color: valueColor ?? bankTheme.onSurface,
+              fontWeight: FontWeight.w500,
+            ))
+        .merge(valueOverride);
 
     return Semantics(
       label: '$label: $value',
@@ -339,9 +480,9 @@ class _ReviewRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: BankTokens.bodyMedium.copyWith(
-              color: bankTheme.onSurfaceVariant,
-            ),
+            style: BankTokens.bodyMedium
+                .copyWith(color: bankTheme.onSurfaceVariant)
+                .merge(labelStyle),
           ),
           const SizedBox(width: BankTokens.space4),
           Flexible(

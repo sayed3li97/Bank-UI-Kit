@@ -48,6 +48,10 @@ class _InlineNumPad extends StatelessWidget {
     required this.onDecimal,
     required this.enabled,
     required this.bankTheme,
+    required this.accent,
+    required this.decimalSemanticLabel,
+    required this.deleteSemanticLabel,
+    this.deleteIcon,
   });
 
   final ValueChanged<String> onDigit;
@@ -55,6 +59,10 @@ class _InlineNumPad extends StatelessWidget {
   final VoidCallback onDecimal;
   final bool enabled;
   final BankThemeData bankTheme;
+  final Color accent;
+  final String decimalSemanticLabel;
+  final String deleteSemanticLabel;
+  final IconData? deleteIcon;
 
   static const List<List<String>> _rows = [
     ['1', '2', '3'],
@@ -106,7 +114,7 @@ class _InlineNumPad extends StatelessWidget {
         child: InkWell(
           onTap: enabled ? onTap : null,
           borderRadius: bankTheme.buttonRadius,
-          splashColor: bankTheme.primary.withValues(alpha: 0.12),
+          splashColor: accent.withValues(alpha: 0.12),
           child: Container(
             width: 88,
             height: 52,
@@ -140,7 +148,7 @@ class _InlineNumPad extends StatelessWidget {
 
   Widget _buildDecimalKey() {
     return _buildKeyCell(
-      semanticLabel: 'Decimal point',
+      semanticLabel: decimalSemanticLabel,
       onTap: () {
         HapticFeedback.selectionClick();
         onDecimal();
@@ -156,13 +164,13 @@ class _InlineNumPad extends StatelessWidget {
 
   Widget _buildDeleteKey() {
     return _buildKeyCell(
-      semanticLabel: 'Delete',
+      semanticLabel: deleteSemanticLabel,
       onTap: () {
         HapticFeedback.selectionClick();
         onDelete();
       },
       child: Icon(
-        Icons.backspace_outlined,
+        deleteIcon ?? Icons.backspace_outlined,
         size: 22,
         color: enabled ? bankTheme.onSurface : bankTheme.onSurfaceVariant,
       ),
@@ -212,6 +220,96 @@ class BankPotContributionSheet extends StatefulWidget {
   /// the sheet.
   final VoidCallback? onCancel;
 
+  /// Contribution title template; `{pot}` is substituted. Defaults to
+  /// 'Add to {pot}'.
+  final String addTitleTemplate;
+
+  /// Withdrawal title template; `{pot}` is substituted. Defaults to
+  /// 'Withdraw from {pot}'.
+  final String withdrawTitleTemplate;
+
+  /// Tooltip on the close button. Defaults to 'Close'.
+  final String closeTooltip;
+
+  /// Over-target error template; `{amount}` is substituted. Defaults
+  /// to 'Maximum contribution is {amount} to reach your goal'.
+  final String maxContributionTemplate;
+
+  /// Over-balance withdrawal error template; `{amount}` is
+  /// substituted. Defaults to 'You can withdraw at most {amount}'.
+  final String maxWithdrawalTemplate;
+
+  /// Over-available-balance error template; `{amount}` is substituted.
+  /// Defaults to 'Cannot exceed available balance of {amount}'.
+  final String maxAvailableTemplate;
+
+  /// Withdrawal subtitle template; `{amount}` is substituted. Defaults
+  /// to 'Available: {amount}'.
+  final String availableTemplate;
+
+  /// Contribution subtitle template; `{target}` and `{saved}` are
+  /// substituted. Defaults to 'Goal: {target} · Saved: {saved}'.
+  final String goalSavedTemplate;
+
+  /// Caption of the confirm button in contribution mode. Defaults to
+  /// 'Add Money'.
+  final String addButtonLabel;
+
+  /// Caption of the confirm button in withdrawal mode. Defaults to
+  /// 'Withdraw'.
+  final String withdrawButtonLabel;
+
+  /// Confirm button semantics in contribution mode. Defaults to
+  /// 'Confirm contribution'.
+  final String confirmContributionSemanticLabel;
+
+  /// Confirm button semantics in withdrawal mode. Defaults to
+  /// 'Confirm withdrawal'.
+  final String confirmWithdrawalSemanticLabel;
+
+  /// Confirm button semantics while the amount is invalid. Defaults
+  /// to 'Enter a valid amount to continue'.
+  final String invalidAmountSemanticLabel;
+
+  /// Semantics of the keypad decimal key. Defaults to 'Decimal point'.
+  final String decimalKeySemanticLabel;
+
+  /// Semantics of the keypad delete key. Defaults to 'Delete'.
+  final String deleteKeySemanticLabel;
+
+  /// Overrides the sheet corner radius. Defaults to the theme
+  /// sheetRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the sheet fill colour. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the confirm button and keypad splash accent. Defaults
+  /// to the theme primary colour.
+  final Color? accentColor;
+
+  /// Merged over the computed title style
+  /// ([BankTokens.headlineSmall] in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed amount display numeral style.
+  final TextStyle? amountStyle;
+
+  /// Overrides the close button glyph. Defaults to [Icons.close].
+  final IconData? closeIcon;
+
+  /// Overrides the keypad delete glyph. Defaults to
+  /// [Icons.backspace_outlined].
+  final IconData? deleteKeyIcon;
+
+  /// Overrides the error reveal duration. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Overrides the error reveal curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
   const BankPotContributionSheet({
     required this.pot,
     required this.onConfirm,
@@ -219,6 +317,31 @@ class BankPotContributionSheet extends StatefulWidget {
     this.isWithdrawal = false,
     this.availableBalance,
     this.onCancel,
+    this.addTitleTemplate = 'Add to {pot}',
+    this.withdrawTitleTemplate = 'Withdraw from {pot}',
+    this.closeTooltip = 'Close',
+    this.maxContributionTemplate =
+        'Maximum contribution is {amount} to reach your goal',
+    this.maxWithdrawalTemplate = 'You can withdraw at most {amount}',
+    this.maxAvailableTemplate = 'Cannot exceed available balance of {amount}',
+    this.availableTemplate = 'Available: {amount}',
+    this.goalSavedTemplate = 'Goal: {target} · Saved: {saved}',
+    this.addButtonLabel = 'Add Money',
+    this.withdrawButtonLabel = 'Withdraw',
+    this.confirmContributionSemanticLabel = 'Confirm contribution',
+    this.confirmWithdrawalSemanticLabel = 'Confirm withdrawal',
+    this.invalidAmountSemanticLabel = 'Enter a valid amount to continue',
+    this.decimalKeySemanticLabel = 'Decimal point',
+    this.deleteKeySemanticLabel = 'Delete',
+    this.radius,
+    this.backgroundColor,
+    this.accentColor,
+    this.titleStyle,
+    this.amountStyle,
+    this.closeIcon,
+    this.deleteKeyIcon,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   /// Convenience helper to push the sheet as a modal bottom sheet.
@@ -304,21 +427,24 @@ class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
           currencyCode: widget.pot.target.currencyCode,
           numeralStyle: scope.numeralStyle,
         );
-        return 'Maximum contribution is $formatted to reach your goal';
+        return widget.maxContributionTemplate.replaceAll(
+          '{amount}',
+          formatted,
+        );
       case _ValidationError.exceededPotBalance:
         final formatted = BankMoneyFormatter.format(
           amount: widget.pot.current.amount,
           currencyCode: widget.pot.current.currencyCode,
           numeralStyle: scope.numeralStyle,
         );
-        return 'You can withdraw at most $formatted';
+        return widget.maxWithdrawalTemplate.replaceAll('{amount}', formatted);
       case _ValidationError.exceededAvailableBalance:
         final formatted = BankMoneyFormatter.format(
           amount: widget.availableBalance!.amount,
           currencyCode: widget.availableBalance!.currencyCode,
           numeralStyle: scope.numeralStyle,
         );
-        return 'Cannot exceed available balance of $formatted';
+        return widget.maxAvailableTemplate.replaceAll('{amount}', formatted);
     }
   }
 
@@ -393,8 +519,8 @@ class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     final title = widget.isWithdrawal
-        ? 'Withdraw from ${widget.pot.name}'
-        : 'Add to ${widget.pot.name}';
+        ? widget.withdrawTitleTemplate.replaceAll('{pot}', widget.pot.name)
+        : widget.addTitleTemplate.replaceAll('{pot}', widget.pot.name);
 
     final displayAmount = _raw.isEmpty ? '0' : _raw;
     final currencyCode = widget.pot.current.currencyCode;
@@ -402,7 +528,10 @@ class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
     final errorMsg = _errorMessage(bankTheme, scope);
     final hasError = errorMsg.isNotEmpty;
 
-    final confirmAction = widget.isWithdrawal ? 'withdrawal' : 'contribution';
+    final accent = widget.accentColor ?? bankTheme.primary;
+    final confirmSemanticLabel = widget.isWithdrawal
+        ? widget.confirmWithdrawalSemanticLabel
+        : widget.confirmContributionSemanticLabel;
 
     final formattedBalance = BankMoneyFormatter.format(
       amount: widget.pot.current.amount,
@@ -419,8 +548,8 @@ class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
       padding: EdgeInsets.only(bottom: bottomInset),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: bankTheme.surface,
-          borderRadius: bankTheme.sheetRadius,
+          color: widget.backgroundColor ?? bankTheme.surface,
+          borderRadius: widget.radius ?? bankTheme.sheetRadius,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -439,19 +568,19 @@ class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
                   Expanded(
                     child: Text(
                       title,
-                      style: BankTokens.headlineSmall.copyWith(
-                        color: bankTheme.onSurface,
-                      ),
+                      style: BankTokens.headlineSmall
+                          .copyWith(color: bankTheme.onSurface)
+                          .merge(widget.titleStyle),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: Icon(widget.closeIcon ?? Icons.close),
                     color: bankTheme.onSurfaceVariant,
                     onPressed: () {
                       widget.onCancel?.call();
                       Navigator.of(context).pop();
                     },
-                    tooltip: 'Close',
+                    tooltip: widget.closeTooltip,
                     constraints: const BoxConstraints(
                       minWidth: BankTokens.minTapTarget,
                       minHeight: BankTokens.minTapTarget,
@@ -488,11 +617,13 @@ class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
                     Flexible(
                       child: Text(
                         scope.numeralStyle.convert(displayAmount),
-                        style: bankTheme.numeralHero.copyWith(
-                          color: hasError
-                              ? BankTokens.danger
-                              : bankTheme.onSurface,
-                        ),
+                        style: bankTheme.numeralHero
+                            .copyWith(
+                              color: hasError
+                                  ? BankTokens.danger
+                                  : bankTheme.onSurface,
+                            )
+                            .merge(widget.amountStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
@@ -510,8 +641,11 @@ class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
               ),
               child: Text(
                 widget.isWithdrawal
-                    ? 'Available: $formattedBalance'
-                    : 'Goal: $formattedTarget · Saved: $formattedBalance',
+                    ? widget.availableTemplate
+                        .replaceAll('{amount}', formattedBalance)
+                    : widget.goalSavedTemplate
+                        .replaceAll('{target}', formattedTarget)
+                        .replaceAll('{saved}', formattedBalance),
                 style: BankTokens.bodySmall.copyWith(
                   color: bankTheme.onSurfaceVariant,
                 ),
@@ -521,8 +655,8 @@ class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
 
             // Error message
             AnimatedSize(
-              duration: BankTokens.durationFast,
-              curve: BankTokens.curveStandard,
+              duration: widget.animationDuration ?? BankTokens.durationFast,
+              curve: widget.animationCurve ?? BankTokens.curveStandard,
               child: hasError
                   ? Padding(
                       padding: const EdgeInsets.fromLTRB(
@@ -558,6 +692,10 @@ class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
                 onDecimal: _handleDecimal,
                 enabled: !_isLoading,
                 bankTheme: bankTheme,
+                accent: accent,
+                decimalSemanticLabel: widget.decimalKeySemanticLabel,
+                deleteSemanticLabel: widget.deleteKeySemanticLabel,
+                deleteIcon: widget.deleteKeyIcon,
               ),
             ),
 
@@ -574,15 +712,14 @@ class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
               child: Semantics(
                 button: true,
                 label: _canConfirm
-                    ? 'Confirm $confirmAction'
-                    : 'Enter a valid amount to continue',
+                    ? confirmSemanticLabel
+                    : widget.invalidAmountSemanticLabel,
                 child: FilledButton(
                   onPressed: _canConfirm ? _confirm : null,
                   style: FilledButton.styleFrom(
-                    backgroundColor: bankTheme.primary,
+                    backgroundColor: accent,
                     foregroundColor: bankTheme.onPrimary,
-                    disabledBackgroundColor:
-                        bankTheme.primary.withValues(alpha: 0.38),
+                    disabledBackgroundColor: accent.withValues(alpha: 0.38),
                     disabledForegroundColor:
                         bankTheme.onPrimary.withValues(alpha: 0.6),
                     minimumSize: const Size(
@@ -605,7 +742,9 @@ class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
                           ),
                         )
                       : Text(
-                          widget.isWithdrawal ? 'Withdraw' : 'Add Money',
+                          widget.isWithdrawal
+                              ? widget.withdrawButtonLabel
+                              : widget.addButtonLabel,
                           style: BankTokens.labelLarge.copyWith(
                             color: bankTheme.onPrimary,
                           ),

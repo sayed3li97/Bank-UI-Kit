@@ -77,6 +77,16 @@ class BankZakatCalculator extends StatefulWidget {
     this.hawlLabel = 'Hawl completes',
     this.showHijriDates = true,
     this.footnote,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.elevation,
+    this.accentColor,
+    this.infoIcon,
+    this.sectionHeaderStyle,
+    this.amountStyle,
+    this.animationDuration,
+    this.animationCurve,
   }) : assert(
           zakatRate > 0 && zakatRate < 1,
           'zakatRate must be a fraction between 0 and 1 (exclusive).',
@@ -163,6 +173,44 @@ class BankZakatCalculator extends StatefulWidget {
   /// card, styled [BankTokens.bodySmall] in the variant text colour by
   /// default.
   final Widget? footnote;
+
+  /// Overrides the computation-card content padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the computation-card corner radius. Defaults to the
+  /// theme `cardRadius`.
+  final BorderRadius? radius;
+
+  /// Overrides the computation-card background colour. Defaults to the
+  /// theme `surface`.
+  final Color? backgroundColor;
+
+  /// Overrides the computation-card elevation. Defaults to the theme
+  /// `elevationLow`; pass `0` to flatten.
+  final double? elevation;
+
+  /// Overrides the accent used for the pay button, the below-nisab
+  /// tint and its info icon. Defaults to the theme `primary`.
+  final Color? accentColor;
+
+  /// Overrides the below-nisab info glyph. Defaults to
+  /// [BankIcons.info].
+  final IconData? infoIcon;
+
+  /// Merged over the section-heading style ([BankTokens.labelLarge]).
+  final TextStyle? sectionHeaderStyle;
+
+  /// Merged over the zakat-due figure style (theme `numeralLarge`).
+  final TextStyle? amountStyle;
+
+  /// Overrides the verdict transition duration. Defaults to
+  /// [BankTokens.durationBase].
+  final Duration? animationDuration;
+
+  /// Overrides the verdict transition curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
 
   @override
   State<BankZakatCalculator> createState() => _BankZakatCalculatorState();

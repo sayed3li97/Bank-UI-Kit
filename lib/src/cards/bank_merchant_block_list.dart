@@ -126,6 +126,21 @@ class BankMerchantBlockList extends StatefulWidget {
     this.errorLabel = 'Could not update. Try again.',
     this.blockedSemanticLabel = 'blocked',
     this.allowedSemanticLabel = 'allowed',
+    this.titlePadding,
+    this.rowPadding,
+    this.tileRadius,
+    this.accentColor,
+    this.pendingColor,
+    this.titleStyle,
+    this.labelStyle,
+    this.helperStyle,
+    this.dialogTitleStyle,
+    this.dialogBodyStyle,
+    this.pendingIcon,
+    this.noticeIcon,
+    this.errorIcon,
+    this.rowMinHeight,
+    this.semanticLabel,
   });
 
   /// The category rows to render, in order.
@@ -169,6 +184,64 @@ class BankMerchantBlockList extends StatefulWidget {
 
   /// Semantics state announced for unblocked rows.
   final String allowedSemanticLabel;
+
+  /// Overrides the heading padding. Defaults to [BankTokens.space4] at
+  /// the start, end, and top with [BankTokens.space2] below.
+  final EdgeInsetsGeometry? titlePadding;
+
+  /// Overrides each row's content padding. Defaults to
+  /// [BankTokens.space4] horizontal by [BankTokens.space2] vertical.
+  final EdgeInsetsGeometry? rowPadding;
+
+  /// Overrides the tinted icon tile radius. Defaults to the theme
+  /// chipRadius.
+  final BorderRadius? tileRadius;
+
+  /// Overrides the accent used by blocked tiles, switches, spinners,
+  /// and the dialog confirm button. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the cool-off pending color used by tiles, switches, and
+  /// helper text. Defaults to the theme pending color.
+  final Color? pendingColor;
+
+  /// Merged over the heading style ([BankTokens.labelMedium] in the
+  /// theme onSurfaceVariant color), so partial overrides work.
+  final TextStyle? titleStyle;
+
+  /// Merged over the row label style ([BankTokens.labelLarge] in the
+  /// theme onSurface color).
+  final TextStyle? labelStyle;
+
+  /// Merged over the helper line style ([BankTokens.bodySmall] in the
+  /// helper's state color).
+  final TextStyle? helperStyle;
+
+  /// Merged over the unblock dialog title style
+  /// ([BankTokens.headlineSmall] in the theme onSurface color).
+  final TextStyle? dialogTitleStyle;
+
+  /// Merged over the unblock dialog body style ([BankTokens.bodyMedium]
+  /// in the theme onSurfaceVariant color).
+  final TextStyle? dialogBodyStyle;
+
+  /// Overrides the cool-off pending helper glyph. Defaults to
+  /// [BankIcons.schedule].
+  final IconData? pendingIcon;
+
+  /// Overrides the cool-off notice helper glyph. Defaults to
+  /// [BankIcons.info].
+  final IconData? noticeIcon;
+
+  /// Overrides the error helper glyph. Defaults to [BankIcons.error].
+  final IconData? errorIcon;
+
+  /// Overrides each row's minimum height. Defaults to 56.
+  final double? rowMinHeight;
+
+  /// Semantics label wrapping the whole list. Defaults to none, keeping
+  /// only the per-row semantics.
+  final String? semanticLabel;
 
   @override
   State<BankMerchantBlockList> createState() => _BankMerchantBlockListState();
@@ -252,6 +325,7 @@ class _BankMerchantBlockListState extends State<BankMerchantBlockList> {
   Future<bool?> _confirmUnblock(BankCategoryBlock block) {
     final theme = BankThemeData.of(context);
     final hours = '${block.unblockCoolOff!.inHours}';
+    final resolvedAccentColor = widget.accentColor ?? theme.primary;
 
     return showDialog<bool>(
       context: context,
@@ -260,13 +334,17 @@ class _BankMerchantBlockListState extends State<BankMerchantBlockList> {
         shape: RoundedRectangleBorder(borderRadius: theme.cardRadius),
         title: Text(
           widget.unblockDialogTitleTemplate.replaceAll('{label}', block.label),
-          style: BankTokens.headlineSmall.copyWith(color: theme.onSurface),
+          style: BankTokens.headlineSmall
+              .copyWith(color: theme.onSurface)
+              .merge(widget.dialogTitleStyle),
         ),
         content: Text(
           widget.unblockDialogBodyTemplate
               .replaceAll('{label}', block.label)
               .replaceAll('{hours}', hours),
-          style: BankTokens.bodyMedium.copyWith(color: theme.onSurfaceVariant),
+          style: BankTokens.bodyMedium
+              .copyWith(color: theme.onSurfaceVariant)
+              .merge(widget.dialogBodyStyle),
         ),
         actions: [
           TextButton(
@@ -284,7 +362,7 @@ class _BankMerchantBlockListState extends State<BankMerchantBlockList> {
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: FilledButton.styleFrom(
-              backgroundColor: theme.primary,
+              backgroundColor: resolvedAccentColor,
               foregroundColor: theme.onPrimary,
               minimumSize: const Size(
                 BankTokens.minTapTarget,
@@ -305,21 +383,35 @@ class _BankMerchantBlockListState extends State<BankMerchantBlockList> {
     final theme = BankThemeData.of(context);
     final now = DateTime.now();
 
-    return Column(
+    final resolvedTitlePadding = widget.titlePadding ??
+        const EdgeInsetsDirectional.only(
+          start: BankTokens.space4,
+          end: BankTokens.space4,
+          top: BankTokens.space4,
+          bottom: BankTokens.space2,
+        );
+    final resolvedRowPadding = widget.rowPadding ??
+        const EdgeInsets.symmetric(
+          horizontal: BankTokens.space4,
+          vertical: BankTokens.space2,
+        );
+    final resolvedTitleStyle = BankTokens.labelMedium
+        .copyWith(color: theme.onSurfaceVariant)
+        .merge(widget.titleStyle);
+    final resolvedTileRadius = widget.tileRadius ?? theme.chipRadius;
+    final resolvedAccentColor = widget.accentColor ?? theme.primary;
+    final resolvedPendingColor = widget.pendingColor ?? theme.pending;
+    final resolvedRowMinHeight = widget.rowMinHeight ?? 56;
+
+    final list = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: const EdgeInsetsDirectional.only(
-            start: BankTokens.space4,
-            end: BankTokens.space4,
-            top: BankTokens.space4,
-            bottom: BankTokens.space2,
-          ),
+          padding: resolvedTitlePadding,
           child: Text(
             widget.title,
-            style:
-                BankTokens.labelMedium.copyWith(color: theme.onSurfaceVariant),
+            style: resolvedTitleStyle,
           ),
         ),
         for (final block in widget.blocks)
@@ -335,8 +427,25 @@ class _BankMerchantBlockListState extends State<BankMerchantBlockList> {
             blockedSemanticLabel: widget.blockedSemanticLabel,
             allowedSemanticLabel: widget.allowedSemanticLabel,
             onToggle: _handleToggle,
+            rowPadding: resolvedRowPadding,
+            tileRadius: resolvedTileRadius,
+            accentColor: resolvedAccentColor,
+            pendingColor: resolvedPendingColor,
+            labelStyle: widget.labelStyle,
+            helperStyle: widget.helperStyle,
+            pendingIcon: widget.pendingIcon ?? BankIcons.schedule,
+            noticeIcon: widget.noticeIcon ?? BankIcons.info,
+            errorIcon: widget.errorIcon ?? BankIcons.error,
+            minHeight: resolvedRowMinHeight,
           ),
       ],
+    );
+
+    if (widget.semanticLabel == null) return list;
+    return Semantics(
+      container: true,
+      label: widget.semanticLabel,
+      child: list,
     );
   }
 }
@@ -358,6 +467,16 @@ class _BlockRow extends StatelessWidget {
     required this.blockedSemanticLabel,
     required this.allowedSemanticLabel,
     required this.onToggle,
+    required this.rowPadding,
+    required this.tileRadius,
+    required this.accentColor,
+    required this.pendingColor,
+    required this.pendingIcon,
+    required this.noticeIcon,
+    required this.errorIcon,
+    required this.minHeight,
+    this.labelStyle,
+    this.helperStyle,
   });
 
   final BankCategoryBlock block;
@@ -371,6 +490,16 @@ class _BlockRow extends StatelessWidget {
   final String blockedSemanticLabel;
   final String allowedSemanticLabel;
   final Future<void> Function(BankCategoryBlock block, bool blocked) onToggle;
+  final EdgeInsetsGeometry rowPadding;
+  final BorderRadius tileRadius;
+  final Color accentColor;
+  final Color pendingColor;
+  final IconData pendingIcon;
+  final IconData noticeIcon;
+  final IconData errorIcon;
+  final double minHeight;
+  final TextStyle? labelStyle;
+  final TextStyle? helperStyle;
 
   bool get _coolingOff =>
       block.coolOffEndsAt != null && block.coolOffEndsAt!.isAfter(now);
@@ -384,11 +513,11 @@ class _BlockRow extends StatelessWidget {
     final Color tileColor;
     final Color iconColor;
     if (coolingOff) {
-      tileColor = theme.pending.withValues(alpha: 0.12);
-      iconColor = theme.pending;
+      tileColor = pendingColor.withValues(alpha: 0.12);
+      iconColor = pendingColor;
     } else if (block.blocked) {
-      tileColor = theme.primary.withValues(alpha: 0.12);
-      iconColor = theme.primary;
+      tileColor = accentColor.withValues(alpha: 0.12);
+      iconColor = accentColor;
     } else {
       tileColor = theme.surfaceVariant;
       iconColor = theme.onSurfaceVariant;
@@ -423,12 +552,9 @@ class _BlockRow extends StatelessWidget {
         child: InkWell(
           onTap: interactive ? () => onToggle(block, !block.blocked) : null,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 56),
+            constraints: BoxConstraints(minHeight: minHeight),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: BankTokens.space4,
-                vertical: BankTokens.space2,
-              ),
+              padding: rowPadding,
               child: Row(
                 children: [
                   SizedBox(
@@ -437,7 +563,7 @@ class _BlockRow extends StatelessWidget {
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: tileColor,
-                        borderRadius: theme.chipRadius,
+                        borderRadius: tileRadius,
                       ),
                       child: Center(
                         child: Icon(block.icon, size: 22, color: iconColor),
@@ -454,25 +580,29 @@ class _BlockRow extends StatelessWidget {
                         Text(
                           block.label,
                           style: BankTokens.labelLarge
-                              .copyWith(color: theme.onSurface),
+                              .copyWith(color: theme.onSurface)
+                              .merge(labelStyle),
                         ),
                         if (pendingText != null)
                           _HelperLine(
-                            icon: BankIcons.schedule,
+                            icon: pendingIcon,
                             text: pendingText,
-                            color: theme.pending,
+                            color: pendingColor,
+                            textStyle: helperStyle,
                           ),
                         if (noticeText != null)
                           _HelperLine(
-                            icon: BankIcons.info,
+                            icon: noticeIcon,
                             text: noticeText,
                             color: theme.onSurfaceVariant,
+                            textStyle: helperStyle,
                           ),
                         if (failed)
                           _HelperLine(
-                            icon: BankIcons.error,
+                            icon: errorIcon,
                             text: errorLabel,
                             color: BankTokens.danger,
+                            textStyle: helperStyle,
                           ),
                       ],
                     ),
@@ -488,14 +618,14 @@ class _BlockRow extends StatelessWidget {
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: theme.primary,
+                                color: accentColor,
                               ),
                             )
                           : Switch(
                               value: block.blocked,
                               activeColor: theme.onPrimary,
                               activeTrackColor:
-                                  coolingOff ? theme.pending : theme.primary,
+                                  coolingOff ? pendingColor : accentColor,
                               onChanged: interactive
                                   ? (value) => onToggle(block, value)
                                   : null,
@@ -521,11 +651,13 @@ class _HelperLine extends StatelessWidget {
     required this.icon,
     required this.text,
     required this.color,
+    this.textStyle,
   });
 
   final IconData icon;
   final String text;
   final Color color;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -539,7 +671,8 @@ class _HelperLine extends StatelessWidget {
           Flexible(
             child: Text(
               text,
-              style: BankTokens.bodySmall.copyWith(color: color),
+              style:
+                  BankTokens.bodySmall.copyWith(color: color).merge(textStyle),
             ),
           ),
         ],

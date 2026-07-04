@@ -46,6 +46,19 @@ class BankCashflowChart extends StatelessWidget {
     this.height = 220,
     this.safeToSpendLabel = 'Safe to spend',
     this.emptyLabel = 'No balance data',
+    this.lineColor,
+    this.lineWidth,
+    this.gradient,
+    this.forecastColor,
+    this.forecastDashArray,
+    this.gridColor,
+    this.safeToSpendColor,
+    this.axisLabelStyle,
+    this.tooltipStyle,
+    this.tooltipBackgroundColor,
+    this.safeToSpendLabelStyle,
+    this.emptyLabelStyle,
+    this.semanticLabel,
   });
 
   /// Observed balances, oldest first.
@@ -66,6 +79,51 @@ class BankCashflowChart extends StatelessWidget {
   final String safeToSpendLabel;
   final String emptyLabel;
 
+  /// Overrides the history line colour. Defaults to the theme primary.
+  final Color? lineColor;
+
+  /// Overrides the history line thickness. Defaults to 2.5.
+  final double? lineWidth;
+
+  /// Overrides the below-line fill. Defaults to a vertical fade of the
+  /// line colour from 12% opacity to transparent.
+  final Gradient? gradient;
+
+  /// Overrides the forecast line colour. Defaults to the theme pending
+  /// colour.
+  final Color? forecastColor;
+
+  /// Overrides the forecast dash pattern. Defaults to `[6, 4]`.
+  final List<int>? forecastDashArray;
+
+  /// Overrides the horizontal grid line colour. Defaults to the theme
+  /// outline at 40% opacity.
+  final Color? gridColor;
+
+  /// Overrides the safe-to-spend line and label colour. Defaults to
+  /// the theme positiveBalance colour.
+  final Color? safeToSpendColor;
+
+  /// Merged over both axes' label style (labelSmall, onSurfaceVariant).
+  final TextStyle? axisLabelStyle;
+
+  /// Merged over the touch tooltip text style (labelMedium, onSurface).
+  final TextStyle? tooltipStyle;
+
+  /// Overrides the touch tooltip fill. Defaults to the theme
+  /// surfaceVariant.
+  final Color? tooltipBackgroundColor;
+
+  /// Merged over the safe-to-spend label style (labelSmall, tinted).
+  final TextStyle? safeToSpendLabelStyle;
+
+  /// Merged over the empty-state label style (bodyMedium,
+  /// onSurfaceVariant).
+  final TextStyle? emptyLabelStyle;
+
+  /// Overrides the computed semantics summary of the balance range.
+  final String? semanticLabel;
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
@@ -77,8 +135,9 @@ class BankCashflowChart extends StatelessWidget {
         child: Center(
           child: Text(
             emptyLabel,
-            style:
-                BankTokens.bodyMedium.copyWith(color: theme.onSurfaceVariant),
+            style: BankTokens.bodyMedium
+                .copyWith(color: theme.onSurfaceVariant)
+                .merge(emptyLabelStyle),
           ),
         ),
       );
@@ -131,8 +190,14 @@ class BankCashflowChart extends StatelessWidget {
         '${forecastSpots.isEmpty ? '' : ' '}'
         '${forecastSpots.isEmpty ? '' : formatCompact(forecastSpots.last.y)}';
 
+    final resolvedLineColor = lineColor ?? theme.primary;
+    final resolvedSafeColor = safeToSpendColor ?? theme.positiveBalance;
+    final axisStyle = BankTokens.labelSmall
+        .copyWith(color: theme.onSurfaceVariant)
+        .merge(axisLabelStyle);
+
     return Semantics(
-      label: semanticSummary,
+      label: semanticLabel ?? semanticSummary,
       excludeSemantics: true,
       child: RepaintBoundary(
         child: SizedBox(
@@ -144,7 +209,7 @@ class BankCashflowChart extends StatelessWidget {
               gridData: FlGridData(
                 drawVerticalLine: false,
                 getDrawingHorizontalLine: (_) => FlLine(
-                  color: theme.outline.withValues(alpha: 0.4),
+                  color: gridColor ?? theme.outline.withValues(alpha: 0.4),
                   strokeWidth: 0.5,
                 ),
               ),
@@ -159,8 +224,7 @@ class BankCashflowChart extends StatelessWidget {
                       padding: const EdgeInsetsDirectional.only(end: 4),
                       child: Text(
                         formatCompact(value),
-                        style: BankTokens.labelSmall
-                            .copyWith(color: theme.onSurfaceVariant),
+                        style: axisStyle,
                         maxLines: 1,
                       ),
                     ),
@@ -180,8 +244,7 @@ class BankCashflowChart extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
                           BankDateFormatter.formatShort(all[index].date),
-                          style: BankTokens.labelSmall
-                              .copyWith(color: theme.onSurfaceVariant),
+                          style: axisStyle,
                         ),
                       );
                     },
@@ -203,14 +266,15 @@ class BankCashflowChart extends StatelessWidget {
                   if (safeToSpend != null)
                     HorizontalLine(
                       y: safeToSpend!.amount.toDouble(),
-                      color: theme.positiveBalance,
+                      color: resolvedSafeColor,
                       strokeWidth: 1,
                       dashArray: [6, 4],
                       label: HorizontalLineLabel(
                         show: true,
                         alignment: Alignment.topRight,
                         style: BankTokens.labelSmall
-                            .copyWith(color: theme.positiveBalance),
+                            .copyWith(color: resolvedSafeColor)
+                            .merge(safeToSpendLabelStyle),
                         labelResolver: (_) => safeToSpendLabel,
                       ),
                     ),
@@ -228,7 +292,8 @@ class BankCashflowChart extends StatelessWidget {
                         onPointFocus!(pointAt(spot.x.round()));
                       },
                 touchTooltipData: LineTouchTooltipData(
-                  getTooltipColor: (_) => theme.surfaceVariant,
+                  getTooltipColor: (_) =>
+                      tooltipBackgroundColor ?? theme.surfaceVariant,
                   getTooltipItems: (spots) => [
                     for (final spot in spots)
                       LineTooltipItem(
@@ -237,7 +302,9 @@ class BankCashflowChart extends StatelessWidget {
                             : '${BankDateFormatter.formatShort(
                                 pointAt(spot.x.round()).date,
                               )}\n${formatCompact(spot.y)}',
-                        BankTokens.labelMedium.copyWith(color: theme.onSurface),
+                        BankTokens.labelMedium
+                            .copyWith(color: theme.onSurface)
+                            .merge(tooltipStyle),
                       ),
                   ],
                 ),
@@ -246,27 +313,28 @@ class BankCashflowChart extends StatelessWidget {
                 LineChartBarData(
                   spots: historySpots,
                   isCurved: true,
-                  barWidth: 2.5,
-                  color: theme.primary,
+                  barWidth: lineWidth ?? 2.5,
+                  color: resolvedLineColor,
                   dotData: const FlDotData(show: false),
                   belowBarData: BarAreaData(
                     show: true,
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        theme.primary.withValues(alpha: 0.12),
-                        theme.primary.withValues(alpha: 0),
-                      ],
-                    ),
+                    gradient: gradient ??
+                        LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            resolvedLineColor.withValues(alpha: 0.12),
+                            resolvedLineColor.withValues(alpha: 0),
+                          ],
+                        ),
                   ),
                 ),
                 if (forecastSpots.isNotEmpty)
                   LineChartBarData(
                     spots: forecastSpots,
                     isCurved: true,
-                    color: theme.pending,
-                    dashArray: [6, 4],
+                    color: forecastColor ?? theme.pending,
+                    dashArray: forecastDashArray ?? [6, 4],
                     dotData: const FlDotData(show: false),
                   ),
               ],

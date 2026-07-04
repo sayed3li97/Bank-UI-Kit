@@ -14,10 +14,72 @@ class BankIncomeSorterSheet extends StatefulWidget {
   final BankIncomeSorterController controller;
   final VoidCallback? onDismiss;
 
+  /// Heading of the sheet. Defaults to 'Income Received'.
+  final String title;
+
+  /// Label of the remaining row. Defaults to 'Remaining'.
+  final String remainingLabel;
+
+  /// Caption of the add-pot action. Defaults to 'Add pot'.
+  final String addPotLabel;
+
+  /// Caption of the repeat switch. Defaults to
+  /// 'Repeat this split automatically next time'.
+  final String repeatLabel;
+
+  /// Caption of the confirm button. Defaults to 'Confirm'.
+  final String confirmLabel;
+
+  /// Tooltip on each entry's remove button. Defaults to 'Remove'.
+  final String removeEntryTooltip;
+
+  /// Overrides the sheet content padding. Defaults to space4 with a
+  /// space2 top inset.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the sheet corner radius. Defaults to the theme
+  /// sheetRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the sheet fill colour. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the incoming amount and switch accent. Defaults to the
+  /// theme primary colour.
+  final Color? accentColor;
+
+  /// Merged over the computed heading style
+  /// ([BankTokens.headlineSmall] in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed incoming-amount style
+  /// ([BankTokens.numeralHero] in the accent colour).
+  final TextStyle? amountStyle;
+
+  /// Overrides the add-pot glyph. Defaults to [Icons.add].
+  final IconData? addPotIcon;
+
+  /// Overrides the entry remove glyph. Defaults to [Icons.close].
+  final IconData? removeEntryIcon;
+
   const BankIncomeSorterSheet({
     required this.controller,
     super.key,
     this.onDismiss,
+    this.title = 'Income Received',
+    this.remainingLabel = 'Remaining',
+    this.addPotLabel = 'Add pot',
+    this.repeatLabel = 'Repeat this split automatically next time',
+    this.confirmLabel = 'Confirm',
+    this.removeEntryTooltip = 'Remove',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.accentColor,
+    this.titleStyle,
+    this.amountStyle,
+    this.addPotIcon,
+    this.removeEntryIcon,
   });
 
   static Future<void> show(
@@ -102,10 +164,19 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
       numeralStyle: scope.numeralStyle,
     );
 
+    final accent = widget.accentColor ?? theme.primary;
+    final resolvedPadding = widget.padding ??
+        const EdgeInsets.fromLTRB(
+          BankTokens.space4,
+          BankTokens.space2,
+          BankTokens.space4,
+          BankTokens.space4,
+        );
+
     return Container(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.sheetRadius,
+        color: widget.backgroundColor ?? theme.surface,
+        borderRadius: widget.radius ?? theme.sheetRadius,
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.viewInsetsOf(context).bottom,
@@ -117,25 +188,22 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
           children: [
             _Handle(theme: theme),
             Padding(
-              padding: const EdgeInsets.fromLTRB(
-                BankTokens.space4,
-                BankTokens.space2,
-                BankTokens.space4,
-                BankTokens.space4,
-              ),
+              padding: resolvedPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Income Received',
+                    widget.title,
                     style: BankTokens.headlineSmall
-                        .copyWith(color: theme.onSurface),
+                        .copyWith(color: theme.onSurface)
+                        .merge(widget.titleStyle),
                   ),
                   const SizedBox(height: BankTokens.space1),
                   Text(
                     incomingFormatted,
-                    style:
-                        BankTokens.numeralHero.copyWith(color: theme.primary),
+                    style: BankTokens.numeralHero
+                        .copyWith(color: accent)
+                        .merge(widget.amountStyle),
                   ),
                   const SizedBox(height: BankTokens.space4),
                   ...List.generate(ctrl.entries.length, (i) {
@@ -151,11 +219,13 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
                       onDelete: () => widget.controller.removeEntry(i),
                       theme: theme,
                       scope: scope,
+                      removeTooltip: widget.removeEntryTooltip,
+                      removeIcon: widget.removeEntryIcon,
                     );
                   }),
                   const SizedBox(height: BankTokens.space2),
                   _RemainingRow(
-                    label: 'Remaining',
+                    label: widget.remainingLabel,
                     amount: remainingFormatted,
                     isValid: ctrl.isValid,
                     theme: theme,
@@ -164,8 +234,8 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
                     const SizedBox(height: BankTokens.space3),
                     TextButton.icon(
                       onPressed: () => _showPotPicker(context, availablePots),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add pot'),
+                      icon: Icon(widget.addPotIcon ?? Icons.add),
+                      label: Text(widget.addPotLabel),
                     ),
                   ],
                   const SizedBox(height: BankTokens.space3),
@@ -173,11 +243,11 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
                     value: ctrl.saveForNext,
                     onChanged: widget.controller.setSaveForNext,
                     title: Text(
-                      'Repeat this split automatically next time',
+                      widget.repeatLabel,
                       style: BankTokens.bodyMedium
                           .copyWith(color: theme.onSurface),
                     ),
-                    activeColor: theme.primary,
+                    activeColor: accent,
                     contentPadding: EdgeInsets.zero,
                   ),
                   const SizedBox(height: BankTokens.space4),
@@ -191,7 +261,7 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
                               Navigator.of(context).pop();
                             }
                           : null,
-                      child: const Text('Confirm'),
+                      child: Text(widget.confirmLabel),
                     ),
                   ),
                 ],
@@ -250,6 +320,8 @@ class _EntryRow extends StatelessWidget {
   final VoidCallback onDelete;
   final BankThemeData theme;
   final BankUiScopeData scope;
+  final String removeTooltip;
+  final IconData? removeIcon;
 
   const _EntryRow({
     required this.entry,
@@ -258,7 +330,9 @@ class _EntryRow extends StatelessWidget {
     required this.onDelete,
     required this.theme,
     required this.scope,
+    required this.removeTooltip,
     super.key,
+    this.removeIcon,
   });
 
   @override
@@ -302,9 +376,13 @@ class _EntryRow extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: Icon(Icons.close, color: theme.onSurfaceVariant, size: 20),
+              icon: Icon(
+                removeIcon ?? Icons.close,
+                color: theme.onSurfaceVariant,
+                size: 20,
+              ),
               onPressed: onDelete,
-              tooltip: 'Remove',
+              tooltip: removeTooltip,
             ),
           ],
         ),

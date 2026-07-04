@@ -70,6 +70,17 @@ class BankLoanCalculatorCard extends StatefulWidget {
     this.profitRateLabel = 'Profit rate',
     this.financingModel,
     this.profitAmountLabel = 'Total profit',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.borderColor,
+    this.shadow,
+    this.accentColor,
+    this.labelStyle,
+    this.amountStyle,
+    this.monthlyStyle,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   final Money minAmount;
@@ -113,6 +124,44 @@ class BankLoanCalculatorCard extends StatefulWidget {
 
   /// Replaces [costOfCreditLabel] under [BankFinancingModel.murabaha].
   final String profitAmountLabel;
+
+  /// Overrides the card content padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card fill color. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card border color. Defaults to the theme outline.
+  final Color? borderColor;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
+  /// pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Accent for the sliders, the monthly figure, and the continue
+  /// button. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Merged over the small caption styles ([amountLabel], tenor line,
+  /// and [monthlyLabel]).
+  final TextStyle? labelStyle;
+
+  /// Merged over the selected-amount numeral style (numeralLarge).
+  final TextStyle? amountStyle;
+
+  /// Merged over the monthly payment hero style (numeralHero, accent).
+  final TextStyle? monthlyStyle;
+
+  /// Duration of the monthly figure cross-fade. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Curve of the monthly figure cross-fade. Defaults to linear.
+  final Curve? animationCurve;
 
   @override
   State<BankLoanCalculatorCard> createState() => _BankLoanCalculatorCardState();
@@ -188,22 +237,25 @@ class _BankLoanCalculatorCardState extends State<BankLoanCalculatorCard> {
       numeralStyle: scope.numeralStyle,
     );
 
+    final accent = widget.accentColor ?? theme.primary;
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.cardRadius,
-        border: Border.all(color: theme.outline),
-        boxShadow: BankTokens.shadowCard,
+        color: widget.backgroundColor ?? theme.surface,
+        borderRadius: widget.radius ?? theme.cardRadius,
+        border: Border.all(color: widget.borderColor ?? theme.outline),
+        boxShadow: widget.shadow ?? BankTokens.shadowCard,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space4),
+        padding: widget.padding ?? const EdgeInsets.all(BankTokens.space4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               widget.amountLabel,
               style: BankTokens.labelMedium
-                  .copyWith(color: theme.onSurfaceVariant),
+                  .copyWith(color: theme.onSurfaceVariant)
+                  .merge(widget.labelStyle),
             ),
             Text(
               BankMoneyFormatter.format(
@@ -211,10 +263,12 @@ class _BankLoanCalculatorCardState extends State<BankLoanCalculatorCard> {
                 currencyCode: _currency,
                 numeralStyle: scope.numeralStyle,
               ),
-              style: BankTokens.numeralLarge.copyWith(
-                color: theme.onSurface,
-                fontFamily: theme.fontFamily,
-              ),
+              style: BankTokens.numeralLarge
+                  .copyWith(
+                    color: theme.onSurface,
+                    fontFamily: theme.fontFamily,
+                  )
+                  .merge(widget.amountStyle),
             ),
             Semantics(
               slider: true,
@@ -224,7 +278,7 @@ class _BankLoanCalculatorCardState extends State<BankLoanCalculatorCard> {
                 value: _amount,
                 min: _min,
                 max: _max,
-                activeColor: theme.primary,
+                activeColor: accent,
                 inactiveColor: theme.surfaceVariant,
                 onChanged: (raw) =>
                     setState(() => _amount = _snap(raw).clamp(_min, _max)),
@@ -237,7 +291,9 @@ class _BankLoanCalculatorCardState extends State<BankLoanCalculatorCard> {
                 '{n}',
                 scope.numeralStyle.convert('$_months'),
               ),
-              style: BankTokens.labelMedium.copyWith(color: theme.onSurface),
+              style: BankTokens.labelMedium
+                  .copyWith(color: theme.onSurface)
+                  .merge(widget.labelStyle),
             ),
             Semantics(
               slider: true,
@@ -248,7 +304,7 @@ class _BankLoanCalculatorCardState extends State<BankLoanCalculatorCard> {
                 min: widget.minMonths.toDouble(),
                 max: widget.maxMonths.toDouble(),
                 divisions: math.max(widget.maxMonths - widget.minMonths, 1),
-                activeColor: theme.primary,
+                activeColor: accent,
                 inactiveColor: theme.surfaceVariant,
                 onChanged: (raw) => setState(() => _months = raw.round()),
                 onChangeEnd: (_) => _emit(),
@@ -261,17 +317,23 @@ class _BankLoanCalculatorCardState extends State<BankLoanCalculatorCard> {
                   Text(
                     widget.monthlyLabel,
                     style: BankTokens.labelMedium
-                        .copyWith(color: theme.onSurfaceVariant),
+                        .copyWith(color: theme.onSurfaceVariant)
+                        .merge(widget.labelStyle),
                   ),
                   AnimatedSwitcher(
-                    duration: BankTokens.durationFast,
+                    duration:
+                        widget.animationDuration ?? BankTokens.durationFast,
+                    switchInCurve: widget.animationCurve ?? Curves.linear,
+                    switchOutCurve: widget.animationCurve ?? Curves.linear,
                     child: Text(
                       formattedMonthly,
                       key: ValueKey<String>(formattedMonthly),
-                      style: BankTokens.numeralHero.copyWith(
-                        color: theme.primary,
-                        fontFamily: theme.fontFamily,
-                      ),
+                      style: BankTokens.numeralHero
+                          .copyWith(
+                            color: accent,
+                            fontFamily: theme.fontFamily,
+                          )
+                          .merge(widget.monthlyStyle),
                     ),
                   ),
                 ],
@@ -303,7 +365,7 @@ class _BankLoanCalculatorCardState extends State<BankLoanCalculatorCard> {
                 child: FilledButton(
                   onPressed: widget.onContinue,
                   style: FilledButton.styleFrom(
-                    backgroundColor: theme.primary,
+                    backgroundColor: accent,
                     foregroundColor: theme.onPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: theme.buttonRadius,

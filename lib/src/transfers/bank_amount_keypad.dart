@@ -61,6 +61,50 @@ class BankAmountKeypad extends StatelessWidget {
   /// respond to gestures.
   final bool enabled;
 
+  /// Overrides the corner radius of each key. Defaults to the theme
+  /// buttonRadius.
+  final BorderRadius? keyRadius;
+
+  /// Overrides the background color of each key. Defaults to the theme
+  /// surfaceVariant.
+  final Color? keyColor;
+
+  /// Overrides the digit, decimal, and delete glyph color on each key.
+  /// Defaults to the theme onSurface.
+  final Color? keyForegroundColor;
+
+  /// Merged over the amount display style (theme numeralHero in onSurface).
+  final TextStyle? amountStyle;
+
+  /// Merged over the currency code style
+  /// (BankTokens.headlineMedium in onSurfaceVariant).
+  final TextStyle? currencyStyle;
+
+  /// Merged over each key label style
+  /// (BankTokens.headlineMedium in onSurface).
+  final TextStyle? keyTextStyle;
+
+  /// Overrides the delete key glyph. Defaults to
+  /// [Icons.backspace_outlined].
+  final IconData? deleteIcon;
+
+  /// Overrides the width of each key. Defaults to `88`.
+  final double? keyWidth;
+
+  /// Overrides the height of each key. Defaults to `56`.
+  final double? keyHeight;
+
+  /// Semantics label of the delete key. Defaults to `'Delete'`.
+  final String deleteSemanticLabel;
+
+  /// Semantics label of the decimal-point key. Defaults to
+  /// `'Decimal point'`.
+  final String decimalSemanticLabel;
+
+  /// Overrides the semantics label of the amount display. Defaults to
+  /// `'<currencyCode> <amount>'`.
+  final String? semanticLabel;
+
   static const List<List<String>> _rows = [
     ['1', '2', '3'],
     ['4', '5', '6'],
@@ -77,6 +121,18 @@ class BankAmountKeypad extends StatelessWidget {
     this.numeralStyle = NumeralStyle.western,
     this.maxAmount,
     this.enabled = true,
+    this.keyRadius,
+    this.keyColor,
+    this.keyForegroundColor,
+    this.amountStyle,
+    this.currencyStyle,
+    this.keyTextStyle,
+    this.deleteIcon,
+    this.keyWidth,
+    this.keyHeight,
+    this.deleteSemanticLabel = 'Delete',
+    this.decimalSemanticLabel = 'Decimal point',
+    this.semanticLabel,
   });
 
   // ---------------------------------------------------------------------------
@@ -100,6 +156,15 @@ class BankAmountKeypad extends StatelessWidget {
     final bankTheme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
 
+    final resolvedKeyRadius = keyRadius ?? bankTheme.buttonRadius;
+    final resolvedKeyColor = keyColor ?? bankTheme.surfaceVariant;
+    final resolvedKeyForeground = keyForegroundColor ?? bankTheme.onSurface;
+    final resolvedKeyStyle = BankTokens.headlineMedium
+        .copyWith(color: resolvedKeyForeground)
+        .merge(keyTextStyle);
+    final resolvedKeyWidth = keyWidth ?? 88.0;
+    final resolvedKeyHeight = keyHeight ?? 56.0;
+
     Widget content = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -108,6 +173,9 @@ class BankAmountKeypad extends StatelessWidget {
           currencyCode: currencyCode,
           numeralStyle: scope.numeralStyle,
           bankTheme: bankTheme,
+          amountStyle: amountStyle,
+          currencyStyle: currencyStyle,
+          semanticLabel: semanticLabel,
         ),
         const SizedBox(height: BankTokens.space6),
         // Digit rows 1–9
@@ -121,6 +189,11 @@ class BankAmountKeypad extends StatelessWidget {
                     dimmed: _atMax,
                     enabled: enabled,
                     onTap: enabled && !_atMax ? () => _handleDigit(d) : null,
+                    radius: resolvedKeyRadius,
+                    color: resolvedKeyColor,
+                    textStyle: resolvedKeyStyle,
+                    width: resolvedKeyWidth,
+                    height: resolvedKeyHeight,
                   ),
                 )
                 .toList(),
@@ -134,6 +207,12 @@ class BankAmountKeypad extends StatelessWidget {
               bankTheme: bankTheme,
               enabled: enabled && onDecimalPoint != null,
               onTap: enabled && onDecimalPoint != null ? onDecimalPoint : null,
+              radius: resolvedKeyRadius,
+              color: resolvedKeyColor,
+              textStyle: resolvedKeyStyle,
+              width: resolvedKeyWidth,
+              height: resolvedKeyHeight,
+              semanticLabel: decimalSemanticLabel,
             ),
             _DigitKey(
               digit: '0',
@@ -141,11 +220,23 @@ class BankAmountKeypad extends StatelessWidget {
               dimmed: _atMax,
               enabled: enabled,
               onTap: enabled && !_atMax ? () => _handleDigit('0') : null,
+              radius: resolvedKeyRadius,
+              color: resolvedKeyColor,
+              textStyle: resolvedKeyStyle,
+              width: resolvedKeyWidth,
+              height: resolvedKeyHeight,
             ),
             _DeleteKey(
               bankTheme: bankTheme,
               enabled: enabled,
               onTap: enabled ? onDelete : null,
+              radius: resolvedKeyRadius,
+              color: resolvedKeyColor,
+              icon: deleteIcon ?? Icons.backspace_outlined,
+              iconColor: resolvedKeyForeground,
+              width: resolvedKeyWidth,
+              height: resolvedKeyHeight,
+              semanticLabel: deleteSemanticLabel,
             ),
           ],
         ),
@@ -175,12 +266,18 @@ class _AmountDisplay extends StatelessWidget {
     required this.currencyCode,
     required this.numeralStyle,
     required this.bankTheme,
+    required this.amountStyle,
+    required this.currencyStyle,
+    required this.semanticLabel,
   });
 
   final String amountText;
   final String currencyCode;
   final NumeralStyle numeralStyle;
   final BankThemeData bankTheme;
+  final TextStyle? amountStyle;
+  final TextStyle? currencyStyle;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -188,7 +285,7 @@ class _AmountDisplay extends StatelessWidget {
     final converted = numeralStyle.convert(displayText);
 
     return Semantics(
-      label: '$currencyCode $displayText',
+      label: semanticLabel ?? '$currencyCode $displayText',
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: BankTokens.space4),
@@ -199,17 +296,17 @@ class _AmountDisplay extends StatelessWidget {
           children: [
             Text(
               currencyCode,
-              style: BankTokens.headlineMedium.copyWith(
-                color: bankTheme.onSurfaceVariant,
-              ),
+              style: BankTokens.headlineMedium
+                  .copyWith(color: bankTheme.onSurfaceVariant)
+                  .merge(currencyStyle),
             ),
             const SizedBox(width: BankTokens.space2),
             Flexible(
               child: Text(
                 converted,
-                style: bankTheme.numeralHero.copyWith(
-                  color: bankTheme.onSurface,
-                ),
+                style: bankTheme.numeralHero
+                    .copyWith(color: bankTheme.onSurface)
+                    .merge(amountStyle),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
@@ -256,6 +353,11 @@ class _DigitKey extends StatelessWidget {
     required this.dimmed,
     required this.enabled,
     required this.onTap,
+    required this.radius,
+    required this.color,
+    required this.textStyle,
+    required this.width,
+    required this.height,
   });
 
   final String digit;
@@ -263,6 +365,11 @@ class _DigitKey extends StatelessWidget {
   final bool dimmed;
   final bool enabled;
   final VoidCallback? onTap;
+  final BorderRadius radius;
+  final Color color;
+  final TextStyle textStyle;
+  final double width;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
@@ -276,23 +383,18 @@ class _DigitKey extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            borderRadius: bankTheme.buttonRadius,
+            borderRadius: radius,
             splashColor: bankTheme.primary.withValues(alpha: 0.12),
             highlightColor: bankTheme.primary.withValues(alpha: 0.08),
             child: Container(
-              width: 88,
-              height: 56,
+              width: width,
+              height: height,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                borderRadius: bankTheme.buttonRadius,
-                color: bankTheme.surfaceVariant,
+                borderRadius: radius,
+                color: color,
               ),
-              child: Text(
-                digit,
-                style: BankTokens.headlineMedium.copyWith(
-                  color: bankTheme.onSurface,
-                ),
-              ),
+              child: Text(digit, style: textStyle),
             ),
           ),
         ),
@@ -310,21 +412,33 @@ class _DecimalKey extends StatelessWidget {
     required this.bankTheme,
     required this.enabled,
     required this.onTap,
+    required this.radius,
+    required this.color,
+    required this.textStyle,
+    required this.width,
+    required this.height,
+    required this.semanticLabel,
   });
 
   final BankThemeData bankTheme;
   final bool enabled;
   final VoidCallback? onTap;
+  final BorderRadius radius;
+  final Color color;
+  final TextStyle textStyle;
+  final double width;
+  final double height;
+  final String semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     if (!enabled) {
-      return const SizedBox(width: 88, height: 56);
+      return SizedBox(width: width, height: height);
     }
 
     return Semantics(
       button: true,
-      label: 'Decimal point',
+      label: semanticLabel,
       excludeSemantics: true,
       child: Material(
         color: Colors.transparent,
@@ -333,23 +447,18 @@ class _DecimalKey extends StatelessWidget {
             HapticFeedback.selectionClick();
             onTap?.call();
           },
-          borderRadius: bankTheme.buttonRadius,
+          borderRadius: radius,
           splashColor: bankTheme.primary.withValues(alpha: 0.12),
           highlightColor: bankTheme.primary.withValues(alpha: 0.08),
           child: Container(
-            width: 88,
-            height: 56,
+            width: width,
+            height: height,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              borderRadius: bankTheme.buttonRadius,
-              color: bankTheme.surfaceVariant,
+              borderRadius: radius,
+              color: color,
             ),
-            child: Text(
-              '.',
-              style: BankTokens.headlineMedium.copyWith(
-                color: bankTheme.onSurface,
-              ),
-            ),
+            child: Text('.', style: textStyle),
           ),
         ),
       ),
@@ -366,17 +475,31 @@ class _DeleteKey extends StatelessWidget {
     required this.bankTheme,
     required this.enabled,
     required this.onTap,
+    required this.radius,
+    required this.color,
+    required this.icon,
+    required this.iconColor,
+    required this.width,
+    required this.height,
+    required this.semanticLabel,
   });
 
   final BankThemeData bankTheme;
   final bool enabled;
   final VoidCallback? onTap;
+  final BorderRadius radius;
+  final Color color;
+  final IconData icon;
+  final Color iconColor;
+  final double width;
+  final double height;
+  final String semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Delete',
+      label: semanticLabel,
       excludeSemantics: true,
       child: Material(
         color: Colors.transparent,
@@ -387,21 +510,21 @@ class _DeleteKey extends StatelessWidget {
               onTap!();
             }
           },
-          borderRadius: bankTheme.buttonRadius,
+          borderRadius: radius,
           splashColor: bankTheme.primary.withValues(alpha: 0.12),
           highlightColor: bankTheme.primary.withValues(alpha: 0.08),
           child: Container(
-            width: 88,
-            height: 56,
+            width: width,
+            height: height,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              borderRadius: bankTheme.buttonRadius,
-              color: bankTheme.surfaceVariant,
+              borderRadius: radius,
+              color: color,
             ),
             child: Icon(
-              Icons.backspace_outlined,
+              icon,
               size: 22,
-              color: bankTheme.onSurface,
+              color: iconColor,
             ),
           ),
         ),

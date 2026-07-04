@@ -59,11 +59,84 @@ class BankPhysicalCardMaterialPicker extends StatelessWidget {
   final String? selectedId;
   final ValueChanged<BankCardDesignOption> onSelected;
 
+  /// Overrides the list's outer padding. Defaults to
+  /// [BankTokens.space4] horizontally.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the gap between options. Defaults to [BankTokens.space3].
+  final double? itemSpacing;
+
+  /// Overrides the mini card preview width. Defaults to 80.
+  final double? previewWidth;
+
+  /// Overrides the mini card preview height. Defaults to 50.
+  final double? previewHeight;
+
+  /// Overrides the preview corner radius. Defaults to 6.
+  final double? previewRadius;
+
+  /// Overrides the selection ring and selected label color. Defaults to
+  /// [BankThemeData.primary].
+  final Color? accentColor;
+
+  /// Overrides the metal badge background. Defaults to the neutral grey
+  /// `Color(0xFF8E8E93)`.
+  final Color? metalBadgeColor;
+
+  /// Overrides the plastic badge background. Defaults to the indigo
+  /// `Color(0xFF6C63FF)`.
+  final Color? plasticBadgeColor;
+
+  /// Badge text for metal options. Defaults to 'METAL'.
+  final String metalBadgeLabel;
+
+  /// Badge text for plastic options. Defaults to 'PLASTIC'.
+  final String plasticBadgeLabel;
+
+  /// Merged over the badge text style ([BankTokens.labelSmall] in white
+  /// at 8 px), so partial overrides work.
+  final TextStyle? badgeStyle;
+
+  /// Merged over the option label style ([BankTokens.bodySmall] in the
+  /// selection-dependent color and weight).
+  final TextStyle? labelStyle;
+
+  /// Overrides the static metal shimmer gradient. Defaults to the kit's
+  /// diagonal white highlight band.
+  final Gradient? shimmerGradient;
+
+  /// Template for each option's semantics label; `{label}` and
+  /// `{material}` are replaced. Defaults to '{label}, {material} card'.
+  final String optionSemanticTemplate;
+
+  /// Suffix appended to the selected option's semantics label. Defaults
+  /// to 'selected'.
+  final String selectedSemanticLabel;
+
+  /// Semantics label wrapping the whole picker. Defaults to none.
+  final String? semanticLabel;
+
   const BankPhysicalCardMaterialPicker({
     required this.options,
     required this.onSelected,
     super.key,
     this.selectedId,
+    this.padding,
+    this.itemSpacing,
+    this.previewWidth,
+    this.previewHeight,
+    this.previewRadius,
+    this.accentColor,
+    this.metalBadgeColor,
+    this.plasticBadgeColor,
+    this.metalBadgeLabel = 'METAL',
+    this.plasticBadgeLabel = 'PLASTIC',
+    this.badgeStyle,
+    this.labelStyle,
+    this.shimmerGradient,
+    this.optionSemanticTemplate = '{label}, {material} card',
+    this.selectedSemanticLabel = 'selected',
+    this.semanticLabel,
   });
 
   @override
@@ -74,13 +147,30 @@ class BankPhysicalCardMaterialPicker extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return SizedBox(
-      height: _CardOptionTile._totalHeight,
+    final resolvedPadding =
+        padding ?? const EdgeInsets.symmetric(horizontal: BankTokens.space4);
+    final resolvedSpacing = itemSpacing ?? BankTokens.space3;
+    final resolvedPreviewWidth = previewWidth ?? _CardOptionTile._previewWidth;
+    final resolvedPreviewHeight =
+        previewHeight ?? _CardOptionTile._previewHeight;
+    final resolvedPreviewRadius = previewRadius ?? _CardOptionTile._cardRadius;
+    final resolvedAccentColor = accentColor ?? bankTheme.primary;
+    final resolvedMetalBadgeColor = metalBadgeColor ?? const Color(0xFF8E8E93);
+    final resolvedPlasticBadgeColor =
+        plasticBadgeColor ?? const Color(0xFF6C63FF);
+    final resolvedShimmerGradient =
+        shimmerGradient ?? _MetalShimmerOverlay.defaultGradient;
+    final totalHeight = resolvedPreviewHeight +
+        BankTokens.space2 +
+        _CardOptionTile._labelHeight;
+
+    final list = SizedBox(
+      height: totalHeight,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: BankTokens.space4),
+        padding: resolvedPadding,
         itemCount: options.length,
-        separatorBuilder: (_, __) => const SizedBox(width: BankTokens.space3),
+        separatorBuilder: (_, __) => SizedBox(width: resolvedSpacing),
         itemBuilder: (context, index) {
           final option = options[index];
           final isSelected = option.id == selectedId;
@@ -89,9 +179,29 @@ class BankPhysicalCardMaterialPicker extends StatelessWidget {
             isSelected: isSelected,
             bankTheme: bankTheme,
             onTap: () => onSelected(option),
+            previewWidth: resolvedPreviewWidth,
+            previewHeight: resolvedPreviewHeight,
+            cardRadius: resolvedPreviewRadius,
+            accentColor: resolvedAccentColor,
+            metalBadgeColor: resolvedMetalBadgeColor,
+            plasticBadgeColor: resolvedPlasticBadgeColor,
+            metalBadgeLabel: metalBadgeLabel,
+            plasticBadgeLabel: plasticBadgeLabel,
+            shimmerGradient: resolvedShimmerGradient,
+            optionSemanticTemplate: optionSemanticTemplate,
+            selectedSemanticLabel: selectedSemanticLabel,
+            badgeStyle: badgeStyle,
+            labelStyle: labelStyle,
           );
         },
       ),
+    );
+
+    if (semanticLabel == null) return list;
+    return Semantics(
+      container: true,
+      label: semanticLabel,
+      child: list,
     );
   }
 }
@@ -106,19 +216,43 @@ class _CardOptionTile extends StatelessWidget {
   static const double _cardRadius = 6;
   static const double _selectionBorderWidth = 2;
   static const double _labelHeight = 36;
-  static const double _totalHeight =
-      _previewHeight + BankTokens.space2 + _labelHeight;
 
   final BankCardDesignOption option;
   final bool isSelected;
   final BankThemeData bankTheme;
   final VoidCallback onTap;
+  final double previewWidth;
+  final double previewHeight;
+  final double cardRadius;
+  final Color accentColor;
+  final Color metalBadgeColor;
+  final Color plasticBadgeColor;
+  final String metalBadgeLabel;
+  final String plasticBadgeLabel;
+  final Gradient shimmerGradient;
+  final String optionSemanticTemplate;
+  final String selectedSemanticLabel;
+  final TextStyle? badgeStyle;
+  final TextStyle? labelStyle;
 
   const _CardOptionTile({
     required this.option,
     required this.isSelected,
     required this.bankTheme,
     required this.onTap,
+    required this.previewWidth,
+    required this.previewHeight,
+    required this.cardRadius,
+    required this.accentColor,
+    required this.metalBadgeColor,
+    required this.plasticBadgeColor,
+    required this.metalBadgeLabel,
+    required this.plasticBadgeLabel,
+    required this.shimmerGradient,
+    required this.optionSemanticTemplate,
+    required this.selectedSemanticLabel,
+    this.badgeStyle,
+    this.labelStyle,
   });
 
   // ---------------------------------------------------------------------------
@@ -126,8 +260,8 @@ class _CardOptionTile extends StatelessWidget {
   // ---------------------------------------------------------------------------
 
   Color get _badgeBackground => option.material == BankCardMaterial.metal
-      ? const Color(0xFF8E8E93) // neutral grey for metal
-      : const Color(0xFF6C63FF); // indigo for plastic
+      ? metalBadgeColor // neutral grey for metal by default
+      : plasticBadgeColor; // indigo for plastic by default
 
   // ---------------------------------------------------------------------------
   // Card preview
@@ -138,14 +272,14 @@ class _CardOptionTile extends StatelessWidget {
 
     if (option.previewImageUrl != null) {
       preview = ClipRRect(
-        borderRadius: BorderRadius.circular(_cardRadius),
+        borderRadius: BorderRadius.circular(cardRadius),
         child: Image(
           image: BankUiScope.imageProviderFor(
             context,
             option.previewImageUrl!,
           ),
-          width: _previewWidth,
-          height: _previewHeight,
+          width: previewWidth,
+          height: previewHeight,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => _buildColorPreview(),
         ),
@@ -157,9 +291,10 @@ class _CardOptionTile extends StatelessWidget {
     // Apply shimmer for metal cards.
     if (option.material == BankCardMaterial.metal) {
       preview = _MetalShimmerOverlay(
-        width: _previewWidth,
-        height: _previewHeight,
-        borderRadius: _cardRadius,
+        width: previewWidth,
+        height: previewHeight,
+        borderRadius: cardRadius,
+        gradient: shimmerGradient,
         child: preview,
       );
     }
@@ -169,9 +304,9 @@ class _CardOptionTile extends StatelessWidget {
       preview = Container(
         decoration: BoxDecoration(
           borderRadius:
-              BorderRadius.circular(_cardRadius + _selectionBorderWidth),
+              BorderRadius.circular(cardRadius + _selectionBorderWidth),
           border: Border.all(
-            color: bankTheme.primary,
+            color: accentColor,
             width: _selectionBorderWidth,
           ),
         ),
@@ -185,10 +320,10 @@ class _CardOptionTile extends StatelessWidget {
 
   Widget _buildColorPreview() {
     return Container(
-      width: _previewWidth,
-      height: _previewHeight,
+      width: previewWidth,
+      height: previewHeight,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(_cardRadius),
+        borderRadius: BorderRadius.circular(cardRadius),
         gradient: option.secondaryColor != null
             ? LinearGradient(
                 begin: Alignment.topLeft,
@@ -231,12 +366,16 @@ class _CardOptionTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(BankTokens.radiusSmall),
       ),
       child: Text(
-        option.material == BankCardMaterial.metal ? 'METAL' : 'PLASTIC',
-        style: BankTokens.labelSmall.copyWith(
-          color: Colors.white,
-          fontSize: 8,
-          letterSpacing: 0.8,
-        ),
+        option.material == BankCardMaterial.metal
+            ? metalBadgeLabel
+            : plasticBadgeLabel,
+        style: BankTokens.labelSmall
+            .copyWith(
+              color: Colors.white,
+              fontSize: 8,
+              letterSpacing: 0.8,
+            )
+            .merge(badgeStyle),
       ),
     );
   }
@@ -247,8 +386,12 @@ class _CardOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final semanticLabel = '${option.label}, ${option.material.name} card'
-        '${isSelected ? ', selected' : ''}';
+    var semanticLabel = optionSemanticTemplate
+        .replaceAll('{label}', option.label)
+        .replaceAll('{material}', option.material.name);
+    if (isSelected) {
+      semanticLabel = '$semanticLabel, $selectedSemanticLabel';
+    }
 
     return Semantics(
       label: semanticLabel,
@@ -272,15 +415,17 @@ class _CardOptionTile extends StatelessWidget {
 
             // ── Label ────────────────────────────────────────────────────────
             SizedBox(
-              width: _previewWidth + _selectionBorderWidth * 2,
+              width: previewWidth + _selectionBorderWidth * 2,
               child: Text(
                 option.label,
-                style: BankTokens.bodySmall.copyWith(
-                  color: isSelected
-                      ? bankTheme.primary
-                      : bankTheme.onSurfaceVariant,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                ),
+                style: BankTokens.bodySmall
+                    .copyWith(
+                      color:
+                          isSelected ? accentColor : bankTheme.onSurfaceVariant,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
+                    )
+                    .merge(labelStyle),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -303,15 +448,29 @@ class _CardOptionTile extends StatelessWidget {
 /// for the animated variant see [BankCardSurface.metallicSweep] in
 /// [BankVirtualCardWidget].
 class _MetalShimmerOverlay extends StatelessWidget {
+  /// Default diagonal white highlight band painted over metal previews.
+  static const Gradient defaultGradient = LinearGradient(
+    begin: Alignment(-1.2, -1.2),
+    end: Alignment.center,
+    colors: [
+      Colors.transparent,
+      Color(0x55FFFFFF),
+      Colors.transparent,
+    ],
+    stops: [0.0, 0.5, 1.0],
+  );
+
   final double width;
   final double height;
   final double borderRadius;
+  final Gradient gradient;
   final Widget child;
 
   const _MetalShimmerOverlay({
     required this.width,
     required this.height,
     required this.borderRadius,
+    required this.gradient,
     required this.child,
   });
 
@@ -319,16 +478,7 @@ class _MetalShimmerOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return ShaderMask(
       blendMode: BlendMode.srcATop,
-      shaderCallback: (bounds) => const LinearGradient(
-        begin: Alignment(-1.2, -1.2),
-        end: Alignment.center,
-        colors: [
-          Colors.transparent,
-          Color(0x55FFFFFF),
-          Colors.transparent,
-        ],
-        stops: [0.0, 0.5, 1.0],
-      ).createShader(bounds),
+      shaderCallback: gradient.createShader,
       child: child,
     );
   }
