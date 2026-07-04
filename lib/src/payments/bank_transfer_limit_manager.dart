@@ -62,11 +62,18 @@ class BankTransferLimitManager extends StatelessWidget {
     super.key,
     this.requireScaAboveCurrent = true,
     this.onScaRequired,
+    this.padding,
+    this.accentColor,
+    this.trackColor,
+    this.titleStyle,
+    this.amountStyle,
+    this.debounceDuration,
   });
 
   final List<BankLimitChannel> channels;
 
-  /// Fired (debounced 400 ms) when a channel's limit changes.
+  /// Fired (debounced, see [debounceDuration]) when a channel's limit
+  /// changes.
   final void Function(String channelId, Money newLimit) onChanged;
 
   /// When true, raising a limit above its configured value awaits
@@ -76,6 +83,28 @@ class BankTransferLimitManager extends StatelessWidget {
   /// Host presents an SCA challenge (e.g. `BankScaApprovalSheet`) and
   /// resolves whether it passed.
   final Future<bool> Function()? onScaRequired;
+
+  /// Overrides each channel row's padding. Defaults to horizontal
+  /// [BankTokens.space4] and vertical [BankTokens.space3].
+  final EdgeInsetsGeometry? padding;
+
+  /// Tint of the channel icon, progress bar, and slider. Defaults to
+  /// the theme primary.
+  final Color? accentColor;
+
+  /// Track colour behind the progress bar and slider. Defaults to the
+  /// theme surface-variant colour.
+  final Color? trackColor;
+
+  /// Merged over the computed channel-label style.
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed live limit-amount style.
+  final TextStyle? amountStyle;
+
+  /// Delay between the slider commit and [onChanged] firing.
+  /// Defaults to 400 ms.
+  final Duration? debounceDuration;
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +118,12 @@ class BankTransferLimitManager extends StatelessWidget {
             requireScaAboveCurrent: requireScaAboveCurrent,
             onScaRequired: onScaRequired,
             onChanged: onChanged,
+            padding: padding,
+            accentColor: accentColor,
+            trackColor: trackColor,
+            titleStyle: titleStyle,
+            amountStyle: amountStyle,
+            debounceDuration: debounceDuration,
           ),
       ],
     );
@@ -102,12 +137,24 @@ class _ChannelEditor extends StatefulWidget {
     required this.onScaRequired,
     required this.onChanged,
     super.key,
+    this.padding,
+    this.accentColor,
+    this.trackColor,
+    this.titleStyle,
+    this.amountStyle,
+    this.debounceDuration,
   });
 
   final BankLimitChannel channel;
   final bool requireScaAboveCurrent;
   final Future<bool> Function()? onScaRequired;
   final void Function(String channelId, Money newLimit) onChanged;
+  final EdgeInsetsGeometry? padding;
+  final Color? accentColor;
+  final Color? trackColor;
+  final TextStyle? titleStyle;
+  final TextStyle? amountStyle;
+  final Duration? debounceDuration;
 
   @override
   State<_ChannelEditor> createState() => _ChannelEditorState();
@@ -146,7 +193,10 @@ class _ChannelEditorState extends State<_ChannelEditor> {
 
   void _onSliderCommit(double raw) {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 400), _commit);
+    _debounce = Timer(
+      widget.debounceDuration ?? const Duration(milliseconds: 400),
+      _commit,
+    );
   }
 
   Future<void> _commit() async {
@@ -189,22 +239,28 @@ class _ChannelEditorState extends State<_ChannelEditor> {
       numeralStyle: scope.numeralStyle,
     );
 
+    final accent = widget.accentColor ?? theme.primary;
+    final track = widget.trackColor ?? theme.surfaceVariant;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: BankTokens.space4,
-        vertical: BankTokens.space3,
-      ),
+      padding: widget.padding ??
+          const EdgeInsets.symmetric(
+            horizontal: BankTokens.space4,
+            vertical: BankTokens.space3,
+          ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(channel.icon, size: 20, color: theme.primary),
+              Icon(channel.icon, size: 20, color: accent),
               const SizedBox(width: BankTokens.space2),
               Expanded(
                 child: Text(
                   channel.label,
-                  style: BankTokens.bodyLarge.copyWith(color: theme.onSurface),
+                  style: BankTokens.bodyLarge
+                      .copyWith(color: theme.onSurface)
+                      .merge(widget.titleStyle),
                 ),
               ),
               if (_awaitingSca)
@@ -217,6 +273,11 @@ class _ChannelEditorState extends State<_ChannelEditor> {
                 BankBalanceText(
                   money: _asMoney(_value),
                   size: BankBalanceSize.medium,
+                  style: widget.amountStyle == null
+                      ? null
+                      : theme.numeralMedium
+                          .copyWith(color: theme.onSurface)
+                          .merge(widget.amountStyle),
                 ),
             ],
           ),
@@ -226,8 +287,8 @@ class _ChannelEditorState extends State<_ChannelEditor> {
             child: LinearProgressIndicator(
               value: usedFraction,
               minHeight: 4,
-              backgroundColor: theme.surfaceVariant,
-              color: nearLimit ? BankTokens.danger : theme.primary,
+              backgroundColor: track,
+              color: nearLimit ? BankTokens.danger : accent,
             ),
           ),
           Semantics(
@@ -237,8 +298,8 @@ class _ChannelEditorState extends State<_ChannelEditor> {
             child: Slider(
               value: _value.clamp(0, _max),
               max: _max <= 0 ? 1 : _max,
-              activeColor: theme.primary,
-              inactiveColor: theme.surfaceVariant,
+              activeColor: accent,
+              inactiveColor: track,
               onChanged: _awaitingSca ? null : _onSliderChanged,
               onChangeEnd: _onSliderCommit,
             ),

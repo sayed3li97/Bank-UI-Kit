@@ -52,6 +52,7 @@ export 'src/common/bank_app_bar.dart';
 export 'src/common/bank_bottom_nav_bar.dart';
 export 'src/common/bank_country_picker.dart';
 export 'src/common/bank_emblem.dart';
+export 'src/common/bank_hijri_date.dart';
 export 'src/common/bank_icon_spec.dart';
 export 'src/common/bank_masked_input_field.dart';
 export 'src/common/bank_money_protection_banner.dart';
@@ -115,17 +116,23 @@ export 'src/payments/bank_transfer_limit_manager.dart';
 export 'src/rewards/bank_cashback_category_picker.dart';
 export 'src/rewards/bank_offers_rail.dart';
 export 'src/rewards/bank_points_hub_card.dart';
+export 'src/rewards/bank_prize_draw_card.dart';
 // Scope & strings
 export 'src/scope/bank_ui_scope.dart';
 export 'src/scope/bank_ui_strings.dart';
+export 'src/states/bank_app_gate_screen.dart';
+export 'src/states/bank_connectivity_banner.dart';
 export 'src/states/bank_empty_state_view.dart';
 export 'src/states/bank_error_state_view.dart';
 export 'src/states/bank_fraud_alert_banner.dart';
+export 'src/states/bank_service_status_list.dart';
 // States & feedback
 export 'src/states/bank_skeleton_loader.dart';
 export 'src/states/bank_success_animation.dart';
 export 'src/states/bank_toast_banner.dart';
+export 'src/states/bank_update_prompt_sheet.dart';
 // Support & servicing
+export 'src/support/bank_assistant_panel.dart';
 export 'src/support/bank_dispute_wizard_sheet.dart';
 export 'src/support/bank_help_faq_list.dart';
 export 'src/support/bank_secure_message_thread.dart';

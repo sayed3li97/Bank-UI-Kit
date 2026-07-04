@@ -13,12 +13,78 @@ class BankWatchlistCard extends StatelessWidget {
   final VoidCallback? onToggleWatch;
   final VoidCallback? onTap;
 
+  /// Overrides the card content padding. Defaults to space4 by space3.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme
+  /// cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card fill colour. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card elevation. Defaults to the theme elevationLow.
+  final double? elevation;
+
+  /// Replaces the logo/initials avatar at the start of the card.
+  final Widget? leading;
+
+  /// Merged over the symbol style (labelLarge, onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the asset name style (bodySmall, onSurfaceVariant).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the price style (numeralSmall, onSurface).
+  final TextStyle? amountStyle;
+
+  /// Overrides the positive change tint. Defaults to
+  /// [BankTokens.investmentGain].
+  final Color? gainColor;
+
+  /// Overrides the negative change tint. Defaults to
+  /// [BankTokens.investmentLoss].
+  final Color? lossColor;
+
+  /// Overrides the watched star glyph. Defaults to [Icons.star].
+  final IconData? watchedIcon;
+
+  /// Overrides the unwatched star glyph. Defaults to
+  /// [Icons.star_outline].
+  final IconData? unwatchedIcon;
+
+  /// Overrides the watched star tint. Defaults to amber.
+  final Color? watchedColor;
+
+  /// Semantics label for the watch toggle when watched. Defaults to
+  /// 'Remove from watchlist'.
+  final String removeFromWatchlistLabel;
+
+  /// Semantics label for the watch toggle when not watched. Defaults
+  /// to 'Add to watchlist'.
+  final String addToWatchlistLabel;
+
   const BankWatchlistCard({
     required this.quote,
     super.key,
     this.isWatched = true,
     this.onToggleWatch,
     this.onTap,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.elevation,
+    this.leading,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.gainColor,
+    this.lossColor,
+    this.watchedIcon,
+    this.unwatchedIcon,
+    this.watchedColor,
+    this.removeFromWatchlistLabel = 'Remove from watchlist',
+    this.addToWatchlistLabel = 'Add to watchlist',
   });
 
   @override
@@ -34,36 +100,40 @@ class BankWatchlistCard extends StatelessWidget {
     final changeSign = quote.changePercent >= 0 ? '+' : '';
     final changeStr = '$changeSign${quote.changePercent.toStringAsFixed(2)}%';
     final changeColor = quote.isPositive
-        ? BankTokens.investmentGain
-        : BankTokens.investmentLoss;
+        ? gainColor ?? BankTokens.investmentGain
+        : lossColor ?? BankTokens.investmentLoss;
+    final resolvedRadius = radius ?? theme.cardRadius;
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: theme.cardRadius),
-      color: theme.surface,
-      elevation: theme.elevationLow,
+      shape: RoundedRectangleBorder(borderRadius: resolvedRadius),
+      color: backgroundColor ?? theme.surface,
+      elevation: elevation ?? theme.elevationLow,
       child: InkWell(
         onTap: onTap,
-        borderRadius: theme.cardRadius,
+        borderRadius: resolvedRadius,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: BankTokens.space4,
-            vertical: BankTokens.space3,
-          ),
+          padding: padding ??
+              const EdgeInsets.symmetric(
+                horizontal: BankTokens.space4,
+                vertical: BankTokens.space3,
+              ),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: theme.surfaceVariant,
-                backgroundImage:
-                    quote.logoUrl != null ? NetworkImage(quote.logoUrl!) : null,
-                child: quote.logoUrl == null
-                    ? Text(
-                        quote.symbol.isNotEmpty ? quote.symbol[0] : '?',
-                        style: BankTokens.labelMedium
-                            .copyWith(color: theme.primary),
-                      )
-                    : null,
-              ),
+              leading ??
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: theme.surfaceVariant,
+                    backgroundImage: quote.logoUrl != null
+                        ? BankUiScope.imageProviderFor(context, quote.logoUrl!)
+                        : null,
+                    child: quote.logoUrl == null
+                        ? Text(
+                            quote.symbol.isNotEmpty ? quote.symbol[0] : '?',
+                            style: BankTokens.labelMedium
+                                .copyWith(color: theme.primary),
+                          )
+                        : null,
+                  ),
               const SizedBox(width: BankTokens.space3),
               Expanded(
                 child: Column(
@@ -72,12 +142,14 @@ class BankWatchlistCard extends StatelessWidget {
                     Text(
                       quote.symbol,
                       style: BankTokens.labelLarge
-                          .copyWith(color: theme.onSurface),
+                          .copyWith(color: theme.onSurface)
+                          .merge(titleStyle),
                     ),
                     Text(
                       quote.name,
                       style: BankTokens.bodySmall
-                          .copyWith(color: theme.onSurfaceVariant),
+                          .copyWith(color: theme.onSurfaceVariant)
+                          .merge(subtitleStyle),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -90,7 +162,8 @@ class BankWatchlistCard extends StatelessWidget {
                   Text(
                     priceStr,
                     style: BankTokens.numeralSmall
-                        .copyWith(color: theme.onSurface),
+                        .copyWith(color: theme.onSurface)
+                        .merge(amountStyle),
                   ),
                   Text(
                     changeStr,
@@ -101,11 +174,16 @@ class BankWatchlistCard extends StatelessWidget {
               const SizedBox(width: BankTokens.space2),
               Semantics(
                 button: true,
-                label: isWatched ? 'Remove from watchlist' : 'Add to watchlist',
+                label:
+                    isWatched ? removeFromWatchlistLabel : addToWatchlistLabel,
                 child: IconButton(
                   icon: Icon(
-                    isWatched ? Icons.star : Icons.star_outline,
-                    color: isWatched ? Colors.amber : theme.onSurfaceVariant,
+                    isWatched
+                        ? watchedIcon ?? Icons.star
+                        : unwatchedIcon ?? Icons.star_outline,
+                    color: isWatched
+                        ? watchedColor ?? Colors.amber
+                        : theme.onSurfaceVariant,
                   ),
                   onPressed: onToggleWatch,
                 ),

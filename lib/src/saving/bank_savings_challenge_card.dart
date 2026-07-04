@@ -23,7 +23,7 @@ import '../theme/tokens.dart';
 /// appends a "+N more" tail chip.
 ///
 /// Use it on a savings or goals screen wherever a recurring stepped
-/// challenge (equivalent to Kakao Bank's 26-week challenge) needs a
+/// challenge (the classic 26-week saving challenge) needs a
 /// glanceable, tappable summary.
 ///
 /// ```dart
@@ -53,6 +53,19 @@ class BankSavingsChallengeCard extends StatefulWidget {
     this.streakTemplate = '{n} week streak',
     this.progressTemplate = '{completed} of {total}',
     this.moreTemplate = '+{n} more',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.accentColor,
+    this.shadow,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.semanticLabel,
+    this.checkIcon,
+    this.streakIcon,
+    this.scheduleIcon,
+    this.animationDuration,
+    this.stampSize,
   })  : assert(totalSteps > 0, 'totalSteps must be positive'),
         assert(
           completedSteps >= 0 && completedSteps <= totalSteps,
@@ -98,6 +111,56 @@ class BankSavingsChallengeCard extends StatefulWidget {
   /// number of hidden stamps.
   final String moreTemplate;
 
+  /// Overrides the card content padding. Defaults to space4 all round.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme
+  /// cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card fill colour. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the stamp, ring, and deposit-button accent. Defaults
+  /// to the theme primary colour.
+  final Color? accentColor;
+
+  /// Overrides the card shadow. Defaults to the theme glow when
+  /// enabled, else [BankTokens.shadowCard]; pass `const []` to
+  /// flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Merged over the computed title style ([BankTokens.headlineSmall]
+  /// in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed progress-line style
+  /// ([BankTokens.labelMedium] in onSurfaceVariant).
+  final TextStyle? subtitleStyle;
+
+  /// Overrides the card semantics. Defaults to a label built from the
+  /// title, progress, and streak.
+  final String? semanticLabel;
+
+  /// Glyph for completed stamps and the deposit success state.
+  /// Defaults to [Icons.check_rounded].
+  final IconData? checkIcon;
+
+  /// Overrides the streak chip glyph. Defaults to
+  /// [Icons.local_fire_department_rounded].
+  final IconData? streakIcon;
+
+  /// Overrides the next-deposit row glyph. Defaults to
+  /// [BankIcons.schedule].
+  final IconData? scheduleIcon;
+
+  /// Base duration of the current-stamp pulse (and, doubled, of the
+  /// success hold). Defaults to [BankTokens.durationXSlow].
+  final Duration? animationDuration;
+
+  /// Diameter of each stamp circle. Defaults to 28.
+  final double? stampSize;
+
   /// Maximum number of stamp circles rendered before the tail chip.
   static const int maxVisibleStamps = 30;
 
@@ -115,13 +178,26 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
   late final AnimationController _pulse;
   _DepositPhase _phase = _DepositPhase.idle;
 
+  double get _stampSize => widget.stampSize ?? _stampDiameter;
+
+  Duration get _pulseDuration =>
+      widget.animationDuration ?? BankTokens.durationXSlow;
+
   @override
   void initState() {
     super.initState();
     _pulse = AnimationController(
       vsync: this,
-      duration: BankTokens.durationXSlow,
+      duration: _pulseDuration,
     );
+  }
+
+  @override
+  void didUpdateWidget(BankSavingsChallengeCard old) {
+    super.didUpdateWidget(old);
+    if (old.animationDuration != widget.animationDuration) {
+      _pulse.duration = _pulseDuration;
+    }
   }
 
   @override
@@ -159,7 +235,7 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
       return;
     }
     setState(() => _phase = _DepositPhase.success);
-    await Future<void>.delayed(BankTokens.durationXSlow * 2);
+    await Future<void>.delayed(_pulseDuration * 2);
     if (mounted) setState(() => _phase = _DepositPhase.idle);
   }
 
@@ -171,20 +247,20 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
     return result;
   }
 
-  Widget _stamp(BankThemeData theme, int index) {
+  Widget _stamp(BankThemeData theme, Color accent, int index) {
     final isCompleted = index < widget.completedSteps;
     final isCurrent = index == widget.completedSteps;
 
     if (isCompleted) {
       return Container(
-        width: _stampDiameter,
-        height: _stampDiameter,
+        width: _stampSize,
+        height: _stampSize,
         decoration: BoxDecoration(
-          color: theme.primary,
+          color: accent,
           shape: BoxShape.circle,
         ),
         child: Icon(
-          Icons.check_rounded,
+          widget.checkIcon ?? Icons.check_rounded,
           size: 16,
           color: theme.onPrimary,
         ),
@@ -200,20 +276,20 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: theme.primary.withValues(alpha: glow),
+                color: accent.withValues(alpha: glow),
                 width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: theme.primary.withValues(alpha: 0.25 * _pulse.value),
+                  color: accent.withValues(alpha: 0.25 * _pulse.value),
                   blurRadius: 8,
                   spreadRadius: 1,
                 ),
               ],
             ),
-            child: const SizedBox(
-              width: _stampDiameter,
-              height: _stampDiameter,
+            child: SizedBox(
+              width: _stampSize,
+              height: _stampSize,
             ),
           );
         },
@@ -225,7 +301,7 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
         shape: BoxShape.circle,
         border: Border.all(color: theme.outline),
       ),
-      child: const SizedBox(width: _stampDiameter, height: _stampDiameter),
+      child: SizedBox(width: _stampSize, height: _stampSize),
     );
   }
 
@@ -244,8 +320,8 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.local_fire_department_rounded,
+            Icon(
+              widget.streakIcon ?? Icons.local_fire_department_rounded,
               size: 14,
               color: BankTokens.warning,
             ),
@@ -268,7 +344,7 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
         borderRadius: BorderRadius.circular(BankTokens.radiusFull),
       ),
       child: SizedBox(
-        height: _stampDiameter,
+        height: _stampSize,
         child: Padding(
           padding: const EdgeInsetsDirectional.symmetric(
             horizontal: BankTokens.space2,
@@ -285,7 +361,7 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
     );
   }
 
-  Widget _depositButton(BankThemeData theme) {
+  Widget _depositButton(BankThemeData theme, Color accent) {
     final busy = _phase == _DepositPhase.busy;
     final content = switch (_phase) {
       _DepositPhase.busy => SizedBox(
@@ -297,7 +373,7 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
           ),
         ),
       _DepositPhase.success => Icon(
-          Icons.check_rounded,
+          widget.checkIcon ?? Icons.check_rounded,
           size: 20,
           color: theme.onPrimary,
         ),
@@ -314,9 +390,9 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
         child: FilledButton(
           onPressed: busy ? null : _handleDeposit,
           style: FilledButton.styleFrom(
-            backgroundColor: theme.primary,
+            backgroundColor: accent,
             foregroundColor: theme.onPrimary,
-            disabledBackgroundColor: theme.primary.withValues(alpha: 0.6),
+            disabledBackgroundColor: accent.withValues(alpha: 0.6),
             textStyle: BankTokens.labelLarge,
             shape: RoundedRectangleBorder(borderRadius: theme.buttonRadius),
           ),
@@ -350,39 +426,48 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
     final streakLabel = widget.streak > 0
         ? _fill(widget.streakTemplate, {'n': widget.streak.toString()})
         : null;
-    final semanticLabel = [
-      widget.title,
-      progressLabel,
-      if (streakLabel != null) streakLabel,
-    ].join(', ');
+    final semanticLabel = widget.semanticLabel ??
+        [
+          widget.title,
+          progressLabel,
+          if (streakLabel != null) streakLabel,
+        ].join(', ');
+
+    final accent = widget.accentColor ?? theme.primary;
+    final resolvedPadding =
+        widget.padding ?? const EdgeInsets.all(BankTokens.space4);
+    final resolvedRadius = widget.radius ?? theme.cardRadius;
+    final resolvedBackground = widget.backgroundColor ?? theme.surface;
+    final resolvedShadow = widget.shadow ??
+        (theme.useGlow && theme.glowColor != null
+            ? [
+                BoxShadow(
+                  color: theme.glowColor!.withValues(alpha: 0.25),
+                  blurRadius: 16,
+                  spreadRadius: -4,
+                ),
+              ]
+            : BankTokens.shadowCard);
 
     return Semantics(
       label: semanticLabel,
       button: widget.onTap != null,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.surface,
-          borderRadius: theme.cardRadius,
-          boxShadow: theme.useGlow && theme.glowColor != null
-              ? [
-                  BoxShadow(
-                    color: theme.glowColor!.withValues(alpha: 0.25),
-                    blurRadius: 16,
-                    spreadRadius: -4,
-                  ),
-                ]
-              : BankTokens.shadowCard,
+          color: resolvedBackground,
+          borderRadius: resolvedRadius,
+          boxShadow: resolvedShadow,
         ),
         child: Material(
           color: Colors.transparent,
-          borderRadius: theme.cardRadius,
+          borderRadius: resolvedRadius,
           child: InkWell(
             onTap: widget.onTap,
-            borderRadius: theme.cardRadius,
-            splashColor: theme.primary.withValues(alpha: 0.08),
-            highlightColor: theme.primary.withValues(alpha: 0.04),
+            borderRadius: resolvedRadius,
+            splashColor: accent.withValues(alpha: 0.08),
+            highlightColor: accent.withValues(alpha: 0.04),
             child: Padding(
-              padding: const EdgeInsets.all(BankTokens.space4),
+              padding: resolvedPadding,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,7 +479,8 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
                         child: Text(
                           widget.title,
                           style: BankTokens.headlineSmall
-                              .copyWith(color: theme.onSurface),
+                              .copyWith(color: theme.onSurface)
+                              .merge(widget.titleStyle),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -415,7 +501,7 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
                       runSpacing: BankTokens.space2,
                       children: [
                         for (var i = 0; i < visibleStamps; i++)
-                          _stamp(theme, i),
+                          _stamp(theme, accent, i),
                         if (hiddenStamps > 0) _moreChip(theme, hiddenStamps),
                       ],
                     ),
@@ -428,7 +514,8 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
                     child: Text(
                       progressLabel,
                       style: BankTokens.labelMedium
-                          .copyWith(color: theme.onSurfaceVariant),
+                          .copyWith(color: theme.onSurfaceVariant)
+                          .merge(widget.subtitleStyle),
                     ),
                   ),
 
@@ -438,7 +525,7 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
                   Row(
                     children: [
                       Icon(
-                        BankIcons.schedule,
+                        widget.scheduleIcon ?? BankIcons.schedule,
                         size: 16,
                         color: theme.onSurfaceVariant,
                       ),
@@ -466,7 +553,7 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
 
                   if (widget.onDepositNow != null) ...[
                     const SizedBox(height: BankTokens.space4),
-                    _depositButton(theme),
+                    _depositButton(theme, accent),
                   ],
                 ],
               ),

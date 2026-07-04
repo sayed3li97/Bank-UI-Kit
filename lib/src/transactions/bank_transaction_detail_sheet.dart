@@ -16,12 +16,102 @@ class BankTransactionDetailSheet extends StatelessWidget {
   final VoidCallback? onDispute;
   final VoidCallback? onShare;
 
+  /// Replaces the avatar, merchant name, and amount header when provided.
+  final Widget? header;
+
+  /// Overrides the scrollable content padding. Defaults to
+  /// [BankTokens.space4] plus the bottom safe area inset.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the sheet corner radius. Defaults to the theme sheetRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the sheet background. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the drag handle color. Defaults to the theme outline.
+  final Color? handleColor;
+
+  /// Overrides the avatar background. Defaults to the theme surfaceVariant.
+  final Color? avatarBackgroundColor;
+
+  /// Overrides the primary accents (avatar icon, share action).
+  /// Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Merged over the merchant name style ([BankTokens.headlineSmall]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed hero amount style.
+  final TextStyle? amountStyle;
+
+  /// Overrides the max sheet height as a screen fraction. Defaults to
+  /// 0.92.
+  final double? maxHeightFraction;
+
+  /// Overrides the date row label. Defaults to 'Date'.
+  final String dateLabel;
+
+  /// Overrides the category row label. Defaults to 'Category'.
+  final String categoryLabel;
+
+  /// Overrides the status row label. Defaults to 'Status'.
+  final String statusRowLabel;
+
+  /// Overrides the reference row label. Defaults to 'Reference'.
+  final String referenceLabel;
+
+  /// Overrides the note row label. Defaults to 'Note'.
+  final String noteLabel;
+
+  /// Overrides the spender row label. Defaults to 'Paid by'.
+  final String paidByLabel;
+
+  /// Overrides the splits section heading. Defaults to
+  /// 'Category Breakdown'.
+  final String categoryBreakdownLabel;
+
+  /// Overrides the category display name. Defaults to built-in
+  /// English labels.
+  final String Function(TransactionCategory)? categoryLabelBuilder;
+
+  /// Overrides the dispute action glyph. Defaults to [BankIcons.dispute].
+  final IconData? disputeIcon;
+
+  /// Overrides the share action glyph. Defaults to [BankIcons.share].
+  final IconData? shareIcon;
+
+  /// Overrides the copy glyph on copyable rows. Defaults to
+  /// [BankIcons.copy].
+  final IconData? copyIcon;
+
   const BankTransactionDetailSheet({
     required this.transaction,
     super.key,
     this.mapPreview,
     this.onDispute,
     this.onShare,
+    this.header,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.handleColor,
+    this.avatarBackgroundColor,
+    this.accentColor,
+    this.titleStyle,
+    this.amountStyle,
+    this.maxHeightFraction,
+    this.dateLabel = 'Date',
+    this.categoryLabel = 'Category',
+    this.statusRowLabel = 'Status',
+    this.referenceLabel = 'Reference',
+    this.noteLabel = 'Note',
+    this.paidByLabel = 'Paid by',
+    this.categoryBreakdownLabel = 'Category Breakdown',
+    this.categoryLabelBuilder,
+    this.disputeIcon,
+    this.shareIcon,
+    this.copyIcon,
   });
 
   /// Convenience helper to push the sheet.
@@ -107,13 +197,16 @@ class BankTransactionDetailSheet extends StatelessWidget {
             : bankTheme.onSurface;
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final maxHeight = MediaQuery.of(context).size.height * 0.92;
+    final maxHeight =
+        MediaQuery.of(context).size.height * (maxHeightFraction ?? 0.92);
+    final resolvedCategoryLabel = categoryLabelBuilder ?? _categoryLabel;
+    final accent = accentColor ?? bankTheme.primary;
 
     return Container(
       constraints: BoxConstraints(maxHeight: maxHeight),
       decoration: BoxDecoration(
-        color: bankTheme.surface,
-        borderRadius: bankTheme.sheetRadius,
+        color: backgroundColor ?? bankTheme.surface,
+        borderRadius: radius ?? bankTheme.sheetRadius,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -126,7 +219,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: bankTheme.outline,
+                  color: handleColor ?? bankTheme.outline,
                   borderRadius: BorderRadius.circular(BankTokens.radiusFull),
                 ),
               ),
@@ -135,83 +228,90 @@ class BankTransactionDetailSheet extends StatelessWidget {
           // Scrollable body
           Flexible(
             child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
-                BankTokens.space4,
-                BankTokens.space4,
-                BankTokens.space4,
-                bottomPadding + BankTokens.space4,
-              ),
+              padding: padding ??
+                  EdgeInsets.fromLTRB(
+                    BankTokens.space4,
+                    BankTokens.space4,
+                    BankTokens.space4,
+                    bottomPadding + BankTokens.space4,
+                  ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // --- Header: avatar + name + amount ---
-                  Center(
-                    child: Column(
-                      children: [
-                        _MerchantAvatar(
-                          transaction: transaction,
-                          bankTheme: bankTheme,
+                  header ??
+                      Center(
+                        child: Column(
+                          children: [
+                            _MerchantAvatar(
+                              transaction: transaction,
+                              bankTheme: bankTheme,
+                              backgroundColor: avatarBackgroundColor,
+                              iconColor: accentColor,
+                            ),
+                            const SizedBox(height: BankTokens.space2),
+                            Text(
+                              transaction.merchantName,
+                              style: BankTokens.headlineSmall
+                                  .copyWith(color: bankTheme.onSurface)
+                                  .merge(titleStyle),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: BankTokens.space1),
+                            Text(
+                              formattedAmount,
+                              style: bankTheme.numeralHero
+                                  .copyWith(
+                                    color: amountColor,
+                                    decoration: isDeclined
+                                        ? TextDecoration.lineThrough
+                                        : TextDecoration.none,
+                                    decorationColor: bankTheme.onSurfaceVariant,
+                                  )
+                                  .merge(amountStyle),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: BankTokens.space2),
-                        Text(
-                          transaction.merchantName,
-                          style: BankTokens.headlineSmall.copyWith(
-                            color: bankTheme.onSurface,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: BankTokens.space1),
-                        Text(
-                          formattedAmount,
-                          style: bankTheme.numeralHero.copyWith(
-                            color: amountColor,
-                            decoration: isDeclined
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
-                            decorationColor: bankTheme.onSurfaceVariant,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
                   const SizedBox(height: BankTokens.space6),
                   const Divider(height: 1),
                   const SizedBox(height: BankTokens.space4),
 
                   // --- Detail rows ---
                   _DetailRow(
-                    label: 'Date',
+                    label: dateLabel,
                     value: BankDateFormatter.formatLong(transaction.settledAt),
                     bankTheme: bankTheme,
                   ),
                   _DetailRow(
-                    label: 'Category',
-                    value: _categoryLabel(transaction.category),
+                    label: categoryLabel,
+                    value: resolvedCategoryLabel(transaction.category),
                     bankTheme: bankTheme,
                   ),
                   _DetailRow(
-                    label: 'Status',
+                    label: statusRowLabel,
                     value: _statusLabel(transaction.status, scope),
                     valueColor: _statusColor(transaction.status, bankTheme),
                     bankTheme: bankTheme,
                   ),
                   if (transaction.reference != null)
                     _DetailRow(
-                      label: 'Reference',
+                      label: referenceLabel,
                       value: transaction.reference!,
                       bankTheme: bankTheme,
                       canCopy: true,
+                      copyIcon: copyIcon,
                     ),
                   if (transaction.note != null)
                     _DetailRow(
-                      label: 'Note',
+                      label: noteLabel,
                       value: transaction.note!,
                       bankTheme: bankTheme,
                     ),
                   if (transaction.spenderName != null)
                     _DetailRow(
-                      label: 'Paid by',
+                      label: paidByLabel,
                       value: transaction.spenderName!,
                       bankTheme: bankTheme,
                     ),
@@ -236,7 +336,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                     const Divider(height: 1),
                     const SizedBox(height: BankTokens.space3),
                     Text(
-                      'Category Breakdown',
+                      categoryBreakdownLabel,
                       style: BankTokens.labelLarge.copyWith(
                         color: bankTheme.onSurface,
                       ),
@@ -259,7 +359,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                             const SizedBox(width: BankTokens.space2),
                             Expanded(
                               child: Text(
-                                _categoryLabel(split.category),
+                                resolvedCategoryLabel(split.category),
                                 style: BankTokens.bodyMedium.copyWith(
                                   color: bankTheme.onSurface,
                                 ),
@@ -296,7 +396,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                             child: TextButton.icon(
                               onPressed: onDispute,
                               icon: Icon(
-                                BankIcons.dispute,
+                                disputeIcon ?? BankIcons.dispute,
                                 color: bankTheme.negativeBalance,
                                 size: 18,
                               ),
@@ -321,14 +421,14 @@ class BankTransactionDetailSheet extends StatelessWidget {
                             child: TextButton.icon(
                               onPressed: onShare,
                               icon: Icon(
-                                BankIcons.share,
-                                color: bankTheme.primary,
+                                shareIcon ?? BankIcons.share,
+                                color: accent,
                                 size: 18,
                               ),
                               label: Text(
                                 s.share,
                                 style: BankTokens.labelMedium.copyWith(
-                                  color: bankTheme.primary,
+                                  color: accent,
                                 ),
                               ),
                               style: TextButton.styleFrom(
@@ -362,6 +462,7 @@ class _DetailRow extends StatelessWidget {
   final Color? valueColor;
   final bool canCopy;
   final BankThemeData bankTheme;
+  final IconData? copyIcon;
 
   const _DetailRow({
     required this.label,
@@ -369,6 +470,7 @@ class _DetailRow extends StatelessWidget {
     required this.bankTheme,
     this.valueColor,
     this.canCopy = false,
+    this.copyIcon,
   });
 
   @override
@@ -410,7 +512,7 @@ class _DetailRow extends StatelessWidget {
                         start: BankTokens.space1,
                       ),
                       child: Icon(
-                        BankIcons.copy,
+                        copyIcon ?? BankIcons.copy,
                         size: 16,
                         color: bankTheme.onSurfaceVariant,
                       ),
@@ -428,10 +530,14 @@ class _DetailRow extends StatelessWidget {
 class _MerchantAvatar extends StatefulWidget {
   final Transaction transaction;
   final BankThemeData bankTheme;
+  final Color? backgroundColor;
+  final Color? iconColor;
 
   const _MerchantAvatar({
     required this.transaction,
     required this.bankTheme,
+    this.backgroundColor,
+    this.iconColor,
   });
 
   @override
@@ -445,12 +551,14 @@ class _MerchantAvatarState extends State<_MerchantAvatar> {
   Widget build(BuildContext context) {
     final bankTheme = widget.bankTheme;
     final logoUrl = widget.transaction.merchantLogoUrl;
+    final resolvedBackground =
+        widget.backgroundColor ?? bankTheme.surfaceVariant;
 
     if (logoUrl != null && !_failed) {
       return CircleAvatar(
         radius: 28,
-        backgroundColor: bankTheme.surfaceVariant,
-        backgroundImage: NetworkImage(logoUrl),
+        backgroundColor: resolvedBackground,
+        backgroundImage: BankUiScope.imageProviderFor(context, logoUrl),
         onBackgroundImageError: (_, __) {
           if (mounted) setState(() => _failed = true);
         },
@@ -459,11 +567,11 @@ class _MerchantAvatarState extends State<_MerchantAvatar> {
 
     return CircleAvatar(
       radius: 28,
-      backgroundColor: bankTheme.surfaceVariant,
+      backgroundColor: resolvedBackground,
       child: Icon(
         BankIcons.forCategoryName(widget.transaction.category.name),
         size: 28,
-        color: bankTheme.primary,
+        color: widget.iconColor ?? bankTheme.primary,
       ),
     );
   }

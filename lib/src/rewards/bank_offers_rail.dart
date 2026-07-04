@@ -9,8 +9,8 @@ import '../theme/tokens.dart';
 
 /// An immutable card-linked merchant offer shown in a [BankOffersRail].
 ///
-/// Mirrors the offer objects behind programmes such as Chase Offers or
-/// Cash App Boosts: a merchant identity, a headline reward (for example
+/// Mirrors the offer objects behind card-linked rewards programmes: a
+/// merchant identity, a headline reward (for example
 /// "5% back"), an optional expiry, and whether the customer has already
 /// activated (added) the offer to their card.
 @immutable
@@ -104,8 +104,8 @@ class BankMerchantOffer {
 /// A horizontally scrolling rail of card-linked merchant offers that the
 /// customer can activate in place.
 ///
-/// The banking equivalent of Chase Offers, Cash App Boosts, and CommBank
-/// For You: place it on a home or rewards screen to surface cashback
+/// The card-linked offers pattern of leading banking apps: place it
+/// on a home or rewards screen to surface cashback
 /// offers the customer can add to their card with a single tap.
 ///
 /// Each 140 pt wide card shows a [BankEmblem] for the merchant, the

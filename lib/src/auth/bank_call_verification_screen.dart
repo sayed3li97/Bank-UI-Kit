@@ -31,8 +31,8 @@ enum BankCallStatus {
 // BankCallVerificationScreen
 // ---------------------------------------------------------------------------
 
-/// An anti-vishing call verification surface, equivalent to Monzo's
-/// "Call Status" screen.
+/// An anti-vishing call verification surface: a live answer to "is
+/// this call really from my bank?".
 ///
 /// Place it behind a prominent security entry point so a customer who
 /// receives a suspicious phone call can immediately check whether the bank
@@ -93,6 +93,23 @@ class BankCallVerificationScreen extends StatefulWidget {
     this.refreshLabel = 'Refresh call status',
     this.staffIdLabel = 'Staff ID',
     this.callStartedLabel = 'Call started',
+    this.padding,
+    this.accentColor,
+    this.noCallIcon,
+    this.activeCallIcon,
+    this.recentCallIcon,
+    this.refreshIcon,
+    this.titleStyle,
+    this.headlineStyle,
+    this.bodyStyle,
+    this.cardColor,
+    this.cardRadius,
+    this.illustrationSize,
+    this.illustrationIconSize,
+    this.reportButtonColor,
+    this.reportButtonForegroundColor,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   /// The verified call state to display.
@@ -156,6 +173,69 @@ class BankCallVerificationScreen extends StatefulWidget {
   /// Label prefixed to the formatted [callStartedAt] on the agent card.
   final String callStartedLabel;
 
+  /// Overrides the outer scroll padding. Defaults to
+  /// [BankTokens.space6] on all sides.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the per-status accent colour (illustration tint and glyph).
+  /// Defaults to the status-appropriate semantic colour.
+  final Color? accentColor;
+
+  /// Overrides the [BankCallStatus.noActiveCall] glyph. Defaults to
+  /// [BankIcons.fraud].
+  final IconData? noCallIcon;
+
+  /// Overrides the [BankCallStatus.activeCall] glyph. Defaults to
+  /// [Icons.verified_user_outlined].
+  final IconData? activeCallIcon;
+
+  /// Overrides the [BankCallStatus.recentCall] glyph. Defaults to
+  /// [BankIcons.schedule].
+  final IconData? recentCallIcon;
+
+  /// Overrides the refresh button glyph. Defaults to [Icons.refresh].
+  final IconData? refreshIcon;
+
+  /// Merged over the computed [screenTitle] style
+  /// ([BankTokens.headlineSmall]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed status headline style
+  /// ([BankTokens.headlineMedium], bold).
+  final TextStyle? headlineStyle;
+
+  /// Merged over the computed status body style ([BankTokens.bodyMedium]).
+  final TextStyle? bodyStyle;
+
+  /// Overrides the agent card background. Defaults to
+  /// [BankThemeData.surfaceVariant].
+  final Color? cardColor;
+
+  /// Overrides the agent card corner radius. Defaults to
+  /// [BankThemeData.cardRadius].
+  final BorderRadius? cardRadius;
+
+  /// Overrides the illustration circle diameter. Defaults to `96`.
+  final double? illustrationSize;
+
+  /// Overrides the illustration glyph size. Defaults to `48`.
+  final double? illustrationIconSize;
+
+  /// Overrides the report button background. Defaults to
+  /// [BankTokens.danger].
+  final Color? reportButtonColor;
+
+  /// Overrides the report button label colour. Defaults to white.
+  final Color? reportButtonForegroundColor;
+
+  /// Overrides the refresh spin duration. Defaults to
+  /// [BankTokens.durationXSlow].
+  final Duration? animationDuration;
+
+  /// Overrides the refresh spin curve. Defaults to
+  /// [BankTokens.curveEmphasized].
+  final Curve? animationCurve;
+
   @override
   State<BankCallVerificationScreen> createState() =>
       _BankCallVerificationScreenState();
@@ -176,8 +256,17 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
     super.initState();
     _spinController = AnimationController(
       vsync: this,
-      duration: BankTokens.durationXSlow,
+      duration: widget.animationDuration ?? BankTokens.durationXSlow,
     );
+  }
+
+  @override
+  void didUpdateWidget(BankCallVerificationScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.animationDuration != oldWidget.animationDuration) {
+      _spinController.duration =
+          widget.animationDuration ?? BankTokens.durationXSlow;
+    }
   }
 
   @override
@@ -203,8 +292,8 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
     switch (widget.status) {
       case BankCallStatus.noActiveCall:
         return _CallStatusContent(
-          icon: BankIcons.fraud,
-          accent: BankTokens.danger,
+          icon: widget.noCallIcon ?? BankIcons.fraud,
+          accent: widget.accentColor ?? BankTokens.danger,
           headline: widget.noCallHeadline,
           body: widget.noCallBody ??
               'If the person on the phone right now says they are calling '
@@ -214,8 +303,8 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
         );
       case BankCallStatus.activeCall:
         return _CallStatusContent(
-          icon: Icons.verified_user_outlined,
-          accent: BankTokens.success,
+          icon: widget.activeCallIcon ?? Icons.verified_user_outlined,
+          accent: widget.accentColor ?? BankTokens.success,
           headline: widget.activeCallHeadline ??
               'You are speaking with ${widget.bankName}',
           body: widget.activeCallBody ??
@@ -224,8 +313,8 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
         );
       case BankCallStatus.recentCall:
         return _CallStatusContent(
-          icon: BankIcons.schedule,
-          accent: BankTokens.frozen,
+          icon: widget.recentCallIcon ?? BankIcons.schedule,
+          accent: widget.accentColor ?? BankTokens.frozen,
           headline: widget.recentCallHeadline,
           body: widget.recentCallBody ??
               'No call is in progress right now. Below is a summary of your '
@@ -250,7 +339,8 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
         widget.status != BankCallStatus.noActiveCall && hasAgentDetails;
 
     return SingleChildScrollView(
-      padding: const EdgeInsetsDirectional.all(BankTokens.space6),
+      padding:
+          widget.padding ?? const EdgeInsetsDirectional.all(BankTokens.space6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -267,18 +357,20 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
               children: [
                 Text(
                   content.headline,
-                  style: BankTokens.headlineMedium.copyWith(
-                    color: theme.onBackground,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: BankTokens.headlineMedium
+                      .copyWith(
+                        color: theme.onBackground,
+                        fontWeight: FontWeight.w700,
+                      )
+                      .merge(widget.headlineStyle),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: BankTokens.space3),
                 Text(
                   content.body,
-                  style: BankTokens.bodyMedium.copyWith(
-                    color: theme.onSurfaceVariant,
-                  ),
+                  style: BankTokens.bodyMedium
+                      .copyWith(color: theme.onSurfaceVariant)
+                      .merge(widget.bodyStyle),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -305,9 +397,9 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
             header: true,
             child: Text(
               widget.screenTitle,
-              style: BankTokens.headlineSmall.copyWith(
-                color: theme.onBackground,
-              ),
+              style: BankTokens.headlineSmall
+                  .copyWith(color: theme.onBackground)
+                  .merge(widget.titleStyle),
             ),
           ),
         ),
@@ -327,10 +419,10 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
               icon: RotationTransition(
                 turns: CurvedAnimation(
                   parent: _spinController,
-                  curve: BankTokens.curveEmphasized,
+                  curve: widget.animationCurve ?? BankTokens.curveEmphasized,
                 ),
                 child: Icon(
-                  Icons.refresh,
+                  widget.refreshIcon ?? Icons.refresh,
                   color: theme.onSurfaceVariant,
                 ),
               ),
@@ -343,8 +435,8 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
   Widget _buildIllustration(_CallStatusContent content) {
     return Center(
       child: SizedBox(
-        width: _illustrationSize,
-        height: _illustrationSize,
+        width: widget.illustrationSize ?? _illustrationSize,
+        height: widget.illustrationSize ?? _illustrationSize,
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: content.accent.withValues(alpha: 0.12),
@@ -353,7 +445,7 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
           child: Icon(
             content.icon,
             color: content.accent,
-            size: _illustrationIconSize,
+            size: widget.illustrationIconSize ?? _illustrationIconSize,
           ),
         ),
       ),
@@ -374,8 +466,8 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surfaceVariant,
-        borderRadius: theme.cardRadius,
+        color: widget.cardColor ?? theme.surfaceVariant,
+        borderRadius: widget.cardRadius ?? theme.cardRadius,
       ),
       child: Padding(
         padding: const EdgeInsetsDirectional.all(BankTokens.space4),
@@ -432,8 +524,9 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
       child: FilledButton(
         onPressed: widget.onReportScam,
         style: FilledButton.styleFrom(
-          backgroundColor: BankTokens.danger,
-          foregroundColor: const Color(0xFFFFFFFF),
+          backgroundColor: widget.reportButtonColor ?? BankTokens.danger,
+          foregroundColor:
+              widget.reportButtonForegroundColor ?? const Color(0xFFFFFFFF),
           minimumSize: const Size(
             double.infinity,
             BankTokens.minTapTarget,

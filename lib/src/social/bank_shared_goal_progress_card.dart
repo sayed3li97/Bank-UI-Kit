@@ -16,6 +16,51 @@ class BankSharedGoalProgressCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onContribute;
 
+  /// Caption of the contribute action. Defaults to 'Contribute'.
+  final String contributeLabel;
+
+  /// Progress line template; `{saved}` and `{target}` are substituted.
+  /// Defaults to '{saved} of {target}'.
+  final String progressTemplate;
+
+  /// Contributor-count noun when there is exactly one contributor.
+  /// Defaults to 'contributor'.
+  final String contributorSingularLabel;
+
+  /// Contributor-count noun otherwise. Defaults to 'contributors'.
+  final String contributorPluralLabel;
+
+  /// Overrides the card content padding. Defaults to space4 all round.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card fill colour. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the percent text, progress bar, and avatar accent.
+  /// Defaults to the theme primary colour.
+  final Color? accentColor;
+
+  /// Overrides the card elevation. Defaults to the theme elevationLow.
+  final double? elevation;
+
+  /// Merged over the computed goal-name style ([BankTokens.labelLarge]
+  /// in onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed progress-line style
+  /// ([BankTokens.bodySmall] in onSurfaceVariant).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the computed percent style ([BankTokens.numeralSmall]).
+  final TextStyle? amountStyle;
+
+  /// When non-null, wraps the card in a [Semantics] node with this
+  /// label. Defaults to no extra semantics node.
+  final String? semanticLabel;
+
   const BankSharedGoalProgressCard({
     required this.goalName,
     required this.targetAmount,
@@ -25,6 +70,19 @@ class BankSharedGoalProgressCard extends StatelessWidget {
     this.illustration,
     this.onTap,
     this.onContribute,
+    this.contributeLabel = 'Contribute',
+    this.progressTemplate = '{saved} of {target}',
+    this.contributorSingularLabel = 'contributor',
+    this.contributorPluralLabel = 'contributors',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.accentColor,
+    this.elevation,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.semanticLabel,
   });
 
   double get _fraction {
@@ -52,19 +110,28 @@ class BankSharedGoalProgressCard extends StatelessWidget {
     final fraction = _fraction;
     final percentStr = '${(fraction * 100).toStringAsFixed(0)}%';
 
-    final contributorSuffix = contributors.length == 1 ? '' : 's';
-    final contributorLabel =
-        '${contributors.length} contributor$contributorSuffix';
+    final contributorNoun = contributors.length == 1
+        ? contributorSingularLabel
+        : contributorPluralLabel;
+    final contributorLabel = '${contributors.length} $contributorNoun';
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: theme.cardRadius),
-      color: theme.surface,
-      elevation: theme.elevationLow,
+    final progressLine = progressTemplate
+        .replaceAll('{saved}', savedStr)
+        .replaceAll('{target}', targetStr);
+
+    final resolvedRadius = radius ?? theme.cardRadius;
+    final resolvedAccent = accentColor ?? theme.primary;
+    final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space4);
+
+    final Widget card = Card(
+      shape: RoundedRectangleBorder(borderRadius: resolvedRadius),
+      color: backgroundColor ?? theme.surface,
+      elevation: elevation ?? theme.elevationLow,
       child: InkWell(
         onTap: onTap,
-        borderRadius: theme.cardRadius,
+        borderRadius: resolvedRadius,
         child: Padding(
-          padding: const EdgeInsets.all(BankTokens.space4),
+          padding: resolvedPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -81,22 +148,25 @@ class BankSharedGoalProgressCard extends StatelessWidget {
                         Text(
                           goalName,
                           style: BankTokens.labelLarge
-                              .copyWith(color: theme.onSurface),
+                              .copyWith(color: theme.onSurface)
+                              .merge(titleStyle),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          '$savedStr of $targetStr',
+                          progressLine,
                           style: BankTokens.bodySmall
-                              .copyWith(color: theme.onSurfaceVariant),
+                              .copyWith(color: theme.onSurfaceVariant)
+                              .merge(subtitleStyle),
                         ),
                       ],
                     ),
                   ),
                   Text(
                     percentStr,
-                    style:
-                        BankTokens.numeralSmall.copyWith(color: theme.primary),
+                    style: BankTokens.numeralSmall
+                        .copyWith(color: resolvedAccent)
+                        .merge(amountStyle),
                   ),
                 ],
               ),
@@ -107,7 +177,7 @@ class BankSharedGoalProgressCard extends StatelessWidget {
                   value: fraction,
                   minHeight: 8,
                   backgroundColor: theme.outline.withValues(alpha: 0.2),
-                  valueColor: AlwaysStoppedAnimation<Color>(theme.primary),
+                  valueColor: AlwaysStoppedAnimation<Color>(resolvedAccent),
                 ),
               ),
               if (contributors.isNotEmpty) ...[
@@ -117,6 +187,7 @@ class BankSharedGoalProgressCard extends StatelessWidget {
                     _ContributorStack(
                       contributors: contributors,
                       theme: theme,
+                      accent: resolvedAccent,
                     ),
                     const SizedBox(width: BankTokens.space2),
                     Text(
@@ -128,7 +199,7 @@ class BankSharedGoalProgressCard extends StatelessWidget {
                     if (onContribute != null)
                       TextButton(
                         onPressed: onContribute,
-                        child: const Text('Contribute'),
+                        child: Text(contributeLabel),
                       ),
                   ],
                 ),
@@ -138,7 +209,7 @@ class BankSharedGoalProgressCard extends StatelessWidget {
                   alignment: AlignmentDirectional.centerEnd,
                   child: TextButton(
                     onPressed: onContribute,
-                    child: const Text('Contribute'),
+                    child: Text(contributeLabel),
                   ),
                 ),
               ],
@@ -147,6 +218,9 @@ class BankSharedGoalProgressCard extends StatelessWidget {
         ),
       ),
     );
+
+    if (semanticLabel == null) return card;
+    return Semantics(label: semanticLabel, child: card);
   }
 }
 
@@ -165,10 +239,12 @@ class BankGoalContributor {
 class _ContributorStack extends StatelessWidget {
   final List<BankGoalContributor> contributors;
   final BankThemeData theme;
+  final Color accent;
 
   const _ContributorStack({
     required this.contributors,
     required this.theme,
+    required this.accent,
   });
 
   @override
@@ -191,14 +267,15 @@ class _ContributorStack extends StatelessWidget {
               backgroundColor: theme.surface,
               child: CircleAvatar(
                 radius: avatarRadius - 1.5,
-                backgroundColor: theme.primary.withValues(alpha: 0.2),
-                backgroundImage:
-                    c.avatarUrl != null ? NetworkImage(c.avatarUrl!) : null,
+                backgroundColor: accent.withValues(alpha: 0.2),
+                backgroundImage: c.avatarUrl != null
+                    ? BankUiScope.imageProviderFor(context, c.avatarUrl!)
+                    : null,
                 child: c.avatarUrl == null
                     ? Text(
                         c.name.isNotEmpty ? c.name[0].toUpperCase() : '?',
                         style: BankTokens.labelSmall
-                            .copyWith(color: theme.primary, fontSize: 10),
+                            .copyWith(color: accent, fontSize: 10),
                       )
                     : null,
               ),

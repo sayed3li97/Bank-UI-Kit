@@ -85,6 +85,27 @@ class BankSecureMessageThread extends StatefulWidget {
     this.sendLabel = 'Send',
     this.retryLabel = 'Tap to retry',
     this.bankName = 'Support',
+    this.todayLabel = 'Today',
+    this.yesterdayLabel = 'Yesterday',
+    this.youLabel = 'You',
+    this.padding,
+    this.accentColor,
+    this.bannerBackgroundColor,
+    this.customerBubbleColor,
+    this.bankBubbleColor,
+    this.inputBackgroundColor,
+    this.bubbleRadius,
+    this.messageStyle,
+    this.timestampStyle,
+    this.bannerIcon,
+    this.attachIcon,
+    this.sendIcon,
+    this.attachmentIcon,
+    this.sendingIcon,
+    this.sentIcon,
+    this.deliveredIcon,
+    this.readIcon,
+    this.failedIcon,
   });
 
   /// Newest message LAST (chronological order).
@@ -118,6 +139,83 @@ class BankSecureMessageThread extends StatefulWidget {
 
   /// Fallback display name for bank-authored messages.
   final String bankName;
+
+  /// Date-separator label for today. Defaults to `'Today'`.
+  final String todayLabel;
+
+  /// Date-separator label for yesterday. Defaults to `'Yesterday'`.
+  final String yesterdayLabel;
+
+  /// Screen-reader name for customer-authored messages. Defaults to
+  /// `'You'`.
+  final String youLabel;
+
+  /// Overrides the message-list padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the accent used for the banner icon and send button.
+  /// Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the info-banner fill. Defaults to the accent at 8%
+  /// alpha.
+  final Color? bannerBackgroundColor;
+
+  /// Overrides the customer bubble fill. Defaults to the theme primary
+  /// at 12% alpha.
+  final Color? customerBubbleColor;
+
+  /// Overrides the bank bubble fill. Defaults to the theme
+  /// surfaceVariant.
+  final Color? bankBubbleColor;
+
+  /// Overrides the composer field fill. Defaults to the theme
+  /// surfaceVariant.
+  final Color? inputBackgroundColor;
+
+  /// Overrides the large bubble corner radius. Defaults to the theme
+  /// sheetRadius corner.
+  final Radius? bubbleRadius;
+
+  /// Merged over the message body style (BankTokens.bodyMedium in
+  /// onSurface).
+  final TextStyle? messageStyle;
+
+  /// Merged over the timestamp style (BankTokens.labelSmall in
+  /// onSurfaceVariant).
+  final TextStyle? timestampStyle;
+
+  /// Glyph inside the pinned banner. Defaults to [BankIcons.info].
+  final IconData? bannerIcon;
+
+  /// Glyph of the attach affordance. Defaults to
+  /// [Icons.attach_file_rounded].
+  final IconData? attachIcon;
+
+  /// Glyph of the send button. Defaults to
+  /// [Icons.arrow_upward_rounded].
+  final IconData? sendIcon;
+
+  /// Glyph on attachment chips. Defaults to [BankIcons.document].
+  final IconData? attachmentIcon;
+
+  /// Delivery tick while sending. Defaults to [Icons.schedule_rounded].
+  final IconData? sendingIcon;
+
+  /// Delivery tick once sent. Defaults to [Icons.check_rounded].
+  final IconData? sentIcon;
+
+  /// Delivery tick once delivered. Defaults to
+  /// [Icons.done_all_rounded].
+  final IconData? deliveredIcon;
+
+  /// Delivery tick once read. Defaults to [Icons.done_all_rounded].
+  final IconData? readIcon;
+
+  /// Delivery glyph for failed sends. Defaults to
+  /// [Icons.error_outline_rounded].
+  final IconData? failedIcon;
 
   @override
   State<BankSecureMessageThread> createState() =>
@@ -163,6 +261,7 @@ class _BankSecureMessageThreadState extends State<BankSecureMessageThread> {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final accent = widget.accentColor ?? theme.primary;
 
     String? lastOwnId;
     for (final message in widget.messages.reversed) {
@@ -177,7 +276,8 @@ class _BankSecureMessageThreadState extends State<BankSecureMessageThread> {
         if (widget.bannerText != null)
           DecoratedBox(
             decoration: BoxDecoration(
-              color: theme.primary.withValues(alpha: 0.08),
+              color: widget.bannerBackgroundColor ??
+                  accent.withValues(alpha: 0.08),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -186,7 +286,11 @@ class _BankSecureMessageThreadState extends State<BankSecureMessageThread> {
               ),
               child: Row(
                 children: [
-                  Icon(BankIcons.info, size: 14, color: theme.primary),
+                  Icon(
+                    widget.bannerIcon ?? BankIcons.info,
+                    size: 14,
+                    color: accent,
+                  ),
                   const SizedBox(width: BankTokens.space2),
                   Expanded(
                     child: Text(
@@ -203,7 +307,7 @@ class _BankSecureMessageThreadState extends State<BankSecureMessageThread> {
           child: ListView.builder(
             controller: widget.scrollController,
             reverse: true,
-            padding: const EdgeInsets.all(BankTokens.space4),
+            padding: widget.padding ?? const EdgeInsets.all(BankTokens.space4),
             itemCount: widget.messages.length +
                 (widget.typingIndicator == null ? 0 : 1),
             itemBuilder: (context, reversedIndex) {
@@ -230,8 +334,8 @@ class _BankSecureMessageThreadState extends State<BankSecureMessageThread> {
                       child: Text(
                         BankDateFormatter.formatGroupHeader(
                           date: message.sentAt,
-                          todayLabel: 'Today',
-                          yesterdayLabel: 'Yesterday',
+                          todayLabel: widget.todayLabel,
+                          yesterdayLabel: widget.yesterdayLabel,
                         ),
                         style: BankTokens.labelSmall
                             .copyWith(color: theme.onSurfaceVariant),
@@ -241,8 +345,7 @@ class _BankSecureMessageThreadState extends State<BankSecureMessageThread> {
                     message: message,
                     isLastOwn: message.id == lastOwnId,
                     theme: theme,
-                    bankName: widget.bankName,
-                    retryLabel: widget.retryLabel,
+                    host: widget,
                     onRetry: widget.onRetry,
                     onAttachmentTap: widget.onAttachmentTap,
                   ),
@@ -267,7 +370,7 @@ class _BankSecureMessageThreadState extends State<BankSecureMessageThread> {
                   IconButton(
                     onPressed: widget.composerEnabled ? widget.onAttach : null,
                     icon: Icon(
-                      Icons.attach_file_rounded,
+                      widget.attachIcon ?? Icons.attach_file_rounded,
                       color: theme.onSurfaceVariant,
                     ),
                   ),
@@ -285,7 +388,8 @@ class _BankSecureMessageThreadState extends State<BankSecureMessageThread> {
                       hintStyle: BankTokens.bodyLarge
                           .copyWith(color: theme.onSurfaceVariant),
                       filled: true,
-                      fillColor: theme.surfaceVariant,
+                      fillColor:
+                          widget.inputBackgroundColor ?? theme.surfaceVariant,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: BankTokens.space4,
                         vertical: BankTokens.space2,
@@ -306,7 +410,7 @@ class _BankSecureMessageThreadState extends State<BankSecureMessageThread> {
                         ? null
                         : _send,
                     style: IconButton.styleFrom(
-                      backgroundColor: theme.primary,
+                      backgroundColor: accent,
                       disabledBackgroundColor: theme.surfaceVariant,
                       minimumSize: const Size(44, 44),
                     ),
@@ -317,7 +421,7 @@ class _BankSecureMessageThreadState extends State<BankSecureMessageThread> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Icon(
-                            Icons.arrow_upward_rounded,
+                            widget.sendIcon ?? Icons.arrow_upward_rounded,
                             color: theme.onPrimary,
                           ),
                   ),
@@ -336,8 +440,7 @@ class _MessageBubble extends StatelessWidget {
     required this.message,
     required this.isLastOwn,
     required this.theme,
-    required this.bankName,
-    required this.retryLabel,
+    required this.host,
     required this.onRetry,
     required this.onAttachmentTap,
   });
@@ -345,8 +448,7 @@ class _MessageBubble extends StatelessWidget {
   final BankMessage message;
   final bool isLastOwn;
   final BankThemeData theme;
-  final String bankName;
-  final String retryLabel;
+  final BankSecureMessageThread host;
   final void Function(String messageId)? onRetry;
   final void Function(String attachmentId)? onAttachmentTap;
 
@@ -357,11 +459,15 @@ class _MessageBubble extends StatelessWidget {
   }
 
   IconData get _deliveryIcon => switch (message.deliveryState) {
-        BankMessageDeliveryState.sending => Icons.schedule_rounded,
-        BankMessageDeliveryState.sent => Icons.check_rounded,
-        BankMessageDeliveryState.delivered => Icons.done_all_rounded,
-        BankMessageDeliveryState.read => Icons.done_all_rounded,
-        BankMessageDeliveryState.failed => Icons.error_outline_rounded,
+        BankMessageDeliveryState.sending =>
+          host.sendingIcon ?? Icons.schedule_rounded,
+        BankMessageDeliveryState.sent => host.sentIcon ?? Icons.check_rounded,
+        BankMessageDeliveryState.delivered =>
+          host.deliveredIcon ?? Icons.done_all_rounded,
+        BankMessageDeliveryState.read =>
+          host.readIcon ?? Icons.done_all_rounded,
+        BankMessageDeliveryState.failed =>
+          host.failedIcon ?? Icons.error_outline_rounded,
       };
 
   @override
@@ -379,19 +485,18 @@ class _MessageBubble extends StatelessWidget {
 
     final isCustomer = message.author == BankMessageAuthor.customer;
     final failed = message.deliveryState == BankMessageDeliveryState.failed;
+    final cornerRadius = host.bubbleRadius ?? theme.sheetRadius.topLeft;
 
     final bubble = DecoratedBox(
       decoration: BoxDecoration(
         color: isCustomer
-            ? theme.primary.withValues(alpha: 0.12)
-            : theme.surfaceVariant,
+            ? host.customerBubbleColor ?? theme.primary.withValues(alpha: 0.12)
+            : host.bankBubbleColor ?? theme.surfaceVariant,
         borderRadius: BorderRadiusDirectional.only(
-          topStart: theme.sheetRadius.topLeft,
-          topEnd: theme.sheetRadius.topLeft,
-          bottomStart:
-              isCustomer ? theme.sheetRadius.topLeft : const Radius.circular(4),
-          bottomEnd:
-              isCustomer ? const Radius.circular(4) : theme.sheetRadius.topLeft,
+          topStart: cornerRadius,
+          topEnd: cornerRadius,
+          bottomStart: isCustomer ? cornerRadius : const Radius.circular(4),
+          bottomEnd: isCustomer ? const Radius.circular(4) : cornerRadius,
         ),
       ),
       child: Padding(
@@ -404,7 +509,9 @@ class _MessageBubble extends StatelessWidget {
           children: [
             Text(
               message.body,
-              style: BankTokens.bodyMedium.copyWith(color: theme.onSurface),
+              style: BankTokens.bodyMedium
+                  .copyWith(color: theme.onSurface)
+                  .merge(host.messageStyle),
             ),
             for (final attachment in message.attachments)
               Padding(
@@ -412,6 +519,7 @@ class _MessageBubble extends StatelessWidget {
                 child: _AttachmentChip(
                   attachment: attachment,
                   theme: theme,
+                  icon: host.attachmentIcon,
                   sizeText: attachment.sizeBytes == null
                       ? null
                       : _formatBytes(attachment.sizeBytes!),
@@ -425,8 +533,9 @@ class _MessageBubble extends StatelessWidget {
 
     return Semantics(
       liveRegion: !isCustomer,
-      label: '${isCustomer ? 'You' : message.authorName ?? bankName}: '
-          '${message.body}',
+      label:
+          '${isCustomer ? host.youLabel : message.authorName ?? host.bankName}'
+          ': ${message.body}',
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: BankTokens.space1),
@@ -437,7 +546,7 @@ class _MessageBubble extends StatelessWidget {
           children: [
             if (!isCustomer) ...[
               BankEmblem(
-                initialsFrom: message.authorName ?? bankName,
+                initialsFrom: message.authorName ?? host.bankName,
                 size: 28,
               ),
               const SizedBox(width: BankTokens.space2),
@@ -456,7 +565,7 @@ class _MessageBubble extends StatelessWidget {
                           ? InkWell(
                               onTap: () => onRetry!(message.id),
                               child: Text(
-                                retryLabel,
+                                host.retryLabel,
                                 style: BankTokens.labelSmall
                                     .copyWith(color: BankTokens.danger),
                               ),
@@ -468,9 +577,11 @@ class _MessageBubble extends StatelessWidget {
                                   BankDateFormatter.formatTime(
                                     message.sentAt,
                                   ),
-                                  style: BankTokens.labelSmall.copyWith(
-                                    color: theme.onSurfaceVariant,
-                                  ),
+                                  style: BankTokens.labelSmall
+                                      .copyWith(
+                                        color: theme.onSurfaceVariant,
+                                      )
+                                      .merge(host.timestampStyle),
                                 ),
                                 const SizedBox(width: 4),
                                 Icon(
@@ -500,12 +611,14 @@ class _AttachmentChip extends StatelessWidget {
   const _AttachmentChip({
     required this.attachment,
     required this.theme,
+    required this.icon,
     required this.sizeText,
     required this.onTap,
   });
 
   final BankMessageAttachment attachment;
   final BankThemeData theme;
+  final IconData? icon;
   final String? sizeText;
   final void Function(String attachmentId)? onTap;
 
@@ -532,7 +645,7 @@ class _AttachmentChip extends StatelessWidget {
                   Icon(
                     attachment.state == BankAttachmentState.failed
                         ? Icons.error_outline_rounded
-                        : BankIcons.document,
+                        : icon ?? BankIcons.document,
                     size: 16,
                     color: attachment.state == BankAttachmentState.failed
                         ? BankTokens.danger

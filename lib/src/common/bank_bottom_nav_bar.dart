@@ -45,6 +45,16 @@ class BankBottomNavBar extends StatelessWidget {
     required this.onTap,
     super.key,
     this.backgroundColor,
+    this.borderColor,
+    this.selectedItemColor,
+    this.unselectedItemColor,
+    this.indicatorColor,
+    this.indicatorRadius,
+    this.labelStyle,
+    this.iconSize,
+    this.height,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   final List<BankNavItem> items;
@@ -53,6 +63,42 @@ class BankBottomNavBar extends StatelessWidget {
 
   /// Overrides [BankThemeData.surface] as the bar background.
   final Color? backgroundColor;
+
+  /// Overrides [BankThemeData.outline] as the top hairline colour.
+  final Color? borderColor;
+
+  /// Overrides [BankThemeData.primary] as the selected icon and
+  /// label colour.
+  final Color? selectedItemColor;
+
+  /// Overrides [BankThemeData.onSurfaceVariant] as the unselected icon
+  /// and label colour.
+  final Color? unselectedItemColor;
+
+  /// Overrides the active pill fill (default: the selected item colour
+  /// at 12 % opacity).
+  final Color? indicatorColor;
+
+  /// Overrides [BankThemeData.chipRadius] as the active pill radius.
+  final BorderRadius? indicatorRadius;
+
+  /// Merged over the computed label style (default:
+  /// [BankTokens.labelSmall] with a selection-dependent weight).
+  final TextStyle? labelStyle;
+
+  /// Overrides the 22 px item icon size.
+  final double? iconSize;
+
+  /// Overrides the fixed 60 px bar height.
+  final double? height;
+
+  /// Overrides [BankTokens.durationFast] for the pill highlight
+  /// animation.
+  final Duration? animationDuration;
+
+  /// Overrides [BankTokens.curveStandard] for the pill highlight
+  /// animation.
+  final Curve? animationCurve;
 
   @override
   Widget build(BuildContext context) {
@@ -63,13 +109,13 @@ class BankBottomNavBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         border: Border(
-          top: BorderSide(color: theme.outline, width: 0.5),
+          top: BorderSide(color: borderColor ?? theme.outline, width: 0.5),
         ),
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 60,
+          height: height ?? 60,
           child: Row(
             children: [
               for (var i = 0; i < items.length; i++)
@@ -79,6 +125,14 @@ class BankBottomNavBar extends StatelessWidget {
                     selected: i == currentIndex,
                     onTap: () => onTap(i),
                     theme: theme,
+                    selectedColor: selectedItemColor,
+                    unselectedColor: unselectedItemColor,
+                    indicatorColor: indicatorColor,
+                    indicatorRadius: indicatorRadius,
+                    labelStyle: labelStyle,
+                    iconSize: iconSize,
+                    animationDuration: animationDuration,
+                    animationCurve: animationCurve,
                   ),
                 ),
             ],
@@ -95,16 +149,35 @@ class _NavItem extends StatelessWidget {
     required this.selected,
     required this.onTap,
     required this.theme,
+    this.selectedColor,
+    this.unselectedColor,
+    this.indicatorColor,
+    this.indicatorRadius,
+    this.labelStyle,
+    this.iconSize,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   final BankNavItem item;
   final bool selected;
   final VoidCallback onTap;
   final BankThemeData theme;
+  final Color? selectedColor;
+  final Color? unselectedColor;
+  final Color? indicatorColor;
+  final BorderRadius? indicatorRadius;
+  final TextStyle? labelStyle;
+  final double? iconSize;
+  final Duration? animationDuration;
+  final Curve? animationCurve;
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? theme.primary : theme.onSurfaceVariant;
+    final active = selectedColor ?? theme.primary;
+    final color =
+        selected ? active : (unselectedColor ?? theme.onSurfaceVariant);
+    final pillColor = indicatorColor ?? active.withValues(alpha: 0.12);
 
     return Semantics(
       selected: selected,
@@ -117,31 +190,31 @@ class _NavItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AnimatedContainer(
-              duration: BankTokens.durationFast,
-              curve: BankTokens.curveStandard,
+              duration: animationDuration ?? BankTokens.durationFast,
+              curve: animationCurve ?? BankTokens.curveStandard,
               padding: const EdgeInsets.symmetric(
                 horizontal: BankTokens.space4,
                 vertical: BankTokens.space1,
               ),
               decoration: BoxDecoration(
-                color: selected
-                    ? theme.primary.withValues(alpha: 0.12)
-                    : Colors.transparent,
-                borderRadius: theme.chipRadius,
+                color: selected ? pillColor : Colors.transparent,
+                borderRadius: indicatorRadius ?? theme.chipRadius,
               ),
               child: Icon(
                 selected ? (item.activeIcon ?? item.icon) : item.icon,
                 color: color,
-                size: 22,
+                size: iconSize ?? 22,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               item.label,
-              style: BankTokens.labelSmall.copyWith(
-                color: color,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              ),
+              style: BankTokens.labelSmall
+                  .copyWith(
+                    color: color,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  )
+                  .merge(labelStyle),
               overflow: TextOverflow.ellipsis,
             ),
           ],

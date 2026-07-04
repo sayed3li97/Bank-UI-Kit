@@ -107,6 +107,18 @@ class BankQuickActionsGrid extends StatefulWidget {
     this.maxVisible,
     this.onShowAll,
     this.moreLabel = 'More',
+    this.padding,
+    this.backgroundColor,
+    this.accentColor,
+    this.labelStyle,
+    this.shadow,
+    this.ringGradient,
+    this.badgeColor,
+    this.badgeTextStyle,
+    this.moreIcon,
+    this.iconDiameter,
+    this.tileHeight,
+    this.animationDuration,
   })  : assert(crossAxisCount > 0, 'crossAxisCount must be positive'),
         assert(
           maxVisible == null || maxVisible > 0,
@@ -137,6 +149,47 @@ class BankQuickActionsGrid extends StatefulWidget {
   /// the grid. Defaults to `'More'`.
   final String moreLabel;
 
+  /// Overrides the grid's outer padding. Defaults to no explicit padding.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the icon circle fill. Defaults to [BankThemeData.surface].
+  final Color? backgroundColor;
+
+  /// Overrides the tile icon colour. Defaults to [BankThemeData.primary].
+  final Color? accentColor;
+
+  /// Merged over the computed tile label style ([BankTokens.labelMedium]
+  /// in [BankThemeData.onSurface]).
+  final TextStyle? labelStyle;
+
+  /// Overrides the icon circle shadow. Defaults to [BankTokens.shadowCard];
+  /// pass `const []` to flatten it.
+  final List<BoxShadow>? shadow;
+
+  /// Overrides [BankThemeData.accentGradient] for the icon ring. When set,
+  /// the ring is drawn under every preset, not just Voltage.
+  final Gradient? ringGradient;
+
+  /// Overrides the badge chip fill. Defaults to [BankThemeData.primary].
+  final Color? badgeColor;
+
+  /// Merged over the computed badge text style ([BankTokens.labelSmall]
+  /// in [BankThemeData.onPrimary]).
+  final TextStyle? badgeTextStyle;
+
+  /// Overrides the glyph on the "More" tile. Defaults to [BankIcons.other].
+  final IconData? moreIcon;
+
+  /// Overrides the 64 px diameter of the circular icon tile.
+  final double? iconDiameter;
+
+  /// Overrides the 108 px fixed height of each grid cell.
+  final double? tileHeight;
+
+  /// Overrides the wiggle cycle duration while a reorder drag is active.
+  /// Defaults to [BankTokens.durationFast].
+  final Duration? animationDuration;
+
   @override
   State<BankQuickActionsGrid> createState() => _BankQuickActionsGridState();
 }
@@ -155,13 +208,17 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
   String? _draggingId;
   bool _orderChanged = false;
 
+  double get _resolvedIconDiameter => widget.iconDiameter ?? _iconDiameter;
+
+  double get _resolvedTileExtent => widget.tileHeight ?? _tileExtent;
+
   @override
   void initState() {
     super.initState();
     _actions = List.of(widget.actions);
     _wiggleController = AnimationController(
       vsync: this,
-      duration: BankTokens.durationFast,
+      duration: widget.animationDuration ?? BankTokens.durationFast,
     );
   }
 
@@ -170,6 +227,10 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
     super.didUpdateWidget(oldWidget);
     if (!listEquals(widget.actions, oldWidget.actions)) {
       _actions = List.of(widget.actions);
+    }
+    if (widget.animationDuration != oldWidget.animationDuration) {
+      _wiggleController.duration =
+          widget.animationDuration ?? BankTokens.durationFast;
     }
   }
 
@@ -237,11 +298,12 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
+          padding: widget.padding,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: widget.crossAxisCount,
             crossAxisSpacing: BankTokens.space2,
             mainAxisSpacing: BankTokens.space3,
-            mainAxisExtent: _tileExtent,
+            mainAxisExtent: _resolvedTileExtent,
           ),
           itemCount: cellCount,
           itemBuilder: (context, index) {
@@ -306,7 +368,7 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
 
   Widget _buildMoreTile(BuildContext context) => _buildTile(
         context,
-        icon: BankIcons.other,
+        icon: widget.moreIcon ?? BankIcons.other,
         label: widget.moreLabel,
         badgeText: null,
         enabled: widget.onShowAll != null,
@@ -343,7 +405,7 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
               theme.useGlow && theme.glowColor != null ? theme.glowColor : null,
           child: SizedBox(
             width: tileWidth,
-            height: _tileExtent,
+            height: _resolvedTileExtent,
             child: _buildTileBody(
               context,
               icon: action.icon,
@@ -426,7 +488,9 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
           const SizedBox(height: BankTokens.space2),
           Text(
             label,
-            style: BankTokens.labelMedium.copyWith(color: theme.onSurface),
+            style: BankTokens.labelMedium
+                .copyWith(color: theme.onSurface)
+                .merge(widget.labelStyle),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
@@ -442,24 +506,31 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
     IconData icon,
   ) {
     final scope = BankUiScope.of(context);
-    final gradient = theme.accentGradient;
-    final showRing = scope.preset == BankPreset.voltage && gradient != null;
+    final gradient = widget.ringGradient ?? theme.accentGradient;
+    final showRing = widget.ringGradient != null ||
+        (scope.preset == BankPreset.voltage && gradient != null);
 
     final core = DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surface,
+        color: widget.backgroundColor ?? theme.surface,
         shape: BoxShape.circle,
-        boxShadow: BankTokens.shadowCard,
+        boxShadow: widget.shadow ?? BankTokens.shadowCard,
       ),
-      child: Center(child: Icon(icon, size: _iconSize, color: theme.primary)),
+      child: Center(
+        child: Icon(
+          icon,
+          size: _iconSize,
+          color: widget.accentColor ?? theme.primary,
+        ),
+      ),
     );
 
     if (!showRing) {
-      return SizedBox.square(dimension: _iconDiameter, child: core);
+      return SizedBox.square(dimension: _resolvedIconDiameter, child: core);
     }
 
     return SizedBox.square(
-      dimension: _iconDiameter,
+      dimension: _resolvedIconDiameter,
       child: DecoratedBox(
         decoration: BoxDecoration(gradient: gradient, shape: BoxShape.circle),
         child: Padding(
@@ -472,7 +543,7 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
 
   Widget _buildBadge(BankThemeData theme, String text) => DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.primary,
+          color: widget.badgeColor ?? theme.primary,
           borderRadius: theme.chipRadius,
         ),
         child: Padding(
@@ -482,7 +553,9 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
           ),
           child: Text(
             text,
-            style: BankTokens.labelSmall.copyWith(color: theme.onPrimary),
+            style: BankTokens.labelSmall
+                .copyWith(color: theme.onPrimary)
+                .merge(widget.badgeTextStyle),
           ),
         ),
       );

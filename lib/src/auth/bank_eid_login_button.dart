@@ -37,8 +37,9 @@ enum BankEidAuthState {
 
 /// National eID authentication button with a number-match prompt.
 ///
-/// Covers the sign-in pattern used by Al Rajhi (Nafath), DBS (Singpass) and
-/// UAE Pass: the app starts an authentication request with the national
+/// Covers the sign-in pattern used with national identity schemes such
+/// as Nafath, Singpass, and UAE Pass: the app starts an
+/// authentication request with the national
 /// identity provider, the user approves it in the provider's own app, and,
 /// for providers such as Nafath, confirms by picking the two-digit number
 /// displayed in the provider app from 2-3 candidates shown here.
@@ -132,6 +133,82 @@ class BankEidLoginButton extends StatefulWidget {
   /// Label of the cancel link.
   final String cancelLabel;
 
+  /// Overrides the content padding of every state surface. Defaults to
+  /// the per-state [BankTokens] spacing used today.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the corner radius of every state surface. Defaults to
+  /// [BankThemeData.buttonRadius].
+  final BorderRadius? radius;
+
+  /// Overrides the idle button and waiting-panel background. Defaults to
+  /// [BankThemeData.surface].
+  final Color? backgroundColor;
+
+  /// Overrides the primary text colour. Defaults to
+  /// [BankThemeData.onSurface].
+  final Color? foregroundColor;
+
+  /// Overrides the waiting shield and picked-tile accent. Defaults to
+  /// [BankThemeData.primary].
+  final Color? accentColor;
+
+  /// Overrides the outline colour of the idle button, panels, and unpicked
+  /// tiles. Defaults to [BankThemeData.outline].
+  final Color? borderColor;
+
+  /// Overrides the positive colour of the approved state and a correct
+  /// number pick. Defaults to [BankThemeData.positiveBalance].
+  final Color? successColor;
+
+  /// Overrides the danger colour of the failed state and a wrong number
+  /// pick. Defaults to [BankTokens.danger].
+  final Color? dangerColor;
+
+  /// Overrides the waiting glyph. Defaults to [BankIcons.shield].
+  final IconData? awaitingIcon;
+
+  /// Overrides the approved glyph. Defaults to [BankIcons.success].
+  final IconData? approvedIcon;
+
+  /// Overrides the failed glyph. Defaults to [BankIcons.error].
+  final IconData? failedIcon;
+
+  /// Merged over the computed [providerLabel] and [approvedText] styles
+  /// ([BankTokens.labelLarge]).
+  final TextStyle? labelStyle;
+
+  /// Merged over the computed body copy style ([BankTokens.bodyMedium]).
+  final TextStyle? bodyStyle;
+
+  /// Merged over the computed countdown style
+  /// ([BankThemeData.numeralMedium]).
+  final TextStyle? countdownStyle;
+
+  /// Merged over the computed number-tile style
+  /// ([BankThemeData.numeralLarge]).
+  final TextStyle? numberStyle;
+
+  /// Overrides the state cross-fade duration. Defaults to
+  /// [BankTokens.durationBase].
+  final Duration? animationDuration;
+
+  /// Overrides the state cross-fade curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
+  /// Overrides one pulse cycle of the waiting shield. Defaults to
+  /// [BankTokens.durationXSlow].
+  final Duration? pulseDuration;
+
+  /// Overrides the minimum height of every state surface. Defaults to
+  /// [minControlHeight].
+  final double? minHeight;
+
+  /// Semantics prefix announced before a match number. Defaults to
+  /// `'Match number'`.
+  final String matchNumberSemanticPrefix;
+
   const BankEidLoginButton({
     required this.providerLabel,
     required this.state,
@@ -149,6 +226,26 @@ class BankEidLoginButton extends StatefulWidget {
     this.failedText = 'Authentication failed',
     this.retryLabel = 'Try again',
     this.cancelLabel = 'Cancel',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.accentColor,
+    this.borderColor,
+    this.successColor,
+    this.dangerColor,
+    this.awaitingIcon,
+    this.approvedIcon,
+    this.failedIcon,
+    this.labelStyle,
+    this.bodyStyle,
+    this.countdownStyle,
+    this.numberStyle,
+    this.animationDuration,
+    this.animationCurve,
+    this.pulseDuration,
+    this.minHeight,
+    this.matchNumberSemanticPrefix = 'Match number',
   }) : assert(
           state != BankEidAuthState.numberMatch || matchNumbers != null,
           'matchNumbers is required in the numberMatch state',
@@ -177,7 +274,7 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: BankTokens.durationXSlow,
+      duration: widget.pulseDuration ?? BankTokens.durationXSlow,
       value: 1,
     );
     _pulse = Tween<double>(begin: 0.4, end: 1).animate(
@@ -199,6 +296,10 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
   @override
   void didUpdateWidget(BankEidLoginButton oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.pulseDuration != oldWidget.pulseDuration) {
+      _pulseController.duration =
+          widget.pulseDuration ?? BankTokens.durationXSlow;
+    }
     if (widget.state != oldWidget.state ||
         widget.matchNumbers != oldWidget.matchNumbers) {
       _picked = null;
@@ -275,14 +376,20 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
   // Build
   // ---------------------------------------------------------------------------
 
+  double get _minHeight =>
+      widget.minHeight ?? BankEidLoginButton.minControlHeight;
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final switchCurve = widget.animationCurve ?? BankTokens.curveStandard;
 
     return AnimatedSwitcher(
-      duration: _reduceMotion ? Duration.zero : BankTokens.durationBase,
-      switchInCurve: BankTokens.curveStandard,
-      switchOutCurve: BankTokens.curveStandard,
+      duration: _reduceMotion
+          ? Duration.zero
+          : widget.animationDuration ?? BankTokens.durationBase,
+      switchInCurve: switchCurve,
+      switchOutCurve: switchCurve,
       child: KeyedSubtree(
         key: ValueKey<BankEidAuthState>(widget.state),
         child: switch (widget.state) {
@@ -301,28 +408,30 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
   // ---------------------------------------------------------------------------
 
   Widget _buildIdle(BankThemeData theme) {
+    final resolvedRadius = widget.radius ?? theme.buttonRadius;
     return Semantics(
       button: true,
       label: widget.providerLabel,
       child: Material(
-        color: theme.surface,
+        color: widget.backgroundColor ?? theme.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: theme.buttonRadius,
-          side: BorderSide(color: theme.outline),
+          borderRadius: resolvedRadius,
+          side: BorderSide(color: widget.borderColor ?? theme.outline),
         ),
         child: InkWell(
           onTap: widget.onPressed,
-          borderRadius: theme.buttonRadius,
+          borderRadius: resolvedRadius,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: BankEidLoginButton.minControlHeight,
+            constraints: BoxConstraints(
+              minHeight: _minHeight,
               minWidth: double.infinity,
             ),
             child: Padding(
-              padding: const EdgeInsetsDirectional.symmetric(
-                horizontal: BankTokens.space4,
-                vertical: BankTokens.space3,
-              ),
+              padding: widget.padding ??
+                  const EdgeInsetsDirectional.symmetric(
+                    horizontal: BankTokens.space4,
+                    vertical: BankTokens.space3,
+                  ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -333,9 +442,11 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
                   Flexible(
                     child: Text(
                       widget.providerLabel,
-                      style: BankTokens.labelLarge.copyWith(
-                        color: theme.onSurface,
-                      ),
+                      style: BankTokens.labelLarge
+                          .copyWith(
+                            color: widget.foregroundColor ?? theme.onSurface,
+                          )
+                          .merge(widget.labelStyle),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -360,6 +471,11 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
       label: widget.awaitingApprovalText,
       child: _StatePanel(
         theme: theme,
+        backgroundColor: widget.backgroundColor,
+        borderColor: widget.borderColor,
+        radius: widget.radius,
+        padding: widget.padding,
+        minHeight: _minHeight,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -369,8 +485,8 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
                 FadeTransition(
                   opacity: _pulse,
                   child: Icon(
-                    BankIcons.shield,
-                    color: theme.primary,
+                    widget.awaitingIcon ?? BankIcons.shield,
+                    color: widget.accentColor ?? theme.primary,
                     size: BankTokens.space6,
                   ),
                 ),
@@ -378,9 +494,11 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
                 Flexible(
                   child: Text(
                     widget.awaitingApprovalText,
-                    style: BankTokens.bodyMedium.copyWith(
-                      color: theme.onSurface,
-                    ),
+                    style: BankTokens.bodyMedium
+                        .copyWith(
+                          color: widget.foregroundColor ?? theme.onSurface,
+                        )
+                        .merge(widget.bodyStyle),
                   ),
                 ),
               ],
@@ -389,9 +507,9 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
               const SizedBox(height: BankTokens.space2),
               Text(
                 _formatRemaining(remaining),
-                style: theme.numeralMedium.copyWith(
-                  color: theme.onSurfaceVariant,
-                ),
+                style: theme.numeralMedium
+                    .copyWith(color: theme.onSurfaceVariant)
+                    .merge(widget.countdownStyle),
               ),
             ],
             if (widget.onCancel != null) ...[
@@ -416,12 +534,19 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
       label: widget.numberMatchInstruction,
       child: _StatePanel(
         theme: theme,
+        backgroundColor: widget.backgroundColor,
+        borderColor: widget.borderColor,
+        radius: widget.radius,
+        padding: widget.padding,
+        minHeight: _minHeight,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               widget.numberMatchInstruction,
-              style: BankTokens.bodyMedium.copyWith(color: theme.onSurface),
+              style: BankTokens.bodyMedium
+                  .copyWith(color: widget.foregroundColor ?? theme.onSurface)
+                  .merge(widget.bodyStyle),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: BankTokens.space4),
@@ -448,46 +573,53 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
     final hasVerdict = widget.correctNumber != null;
     final isCorrectPick = isPicked && widget.correctNumber == number;
 
+    final positive = widget.successColor ?? theme.positiveBalance;
+    final danger = widget.dangerColor ?? BankTokens.danger;
+    final accent = widget.accentColor ?? theme.primary;
+    final resolvedRadius = widget.radius ?? theme.buttonRadius;
+
     final Color background;
     final Color foreground;
     final Color border;
     if (isPicked && hasVerdict && isCorrectPick) {
-      background = theme.positiveBalance.withValues(alpha: 0.14);
-      foreground = theme.positiveBalance;
-      border = theme.positiveBalance;
+      background = positive.withValues(alpha: 0.14);
+      foreground = positive;
+      border = positive;
     } else if (isPicked && hasVerdict) {
-      background = BankTokens.danger.withValues(alpha: 0.1);
-      foreground = BankTokens.danger;
-      border = BankTokens.danger;
+      background = danger.withValues(alpha: 0.1);
+      foreground = danger;
+      border = danger;
     } else if (isPicked) {
-      background = theme.primary;
+      background = accent;
       foreground = theme.onPrimary;
-      border = theme.primary;
+      border = accent;
     } else {
       background = theme.surfaceVariant;
-      foreground = theme.onSurface;
-      border = theme.outline;
+      foreground = widget.foregroundColor ?? theme.onSurface;
+      border = widget.borderColor ?? theme.outline;
     }
 
     return Semantics(
       button: true,
       selected: isPicked,
-      label: 'Match number $number',
+      label: '${widget.matchNumberSemanticPrefix} $number',
       child: Material(
         color: background,
         shape: RoundedRectangleBorder(
-          borderRadius: theme.buttonRadius,
+          borderRadius: resolvedRadius,
           side: BorderSide(color: border),
         ),
         child: InkWell(
           onTap: _picked == null ? () => _pickNumber(number) : null,
-          borderRadius: theme.buttonRadius,
+          borderRadius: resolvedRadius,
           child: SizedBox(
             height: BankTokens.space16,
             child: Center(
               child: Text(
                 number,
-                style: theme.numeralLarge.copyWith(color: foreground),
+                style: theme.numeralLarge
+                    .copyWith(color: foreground)
+                    .merge(widget.numberStyle),
               ),
             ),
           ),
@@ -501,39 +633,41 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
   // ---------------------------------------------------------------------------
 
   Widget _buildApproved(BankThemeData theme) {
+    final positive = widget.successColor ?? theme.positiveBalance;
     return Semantics(
       container: true,
       label: widget.approvedText,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.positiveBalance.withValues(alpha: 0.12),
-          borderRadius: theme.buttonRadius,
+          color: positive.withValues(alpha: 0.12),
+          borderRadius: widget.radius ?? theme.buttonRadius,
         ),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: BankEidLoginButton.minControlHeight,
+          constraints: BoxConstraints(
+            minHeight: _minHeight,
             minWidth: double.infinity,
           ),
           child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: BankTokens.space4,
-              vertical: BankTokens.space3,
-            ),
+            padding: widget.padding ??
+                const EdgeInsetsDirectional.symmetric(
+                  horizontal: BankTokens.space4,
+                  vertical: BankTokens.space3,
+                ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  BankIcons.success,
-                  color: theme.positiveBalance,
+                  widget.approvedIcon ?? BankIcons.success,
+                  color: positive,
                   size: BankTokens.space6,
                 ),
                 const SizedBox(width: BankTokens.space3),
                 Flexible(
                   child: Text(
                     widget.approvedText,
-                    style: BankTokens.labelLarge.copyWith(
-                      color: theme.positiveBalance,
-                    ),
+                    style: BankTokens.labelLarge
+                        .copyWith(color: positive)
+                        .merge(widget.labelStyle),
                   ),
                 ),
               ],
@@ -549,37 +683,41 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
   // ---------------------------------------------------------------------------
 
   Widget _buildFailed(BankThemeData theme) {
+    final danger = widget.dangerColor ?? BankTokens.danger;
     return Semantics(
       container: true,
       label: widget.failedText,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: BankTokens.danger.withValues(alpha: 0.08),
-          borderRadius: theme.buttonRadius,
+          color: danger.withValues(alpha: 0.08),
+          borderRadius: widget.radius ?? theme.buttonRadius,
           border: Border.all(
-            color: BankTokens.danger.withValues(alpha: 0.4),
+            color: danger.withValues(alpha: 0.4),
           ),
         ),
         child: Padding(
-          padding: const EdgeInsetsDirectional.all(BankTokens.space4),
+          padding: widget.padding ??
+              const EdgeInsetsDirectional.all(BankTokens.space4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    BankIcons.error,
-                    color: BankTokens.danger,
+                  Icon(
+                    widget.failedIcon ?? BankIcons.error,
+                    color: danger,
                     size: BankTokens.space6,
                   ),
                   const SizedBox(width: BankTokens.space3),
                   Flexible(
                     child: Text(
                       widget.failedText,
-                      style: BankTokens.bodyMedium.copyWith(
-                        color: theme.onSurface,
-                      ),
+                      style: BankTokens.bodyMedium
+                          .copyWith(
+                            color: widget.foregroundColor ?? theme.onSurface,
+                          )
+                          .merge(widget.bodyStyle),
                     ),
                   ),
                 ],
@@ -591,14 +729,11 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
                 child: FilledButton(
                   onPressed: widget.onPressed,
                   style: FilledButton.styleFrom(
-                    backgroundColor: BankTokens.danger,
+                    backgroundColor: danger,
                     foregroundColor: const Color(0xFFFFFFFF),
-                    minimumSize: const Size(
-                      double.infinity,
-                      BankEidLoginButton.minControlHeight,
-                    ),
+                    minimumSize: Size(double.infinity, _minHeight),
                     shape: RoundedRectangleBorder(
-                      borderRadius: theme.buttonRadius,
+                      borderRadius: widget.radius ?? theme.buttonRadius,
                     ),
                     textStyle: BankTokens.labelLarge,
                   ),
@@ -652,27 +787,38 @@ class _BankEidLoginButtonState extends State<BankEidLoginButton>
 class _StatePanel extends StatelessWidget {
   final BankThemeData theme;
   final Widget child;
+  final Color? backgroundColor;
+  final Color? borderColor;
+  final BorderRadius? radius;
+  final EdgeInsetsGeometry? padding;
+  final double minHeight;
 
   const _StatePanel({
     required this.theme,
     required this.child,
+    required this.minHeight,
+    this.backgroundColor,
+    this.borderColor,
+    this.radius,
+    this.padding,
   });
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.buttonRadius,
-        border: Border.all(color: theme.outline),
+        color: backgroundColor ?? theme.surface,
+        borderRadius: radius ?? theme.buttonRadius,
+        border: Border.all(color: borderColor ?? theme.outline),
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          minHeight: BankEidLoginButton.minControlHeight,
+        constraints: BoxConstraints(
+          minHeight: minHeight,
           minWidth: double.infinity,
         ),
         child: Padding(
-          padding: const EdgeInsetsDirectional.all(BankTokens.space4),
+          padding:
+              padding ?? const EdgeInsetsDirectional.all(BankTokens.space4),
           child: child,
         ),
       ),

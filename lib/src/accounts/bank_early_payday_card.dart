@@ -11,8 +11,8 @@ import 'bank_balance_text.dart';
 
 /// Early salary access banner card.
 ///
-/// Advertises (and toggles) an early-payday feature, the equivalent of
-/// Chime's "get paid early" or Monzo's "salary early". The card shows a
+/// Advertises (and toggles) an early-payday feature: salary lands up
+/// to two days early. The card shows a
 /// calendar icon on an accent tint band, a title, a body line with the
 /// computed number of days the salary can arrive early, the expected
 /// amount (via [BankBalanceText], privacy-mask aware) when provided, and
@@ -61,6 +61,66 @@ class BankEarlyPaydayCard extends StatelessWidget {
   /// Body copy shown with a positive check while the feature is on.
   final String enabledLabel;
 
+  /// Overrides the content padding. Defaults to
+  /// `EdgeInsetsDirectional.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme
+  /// `cardRadius`.
+  final BorderRadius? radius;
+
+  /// Overrides the card background colour. Defaults to the theme
+  /// `surface`.
+  final Color? backgroundColor;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
+  /// pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Overrides the accent used for the tint band, calendar icon, early
+  /// date and switch. Defaults to the theme `primary`.
+  final Color? accentColor;
+
+  /// Overrides the tint-band gradient. Defaults to the theme
+  /// `accentGradient` when the preset provides one.
+  final Gradient? gradient;
+
+  /// Overrides the leading calendar glyph. Defaults to
+  /// [BankIcons.calendar].
+  final IconData? icon;
+
+  /// Overrides the check glyph shown while the feature is on. Defaults
+  /// to [BankIcons.success].
+  final IconData? enabledIcon;
+
+  /// Overrides the arrow glyph between the two paydays. Defaults to
+  /// [BankIcons.forward].
+  final IconData? forwardIcon;
+
+  /// Merged over the headline style ([BankTokens.labelLarge]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the body-line style ([BankTokens.bodySmall]) in both
+  /// the off and on states.
+  final TextStyle? bodyStyle;
+
+  /// Merged over the expected-amount style (theme `numeralSmall`).
+  final TextStyle? amountStyle;
+
+  /// Overrides the body cross-fade duration. Defaults to
+  /// [BankTokens.durationBase].
+  final Duration? animationDuration;
+
+  /// Overrides the body cross-fade curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
+  /// Accessibility label template for the payday comparison row. The
+  /// `{normal}` and `{early}` placeholders are replaced with the two
+  /// formatted dates. Defaults to
+  /// `'Normal payday {normal}, early payday {early}'`.
+  final String dateSemanticTemplate;
+
   const BankEarlyPaydayCard({
     required this.normalPayday,
     required this.earlyPayday,
@@ -71,6 +131,21 @@ class BankEarlyPaydayCard extends StatelessWidget {
     this.title = 'Get paid early',
     this.bodyTemplate = 'Your salary can arrive {days} days early',
     this.enabledLabel = 'Early pay is on',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.shadow,
+    this.accentColor,
+    this.gradient,
+    this.icon,
+    this.enabledIcon,
+    this.forwardIcon,
+    this.titleStyle,
+    this.bodyStyle,
+    this.amountStyle,
+    this.animationDuration,
+    this.animationCurve,
+    this.dateSemanticTemplate = 'Normal payday {normal}, early payday {early}',
   });
 
   /// Whole days between the normal and early paydays, never negative.
@@ -93,7 +168,7 @@ class BankEarlyPaydayCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            BankIcons.success,
+            enabledIcon ?? BankIcons.success,
             size: 16,
             color: theme.positiveBalance,
           ),
@@ -101,8 +176,9 @@ class BankEarlyPaydayCard extends StatelessWidget {
           Flexible(
             child: Text(
               enabledLabel,
-              style:
-                  BankTokens.bodySmall.copyWith(color: theme.positiveBalance),
+              style: BankTokens.bodySmall
+                  .copyWith(color: theme.positiveBalance)
+                  .merge(bodyStyle),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -114,7 +190,9 @@ class BankEarlyPaydayCard extends StatelessWidget {
       body = Text(
         bodyTemplate.replaceAll('{days}', days),
         key: const ValueKey<bool>(false),
-        style: BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+        style: BankTokens.bodySmall
+            .copyWith(color: theme.onSurfaceVariant)
+            .merge(bodyStyle),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       );
@@ -122,9 +200,11 @@ class BankEarlyPaydayCard extends StatelessWidget {
 
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
     return AnimatedSwitcher(
-      duration: disableAnimations ? Duration.zero : BankTokens.durationBase,
-      switchInCurve: BankTokens.curveStandard,
-      switchOutCurve: BankTokens.curveStandard,
+      duration: disableAnimations
+          ? Duration.zero
+          : animationDuration ?? BankTokens.durationBase,
+      switchInCurve: animationCurve ?? BankTokens.curveStandard,
+      switchOutCurve: animationCurve ?? BankTokens.curveStandard,
       child: Align(
         key: ValueKey<bool>(enabled),
         alignment: AlignmentDirectional.centerStart,
@@ -141,7 +221,9 @@ class BankEarlyPaydayCard extends StatelessWidget {
         scope.numeralStyle.convert(BankDateFormatter.formatFull(earlyPayday));
 
     return Semantics(
-      label: 'Normal payday $normalLabel, early payday $earlyLabel',
+      label: dateSemanticTemplate
+          .replaceAll('{normal}', normalLabel)
+          .replaceAll('{early}', earlyLabel),
       excludeSemantics: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -169,7 +251,7 @@ class BankEarlyPaydayCard extends StatelessWidget {
               ),
               const SizedBox(width: BankTokens.space2),
               Icon(
-                BankIcons.forward,
+                forwardIcon ?? BankIcons.forward,
                 size: 16,
                 color: theme.onSurfaceVariant,
               ),
@@ -177,7 +259,8 @@ class BankEarlyPaydayCard extends StatelessWidget {
               Flexible(
                 child: Text(
                   earlyLabel,
-                  style: BankTokens.labelMedium.copyWith(color: theme.primary),
+                  style: BankTokens.labelMedium
+                      .copyWith(color: accentColor ?? theme.primary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -192,14 +275,16 @@ class BankEarlyPaydayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final accent = accentColor ?? theme.primary;
 
     // Accent tint band running along the start edge of the card.
-    final bandDecoration = theme.accentGradient != null
-        ? BoxDecoration(gradient: theme.accentGradient)
-        : BoxDecoration(color: theme.primary);
+    final bandGradient = gradient ?? theme.accentGradient;
+    final bandDecoration = bandGradient != null
+        ? BoxDecoration(gradient: bandGradient)
+        : BoxDecoration(color: accent);
 
     final content = Padding(
-      padding: const EdgeInsetsDirectional.all(BankTokens.space4),
+      padding: padding ?? const EdgeInsetsDirectional.all(BankTokens.space4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -208,15 +293,15 @@ class BankEarlyPaydayCard extends StatelessWidget {
             children: [
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: theme.primary.withValues(alpha: 0.12),
+                  color: accent.withValues(alpha: 0.12),
                   borderRadius: theme.chipRadius,
                 ),
                 child: Padding(
                   padding: const EdgeInsetsDirectional.all(BankTokens.space2),
                   child: Icon(
-                    BankIcons.calendar,
+                    icon ?? BankIcons.calendar,
                     size: 20,
-                    color: theme.primary,
+                    color: accent,
                   ),
                 ),
               ),
@@ -228,7 +313,8 @@ class BankEarlyPaydayCard extends StatelessWidget {
                     Text(
                       title,
                       style: BankTokens.labelLarge
-                          .copyWith(color: theme.onSurface),
+                          .copyWith(color: theme.onSurface)
+                          .merge(titleStyle),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -245,7 +331,7 @@ class BankEarlyPaydayCard extends StatelessWidget {
                   child: Switch(
                     value: enabled,
                     onChanged: onChanged,
-                    activeColor: theme.primary,
+                    activeColor: accent,
                   ),
                 ),
               ),
@@ -256,6 +342,11 @@ class BankEarlyPaydayCard extends StatelessWidget {
             BankBalanceText(
               money: expectedAmount!,
               size: BankBalanceSize.small,
+              style: amountStyle == null
+                  ? null
+                  : theme.numeralSmall
+                      .copyWith(color: theme.onSurface)
+                      .merge(amountStyle),
             ),
           ],
           const SizedBox(height: BankTokens.space3),
@@ -264,16 +355,17 @@ class BankEarlyPaydayCard extends StatelessWidget {
       ),
     );
 
+    final resolvedRadius = radius ?? theme.cardRadius;
     return Semantics(
       container: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.surface,
-          borderRadius: theme.cardRadius,
-          boxShadow: BankTokens.shadowCard,
+          color: backgroundColor ?? theme.surface,
+          borderRadius: resolvedRadius,
+          boxShadow: shadow ?? BankTokens.shadowCard,
         ),
         child: ClipRRect(
-          borderRadius: theme.cardRadius,
+          borderRadius: resolvedRadius,
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,

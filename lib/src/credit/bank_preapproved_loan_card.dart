@@ -60,6 +60,20 @@ class BankPreapprovedLoanCard extends StatefulWidget {
     this.expiredLabel = 'Offer expired',
     this.aprLabel = 'APR',
     this.profitRateLabel = 'Profit rate',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.shadow,
+    this.gradient,
+    this.accentColor,
+    this.badgeIcon,
+    this.expiryIcon,
+    this.titleStyle,
+    this.amountStyle,
+    this.monthlyStyle,
+    this.header,
+    this.animationDuration,
+    this.animationCurve,
   })  : assert(maxMonths > 0, 'maxMonths must be positive'),
         assert(annualRate >= 0, 'annualRate must not be negative');
 
@@ -103,6 +117,55 @@ class BankPreapprovedLoanCard extends StatefulWidget {
   final String expiredLabel;
   final String aprLabel;
   final String profitRateLabel;
+
+  /// Overrides the body content padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card fill color. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowHero];
+  /// pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Overrides the header strip gradient. Defaults to the theme
+  /// accentGradient (falling back to primary tones).
+  final Gradient? gradient;
+
+  /// Accent for the monthly figure, selected chip, and CTA. Defaults
+  /// to the theme primary.
+  final Color? accentColor;
+
+  /// Glyph inside the offer badge. Defaults to [BankIcons.success].
+  final IconData? badgeIcon;
+
+  /// Glyph inside the expiry chip. Defaults to [BankIcons.schedule].
+  final IconData? expiryIcon;
+
+  /// Merged over the header [title] style (headlineSmall, onPrimary).
+  final TextStyle? titleStyle;
+
+  /// Merged over the hero amount style (numeralHero, onSurface).
+  final TextStyle? amountStyle;
+
+  /// Merged over the monthly estimate style (numeralMedium, accent).
+  final TextStyle? monthlyStyle;
+
+  /// Replaces the entire gradient header strip. Defaults to the
+  /// built-in title and badge row.
+  final Widget? header;
+
+  /// Duration of the monthly figure cross-fade. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Curve of the monthly figure cross-fade. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
 
   @override
   State<BankPreapprovedLoanCard> createState() =>
@@ -188,23 +251,27 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
     final monthly =
         Money.fromDouble(_monthlyPayment, widget.maxAmount.currencyCode);
 
-    final gradient = theme.accentGradient ??
+    final gradient = widget.gradient ??
+        theme.accentGradient ??
         LinearGradient(colors: [theme.primary, theme.primaryVariant]);
+    final accent = widget.accentColor ?? theme.primary;
+    final resolvedRadius = widget.radius ?? theme.cardRadius;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.cardRadius,
-        boxShadow: BankTokens.shadowHero,
+        color: widget.backgroundColor ?? theme.surface,
+        borderRadius: resolvedRadius,
+        boxShadow: widget.shadow ?? BankTokens.shadowHero,
       ),
       child: ClipRRect(
-        borderRadius: theme.cardRadius,
+        borderRadius: resolvedRadius,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _header(theme, gradient),
+            widget.header ?? _header(theme, gradient),
             Padding(
-              padding: const EdgeInsets.all(BankTokens.space4),
+              padding:
+                  widget.padding ?? const EdgeInsets.all(BankTokens.space4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -217,10 +284,12 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
                   BankBalanceText(
                     money: widget.maxAmount,
                     size: BankBalanceSize.hero,
-                    style: theme.numeralHero.copyWith(
-                      color: theme.onSurface,
-                      fontFamily: theme.fontFamily,
-                    ),
+                    style: theme.numeralHero
+                        .copyWith(
+                          color: theme.onSurface,
+                          fontFamily: theme.fontFamily,
+                        )
+                        .merge(widget.amountStyle),
                   ),
                   const SizedBox(height: BankTokens.space3),
                   Wrap(
@@ -252,17 +321,22 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
                       AnimatedSwitcher(
                         duration: reduceMotion
                             ? Duration.zero
-                            : BankTokens.durationFast,
-                        switchInCurve: BankTokens.curveStandard,
-                        switchOutCurve: BankTokens.curveStandard,
+                            : widget.animationDuration ??
+                                BankTokens.durationFast,
+                        switchInCurve:
+                            widget.animationCurve ?? BankTokens.curveStandard,
+                        switchOutCurve:
+                            widget.animationCurve ?? BankTokens.curveStandard,
                         child: BankBalanceText(
                           key: ValueKey<String>(monthly.amount.toString()),
                           money: monthly,
                           size: BankBalanceSize.medium,
-                          style: theme.numeralMedium.copyWith(
-                            color: theme.primary,
-                            fontFamily: theme.fontFamily,
-                          ),
+                          style: theme.numeralMedium
+                              .copyWith(
+                                color: accent,
+                                fontFamily: theme.fontFamily,
+                              )
+                              .merge(widget.monthlyStyle),
                         ),
                       ),
                     ],
@@ -290,7 +364,7 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
                       onPressed:
                           expired ? null : () => widget.onContinue(_selected),
                       style: FilledButton.styleFrom(
-                        backgroundColor: theme.primary,
+                        backgroundColor: accent,
                         foregroundColor: theme.onPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: theme.buttonRadius,
@@ -325,10 +399,12 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
             Expanded(
               child: Text(
                 widget.title,
-                style: BankTokens.headlineSmall.copyWith(
-                  color: theme.onPrimary,
-                  fontFamily: theme.fontFamily,
-                ),
+                style: BankTokens.headlineSmall
+                    .copyWith(
+                      color: theme.onPrimary,
+                      fontFamily: theme.fontFamily,
+                    )
+                    .merge(widget.titleStyle),
               ),
             ),
             const SizedBox(width: BankTokens.space2),
@@ -345,7 +421,11 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(BankIcons.success, size: 14, color: theme.onPrimary),
+                    Icon(
+                      widget.badgeIcon ?? BankIcons.success,
+                      size: 14,
+                      color: theme.onPrimary,
+                    ),
                     const SizedBox(width: BankTokens.space1),
                     Text(
                       widget.badgeLabel,
@@ -376,8 +456,8 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
     );
     final semanticLabel =
         scope.privacyEnabled ? scope.strings.balanceHidden : formatted;
-    final background =
-        selected && enabled ? theme.primary : theme.surfaceVariant;
+    final accent = widget.accentColor ?? theme.primary;
+    final background = selected && enabled ? accent : theme.surfaceVariant;
     final foreground = !enabled
         ? theme.onSurfaceVariant
         : selected
@@ -442,7 +522,11 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(BankIcons.schedule, size: 14, color: color),
+            Icon(
+              widget.expiryIcon ?? BankIcons.schedule,
+              size: 14,
+              color: color,
+            ),
             const SizedBox(width: BankTokens.space1),
             Text(
               text,

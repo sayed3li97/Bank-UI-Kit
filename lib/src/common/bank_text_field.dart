@@ -39,6 +39,17 @@ class BankTextField extends StatelessWidget {
     this.textInputAction,
     this.focusNode,
     this.readOnly = false,
+    this.radius,
+    this.fillColor,
+    this.borderColor,
+    this.focusedBorderColor,
+    this.errorColor,
+    this.contentPadding,
+    this.textStyle,
+    this.labelStyle,
+    this.hintStyle,
+    this.helperStyle,
+    this.errorStyle,
   });
 
   final TextEditingController? controller;
@@ -71,25 +82,73 @@ class BankTextField extends StatelessWidget {
   final FocusNode? focusNode;
   final bool readOnly;
 
+  /// Overrides the field's border radius. Defaults to
+  /// [BankThemeData.buttonRadius].
+  final BorderRadius? radius;
+
+  /// Overrides the field fill for both enabled and disabled states.
+  /// Defaults to [BankThemeData.surface] (enabled) or
+  /// [BankThemeData.surfaceVariant] (disabled).
+  final Color? fillColor;
+
+  /// Overrides the resting border colour. Defaults to
+  /// [BankThemeData.outline].
+  final Color? borderColor;
+
+  /// Overrides the focused border colour. Defaults to
+  /// [BankThemeData.primary].
+  final Color? focusedBorderColor;
+
+  /// Overrides [BankTokens.danger] as the error tint used by the label,
+  /// borders, and error text.
+  final Color? errorColor;
+
+  /// Overrides the input's inner padding. Defaults to a symmetric
+  /// [BankTokens.space4] by [BankTokens.space3] inset.
+  final EdgeInsetsGeometry? contentPadding;
+
+  /// Merged over the computed input text style ([BankTokens.bodyLarge] in
+  /// [BankThemeData.onSurface]).
+  final TextStyle? textStyle;
+
+  /// Merged over the computed label style ([BankTokens.labelMedium]).
+  final TextStyle? labelStyle;
+
+  /// Merged over the computed hint style ([BankTokens.bodyLarge] in
+  /// [BankThemeData.onSurfaceVariant]).
+  final TextStyle? hintStyle;
+
+  /// Merged over the computed helper style ([BankTokens.bodySmall] in
+  /// [BankThemeData.onSurfaceVariant]).
+  final TextStyle? helperStyle;
+
+  /// Merged over the computed error style ([BankTokens.bodySmall] in the
+  /// error tint).
+  final TextStyle? errorStyle;
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final hasError = errorText != null;
 
-    final borderColor = hasError ? BankTokens.danger : theme.outline;
-    final focusedColor = hasError ? BankTokens.danger : theme.primary;
+    final resolvedRadius = radius ?? theme.buttonRadius;
+    final dangerColor = errorColor ?? BankTokens.danger;
+    final restingColor = borderColor ?? theme.outline;
+    final resolvedBorderColor = hasError ? dangerColor : restingColor;
+    final focusedColor =
+        hasError ? dangerColor : (focusedBorderColor ?? theme.primary);
 
     final border = OutlineInputBorder(
-      borderRadius: theme.buttonRadius,
-      borderSide: BorderSide(color: borderColor),
+      borderRadius: resolvedRadius,
+      borderSide: BorderSide(color: resolvedBorderColor),
     );
     final focusedBorder = OutlineInputBorder(
-      borderRadius: theme.buttonRadius,
+      borderRadius: resolvedRadius,
       borderSide: BorderSide(color: focusedColor, width: 2),
     );
     final disabledBorder = OutlineInputBorder(
-      borderRadius: theme.buttonRadius,
-      borderSide: BorderSide(color: theme.outline.withValues(alpha: 0.4)),
+      borderRadius: resolvedRadius,
+      borderSide: BorderSide(color: restingColor.withValues(alpha: 0.4)),
     );
 
     return Column(
@@ -101,9 +160,11 @@ class BankTextField extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: BankTokens.space2),
             child: Text(
               label!,
-              style: BankTokens.labelMedium.copyWith(
-                color: hasError ? BankTokens.danger : theme.onSurface,
-              ),
+              style: BankTokens.labelMedium
+                  .copyWith(
+                    color: hasError ? dangerColor : theme.onSurface,
+                  )
+                  .merge(labelStyle),
             ),
           ),
         TextField(
@@ -119,29 +180,34 @@ class BankTextField extends StatelessWidget {
           maxLines: maxLines,
           textInputAction: textInputAction,
           readOnly: readOnly,
-          style: BankTokens.bodyLarge.copyWith(color: theme.onSurface),
+          style: BankTokens.bodyLarge
+              .copyWith(color: theme.onSurface)
+              .merge(textStyle),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle:
-                BankTokens.bodyLarge.copyWith(color: theme.onSurfaceVariant),
+            hintStyle: BankTokens.bodyLarge
+                .copyWith(color: theme.onSurfaceVariant)
+                .merge(hintStyle),
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: enabled ? theme.surface : theme.surfaceVariant,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: BankTokens.space4,
-              vertical: BankTokens.space3,
-            ),
+            fillColor:
+                fillColor ?? (enabled ? theme.surface : theme.surfaceVariant),
+            contentPadding: contentPadding ??
+                const EdgeInsets.symmetric(
+                  horizontal: BankTokens.space4,
+                  vertical: BankTokens.space3,
+                ),
             border: border,
             enabledBorder: border,
             focusedBorder: focusedBorder,
             errorBorder: OutlineInputBorder(
-              borderRadius: theme.buttonRadius,
-              borderSide: const BorderSide(color: BankTokens.danger),
+              borderRadius: resolvedRadius,
+              borderSide: BorderSide(color: dangerColor),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: theme.buttonRadius,
-              borderSide: const BorderSide(color: BankTokens.danger, width: 2),
+              borderRadius: resolvedRadius,
+              borderSide: BorderSide(color: dangerColor, width: 2),
             ),
             disabledBorder: disabledBorder,
           ),
@@ -154,7 +220,9 @@ class BankTextField extends StatelessWidget {
             ),
             child: Text(
               errorText!,
-              style: BankTokens.bodySmall.copyWith(color: BankTokens.danger),
+              style: BankTokens.bodySmall
+                  .copyWith(color: dangerColor)
+                  .merge(errorStyle),
             ),
           )
         else if (helper != null)
@@ -165,8 +233,9 @@ class BankTextField extends StatelessWidget {
             ),
             child: Text(
               helper!,
-              style:
-                  BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+              style: BankTokens.bodySmall
+                  .copyWith(color: theme.onSurfaceVariant)
+                  .merge(helperStyle),
             ),
           ),
       ],

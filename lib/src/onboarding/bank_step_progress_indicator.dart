@@ -11,12 +11,66 @@ class BankStepProgressIndicator extends StatelessWidget {
   final List<String>? labels; // optional label per step
   final bool showLabels;
 
+  /// Fill for active/completed bubbles and completed connectors.
+  /// Defaults to the theme primary.
+  final Color? activeColor;
+
+  /// Fill for upcoming bubbles. Defaults to the theme surfaceVariant.
+  final Color? inactiveColor;
+
+  /// Number/check color on active and completed bubbles. Defaults to
+  /// white.
+  final Color? foregroundColor;
+
+  /// Number color on upcoming bubbles. Defaults to the theme
+  /// onSurfaceVariant.
+  final Color? inactiveForegroundColor;
+
+  /// Color of connectors between not-yet-completed steps. Defaults to
+  /// the theme outline.
+  final Color? lineColor;
+
+  /// Glyph inside completed bubbles. Defaults to [Icons.check].
+  final IconData? completedIcon;
+
+  /// Merged over the computed step label style (bodySmall).
+  final TextStyle? labelStyle;
+
+  /// Merged over the computed in-bubble number style (labelSmall).
+  final TextStyle? stepNumberStyle;
+
+  /// Diameter of each step bubble. Defaults to 28.
+  final double? bubbleSize;
+
+  /// Duration of bubble/line color animations. Defaults to
+  /// [BankTokens.durationBase].
+  final Duration? animationDuration;
+
+  /// Curve of bubble/line color animations. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
+  /// Overrides the semantics label. Defaults to 'Step X of Y'.
+  final String? semanticLabel;
+
   const BankStepProgressIndicator({
     required this.totalSteps,
     required this.currentStep,
     super.key,
     this.labels,
     this.showLabels = false,
+    this.activeColor,
+    this.inactiveColor,
+    this.foregroundColor,
+    this.inactiveForegroundColor,
+    this.lineColor,
+    this.completedIcon,
+    this.labelStyle,
+    this.stepNumberStyle,
+    this.bubbleSize,
+    this.animationDuration,
+    this.animationCurve,
+    this.semanticLabel,
   })  : assert(totalSteps > 0, 'totalSteps must be positive'),
         assert(
           currentStep >= 1 && currentStep <= totalSteps,
@@ -28,26 +82,49 @@ class BankStepProgressIndicator extends StatelessWidget {
     final bankTheme = BankThemeData.of(context);
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 
+    final resolvedActive = activeColor ?? bankTheme.primary;
+    final resolvedInactive = inactiveColor ?? bankTheme.surfaceVariant;
+    final resolvedForeground = foregroundColor ?? Colors.white;
+    final resolvedInactiveForeground =
+        inactiveForegroundColor ?? bankTheme.onSurfaceVariant;
+    final resolvedLineColor = lineColor ?? bankTheme.outline;
+    final resolvedBubbleSize = bubbleSize ?? 28.0;
+    final resolvedDuration = animationDuration ?? BankTokens.durationBase;
+    final resolvedCurve = animationCurve ?? BankTokens.curveStandard;
+    final resolvedLabelStyle = BankTokens.bodySmall
+        .copyWith(color: bankTheme.onSurfaceVariant)
+        .merge(labelStyle);
+
     // Build the list of step indices in display order.
     final indices = List<int>.generate(totalSteps, (i) => i + 1);
     final displayIndices = isRtl ? indices.reversed.toList() : indices;
 
     return Semantics(
-      label: 'Step $currentStep of $totalSteps',
+      label: semanticLabel ?? 'Step $currentStep of $totalSteps',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _StepRow(
             displayIndices: displayIndices,
             currentStep: currentStep,
-            bankTheme: bankTheme,
+            activeColor: resolvedActive,
+            inactiveColor: resolvedInactive,
+            foregroundColor: resolvedForeground,
+            inactiveForegroundColor: resolvedInactiveForeground,
+            lineColor: resolvedLineColor,
+            completedIcon: completedIcon ?? Icons.check,
+            stepNumberStyle: stepNumberStyle,
+            bubbleSize: resolvedBubbleSize,
+            duration: resolvedDuration,
+            curve: resolvedCurve,
           ),
           if (showLabels && labels != null) ...[
             const SizedBox(height: BankTokens.space2),
             _LabelsRow(
               displayIndices: displayIndices,
               labels: labels!,
-              bankTheme: bankTheme,
+              labelStyle: resolvedLabelStyle,
+              bubbleSize: resolvedBubbleSize,
             ),
           ],
         ],
@@ -64,12 +141,30 @@ class _StepRow extends StatelessWidget {
   const _StepRow({
     required this.displayIndices,
     required this.currentStep,
-    required this.bankTheme,
+    required this.activeColor,
+    required this.inactiveColor,
+    required this.foregroundColor,
+    required this.inactiveForegroundColor,
+    required this.lineColor,
+    required this.completedIcon,
+    required this.stepNumberStyle,
+    required this.bubbleSize,
+    required this.duration,
+    required this.curve,
   });
 
   final List<int> displayIndices;
   final int currentStep;
-  final BankThemeData bankTheme;
+  final Color activeColor;
+  final Color inactiveColor;
+  final Color foregroundColor;
+  final Color inactiveForegroundColor;
+  final Color lineColor;
+  final IconData completedIcon;
+  final TextStyle? stepNumberStyle;
+  final double bubbleSize;
+  final Duration duration;
+  final Curve curve;
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +184,10 @@ class _StepRow extends StatelessWidget {
           Expanded(
             child: _ConnectingLine(
               completed: isCompleted,
-              bankTheme: bankTheme,
+              activeColor: activeColor,
+              lineColor: lineColor,
+              duration: duration,
+              curve: curve,
             ),
           ),
         );
@@ -99,7 +197,15 @@ class _StepRow extends StatelessWidget {
         _StepBubble(
           stepNumber: stepIndex,
           currentStep: currentStep,
-          bankTheme: bankTheme,
+          activeColor: activeColor,
+          inactiveColor: inactiveColor,
+          foregroundColor: foregroundColor,
+          inactiveForegroundColor: inactiveForegroundColor,
+          completedIcon: completedIcon,
+          stepNumberStyle: stepNumberStyle,
+          bubbleSize: bubbleSize,
+          duration: duration,
+          curve: curve,
         ),
       );
     }
@@ -118,12 +224,14 @@ class _LabelsRow extends StatelessWidget {
   const _LabelsRow({
     required this.displayIndices,
     required this.labels,
-    required this.bankTheme,
+    required this.labelStyle,
+    required this.bubbleSize,
   });
 
   final List<int> displayIndices;
   final List<String> labels;
-  final BankThemeData bankTheme;
+  final TextStyle labelStyle;
+  final double bubbleSize;
 
   @override
   Widget build(BuildContext context) {
@@ -137,18 +245,16 @@ class _LabelsRow extends StatelessWidget {
         children.add(const Expanded(child: SizedBox.shrink()));
       }
 
-      // Each label is centred below its bubble (28 px wide).
+      // Each label is centred below its bubble.
       final labelText =
           (stepIndex - 1) < labels.length ? labels[stepIndex - 1] : '';
 
       children.add(
         SizedBox(
-          width: 28,
+          width: bubbleSize,
           child: Text(
             labelText,
-            style: BankTokens.bodySmall.copyWith(
-              color: bankTheme.onSurfaceVariant,
-            ),
+            style: labelStyle,
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -172,30 +278,45 @@ class _StepBubble extends StatelessWidget {
   const _StepBubble({
     required this.stepNumber,
     required this.currentStep,
-    required this.bankTheme,
+    required this.activeColor,
+    required this.inactiveColor,
+    required this.foregroundColor,
+    required this.inactiveForegroundColor,
+    required this.completedIcon,
+    required this.stepNumberStyle,
+    required this.bubbleSize,
+    required this.duration,
+    required this.curve,
   });
 
   final int stepNumber;
   final int currentStep;
-  final BankThemeData bankTheme;
+  final Color activeColor;
+  final Color inactiveColor;
+  final Color foregroundColor;
+  final Color inactiveForegroundColor;
+  final IconData completedIcon;
+  final TextStyle? stepNumberStyle;
+  final double bubbleSize;
+  final Duration duration;
+  final Curve curve;
 
   @override
   Widget build(BuildContext context) {
     final isCompleted = stepNumber < currentStep;
     final isActive = stepNumber == currentStep;
 
-    final backgroundColor = (isCompleted || isActive)
-        ? bankTheme.primary
-        : bankTheme.surfaceVariant;
+    final backgroundColor =
+        (isCompleted || isActive) ? activeColor : inactiveColor;
 
-    final foregroundColor =
-        (isCompleted || isActive) ? Colors.white : bankTheme.onSurfaceVariant;
+    final resolvedForeground =
+        (isCompleted || isActive) ? foregroundColor : inactiveForegroundColor;
 
     return AnimatedContainer(
-      duration: BankTokens.durationBase,
-      curve: BankTokens.curveStandard,
-      width: 28,
-      height: 28,
+      duration: duration,
+      curve: curve,
+      width: bubbleSize,
+      height: bubbleSize,
       decoration: BoxDecoration(
         color: backgroundColor,
         shape: BoxShape.circle,
@@ -203,16 +324,18 @@ class _StepBubble extends StatelessWidget {
       child: Center(
         child: isCompleted
             ? Icon(
-                Icons.check,
+                completedIcon,
                 size: 16,
-                color: foregroundColor,
+                color: resolvedForeground,
               )
             : Text(
                 '$stepNumber',
-                style: BankTokens.labelSmall.copyWith(
-                  color: foregroundColor,
-                  fontSize: 11,
-                ),
+                style: BankTokens.labelSmall
+                    .copyWith(
+                      color: resolvedForeground,
+                      fontSize: 11,
+                    )
+                    .merge(stepNumberStyle),
               ),
       ),
     );
@@ -226,19 +349,25 @@ class _StepBubble extends StatelessWidget {
 class _ConnectingLine extends StatelessWidget {
   const _ConnectingLine({
     required this.completed,
-    required this.bankTheme,
+    required this.activeColor,
+    required this.lineColor,
+    required this.duration,
+    required this.curve,
   });
 
   final bool completed;
-  final BankThemeData bankTheme;
+  final Color activeColor;
+  final Color lineColor;
+  final Duration duration;
+  final Curve curve;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: BankTokens.durationBase,
-      curve: BankTokens.curveStandard,
+      duration: duration,
+      curve: curve,
       height: 2,
-      color: completed ? bankTheme.primary : bankTheme.outline,
+      color: completed ? activeColor : lineColor,
     );
   }
 }

@@ -38,6 +38,18 @@ class BankWalletProvisioningButton extends StatelessWidget {
     this.appleLabel = 'Add to Apple Wallet',
     this.googleLabel = 'Add to Google Wallet',
     this.addedLabel = 'Added to wallet',
+    this.padding,
+    this.minWidth = 140,
+    this.radius,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.accentColor,
+    this.labelStyle,
+    this.addedLabelStyle,
+    this.appleWalletIcon = Icons.wallet_rounded,
+    this.googleWalletIcon = Icons.account_balance_wallet_rounded,
+    this.addedIcon = Icons.check_circle_rounded,
+    this.semanticLabel,
   });
 
   final BankWalletTarget target;
@@ -51,19 +63,71 @@ class BankWalletProvisioningButton extends StatelessWidget {
   final String googleLabel;
   final String addedLabel;
 
+  /// Overrides the button content padding; defaults to horizontal
+  /// [BankTokens.space4].
+  final EdgeInsetsGeometry? padding;
+
+  /// Minimum button width; defaults to 140 per wallet brand guidance.
+  final double minWidth;
+
+  /// Overrides the corner radius of both states; defaults to a
+  /// circular radius of 8 per wallet brand guidance.
+  final BorderRadius? radius;
+
+  /// Overrides the brand-mandated black button fill; defaults to pure
+  /// black. Deviating may breach wallet brand guidelines.
+  final Color? backgroundColor;
+
+  /// Overrides the button glyph, label, and spinner color; defaults
+  /// to white per wallet brand guidelines.
+  final Color? foregroundColor;
+
+  /// Overrides the added-state check icon color; defaults to the
+  /// theme positiveBalance color.
+  final Color? accentColor;
+
+  /// Merged over the button label style, [BankTokens.labelLarge].
+  final TextStyle? labelStyle;
+
+  /// Merged over the added-state label style,
+  /// [BankTokens.labelLarge].
+  final TextStyle? addedLabelStyle;
+
+  /// Glyph for the Apple Wallet button; defaults to
+  /// [Icons.wallet_rounded].
+  final IconData appleWalletIcon;
+
+  /// Glyph for the Google Wallet button; defaults to
+  /// [Icons.account_balance_wallet_rounded].
+  final IconData googleWalletIcon;
+
+  /// Glyph in the added state; defaults to
+  /// [Icons.check_circle_rounded].
+  final IconData addedIcon;
+
+  /// Overrides the Semantics label; defaults to the visible label of
+  /// the current state.
+  final String? semanticLabel;
+
   String get _label => switch (target) {
         BankWalletTarget.appleWallet => appleLabel,
         BankWalletTarget.googleWallet => googleLabel,
       };
 
   IconData get _glyph => switch (target) {
-        BankWalletTarget.appleWallet => Icons.wallet_rounded,
-        BankWalletTarget.googleWallet => Icons.account_balance_wallet_rounded,
+        BankWalletTarget.appleWallet => appleWalletIcon,
+        BankWalletTarget.googleWallet => googleWalletIcon,
       };
 
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final resolvedRadius = radius ?? const BorderRadius.all(Radius.circular(8));
+    final resolvedBackground = backgroundColor ?? const Color(0xFF000000);
+    final resolvedForeground = foregroundColor ?? const Color(0xFFFFFFFF);
+    final resolvedPadding =
+        padding ?? const EdgeInsets.symmetric(horizontal: BankTokens.space4);
+    final resolvedAccent = accentColor ?? theme.positiveBalance;
 
     switch (state) {
       case BankWalletProvisionState.unavailable:
@@ -71,27 +135,24 @@ class BankWalletProvisioningButton extends StatelessWidget {
 
       case BankWalletProvisionState.added:
         return Semantics(
-          label: addedLabel,
+          label: semanticLabel ?? addedLabel,
           child: DecoratedBox(
             decoration: BoxDecoration(
               border: Border.all(color: theme.outline),
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              borderRadius: resolvedRadius,
             ),
             child: SizedBox(
               height: height,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.check_circle_rounded,
-                    size: 20,
-                    color: theme.positiveBalance,
-                  ),
+                  Icon(addedIcon, size: 20, color: resolvedAccent),
                   const SizedBox(width: BankTokens.space2),
                   Text(
                     addedLabel,
-                    style:
-                        BankTokens.labelLarge.copyWith(color: theme.onSurface),
+                    style: BankTokens.labelLarge
+                        .copyWith(color: theme.onSurface)
+                        .merge(addedLabelStyle),
                   ),
                 ],
               ),
@@ -105,35 +166,33 @@ class BankWalletProvisioningButton extends StatelessWidget {
         return Semantics(
           button: true,
           enabled: !adding,
-          label: _label,
+          label: semanticLabel ?? _label,
           child: Material(
             // Both wallet brands mandate a black button irrespective of
             // app theme, so this color is intentionally not tokenized.
-            color: const Color(0xFF000000),
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
+            color: resolvedBackground,
+            borderRadius: resolvedRadius,
             child: InkWell(
               onTap: adding ? null : onPressed,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              borderRadius: resolvedRadius,
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minWidth: 140,
+                  minWidth: minWidth,
                   minHeight: height,
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: BankTokens.space4,
-                  ),
+                  padding: resolvedPadding,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: adding
-                        ? const [
+                        ? [
                             SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Color(0xFFFFFFFF),
+                                color: resolvedForeground,
                               ),
                             ),
                           ]
@@ -141,15 +200,15 @@ class BankWalletProvisioningButton extends StatelessWidget {
                             Icon(
                               _glyph,
                               size: 22,
-                              color: const Color(0xFFFFFFFF),
+                              color: resolvedForeground,
                             ),
                             const SizedBox(width: BankTokens.space2),
                             Flexible(
                               child: Text(
                                 _label,
-                                style: BankTokens.labelLarge.copyWith(
-                                  color: const Color(0xFFFFFFFF),
-                                ),
+                                style: BankTokens.labelLarge
+                                    .copyWith(color: resolvedForeground)
+                                    .merge(labelStyle),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),

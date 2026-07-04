@@ -59,11 +59,102 @@ class BankPlanComparisonTable extends StatelessWidget {
   final String? highlightedTierId;
   final ValueChanged<BankPlanTier>? onSelectTier;
 
+  /// Width of each tier column. Defaults to 120.
+  final double? columnWidth;
+
+  /// Width of the fixed feature-label column. Defaults to 140.
+  final double? labelColumnWidth;
+
+  /// Height of each feature row. Defaults to 44.
+  final double? rowHeight;
+
+  /// Height of the tier header block. Defaults to 120.
+  final double? headerHeight;
+
+  /// Overrides the emphasis border colour of the highlighted tier.
+  /// Defaults to the theme primary.
+  final Color? highlightColor;
+
+  /// Overrides the fallback tier accent when a tier has no
+  /// [BankPlanTier.accentColor]. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Colour of the included-feature check. Defaults to
+  /// [BankTokens.success].
+  final Color? includedColor;
+
+  /// Colour of the not-included cross. Defaults to the theme
+  /// onSurfaceVariant.
+  final Color? excludedColor;
+
+  /// Colour of the partially-included dash. Defaults to
+  /// [BankTokens.pending].
+  final Color? partialColor;
+
+  /// Glyph for included features. Defaults to [Icons.check].
+  final IconData? includedIcon;
+
+  /// Glyph for not-included features. Defaults to [Icons.close].
+  final IconData? excludedIcon;
+
+  /// Glyph for partially-included features. Defaults to
+  /// [Icons.horizontal_rule].
+  final IconData? partialIcon;
+
+  /// Merged over the feature-label style (BankTokens.bodySmall in
+  /// onSurfaceVariant).
+  final TextStyle? featureLabelStyle;
+
+  /// Merged over the tier-name style (BankTokens.labelLarge in the tier
+  /// accent).
+  final TextStyle? tierNameStyle;
+
+  /// Merged over the price style (theme numeralSmall in onSurface).
+  final TextStyle? priceStyle;
+
+  /// Suffix under each monthly price. Defaults to `'/mo'`.
+  final String perMonthLabel;
+
+  /// Screen-reader value for included cells. Defaults to `'included'`.
+  final String includedSemanticsLabel;
+
+  /// Screen-reader value for not-included cells. Defaults to
+  /// `'not included'`.
+  final String notIncludedSemanticsLabel;
+
+  /// Screen-reader value for partial cells. Defaults to
+  /// `'partially included'`.
+  final String partialSemanticsLabel;
+
+  /// Overrides the generated table semantics label
+  /// (`'Plan comparison table with <n> tiers'`).
+  final String? semanticLabel;
+
   const BankPlanComparisonTable({
     required this.tiers,
     super.key,
     this.highlightedTierId,
     this.onSelectTier,
+    this.columnWidth,
+    this.labelColumnWidth,
+    this.rowHeight,
+    this.headerHeight,
+    this.highlightColor,
+    this.accentColor,
+    this.includedColor,
+    this.excludedColor,
+    this.partialColor,
+    this.includedIcon,
+    this.excludedIcon,
+    this.partialIcon,
+    this.featureLabelStyle,
+    this.tierNameStyle,
+    this.priceStyle,
+    this.perMonthLabel = '/mo',
+    this.includedSemanticsLabel = 'included',
+    this.notIncludedSemanticsLabel = 'not included',
+    this.partialSemanticsLabel = 'partially included',
+    this.semanticLabel,
   });
 
   static const double _columnWidth = 120;
@@ -77,6 +168,12 @@ class BankPlanComparisonTable extends StatelessWidget {
     final scope = BankUiScope.of(context);
     final needsScroll = tiers.length > 3;
 
+    final resolvedColumnWidth = columnWidth ?? _columnWidth;
+    final resolvedLabelColumnWidth = labelColumnWidth ?? _labelColumnWidth;
+    final resolvedRowHeight = rowHeight ?? _rowHeight;
+    final resolvedHeaderHeight = headerHeight ?? _headerHeight;
+    final resolvedHighlight = highlightColor ?? bankTheme.primary;
+
     // Collect all unique feature labels preserving insertion order.
     final allFeatures = _collectFeatures();
 
@@ -87,9 +184,10 @@ class BankPlanComparisonTable extends StatelessWidget {
         _LabelColumn(
           features: allFeatures,
           bankTheme: bankTheme,
-          headerHeight: _headerHeight,
-          rowHeight: _rowHeight,
-          labelColumnWidth: _labelColumnWidth,
+          headerHeight: resolvedHeaderHeight,
+          rowHeight: resolvedRowHeight,
+          labelColumnWidth: resolvedLabelColumnWidth,
+          labelStyle: featureLabelStyle,
         ),
         // Tier columns
         ...tiers.map(
@@ -100,9 +198,11 @@ class BankPlanComparisonTable extends StatelessWidget {
             scope: scope,
             isHighlighted: tier.id == highlightedTierId,
             onSelectTier: onSelectTier,
-            columnWidth: _columnWidth,
-            headerHeight: _headerHeight,
-            rowHeight: _rowHeight,
+            columnWidth: resolvedColumnWidth,
+            headerHeight: resolvedHeaderHeight,
+            rowHeight: resolvedRowHeight,
+            table: this,
+            highlightColor: resolvedHighlight,
           ),
         ),
       ],
@@ -116,7 +216,8 @@ class BankPlanComparisonTable extends StatelessWidget {
     }
 
     return Semantics(
-      label: 'Plan comparison table with ${tiers.length} tiers',
+      label:
+          semanticLabel ?? 'Plan comparison table with ${tiers.length} tiers',
       child: table,
     );
   }
@@ -145,6 +246,7 @@ class _LabelColumn extends StatelessWidget {
   final double headerHeight;
   final double rowHeight;
   final double labelColumnWidth;
+  final TextStyle? labelStyle;
 
   const _LabelColumn({
     required this.features,
@@ -152,6 +254,7 @@ class _LabelColumn extends StatelessWidget {
     required this.headerHeight,
     required this.rowHeight,
     required this.labelColumnWidth,
+    required this.labelStyle,
   });
 
   @override
@@ -177,9 +280,9 @@ class _LabelColumn extends StatelessWidget {
             ),
             child: Text(
               f.label,
-              style: BankTokens.bodySmall.copyWith(
-                color: bankTheme.onSurfaceVariant,
-              ),
+              style: BankTokens.bodySmall
+                  .copyWith(color: bankTheme.onSurfaceVariant)
+                  .merge(labelStyle),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -204,6 +307,8 @@ class _TierColumn extends StatelessWidget {
   final double columnWidth;
   final double headerHeight;
   final double rowHeight;
+  final BankPlanComparisonTable table;
+  final Color highlightColor;
 
   const _TierColumn({
     required this.tier,
@@ -215,11 +320,13 @@ class _TierColumn extends StatelessWidget {
     required this.columnWidth,
     required this.headerHeight,
     required this.rowHeight,
+    required this.table,
+    required this.highlightColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final accent = tier.accentColor ?? bankTheme.primary;
+    final accent = tier.accentColor ?? table.accentColor ?? bankTheme.primary;
     final formattedPrice = BankMoneyFormatter.format(
       amount: tier.monthlyPrice.amount,
       currencyCode: tier.monthlyPrice.currencyCode,
@@ -228,7 +335,7 @@ class _TierColumn extends StatelessWidget {
     );
 
     final highlightSide = isHighlighted
-        ? BorderSide(color: bankTheme.primary, width: 2)
+        ? BorderSide(color: highlightColor, width: 2)
         : BorderSide.none;
 
     Widget header = Container(
@@ -275,7 +382,9 @@ class _TierColumn extends StatelessWidget {
           ],
           Text(
             tier.name,
-            style: BankTokens.labelLarge.copyWith(color: accent),
+            style: BankTokens.labelLarge
+                .copyWith(color: accent)
+                .merge(table.tierNameStyle),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -283,11 +392,13 @@ class _TierColumn extends StatelessWidget {
           const SizedBox(height: BankTokens.space1),
           Text(
             formattedPrice,
-            style: bankTheme.numeralSmall.copyWith(color: bankTheme.onSurface),
+            style: bankTheme.numeralSmall
+                .copyWith(color: bankTheme.onSurface)
+                .merge(table.priceStyle),
             textAlign: TextAlign.center,
           ),
           Text(
-            '/mo',
+            table.perMonthLabel,
             style: BankTokens.bodySmall.copyWith(
               color: bankTheme.onSurfaceVariant,
             ),
@@ -321,6 +432,8 @@ class _TierColumn extends StatelessWidget {
             rowHeight: rowHeight,
             featureLabel: feature.label,
             tierName: tier.name,
+            table: table,
+            highlightColor: highlightColor,
           );
         }),
       ],
@@ -340,6 +453,8 @@ class _FeatureCell extends StatelessWidget {
   final double rowHeight;
   final String featureLabel;
   final String tierName;
+  final BankPlanComparisonTable table;
+  final Color highlightColor;
 
   const _FeatureCell({
     required this.support,
@@ -349,6 +464,8 @@ class _FeatureCell extends StatelessWidget {
     required this.rowHeight,
     required this.featureLabel,
     required this.tierName,
+    required this.table,
+    required this.highlightColor,
   });
 
   @override
@@ -358,21 +475,21 @@ class _FeatureCell extends StatelessWidget {
     final String semanticValue;
 
     if (support == true) {
-      icon = Icons.check;
-      color = BankTokens.success;
-      semanticValue = 'included';
+      icon = table.includedIcon ?? Icons.check;
+      color = table.includedColor ?? BankTokens.success;
+      semanticValue = table.includedSemanticsLabel;
     } else if (support == false) {
-      icon = Icons.close;
-      color = bankTheme.onSurfaceVariant;
-      semanticValue = 'not included';
+      icon = table.excludedIcon ?? Icons.close;
+      color = table.excludedColor ?? bankTheme.onSurfaceVariant;
+      semanticValue = table.notIncludedSemanticsLabel;
     } else {
-      icon = Icons.horizontal_rule;
-      color = BankTokens.pending;
-      semanticValue = 'partially included';
+      icon = table.partialIcon ?? Icons.horizontal_rule;
+      color = table.partialColor ?? BankTokens.pending;
+      semanticValue = table.partialSemanticsLabel;
     }
 
     final highlightSide = isHighlighted
-        ? BorderSide(color: bankTheme.primary, width: 2)
+        ? BorderSide(color: highlightColor, width: 2)
         : BorderSide(
             color: bankTheme.outline.withValues(alpha: 0.3),
             width: 0.5,

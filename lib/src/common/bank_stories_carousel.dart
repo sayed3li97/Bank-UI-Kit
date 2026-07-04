@@ -14,7 +14,6 @@ const double _cardHeight = 120;
 const double _ringWidth = 2.5;
 const double _ringGap = 2;
 const double _ringInset = _ringWidth + _ringGap;
-const double _railHeight = _cardHeight + 2 * _ringInset;
 const double _progressBarHeight = 3;
 
 // Story media is arbitrary (photos, illustrations, gradients), so the
@@ -88,8 +87,8 @@ class BankStory {
 // Rail
 // -----------------------------------------------------------------------------
 
-/// Horizontal rail of tappable story cards, in the style of the Sber and
-/// T-Bank stories feeds or Chase Daily Snapshot.
+/// Horizontal rail of tappable story cards, in the style of the
+/// stories feeds and daily-recap snapshots of leading banking apps.
 ///
 /// Each card is 92x120 with the story thumbnail under a bottom scrim and the
 /// title in [BankTokens.labelSmall]. Unread stories get a 2.5 px ring in the
@@ -127,6 +126,17 @@ class BankStoriesCarousel extends StatelessWidget {
     this.unreadSemanticLabel = 'Unread',
     this.closeLabel = 'Close',
     this.announcementBuilder,
+    this.unreadRingColor,
+    this.cardWidth,
+    this.cardHeight,
+    this.cardRadius,
+    this.cardShadow,
+    this.titleStyle,
+    this.scrimGradient,
+    this.closeIcon,
+    this.viewerBackgroundColor,
+    this.viewerForegroundColor,
+    this.viewerProgressTrackColor,
   });
 
   /// The stories to display, in rail order.
@@ -152,6 +162,45 @@ class BankStoriesCarousel extends StatelessWidget {
   final String Function(BankStory story, int index, int count)?
       announcementBuilder;
 
+  /// Overrides the unread ring colour. Defaults to [BankThemeData.primary].
+  final Color? unreadRingColor;
+
+  /// Overrides the 92 px width of each rail card.
+  final double? cardWidth;
+
+  /// Overrides the 120 px height of each rail card (the rail grows with it).
+  final double? cardHeight;
+
+  /// Overrides the card corner radius. Defaults to
+  /// [BankThemeData.cardRadius].
+  final BorderRadius? cardRadius;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard]; pass
+  /// `const []` to flatten it.
+  final List<BoxShadow>? cardShadow;
+
+  /// Merged over the computed card title style ([BankTokens.labelSmall]
+  /// in white).
+  final TextStyle? titleStyle;
+
+  /// Overrides the bottom scrim painted behind the card title. Defaults to
+  /// a transparent-to-black vertical gradient.
+  final Gradient? scrimGradient;
+
+  /// Overrides the viewer's close glyph. Defaults to [BankIcons.close].
+  final IconData? closeIcon;
+
+  /// Overrides the viewer's page background. Defaults to black.
+  final Color? viewerBackgroundColor;
+
+  /// Overrides the viewer's chrome colour (title, close button, progress
+  /// fill). Defaults to white.
+  final Color? viewerForegroundColor;
+
+  /// Overrides the viewer's progress track colour. Defaults to white at
+  /// 30 % opacity.
+  final Color? viewerProgressTrackColor;
+
   void _openViewer(BuildContext context, int index) {
     BankStoryViewer.show(
       context,
@@ -161,13 +210,17 @@ class BankStoriesCarousel extends StatelessWidget {
       onStoryViewed: onStoryViewed,
       closeLabel: closeLabel,
       announcementBuilder: announcementBuilder,
+      closeIcon: closeIcon,
+      backgroundColor: viewerBackgroundColor,
+      foregroundColor: viewerForegroundColor,
+      progressTrackColor: viewerProgressTrackColor,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: _railHeight,
+      height: (cardHeight ?? _cardHeight) + 2 * _ringInset,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: padding,
@@ -178,6 +231,13 @@ class BankStoriesCarousel extends StatelessWidget {
           story: stories[index],
           unreadSemanticLabel: unreadSemanticLabel,
           onTap: () => _openViewer(context, index),
+          ringColor: unreadRingColor,
+          width: cardWidth,
+          height: cardHeight,
+          radius: cardRadius,
+          shadow: cardShadow,
+          titleStyle: titleStyle,
+          scrimGradient: scrimGradient,
         ),
       ),
     );
@@ -191,17 +251,33 @@ class _StoryCard extends StatelessWidget {
     required this.story,
     required this.unreadSemanticLabel,
     required this.onTap,
+    this.ringColor,
+    this.width,
+    this.height,
+    this.radius,
+    this.shadow,
+    this.titleStyle,
+    this.scrimGradient,
   });
 
   final BankStory story;
   final String unreadSemanticLabel;
   final VoidCallback onTap;
+  final Color? ringColor;
+  final double? width;
+  final double? height;
+  final BorderRadius? radius;
+  final List<BoxShadow>? shadow;
+  final TextStyle? titleStyle;
+  final Gradient? scrimGradient;
 
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final outerRadius = theme.cardRadius + BorderRadius.circular(_ringInset);
-    final ringColor = story.unread ? theme.primary : const Color(0x00000000);
+    final cardRadius = radius ?? theme.cardRadius;
+    final outerRadius = cardRadius + BorderRadius.circular(_ringInset);
+    final resolvedRingColor =
+        story.unread ? (ringColor ?? theme.primary) : const Color(0x00000000);
 
     final semanticLabel =
         story.unread ? '${story.title}, $unreadSemanticLabel' : story.title;
@@ -215,18 +291,18 @@ class _StoryCard extends StatelessWidget {
           padding: const EdgeInsets.all(_ringGap),
           decoration: BoxDecoration(
             borderRadius: outerRadius,
-            border: Border.all(color: ringColor, width: _ringWidth),
+            border: Border.all(color: resolvedRingColor, width: _ringWidth),
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              borderRadius: theme.cardRadius,
-              boxShadow: BankTokens.shadowCard,
+              borderRadius: cardRadius,
+              boxShadow: shadow ?? BankTokens.shadowCard,
             ),
             child: ClipRRect(
-              borderRadius: theme.cardRadius,
+              borderRadius: cardRadius,
               child: SizedBox(
-                width: _cardWidth,
-                height: _cardHeight,
+                width: width ?? _cardWidth,
+                height: height ?? _cardHeight,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -234,14 +310,15 @@ class _StoryCard extends StatelessWidget {
                       color: theme.surfaceVariant,
                       child: story.thumbnail,
                     ),
-                    const DecoratedBox(
+                    DecoratedBox(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          stops: [0.45, 1],
-                          colors: [_scrimTransparent, _scrimSoft],
-                        ),
+                        gradient: scrimGradient ??
+                            const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              stops: [0.45, 1],
+                              colors: [_scrimTransparent, _scrimSoft],
+                            ),
                       ),
                     ),
                     Align(
@@ -252,9 +329,9 @@ class _StoryCard extends StatelessWidget {
                           story.title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: BankTokens.labelSmall.copyWith(
-                            color: _chromeForeground,
-                          ),
+                          style: BankTokens.labelSmall
+                              .copyWith(color: _chromeForeground)
+                              .merge(titleStyle),
                         ),
                       ),
                     ),
@@ -310,6 +387,12 @@ class BankStoryViewer extends StatefulWidget {
     this.onStoryViewed,
     this.closeLabel = 'Close',
     this.announcementBuilder,
+    this.closeIcon,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.progressTrackColor,
+    this.titleStyle,
+    this.scrimGradient,
   });
 
   /// The stories to page through. Must not be empty.
@@ -332,6 +415,28 @@ class BankStoryViewer extends StatefulWidget {
   final String Function(BankStory story, int index, int count)?
       announcementBuilder;
 
+  /// Overrides the close button glyph. Defaults to [BankIcons.close].
+  final IconData? closeIcon;
+
+  /// Overrides the page background. Defaults to black.
+  final Color? backgroundColor;
+
+  /// Overrides the chrome colour (title, close button, progress fill).
+  /// Defaults to white.
+  final Color? foregroundColor;
+
+  /// Overrides the progress track colour. Defaults to white at 30 %
+  /// opacity.
+  final Color? progressTrackColor;
+
+  /// Merged over the computed title style ([BankTokens.labelLarge] in the
+  /// chrome colour).
+  final TextStyle? titleStyle;
+
+  /// Overrides the scrim behind the top chrome. Defaults to a
+  /// black-to-transparent vertical gradient.
+  final Gradient? scrimGradient;
+
   /// Pushes a full-screen [BankStoryViewer] route with a fade transition.
   ///
   /// Returns a future that completes when the viewer is dismissed.
@@ -343,6 +448,12 @@ class BankStoryViewer extends StatefulWidget {
     ValueChanged<String>? onStoryViewed,
     String closeLabel = 'Close',
     String Function(BankStory story, int index, int count)? announcementBuilder,
+    IconData? closeIcon,
+    Color? backgroundColor,
+    Color? foregroundColor,
+    Color? progressTrackColor,
+    TextStyle? titleStyle,
+    Gradient? scrimGradient,
   }) {
     assert(stories.isNotEmpty, 'BankStoryViewer requires at least one story');
     return Navigator.of(context).push<void>(
@@ -358,6 +469,12 @@ class BankStoryViewer extends StatefulWidget {
           onStoryViewed: onStoryViewed,
           closeLabel: closeLabel,
           announcementBuilder: announcementBuilder,
+          closeIcon: closeIcon,
+          backgroundColor: backgroundColor,
+          foregroundColor: foregroundColor,
+          progressTrackColor: progressTrackColor,
+          titleStyle: titleStyle,
+          scrimGradient: scrimGradient,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) =>
             FadeTransition(opacity: animation, child: child),
@@ -495,6 +612,8 @@ class _BankStoryViewerState extends State<BankStoryViewer>
     }
   }
 
+  Color get _foreground => widget.foregroundColor ?? _chromeForeground;
+
   Widget _buildSegment(int segmentIndex) {
     final Widget fill;
     if (segmentIndex == _index && !_reduceMotion) {
@@ -505,7 +624,7 @@ class _BankStoryViewerState extends State<BankStoryViewer>
           widthFactor: _progress.value,
           child: child,
         ),
-        child: const ColoredBox(color: _chromeForeground),
+        child: ColoredBox(color: _foreground),
       );
     } else {
       // Segments before the current story are full, later ones empty.
@@ -516,7 +635,7 @@ class _BankStoryViewerState extends State<BankStoryViewer>
       fill = FractionallySizedBox(
         alignment: AlignmentDirectional.centerStart,
         widthFactor: viewed ? 1 : 0,
-        child: const ColoredBox(color: _chromeForeground),
+        child: ColoredBox(color: _foreground),
       );
     }
 
@@ -525,7 +644,10 @@ class _BankStoryViewerState extends State<BankStoryViewer>
       child: ClipRRect(
         borderRadius:
             const BorderRadius.all(Radius.circular(BankTokens.radiusFull)),
-        child: ColoredBox(color: _progressTrack, child: fill),
+        child: ColoredBox(
+          color: widget.progressTrackColor ?? _progressTrack,
+          child: fill,
+        ),
       ),
     );
   }
@@ -533,12 +655,13 @@ class _BankStoryViewerState extends State<BankStoryViewer>
   Widget _buildChrome(BuildContext context) {
     final count = widget.stories.length;
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [_scrimStrong, _scrimTransparent],
-        ),
+      decoration: BoxDecoration(
+        gradient: widget.scrimGradient ??
+            const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [_scrimStrong, _scrimTransparent],
+            ),
       ),
       child: SafeArea(
         bottom: false,
@@ -573,21 +696,21 @@ class _BankStoryViewerState extends State<BankStoryViewer>
                       widget.stories[_index].title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: BankTokens.labelLarge.copyWith(
-                        color: _chromeForeground,
-                      ),
+                      style: BankTokens.labelLarge
+                          .copyWith(color: _foreground)
+                          .merge(widget.titleStyle),
                     ),
                   ),
                   const SizedBox(width: BankTokens.space2),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     tooltip: widget.closeLabel,
-                    color: _chromeForeground,
+                    color: _foreground,
                     constraints: const BoxConstraints(
                       minWidth: BankTokens.minTapTarget,
                       minHeight: BankTokens.minTapTarget,
                     ),
-                    icon: const Icon(BankIcons.close),
+                    icon: Icon(widget.closeIcon ?? BankIcons.close),
                   ),
                 ],
               ),
@@ -601,7 +724,7 @@ class _BankStoryViewerState extends State<BankStoryViewer>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _viewerBackground,
+      backgroundColor: widget.backgroundColor ?? _viewerBackground,
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTapDown: (details) => _pause(),

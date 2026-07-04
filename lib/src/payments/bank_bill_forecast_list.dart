@@ -73,8 +73,8 @@ class BankBillForecast {
       );
 }
 
-/// A predicted-upcoming-bills list, equivalent to CommBank's Bill Sense or
-/// BBVA's expected expenses.
+/// A predicted-upcoming-bills list: the bill-prediction pattern found
+/// in leading banking apps.
 ///
 /// Shows a header with a [title], the summed predicted total for the
 /// period (rendered through [BankBalanceText] so privacy mode masks it),
@@ -112,6 +112,13 @@ class BankBillForecastList extends StatelessWidget {
     this.laterLabel = 'Later',
     this.emptyLabel = 'No upcoming bills predicted',
     this.now,
+    this.radius,
+    this.backgroundColor,
+    this.shadow,
+    this.accentColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
   });
 
   /// The predicted bills to display, in any order; rows are sorted by
@@ -158,6 +165,29 @@ class BankBillForecastList extends StatelessWidget {
   /// override for deterministic rendering in tests and previews.
   final DateTime? now;
 
+  /// Overrides the card corner radius. Defaults to the theme card
+  /// radius.
+  final BorderRadius? radius;
+
+  /// Overrides the card background. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
+  /// pass `const []` to flatten the card.
+  final List<BoxShadow>? shadow;
+
+  /// Tint of the See all header action. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Merged over the computed header-title style.
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed summary-line style.
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the computed row-amount style.
+  final TextStyle? amountStyle;
+
   /// Predictions below this confidence render the `~` prefix and the
   /// secondary numeral style (unless confirmed).
   static const double _confidenceThreshold = 0.8;
@@ -179,14 +209,16 @@ class BankBillForecastList extends StatelessWidget {
       _ForecastWeek.later: laterLabel,
     };
 
+    final cardRadius = radius ?? theme.cardRadius;
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.cardRadius,
-        boxShadow: BankTokens.shadowCard,
+        color: backgroundColor ?? theme.surface,
+        borderRadius: cardRadius,
+        boxShadow: shadow ?? BankTokens.shadowCard,
       ),
       child: ClipRRect(
-        borderRadius: theme.cardRadius,
+        borderRadius: cardRadius,
         child: Material(
           type: MaterialType.transparency,
           child: Column(
@@ -222,6 +254,7 @@ class BankBillForecastList extends StatelessWidget {
                         lowConfidence: !forecast.confirmed &&
                             forecast.confidence < _confidenceThreshold,
                         theme: theme,
+                        amountStyle: amountStyle,
                         onTap: onTap == null ? null : () => onTap!(forecast),
                       ),
                   ],
@@ -240,8 +273,9 @@ class BankBillForecastList extends StatelessWidget {
     final prefix = hasPlaceholder ? parts.first : '';
     final suffix =
         hasPlaceholder ? parts.sublist(1).join('{total}') : ' $totalTemplate';
-    final secondary =
-        BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant);
+    final secondary = BankTokens.bodySmall
+        .copyWith(color: theme.onSurfaceVariant)
+        .merge(subtitleStyle);
 
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -259,8 +293,9 @@ class BankBillForecastList extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style:
-                      BankTokens.headlineSmall.copyWith(color: theme.onSurface),
+                  style: BankTokens.headlineSmall
+                      .copyWith(color: theme.onSurface)
+                      .merge(titleStyle),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -298,7 +333,7 @@ class BankBillForecastList extends StatelessWidget {
             TextButton(
               onPressed: onSeeAll,
               style: TextButton.styleFrom(
-                foregroundColor: theme.primary,
+                foregroundColor: accentColor ?? theme.primary,
                 minimumSize: const Size(
                   BankTokens.minTapTarget,
                   BankTokens.minTapTarget,
@@ -391,6 +426,7 @@ class _ForecastRow extends StatelessWidget {
     required this.expectedPrefix,
     required this.lowConfidence,
     required this.theme,
+    this.amountStyle,
     this.onTap,
   });
 
@@ -398,6 +434,7 @@ class _ForecastRow extends StatelessWidget {
   final String expectedPrefix;
   final bool lowConfidence;
   final BankThemeData theme;
+  final TextStyle? amountStyle;
   final VoidCallback? onTap;
 
   @override
@@ -406,6 +443,8 @@ class _ForecastRow extends StatelessWidget {
     final expectedText = '$expectedPrefix $shortDate';
     final amountColor =
         lowConfidence ? theme.onSurfaceVariant : theme.onSurface;
+    final resolvedAmountStyle =
+        theme.numeralSmall.copyWith(color: amountColor).merge(amountStyle);
 
     return Semantics(
       button: onTap != null,
@@ -455,13 +494,13 @@ class _ForecastRow extends StatelessWidget {
                 if (lowConfidence)
                   Text(
                     '~',
-                    style: theme.numeralSmall.copyWith(color: amountColor),
+                    style: resolvedAmountStyle,
                     semanticsLabel: 'approximately',
                   ),
                 BankBalanceText(
                   money: forecast.predictedAmount,
                   size: BankBalanceSize.small,
-                  style: theme.numeralSmall.copyWith(color: amountColor),
+                  style: resolvedAmountStyle,
                 ),
               ],
             ),

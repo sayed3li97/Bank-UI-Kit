@@ -60,6 +60,62 @@ class BankAccountCard extends StatelessWidget {
   /// action buttons. It is placed below the account-name / status row.
   final Widget? actions;
 
+  /// Overrides the content padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme `cardRadius`.
+  final BorderRadius? radius;
+
+  /// Overrides the flat background colour. Defaults to the theme
+  /// `surface`. Ignored while a gradient is painted.
+  final Color? backgroundColor;
+
+  /// Overrides the background gradient. Defaults to the theme
+  /// `accentGradient` when the preset provides one.
+  final Gradient? gradient;
+
+  /// Overrides the primary text colour. Defaults to white on gradient
+  /// surfaces, otherwise the theme `onSurface`.
+  final Color? foregroundColor;
+
+  /// Overrides the secondary text and icon colour. Defaults to 80% white
+  /// on gradient surfaces, otherwise the theme `onSurfaceVariant`.
+  final Color? secondaryColor;
+
+  /// Overrides the glow shadow. Defaults to the theme glow when
+  /// `useGlow` is on; pass `const []` to remove it.
+  final List<BoxShadow>? shadow;
+
+  /// Merged over the account-name style ([BankTokens.labelLarge]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the balance style (theme `numeralHero`/`numeralLarge`).
+  final TextStyle? amountStyle;
+
+  /// Merged over the masked-number style ([BankTokens.bodySmall]).
+  final TextStyle? numberStyle;
+
+  /// Overrides the account-type icon derived from [BankAccount.type].
+  final IconData? typeIcon;
+
+  /// Overrides the frozen-overlay icon. Defaults to
+  /// [Icons.ac_unit_outlined].
+  final IconData? frozenIcon;
+
+  /// Status chip label for closed accounts. Defaults to `'Closed'`.
+  final String closedLabel;
+
+  /// Accessibility label of the frozen-overlay icon. Defaults to
+  /// `'Account frozen'`.
+  final String frozenSemanticLabel;
+
+  /// Overrides the computed accessibility label of the whole card.
+  final String? semanticLabel;
+
+  /// Overrides the fixed card height. Defaults to 200.
+  final double? height;
+
   const BankAccountCard({
     required this.account,
     super.key,
@@ -68,6 +124,22 @@ class BankAccountCard extends StatelessWidget {
     this.itemBuilder,
     this.showFullBalance = true,
     this.actions,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.gradient,
+    this.foregroundColor,
+    this.secondaryColor,
+    this.shadow,
+    this.titleStyle,
+    this.amountStyle,
+    this.numberStyle,
+    this.typeIcon,
+    this.frozenIcon,
+    this.closedLabel = 'Closed',
+    this.frozenSemanticLabel = 'Account frozen',
+    this.semanticLabel,
+    this.height,
   });
 
   // ---------------------------------------------------------------------------
@@ -107,7 +179,7 @@ class BankAccountCard extends StatelessWidget {
         ),
       BankAccountStatus.closed => (
           const Color(0xFFEEEEEE), // neutral grey
-          'Closed',
+          closedLabel,
         ),
       BankAccountStatus.active => (Colors.transparent, ''),
     };
@@ -142,30 +214,36 @@ class BankAccountCard extends StatelessWidget {
     }
 
     final bankTheme = BankThemeData.of(context);
-    final isGradient = bankTheme.accentGradient != null;
+    // An explicit backgroundColor suppresses the theme gradient; an
+    // explicit gradient always wins.
+    final resolvedGradient =
+        gradient ?? (backgroundColor == null ? bankTheme.accentGradient : null);
+    final isGradient = resolvedGradient != null;
     final isFrozen = account.status == BankAccountStatus.frozen;
+    final resolvedRadius = radius ?? bankTheme.cardRadius;
 
     // Determine text colours based on surface treatment.
-    final primaryTextColor =
-        isGradient ? const Color(0xFFFFFFFF) : bankTheme.onSurface;
-    final secondaryTextColor = isGradient
-        ? const Color(0xCCFFFFFF) // 80% white
-        : bankTheme.onSurfaceVariant;
+    final primaryTextColor = foregroundColor ??
+        (isGradient ? const Color(0xFFFFFFFF) : bankTheme.onSurface);
+    final secondaryTextColor = secondaryColor ??
+        (isGradient
+            ? const Color(0xCCFFFFFF) // 80% white
+            : bankTheme.onSurfaceVariant);
 
     // Compose background decoration.
     final backgroundDecoration = isGradient
         ? BoxDecoration(
-            gradient: bankTheme.accentGradient,
-            borderRadius: bankTheme.cardRadius,
+            gradient: resolvedGradient,
+            borderRadius: resolvedRadius,
           )
         : BoxDecoration(
-            color: bankTheme.surface,
-            borderRadius: bankTheme.cardRadius,
+            color: backgroundColor ?? bankTheme.surface,
+            borderRadius: resolvedRadius,
           );
 
     // Build the card content.
     Widget cardContent = Padding(
-      padding: const EdgeInsets.all(BankTokens.space4),
+      padding: padding ?? const EdgeInsets.all(BankTokens.space4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -174,13 +252,15 @@ class BankAccountCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Icon(
-                _iconForType(account.type),
+                typeIcon ?? _iconForType(account.type),
                 color: secondaryTextColor,
                 size: 20,
               ),
               Text(
                 account.maskedNumber,
-                style: BankTokens.bodySmall.copyWith(color: secondaryTextColor),
+                style: BankTokens.bodySmall
+                    .copyWith(color: secondaryTextColor)
+                    .merge(numberStyle),
                 textDirection: TextDirection.ltr, // masked number always LTR
               ),
             ],
@@ -196,7 +276,8 @@ class BankAccountCard extends StatelessWidget {
             style: (showFullBalance
                     ? bankTheme.numeralHero
                     : bankTheme.numeralLarge)
-                .copyWith(color: primaryTextColor),
+                .copyWith(color: primaryTextColor)
+                .merge(amountStyle),
           ),
 
           const SizedBox(height: BankTokens.space2),
@@ -208,8 +289,9 @@ class BankAccountCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   account.name,
-                  style:
-                      BankTokens.labelLarge.copyWith(color: primaryTextColor),
+                  style: BankTokens.labelLarge
+                      .copyWith(color: primaryTextColor)
+                      .merge(titleStyle),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
@@ -244,14 +326,14 @@ class BankAccountCard extends StatelessWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: Colors.blueGrey.withValues(alpha: 0.30),
-                borderRadius: bankTheme.cardRadius,
+                borderRadius: resolvedRadius,
               ),
-              child: const Center(
+              child: Center(
                 child: Icon(
-                  Icons.ac_unit_outlined,
+                  frozenIcon ?? Icons.ac_unit_outlined,
                   color: Colors.white,
                   size: 40,
-                  semanticLabel: 'Account frozen',
+                  semanticLabel: frozenSemanticLabel,
                 ),
               ),
             ),
@@ -262,37 +344,47 @@ class BankAccountCard extends StatelessWidget {
 
     // Compose the decorated container.
     Widget card = Container(
-      height: 200,
+      height: height ?? 200,
       width: double.infinity,
       decoration: backgroundDecoration,
       clipBehavior: Clip.antiAlias,
       child: cardContent,
     );
 
-    // Glow shadow (Voltage preset).
-    if (bankTheme.useGlow && bankTheme.glowColor != null) {
+    // Glow shadow (Voltage preset), or the caller's override.
+    final resolvedShadow = shadow ??
+        (bankTheme.useGlow && bankTheme.glowColor != null
+            ? <BoxShadow>[
+                BoxShadow(
+                  color: bankTheme.glowColor!,
+                  blurRadius: 24,
+                  spreadRadius: -4,
+                ),
+              ]
+            : null);
+    if (resolvedShadow != null && resolvedShadow.isNotEmpty) {
       card = DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: bankTheme.cardRadius,
-          boxShadow: [
-            BoxShadow(
-              color: bankTheme.glowColor!,
-              blurRadius: 24,
-              spreadRadius: -4,
-            ),
-          ],
+          borderRadius: resolvedRadius,
+          boxShadow: resolvedShadow,
         ),
         child: card,
       );
     }
 
-    // Semantics wrapper.
-    final semanticLabel = 'Account: ${account.name}, '
-        'Balance: ${account.balance.amount} ${account.balance.currencyCode}, '
-        'Status: ${account.status.name}';
+    // Semantics wrapper. Never announce the raw balance while privacy mode
+    // is active; substitute the scope's masked label instead.
+    final scope = BankUiScope.of(context);
+    final semanticBalance = scope.privacyEnabled
+        ? scope.strings.balanceHidden
+        : '${account.balance.amount} ${account.balance.currencyCode}';
+    final resolvedSemanticLabel = semanticLabel ??
+        'Account: ${account.name}, '
+            'Balance: $semanticBalance, '
+            'Status: ${account.status.name}';
 
     Widget interactive = Semantics(
-      label: semanticLabel,
+      label: resolvedSemanticLabel,
       button: onTap != null,
       child: GestureDetector(
         onTap: onTap,

@@ -44,6 +44,33 @@ class BankSuccessAnimation extends StatefulWidget {
   /// Optional label widget placed below the animation.
   final Widget? label;
 
+  /// Fill colour of the circle once drawn. Defaults to the stroke
+  /// colour at 12% alpha.
+  final Color? fillColor;
+
+  /// Confetti particle colours, cycled across the twelve particles.
+  /// Defaults to a built-in six-colour palette.
+  final List<Color>? confettiColors;
+
+  /// Stroke width of the circle and checkmark. Defaults to
+  /// `max(2, size * 0.04)`.
+  final double? strokeWidth;
+
+  /// Merged over the computed label style ([BankTokens.bodyMedium] in
+  /// [BankThemeData.onSurface]).
+  final TextStyle? labelStyle;
+
+  /// Duration of the main three-phase sequence. Defaults to
+  /// [BankTokens.durationXSlow].
+  final Duration? animationDuration;
+
+  /// Duration of the confetti burst. Defaults to
+  /// [BankTokens.durationSlow].
+  final Duration? confettiDuration;
+
+  /// Semantics label for the animation. Defaults to 'Success'.
+  final String semanticLabel;
+
   const BankSuccessAnimation({
     super.key,
     this.size = 80,
@@ -51,6 +78,13 @@ class BankSuccessAnimation extends StatefulWidget {
     this.showConfetti = false,
     this.onComplete,
     this.label,
+    this.fillColor,
+    this.confettiColors,
+    this.strokeWidth,
+    this.labelStyle,
+    this.animationDuration,
+    this.confettiDuration,
+    this.semanticLabel = 'Success',
   }) : assert(size > 0, 'size must be positive');
 
   @override
@@ -71,8 +105,7 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
   bool _showConfetti = false;
   static const int _confettiCount = 12;
 
-  // Stable confetti colours and angles; computed once in initState.
-  late final List<Color> _confettiColors;
+  // Stable confetti angles; computed once in initState.
   late final List<double> _confettiAngles;
 
   static const List<Color> _palette = [
@@ -88,10 +121,6 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
   void initState() {
     super.initState();
 
-    _confettiColors = List.generate(
-      _confettiCount,
-      (i) => _palette[i % _palette.length],
-    );
     _confettiAngles = List.generate(
       _confettiCount,
       (i) => (2 * math.pi / _confettiCount) * i,
@@ -99,12 +128,12 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
 
     _mainController = AnimationController(
       vsync: this,
-      duration: BankTokens.durationXSlow,
+      duration: widget.animationDuration ?? BankTokens.durationXSlow,
     );
 
     _confettiController = AnimationController(
       vsync: this,
-      duration: BankTokens.durationSlow,
+      duration: widget.confettiDuration ?? BankTokens.durationSlow,
     );
 
     // Phase 1: circle draws from 0 → 0.4 of total
@@ -159,6 +188,19 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
     _maybeStartAnimation();
   }
 
+  @override
+  void didUpdateWidget(BankSuccessAnimation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.animationDuration != oldWidget.animationDuration) {
+      _mainController.duration =
+          widget.animationDuration ?? BankTokens.durationXSlow;
+    }
+    if (widget.confettiDuration != oldWidget.confettiDuration) {
+      _confettiController.duration =
+          widget.confettiDuration ?? BankTokens.durationSlow;
+    }
+  }
+
   void _maybeStartAnimation() {
     final disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
@@ -188,7 +230,7 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
     final strokeColor = widget.color ?? BankTokens.success;
 
     return Semantics(
-      label: 'Success',
+      label: widget.semanticLabel,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -215,8 +257,10 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
                             circleProgress: _circleProgress.value,
                             checkProgress: _checkProgress.value,
                             color: strokeColor,
-                            fillColor: strokeColor.withValues(alpha: 0.12),
-                            strokeWidth: math.max(2, widget.size * 0.04),
+                            fillColor: widget.fillColor ??
+                                strokeColor.withValues(alpha: 0.12),
+                            strokeWidth: widget.strokeWidth ??
+                                math.max(2, widget.size * 0.04),
                           ),
                         ),
                       ),
@@ -229,9 +273,9 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
           if (widget.label != null) ...[
             const SizedBox(height: BankTokens.space3),
             DefaultTextStyle(
-              style: BankTokens.bodyMedium.copyWith(
-                color: theme.onSurface,
-              ),
+              style: BankTokens.bodyMedium
+                  .copyWith(color: theme.onSurface)
+                  .merge(widget.labelStyle),
               child: widget.label!,
             ),
           ],
@@ -245,6 +289,8 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
     final opacity = _confettiController.value < 0.7
         ? 1.0
         : (1.0 - _confettiController.value) / 0.3;
+    final custom = widget.confettiColors;
+    final palette = (custom == null || custom.isEmpty) ? _palette : custom;
 
     return List.generate(_confettiCount, (i) {
       final angle = _confettiAngles[i];
@@ -260,7 +306,7 @@ class _BankSuccessAnimationState extends State<BankSuccessAnimation>
             width: 8,
             height: 8,
             decoration: BoxDecoration(
-              color: _confettiColors[i],
+              color: palette[i % palette.length],
               shape: BoxShape.circle,
             ),
           ),

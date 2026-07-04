@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../accounts/bank_balance_text.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
+import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -258,6 +259,55 @@ class BankStandingOrderTile extends StatefulWidget {
   /// Label of the dismissing button in both dialogs.
   final String dismissActionLabel;
 
+  /// Tooltip and semantics label of the trailing overflow button.
+  final String moreActionsLabel;
+
+  /// Overrides the row content padding. Defaults to horizontal
+  /// [BankTokens.space4] and vertical [BankTokens.space3].
+  final EdgeInsetsGeometry? padding;
+
+  /// Replaces the leading payee avatar when set.
+  final Widget? leading;
+
+  /// Tint of the initials inside the fallback avatar. Defaults to the
+  /// theme primary.
+  final Color? accentColor;
+
+  /// Merged over the computed payee-name style.
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed schedule-line style.
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the computed amount style.
+  final TextStyle? amountStyle;
+
+  /// Glyph of the pause sheet action. Defaults to
+  /// [Icons.pause_circle_outline].
+  final IconData? pauseIcon;
+
+  /// Glyph of the resume sheet action. Defaults to
+  /// [Icons.play_circle_outline].
+  final IconData? resumeIcon;
+
+  /// Glyph of the skip-next sheet action. Defaults to
+  /// [Icons.skip_next_outlined].
+  final IconData? skipNextIcon;
+
+  /// Glyph of the cancel sheet action. Defaults to
+  /// [Icons.delete_outline].
+  final IconData? cancelIcon;
+
+  /// Glyph of the inline retry button. Defaults to [Icons.refresh].
+  final IconData? retryIcon;
+
+  /// Glyph of the trailing overflow button. Defaults to
+  /// [Icons.more_vert].
+  final IconData? moreIcon;
+
+  /// Overrides the computed row semantics label.
+  final String? semanticLabel;
+
   const BankStandingOrderTile({
     required this.order,
     super.key,
@@ -282,6 +332,20 @@ class BankStandingOrderTile extends StatefulWidget {
         'This permanently stops all future payments to this payee.',
     this.confirmActionLabel = 'Confirm',
     this.dismissActionLabel = 'Go back',
+    this.moreActionsLabel = 'More actions',
+    this.padding,
+    this.leading,
+    this.accentColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.pauseIcon,
+    this.resumeIcon,
+    this.skipNextIcon,
+    this.cancelIcon,
+    this.retryIcon,
+    this.moreIcon,
+    this.semanticLabel,
   });
 
   @override
@@ -353,26 +417,26 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
             const SizedBox(height: BankTokens.space2),
             if (_pauseAvailable)
               _SheetActionRow(
-                icon: Icons.pause_circle_outline,
+                icon: widget.pauseIcon ?? Icons.pause_circle_outline,
                 label: widget.pauseActionLabel,
                 onTap: () => Navigator.of(sheetContext).pop(_TileAction.pause),
               ),
             if (_resumeAvailable)
               _SheetActionRow(
-                icon: Icons.play_circle_outline,
+                icon: widget.resumeIcon ?? Icons.play_circle_outline,
                 label: widget.resumeActionLabel,
                 onTap: () => Navigator.of(sheetContext).pop(_TileAction.resume),
               ),
             if (_skipAvailable)
               _SheetActionRow(
-                icon: Icons.skip_next_outlined,
+                icon: widget.skipNextIcon ?? Icons.skip_next_outlined,
                 label: widget.skipNextActionLabel,
                 onTap: () =>
                     Navigator.of(sheetContext).pop(_TileAction.skipNext),
               ),
             if (widget.onCancel != null)
               _SheetActionRow(
-                icon: Icons.delete_outline,
+                icon: widget.cancelIcon ?? Icons.delete_outline,
                 label: widget.cancelActionLabel,
                 destructive: true,
                 onTap: () => Navigator.of(sheetContext).pop(_TileAction.cancel),
@@ -492,8 +556,9 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
 
     return Semantics(
       button: widget.onTap != null,
-      label: 'Standing order to ${_order.payeeName}, '
-          '$scheduleText$stateSuffix',
+      label: widget.semanticLabel ??
+          'Standing order to ${_order.payeeName}, '
+              '$scheduleText$stateSuffix',
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -501,10 +566,11 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
           onLongPress: _hasSheetActions ? _openActionSheet : null,
           borderRadius: bankTheme.cardRadius,
           child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: BankTokens.space4,
-              vertical: BankTokens.space3,
-            ),
+            padding: widget.padding ??
+                const EdgeInsetsDirectional.symmetric(
+                  horizontal: BankTokens.space4,
+                  vertical: BankTokens.space3,
+                ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(
                 minHeight: BankTokens.minTapTarget,
@@ -512,20 +578,26 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
               child: Row(
                 children: [
                   _fadeIfPaused(
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: bankTheme.surfaceVariant,
-                      backgroundImage: _order.avatarUrl != null
-                          ? NetworkImage(_order.avatarUrl!)
-                          : null,
-                      child: _order.avatarUrl == null
-                          ? Text(
-                              _initials,
-                              style: BankTokens.labelLarge
-                                  .copyWith(color: bankTheme.primary),
-                            )
-                          : null,
-                    ),
+                    widget.leading ??
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: bankTheme.surfaceVariant,
+                          backgroundImage: _order.avatarUrl != null
+                              ? BankUiScope.imageProviderFor(
+                                  context,
+                                  _order.avatarUrl!,
+                                )
+                              : null,
+                          child: _order.avatarUrl == null
+                              ? Text(
+                                  _initials,
+                                  style: BankTokens.labelLarge.copyWith(
+                                    color:
+                                        widget.accentColor ?? bankTheme.primary,
+                                  ),
+                                )
+                              : null,
+                        ),
                   ),
                   const SizedBox(width: BankTokens.space3),
                   Expanded(
@@ -539,7 +611,8 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
                                 Text(
                                   _order.payeeName,
                                   style: BankTokens.labelLarge
-                                      .copyWith(color: bankTheme.onSurface),
+                                      .copyWith(color: bankTheme.onSurface)
+                                      .merge(widget.titleStyle),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -567,9 +640,11 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
                         _fadeIfPaused(
                           Text(
                             scheduleText,
-                            style: BankTokens.bodySmall.copyWith(
-                              color: bankTheme.onSurfaceVariant,
-                            ),
+                            style: BankTokens.bodySmall
+                                .copyWith(
+                                  color: bankTheme.onSurfaceVariant,
+                                )
+                                .merge(widget.subtitleStyle),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -582,13 +657,18 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
                     BankBalanceText(
                       money: _order.amount,
                       size: BankBalanceSize.medium,
+                      style: widget.amountStyle == null
+                          ? null
+                          : bankTheme.numeralMedium
+                              .copyWith(color: bankTheme.onSurface)
+                              .merge(widget.amountStyle),
                     ),
                   ),
                   if (isFailed && widget.onResume != null)
                     IconButton(
                       onPressed: widget.onResume,
                       tooltip: widget.retryLabel,
-                      icon: const Icon(Icons.refresh),
+                      icon: Icon(widget.retryIcon ?? Icons.refresh),
                       color: BankTokens.danger,
                       constraints: const BoxConstraints(
                         minWidth: BankTokens.minTapTarget,
@@ -598,8 +678,8 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
                   if (_hasSheetActions)
                     IconButton(
                       onPressed: _openActionSheet,
-                      tooltip: 'More actions',
-                      icon: const Icon(Icons.more_vert),
+                      tooltip: widget.moreActionsLabel,
+                      icon: Icon(widget.moreIcon ?? Icons.more_vert),
                       color: bankTheme.onSurfaceVariant,
                       constraints: const BoxConstraints(
                         minWidth: BankTokens.minTapTarget,

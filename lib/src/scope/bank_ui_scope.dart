@@ -20,12 +20,21 @@ class BankUiScopeData {
   /// equivalents (e.g. "Profit Rate") sourced from [strings].
   final bool islamicFinanceMode;
 
+  /// Maps an image URL to the [ImageProvider] used to load it.
+  ///
+  /// Lets host apps override how URL-based images (payee avatars,
+  /// merchant logos, card previews) are fetched, e.g. to pin a CDN, add
+  /// authentication headers, or serve bundled assets in air-gapped
+  /// builds. When null, widgets fall back to [NetworkImage].
+  final ImageProvider Function(String url)? imageResolver;
+
   const BankUiScopeData({
     this.privacyEnabled = false,
     this.preset = BankPreset.studio,
     this.strings = BankUiStrings.defaults,
     this.numeralStyle = NumeralStyle.western,
     this.islamicFinanceMode = false,
+    this.imageResolver,
   });
 
   BankUiScopeData copyWith({
@@ -34,6 +43,7 @@ class BankUiScopeData {
     BankUiStrings? strings,
     NumeralStyle? numeralStyle,
     bool? islamicFinanceMode,
+    ImageProvider Function(String url)? imageResolver,
   }) =>
       BankUiScopeData(
         privacyEnabled: privacyEnabled ?? this.privacyEnabled,
@@ -41,6 +51,7 @@ class BankUiScopeData {
         strings: strings ?? this.strings,
         numeralStyle: numeralStyle ?? this.numeralStyle,
         islamicFinanceMode: islamicFinanceMode ?? this.islamicFinanceMode,
+        imageResolver: imageResolver ?? this.imageResolver,
       );
 
   @override
@@ -51,7 +62,8 @@ class BankUiScopeData {
         other.preset == preset &&
         other.strings == strings &&
         other.numeralStyle == numeralStyle &&
-        other.islamicFinanceMode == islamicFinanceMode;
+        other.islamicFinanceMode == islamicFinanceMode &&
+        other.imageResolver == imageResolver;
   }
 
   @override
@@ -61,6 +73,7 @@ class BankUiScopeData {
         strings,
         numeralStyle,
         islamicFinanceMode,
+        imageResolver,
       );
 }
 
@@ -128,6 +141,19 @@ class BankUiScope extends StatefulWidget {
       'widget that calls BankUiScope.controllerOf().',
     );
     return inherited!.controller;
+  }
+
+  /// Resolves [url] to an [ImageProvider].
+  ///
+  /// Uses the nearest [BankUiScopeData.imageResolver] when one is set;
+  /// otherwise, or when no [BankUiScope] ancestor exists, falls back to
+  /// [NetworkImage]. Registers an inherited dependency, so callers
+  /// rebuild when the scope data (including the resolver) changes.
+  static ImageProvider imageProviderFor(BuildContext context, String url) {
+    final inherited =
+        context.dependOnInheritedWidgetOfExactType<_BankUiScopeInherited>();
+    final resolver = inherited?.data.imageResolver;
+    return resolver != null ? resolver(url) : NetworkImage(url);
   }
 
   @override

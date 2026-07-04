@@ -14,11 +14,66 @@ class BankCreditLimitGauge extends StatelessWidget {
   final Money usedAmount;
   final String? label;
 
+  /// Width of the gauge arc area. Defaults to 200.
+  final double? gaugeWidth;
+
+  /// Height of the gauge arc area. Defaults to 120.
+  final double? gaugeHeight;
+
+  /// Stroke thickness of the gauge arc. Defaults to 14.
+  final double? strokeWidth;
+
+  /// Overrides the arc fill color. Defaults to a utilisation-driven
+  /// color (theme primary, amber above 60%, loss red above 80%).
+  final Color? accentColor;
+
+  /// Overrides the arc track color. Defaults to the theme outline at
+  /// 30% opacity.
+  final Color? trackColor;
+
+  /// Caption under the available amount. Defaults to `'available'`.
+  final String availableLabel;
+
+  /// Legend caption for the used amount. Defaults to `'Used'`.
+  final String usedLabel;
+
+  /// Legend caption for the credit limit. Defaults to `'Limit'`.
+  final String limitLabel;
+
+  /// Overrides the whole computed semantics label.
+  final String? semanticLabel;
+
+  /// Merged over the available-amount style (numeralMedium, onSurface).
+  final TextStyle? amountStyle;
+
+  /// Merged over the [availableLabel] caption style (bodySmall,
+  /// variant color).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over both legend caption styles (bodySmall, variant color).
+  final TextStyle? legendLabelStyle;
+
+  /// Merged over both legend value styles (labelSmall, onSurface).
+  final TextStyle? legendValueStyle;
+
   const BankCreditLimitGauge({
     required this.creditLimit,
     required this.usedAmount,
     super.key,
     this.label,
+    this.gaugeWidth,
+    this.gaugeHeight,
+    this.strokeWidth,
+    this.accentColor,
+    this.trackColor,
+    this.availableLabel = 'available',
+    this.usedLabel = 'Used',
+    this.limitLabel = 'Limit',
+    this.semanticLabel,
+    this.amountStyle,
+    this.subtitleStyle,
+    this.legendLabelStyle,
+    this.legendValueStyle,
   });
 
   double get _fraction {
@@ -52,26 +107,28 @@ class BankCreditLimitGauge extends StatelessWidget {
     );
 
     final fraction = _fraction;
-    final gaugeColor = fraction > 0.8
-        ? BankTokens.investmentLoss
-        : fraction > 0.6
-            ? Colors.amber
-            : theme.primary;
+    final gaugeColor = accentColor ??
+        (fraction > 0.8
+            ? BankTokens.investmentLoss
+            : fraction > 0.6
+                ? Colors.amber
+                : theme.primary);
 
     return Semantics(
-      label: '${label ?? 'Credit limit'}: $usedStr used of $limitStr, '
-          '$availableStr available',
+      label: semanticLabel ??
+          '${label ?? 'Credit limit'}: $usedStr used of $limitStr, '
+              '$availableStr available',
       child: Column(
         children: [
           SizedBox(
-            width: 200,
-            height: 120,
+            width: gaugeWidth ?? 200,
+            height: gaugeHeight ?? 120,
             child: CustomPaint(
               painter: _GaugePainter(
                 fraction: fraction,
                 gaugeColor: gaugeColor,
-                trackColor: theme.outline.withValues(alpha: 0.3),
-                strokeWidth: 14,
+                trackColor: trackColor ?? theme.outline.withValues(alpha: 0.3),
+                strokeWidth: strokeWidth ?? 14,
               ),
               child: Center(
                 child: Column(
@@ -80,12 +137,14 @@ class BankCreditLimitGauge extends StatelessWidget {
                     Text(
                       availableStr,
                       style: BankTokens.numeralMedium
-                          .copyWith(color: theme.onSurface),
+                          .copyWith(color: theme.onSurface)
+                          .merge(amountStyle),
                     ),
                     Text(
-                      'available',
+                      availableLabel,
                       style: BankTokens.bodySmall
-                          .copyWith(color: theme.onSurfaceVariant),
+                          .copyWith(color: theme.onSurfaceVariant)
+                          .merge(subtitleStyle),
                     ),
                     const SizedBox(height: BankTokens.space2),
                   ],
@@ -99,15 +158,19 @@ class BankCreditLimitGauge extends StatelessWidget {
             children: [
               _LegendItem(
                 color: gaugeColor,
-                label: 'Used',
+                label: usedLabel,
                 value: usedStr,
                 theme: theme,
+                labelStyle: legendLabelStyle,
+                valueStyle: legendValueStyle,
               ),
               _LegendItem(
                 color: theme.outline.withValues(alpha: 0.5),
-                label: 'Limit',
+                label: limitLabel,
                 value: limitStr,
                 theme: theme,
+                labelStyle: legendLabelStyle,
+                valueStyle: legendValueStyle,
               ),
             ],
           ),
@@ -122,12 +185,16 @@ class _LegendItem extends StatelessWidget {
   final String label;
   final String value;
   final BankThemeData theme;
+  final TextStyle? labelStyle;
+  final TextStyle? valueStyle;
 
   const _LegendItem({
     required this.color,
     required this.label,
     required this.value,
     required this.theme,
+    this.labelStyle,
+    this.valueStyle,
   });
 
   @override
@@ -145,12 +212,15 @@ class _LegendItem extends StatelessWidget {
           children: [
             Text(
               label,
-              style:
-                  BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+              style: BankTokens.bodySmall
+                  .copyWith(color: theme.onSurfaceVariant)
+                  .merge(labelStyle),
             ),
             Text(
               value,
-              style: BankTokens.labelSmall.copyWith(color: theme.onSurface),
+              style: BankTokens.labelSmall
+                  .copyWith(color: theme.onSurface)
+                  .merge(valueStyle),
             ),
           ],
         ),
@@ -214,5 +284,6 @@ class _GaugePainter extends CustomPainter {
   bool shouldRepaint(_GaugePainter old) =>
       old.fraction != fraction ||
       old.gaugeColor != gaugeColor ||
-      old.trackColor != trackColor;
+      old.trackColor != trackColor ||
+      old.strokeWidth != strokeWidth;
 }

@@ -18,6 +18,16 @@ re-auth, every money movement ends in a shareable receipt, every error
 state carries a next-best-action CTA, and scam interstitials appear at
 first-payee and unusual-amount moments.
 
+## Delivery status
+
+Read this catalog as a roadmap, not implied product. Today:
+
+| Layer | Status |
+|---|---|
+| Screen-level widgets | Composable today for every journey below; each step maps to components that exist in the kit (see docs/research/top-20-banking-apps.md) |
+| Headless flow controllers | Shipped: `BankKycFlowController`, `BankTransferFlowController`, `BankIncomeSorterController`, `BankDisputeFlowController`. All other journeys: planned |
+| Journey scaffolds (wired reference screens) | Planned; sequenced on the release train in docs/enterprise/versioning-and-releases.md |
+
 ---
 
 ## JOURNEY: Onboarding + KYC (new account opening)

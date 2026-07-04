@@ -14,4 +14,5 @@ export 'src/saving/bank_pot_contribution_sheet.dart';
 export 'src/saving/bank_round_up_settings_sheet.dart';
 export 'src/saving/bank_savings_challenge_card.dart';
 export 'src/saving/bank_savings_pot_card.dart';
+export 'src/saving/bank_savings_projection_card.dart';
 export 'src/saving/bank_shared_pot_invite.dart';

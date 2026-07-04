@@ -28,6 +28,11 @@ class BankAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.foregroundColor,
     this.centerTitle = false,
     this.bottom,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.elevation,
+    this.shadowColor,
+    this.toolbarHeight,
   });
 
   /// Primary app-bar heading.
@@ -50,15 +55,43 @@ class BankAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Optional tab bar or search bar attached below the toolbar.
   final PreferredSizeWidget? bottom;
 
+  /// Merged over the computed [title] style (default:
+  /// [BankTokens.headlineSmall] at w700 in the foreground colour).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed [subtitle] style (default:
+  /// [BankTokens.bodySmall] in [BankThemeData.onSurfaceVariant]).
+  final TextStyle? subtitleStyle;
+
+  /// Overrides [BankThemeData.elevationLow] as the bar elevation.
+  final double? elevation;
+
+  /// Overrides [BankThemeData.outline] as the elevation shadow colour.
+  final Color? shadowColor;
+
+  /// Overrides [kToolbarHeight] as the toolbar height.
+  final double? toolbarHeight;
+
   @override
-  Size get preferredSize =>
-      Size.fromHeight(kToolbarHeight + (bottom?.preferredSize.height ?? 0));
+  Size get preferredSize => Size.fromHeight(
+        (toolbarHeight ?? kToolbarHeight) + (bottom?.preferredSize.height ?? 0),
+      );
 
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final bg = backgroundColor ?? theme.surface;
     final fg = foregroundColor ?? theme.onSurface;
+
+    final resolvedTitleStyle = BankTokens.headlineSmall
+        .copyWith(
+          color: fg,
+          fontWeight: FontWeight.w700,
+        )
+        .merge(titleStyle);
+    final resolvedSubtitleStyle = BankTokens.bodySmall
+        .copyWith(color: theme.onSurfaceVariant)
+        .merge(subtitleStyle);
 
     Widget? titleWidget;
     if (title != null) {
@@ -69,28 +102,12 @@ class BankAppBar extends StatelessWidget implements PreferredSizeWidget {
               : CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              title!,
-              style: BankTokens.headlineSmall.copyWith(
-                color: fg,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            Text(
-              subtitle!,
-              style:
-                  BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
-            ),
+            Text(title!, style: resolvedTitleStyle),
+            Text(subtitle!, style: resolvedSubtitleStyle),
           ],
         );
       } else {
-        titleWidget = Text(
-          title!,
-          style: BankTokens.headlineSmall.copyWith(
-            color: fg,
-            fontWeight: FontWeight.w700,
-          ),
-        );
+        titleWidget = Text(title!, style: resolvedTitleStyle);
       }
     }
 
@@ -101,9 +118,10 @@ class BankAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: actions,
       backgroundColor: bg,
       foregroundColor: fg,
-      elevation: theme.elevationLow,
-      shadowColor: theme.outline,
+      elevation: elevation ?? theme.elevationLow,
+      shadowColor: shadowColor ?? theme.outline,
       surfaceTintColor: Colors.transparent,
+      toolbarHeight: toolbarHeight,
       bottom: bottom,
     );
   }

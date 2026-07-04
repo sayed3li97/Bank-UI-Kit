@@ -40,6 +40,11 @@ class BankPhoneInputField extends StatefulWidget {
     this.enabled = true,
     this.preferredCountryIsoCodes,
     this.focusNode,
+    this.dialCodeStyle,
+    this.dropdownIcon,
+    this.searchHint = 'Search by name, code, or dial code',
+    this.recentLabel = 'Recent',
+    this.emptyLabel = 'No countries found',
   });
 
   /// Emits the normalized E.164 value and the selected country on every
@@ -68,6 +73,22 @@ class BankPhoneInputField extends StatefulWidget {
   final List<String>? preferredCountryIsoCodes;
 
   final FocusNode? focusNode;
+
+  /// Merged over the computed dial-code style in the leading affordance
+  /// (default: [BankTokens.bodyLarge] coloured per the enabled state).
+  final TextStyle? dialCodeStyle;
+
+  /// Overrides [Icons.arrow_drop_down] as the country affordance glyph.
+  final IconData? dropdownIcon;
+
+  /// Hint for the country sheet's search field.
+  final String searchHint;
+
+  /// Header label of the country sheet's recently-selected section.
+  final String recentLabel;
+
+  /// Message shown when the country search matches nothing.
+  final String emptyLabel;
 
   @override
   State<BankPhoneInputField> createState() => _BankPhoneInputFieldState();
@@ -109,6 +130,9 @@ class _BankPhoneInputFieldState extends State<BankPhoneInputField> {
       selected: _country,
       showDialCode: true,
       recentIsoCodes: widget.preferredCountryIsoCodes ?? const <String>[],
+      searchHint: widget.searchHint,
+      recentLabel: widget.recentLabel,
+      emptyLabel: widget.emptyLabel,
     );
     if (picked == null || !mounted) return;
     setState(() => _country = picked);
@@ -137,6 +161,8 @@ class _BankPhoneInputFieldState extends State<BankPhoneInputField> {
         theme: theme,
         numeralStyle: numeralStyle,
         onTap: _pickCountry,
+        dialCodeStyle: widget.dialCodeStyle,
+        dropdownIcon: widget.dropdownIcon,
       ),
     );
   }
@@ -149,6 +175,8 @@ class _CountryAffordance extends StatelessWidget {
     required this.theme,
     required this.numeralStyle,
     required this.onTap,
+    this.dialCodeStyle,
+    this.dropdownIcon,
   });
 
   final BankCountry country;
@@ -156,6 +184,12 @@ class _CountryAffordance extends StatelessWidget {
   final BankThemeData theme;
   final NumeralStyle numeralStyle;
   final VoidCallback onTap;
+
+  /// Merged over the computed dial-code style.
+  final TextStyle? dialCodeStyle;
+
+  /// Overrides [Icons.arrow_drop_down] as the affordance glyph.
+  final IconData? dropdownIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -180,12 +214,14 @@ class _CountryAffordance extends StatelessWidget {
               const SizedBox(width: BankTokens.space1),
               Text(
                 numeralStyle.convert(country.dialCode),
-                style: BankTokens.bodyLarge.copyWith(
-                  color: enabled ? theme.onSurface : theme.onSurfaceVariant,
-                ),
+                style: BankTokens.bodyLarge
+                    .copyWith(
+                      color: enabled ? theme.onSurface : theme.onSurfaceVariant,
+                    )
+                    .merge(dialCodeStyle),
               ),
               Icon(
-                Icons.arrow_drop_down,
+                dropdownIcon ?? Icons.arrow_drop_down,
                 size: 20,
                 color: theme.onSurfaceVariant,
               ),

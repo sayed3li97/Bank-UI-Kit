@@ -1,4 +1,4 @@
-import 'dart:math' show pi;
+import 'dart:math' show min, pi;
 
 import 'package:flutter/material.dart';
 
@@ -122,11 +122,55 @@ class BankFlipCard extends StatefulWidget {
 
   // ── Layout ────────────────────────────────────────────────────────────────
 
-  /// Card width. Defaults to 340.
-  final double width;
+  /// Default card width, used as the upper bound when neither [width] nor
+  /// [maxWidth] is provided.
+  static const double _defaultWidth = 340;
 
-  /// Card height. Defaults to 200.
-  final double height;
+  /// Default card height, paired with [_defaultWidth] to derive the card's
+  /// aspect ratio when sizing responsively.
+  static const double _defaultHeight = 200;
+
+  /// Fixed card width. When null (the default) the card fills the available
+  /// width up to [maxWidth] (340 when [maxWidth] is also null), so it renders
+  /// at 340 in unconstrained contexts, exactly as older versions did.
+  final double? width;
+
+  /// Fixed card height. When null (the default) the height is 200 if [width]
+  /// is set, otherwise it scales with the resolved width to preserve the
+  /// default 340 x 200 aspect ratio.
+  final double? height;
+
+  /// Upper bound on the card width when [width] is null. Defaults to 340,
+  /// matching the previous fixed width.
+  final double? maxWidth;
+
+  // Customization overrides (all optional; null keeps current behaviour).
+
+  /// Glyph of the default flip button. Defaults to [Icons.flip_outlined].
+  final IconData? flipIcon;
+
+  /// Background of the default flip button. Defaults to black at 30% alpha.
+  final Color? flipButtonBackgroundColor;
+
+  /// Icon and splash colour of the default flip button. Defaults to
+  /// [Colors.white].
+  final Color? flipButtonForegroundColor;
+
+  /// Semantics label of the default flip button. Defaults to
+  /// 'Show card details'.
+  final String? flipButtonSemanticLabel;
+
+  /// Semantics label of the default flip button glyph. Defaults to
+  /// 'Flip card'.
+  final String? flipIconSemanticLabel;
+
+  /// Semantics label announced while the front face shows. Defaults to
+  /// 'Card front'.
+  final String? frontSemanticLabel;
+
+  /// Semantics label announced while the back face shows. Defaults to
+  /// 'Card back'.
+  final String? backSemanticLabel;
 
   const BankFlipCard({
     required this.frontBuilder,
@@ -139,8 +183,16 @@ class BankFlipCard extends StatefulWidget {
     this.flipDuration = const Duration(milliseconds: 500),
     this.flipCurve = Curves.easeInOutCubic,
     this.flipAxis = BankFlipAxis.horizontal,
-    this.width = 340,
-    this.height = 200,
+    this.width,
+    this.height,
+    this.maxWidth,
+    this.flipIcon,
+    this.flipButtonBackgroundColor,
+    this.flipButtonForegroundColor,
+    this.flipButtonSemanticLabel,
+    this.flipIconSemanticLabel,
+    this.frontSemanticLabel,
+    this.backSemanticLabel,
   });
 
   @override
@@ -190,10 +242,44 @@ class _BankFlipCardState extends State<BankFlipCard>
     }
   }
 
+  // ── Sizing ────────────────────────────────────────────────────────────────
+
+  /// Resolves the rendered width: an explicit [BankFlipCard.width] wins;
+  /// otherwise the card fills the available width up to
+  /// [BankFlipCard.maxWidth] (340 by default).
+  double _resolveWidth(BoxConstraints constraints) {
+    final fixedWidth = widget.width;
+    if (fixedWidth != null) return fixedWidth;
+    final maxWidth = widget.maxWidth ?? BankFlipCard._defaultWidth;
+    return constraints.hasBoundedWidth
+        ? min(constraints.maxWidth, maxWidth)
+        : maxWidth;
+  }
+
+  /// Resolves the rendered height: an explicit [BankFlipCard.height] wins;
+  /// with a fixed width the legacy 200 default applies; otherwise the height
+  /// preserves the default 340 x 200 aspect ratio.
+  double _resolveHeight(double cardWidth) {
+    final fixedHeight = widget.height;
+    if (fixedHeight != null) return fixedHeight;
+    if (widget.width != null) return BankFlipCard._defaultHeight;
+    return cardWidth * BankFlipCard._defaultHeight / BankFlipCard._defaultWidth;
+  }
+
   // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardWidth = _resolveWidth(constraints);
+        final cardHeight = _resolveHeight(cardWidth);
+        return _buildCard(context, cardWidth, cardHeight);
+      },
+    );
+  }
+
+  Widget _buildCard(BuildContext context, double cardWidth, double cardHeight) {
     Widget card = AnimatedBuilder(
       animation: _anim,
       builder: (context, _) {
@@ -231,8 +317,8 @@ class _BankFlipCardState extends State<BankFlipCard>
         }
 
         return SizedBox(
-          width: widget.width,
-          height: widget.height,
+          width: cardWidth,
+          height: cardHeight,
           child: face,
         );
       },
@@ -257,7 +343,14 @@ class _BankFlipCardState extends State<BankFlipCard>
               right: BankTokens.space2,
               child: widget.flipButtonBuilder != null
                   ? widget.flipButtonBuilder!(context, _handleFlip)
-                  : _DefaultFlipButton(onFlip: _handleFlip),
+                  : _DefaultFlipButton(
+                      onFlip: _handleFlip,
+                      icon: widget.flipIcon,
+                      backgroundColor: widget.flipButtonBackgroundColor,
+                      foregroundColor: widget.flipButtonForegroundColor,
+                      buttonSemanticLabel: widget.flipButtonSemanticLabel,
+                      iconSemanticLabel: widget.flipIconSemanticLabel,
+                    ),
             ),
           ],
         );
@@ -267,8 +360,12 @@ class _BankFlipCardState extends State<BankFlipCard>
         break;
     }
 
+    final resolvedLabel = _isFlipped
+        ? (widget.backSemanticLabel ?? 'Card back')
+        : (widget.frontSemanticLabel ?? 'Card front');
+
     return Semantics(
-      label: _isFlipped ? 'Card back' : 'Card front',
+      label: resolvedLabel,
       button: widget.trigger != BankFlipTrigger.external,
       child: card,
     );
@@ -297,29 +394,45 @@ extension on Matrix4 {
 /// `BankFlipTrigger.builtInButton` is active and no `flipButtonBuilder` is
 /// provided.
 class _DefaultFlipButton extends StatelessWidget {
-  const _DefaultFlipButton({required this.onFlip});
+  const _DefaultFlipButton({
+    required this.onFlip,
+    this.icon,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.buttonSemanticLabel,
+    this.iconSemanticLabel,
+  });
 
   final VoidCallback onFlip;
+  final IconData? icon;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
+  final String? buttonSemanticLabel;
+  final String? iconSemanticLabel;
 
   @override
   Widget build(BuildContext context) {
+    final resolvedBackground =
+        backgroundColor ?? Colors.black.withValues(alpha: 0.30);
+    final resolvedForeground = foregroundColor ?? Colors.white;
+
     return Semantics(
       button: true,
-      label: 'Show card details',
+      label: buttonSemanticLabel ?? 'Show card details',
       child: Material(
-        color: Colors.black.withValues(alpha: 0.30),
+        color: resolvedBackground,
         borderRadius: BorderRadius.circular(BankTokens.radiusFull),
         child: InkWell(
           onTap: onFlip,
           borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          splashColor: Colors.white.withValues(alpha: 0.15),
-          child: const Padding(
-            padding: EdgeInsets.all(BankTokens.space2),
+          splashColor: resolvedForeground.withValues(alpha: 0.15),
+          child: Padding(
+            padding: const EdgeInsets.all(BankTokens.space2),
             child: Icon(
-              Icons.flip_outlined,
+              icon ?? Icons.flip_outlined,
               size: 18,
-              color: Colors.white,
-              semanticLabel: 'Flip card',
+              color: resolvedForeground,
+              semanticLabel: iconSemanticLabel ?? 'Flip card',
             ),
           ),
         ),

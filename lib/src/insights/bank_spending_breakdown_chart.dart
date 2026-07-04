@@ -26,10 +26,53 @@ class BankSpendingBreakdownChart extends StatefulWidget {
   final List<BankSpendingCategory> categories;
   final String? centerLabel;
 
+  /// Overrides the fallback section palette used when a category has
+  /// no explicit colour. Cycled when shorter than the category list.
+  final List<Color>? colors;
+
+  /// Overrides the donut height. Defaults to 220.
+  final double? chartHeight;
+
+  /// Overrides the donut hole radius. Defaults to 60.
+  final double? centerSpaceRadius;
+
+  /// Empty-state text. Defaults to 'No spending data'.
+  final String emptyLabel;
+
+  /// Merged over the empty-state style (bodyMedium, onSurfaceVariant).
+  final TextStyle? emptyLabelStyle;
+
+  /// Merged over the touched-section percent style (labelSmall, white).
+  final TextStyle? sectionTitleStyle;
+
+  /// Merged over the legend category name style (labelSmall,
+  /// onSurface).
+  final TextStyle? legendLabelStyle;
+
+  /// Merged over the legend amount style (bodySmall, onSurfaceVariant).
+  final TextStyle? legendAmountStyle;
+
+  /// Overrides the built-in English category names in the legend.
+  final String Function(TransactionCategory category)? categoryNameBuilder;
+
+  /// Wraps the chart in a [Semantics] node when provided; no semantics
+  /// node is added by default.
+  final String? semanticLabel;
+
   const BankSpendingBreakdownChart({
     required this.categories,
     super.key,
     this.centerLabel,
+    this.colors,
+    this.chartHeight,
+    this.centerSpaceRadius,
+    this.emptyLabel = 'No spending data',
+    this.emptyLabelStyle,
+    this.sectionTitleStyle,
+    this.legendLabelStyle,
+    this.legendAmountStyle,
+    this.categoryNameBuilder,
+    this.semanticLabel,
   });
 
   @override
@@ -60,8 +103,10 @@ class _BankSpendingBreakdownChartState
     if (widget.categories.isEmpty) {
       return Center(
         child: Text(
-          'No spending data',
-          style: BankTokens.bodyMedium.copyWith(color: theme.onSurfaceVariant),
+          widget.emptyLabel,
+          style: BankTokens.bodyMedium
+              .copyWith(color: theme.onSurfaceVariant)
+              .merge(widget.emptyLabelStyle),
         ),
       );
     }
@@ -71,11 +116,15 @@ class _BankSpendingBreakdownChartState
       (sum, c) => sum + c.amount.amount.toDouble().abs(),
     );
 
-    return RepaintBoundary(
+    final palette = (widget.colors == null || widget.colors!.isEmpty)
+        ? _defaultColors
+        : widget.colors!;
+
+    final chart = RepaintBoundary(
       child: Column(
         children: [
           SizedBox(
-            height: 220,
+            height: widget.chartHeight ?? 220,
             child: PieChart(
               PieChartData(
                 pieTouchData: PieTouchData(
@@ -92,14 +141,13 @@ class _BankSpendingBreakdownChartState
                     );
                   },
                 ),
-                centerSpaceRadius: 60,
+                centerSpaceRadius: widget.centerSpaceRadius ?? 60,
                 sectionsSpace: 2,
                 sections: widget.categories.asMap().entries.map((entry) {
                   final i = entry.key;
                   final cat = entry.value;
                   final isTouched = i == _touchedIndex;
-                  final color =
-                      cat.color ?? _defaultColors[i % _defaultColors.length];
+                  final color = cat.color ?? palette[i % palette.length];
                   final value = cat.amount.amount.toDouble().abs();
                   final pct = total > 0 ? (value / total * 100) : 0.0;
 
@@ -109,8 +157,9 @@ class _BankSpendingBreakdownChartState
                     radius: isTouched ? 60 : 50,
                     showTitle: isTouched,
                     title: '${pct.toStringAsFixed(0)}%',
-                    titleStyle:
-                        BankTokens.labelSmall.copyWith(color: Colors.white),
+                    titleStyle: BankTokens.labelSmall
+                        .copyWith(color: Colors.white)
+                        .merge(widget.sectionTitleStyle),
                   );
                 }).toList(),
               ),
@@ -123,8 +172,7 @@ class _BankSpendingBreakdownChartState
             children: widget.categories.asMap().entries.map((entry) {
               final i = entry.key;
               final cat = entry.value;
-              final color =
-                  cat.color ?? _defaultColors[i % _defaultColors.length];
+              final color = cat.color ?? palette[i % palette.length];
               final amountStr = BankMoneyFormatter.format(
                 amount: cat.amount.amount,
                 currencyCode: cat.amount.currencyCode,
@@ -151,14 +199,17 @@ class _BankSpendingBreakdownChartState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _categoryName(cat.category),
+                          widget.categoryNameBuilder?.call(cat.category) ??
+                              _categoryName(cat.category),
                           style: BankTokens.labelSmall
-                              .copyWith(color: theme.onSurface),
+                              .copyWith(color: theme.onSurface)
+                              .merge(widget.legendLabelStyle),
                         ),
                         Text(
                           amountStr,
                           style: BankTokens.bodySmall
-                              .copyWith(color: theme.onSurfaceVariant),
+                              .copyWith(color: theme.onSurfaceVariant)
+                              .merge(widget.legendAmountStyle),
                         ),
                       ],
                     ),
@@ -170,6 +221,9 @@ class _BankSpendingBreakdownChartState
         ],
       ),
     );
+
+    if (widget.semanticLabel == null) return chart;
+    return Semantics(label: widget.semanticLabel, child: chart);
   }
 
   String _categoryName(TransactionCategory cat) => switch (cat) {

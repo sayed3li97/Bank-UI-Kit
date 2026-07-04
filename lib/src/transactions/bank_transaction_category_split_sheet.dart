@@ -14,10 +14,100 @@ class BankTransactionCategorySplitSheet extends StatefulWidget {
   final Transaction transaction;
   final ValueChanged<List<TransactionSplit>> onConfirm;
 
+  /// Overrides the sheet corner radius. Defaults to the theme sheetRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the sheet background. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the drag handle color. Defaults to the theme outline.
+  final Color? handleColor;
+
+  /// Overrides the primary accents (add button, category icons, confirm
+  /// button). Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the category avatar background. Defaults to the theme
+  /// surfaceVariant.
+  final Color? avatarBackgroundColor;
+
+  /// Merged over the sheet title style ([BankTokens.headlineSmall]).
+  final TextStyle? titleStyle;
+
+  /// Overrides the max sheet height as a screen fraction. Defaults to
+  /// 0.88.
+  final double? maxHeightFraction;
+
+  /// Overrides the close button glyph. Defaults to [Icons.close].
+  final IconData? closeIcon;
+
+  /// Overrides the add-category glyph. Defaults to [BankIcons.add].
+  final IconData? addIcon;
+
+  /// Overrides the row delete glyph. Defaults to [BankIcons.delete].
+  final IconData? deleteIcon;
+
+  /// Overrides the dropdown glyph. Defaults to [BankIcons.expand].
+  final IconData? expandIcon;
+
+  /// Overrides the sheet title. Defaults to 'Split by Category'.
+  final String title;
+
+  /// Overrides the total prefix. Defaults to 'Total: '.
+  final String totalLabel;
+
+  /// Overrides the add-category button text. Defaults to 'Add Category'.
+  final String addCategoryLabel;
+
+  /// Overrides the add-category semantics. Defaults to 'Add category'.
+  final String addCategorySemanticLabel;
+
+  /// Overrides the running total label. Defaults to 'Allocated'.
+  final String allocatedLabel;
+
+  /// Overrides the hint shown with fewer than two rows. Defaults to
+  /// 'Add at least one more category to split'.
+  final String addMoreHint;
+
+  /// Overrides the row delete tooltip. Defaults to 'Remove'.
+  final String removeTooltip;
+
+  /// Overrides the row delete semantics prefix. Defaults to
+  /// 'Remove category'.
+  final String removeCategorySemanticLabel;
+
+  /// Overrides the row semantics prefix. Defaults to 'Category'.
+  final String categorySemanticLabel;
+
+  /// Overrides the category display name. Defaults to built-in
+  /// English labels.
+  final String Function(TransactionCategory)? categoryLabelBuilder;
+
   const BankTransactionCategorySplitSheet({
     required this.transaction,
     required this.onConfirm,
     super.key,
+    this.radius,
+    this.backgroundColor,
+    this.handleColor,
+    this.accentColor,
+    this.avatarBackgroundColor,
+    this.titleStyle,
+    this.maxHeightFraction,
+    this.closeIcon,
+    this.addIcon,
+    this.deleteIcon,
+    this.expandIcon,
+    this.title = 'Split by Category',
+    this.totalLabel = 'Total: ',
+    this.addCategoryLabel = 'Add Category',
+    this.addCategorySemanticLabel = 'Add category',
+    this.allocatedLabel = 'Allocated',
+    this.addMoreHint = 'Add at least one more category to split',
+    this.removeTooltip = 'Remove',
+    this.removeCategorySemanticLabel = 'Remove category',
+    this.categorySemanticLabel = 'Category',
+    this.categoryLabelBuilder,
   });
 
   /// Convenience helper to push the sheet.
@@ -152,7 +242,10 @@ class _BankTransactionCategorySplitSheetState
 
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom +
         MediaQuery.of(context).padding.bottom;
-    final maxHeight = MediaQuery.of(context).size.height * 0.88;
+    final maxHeight =
+        MediaQuery.of(context).size.height * (widget.maxHeightFraction ?? 0.88);
+    final accent = widget.accentColor ?? bankTheme.primary;
+    final categoryLabel = widget.categoryLabelBuilder ?? _categoryLabel;
 
     final formattedTotal = BankMoneyFormatter.format(
       amount: _totalAmount,
@@ -171,8 +264,8 @@ class _BankTransactionCategorySplitSheetState
       child: Container(
         constraints: BoxConstraints(maxHeight: maxHeight),
         decoration: BoxDecoration(
-          color: bankTheme.surface,
-          borderRadius: bankTheme.sheetRadius,
+          color: widget.backgroundColor ?? bankTheme.surface,
+          borderRadius: widget.radius ?? bankTheme.sheetRadius,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -185,7 +278,7 @@ class _BankTransactionCategorySplitSheetState
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: bankTheme.outline,
+                    color: widget.handleColor ?? bankTheme.outline,
                     borderRadius: BorderRadius.circular(BankTokens.radiusFull),
                   ),
                 ),
@@ -201,14 +294,14 @@ class _BankTransactionCategorySplitSheetState
                 children: [
                   Expanded(
                     child: Text(
-                      'Split by Category',
-                      style: BankTokens.headlineSmall.copyWith(
-                        color: bankTheme.onSurface,
-                      ),
+                      widget.title,
+                      style: BankTokens.headlineSmall
+                          .copyWith(color: bankTheme.onSurface)
+                          .merge(widget.titleStyle),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: Icon(widget.closeIcon ?? Icons.close),
                     color: bankTheme.onSurfaceVariant,
                     onPressed: () => Navigator.of(context).pop(),
                     tooltip: s.cancel,
@@ -224,7 +317,7 @@ class _BankTransactionCategorySplitSheetState
               child: Row(
                 children: [
                   Text(
-                    'Total: ',
+                    widget.totalLabel,
                     style: BankTokens.bodyMedium.copyWith(
                       color: bankTheme.onSurfaceVariant,
                     ),
@@ -256,22 +349,22 @@ class _BankTransactionCategorySplitSheetState
                       ),
                       child: Semantics(
                         button: true,
-                        label: 'Add category',
+                        label: widget.addCategorySemanticLabel,
                         child: OutlinedButton.icon(
                           onPressed: _addEntry,
                           icon: Icon(
-                            BankIcons.add,
-                            color: bankTheme.primary,
+                            widget.addIcon ?? BankIcons.add,
+                            color: accent,
                             size: 18,
                           ),
                           label: Text(
-                            'Add Category',
+                            widget.addCategoryLabel,
                             style: BankTokens.labelMedium.copyWith(
-                              color: bankTheme.primary,
+                              color: accent,
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: bankTheme.primary),
+                            side: BorderSide(color: accent),
                             shape: RoundedRectangleBorder(
                               borderRadius: bankTheme.buttonRadius,
                             ),
@@ -291,7 +384,14 @@ class _BankTransactionCategorySplitSheetState
                     index: i,
                     canDelete: _entries.length > 1,
                     bankTheme: bankTheme,
-                    categoryLabel: _categoryLabel,
+                    categoryLabel: categoryLabel,
+                    accentColor: accent,
+                    avatarBackgroundColor: widget.avatarBackgroundColor,
+                    deleteIcon: widget.deleteIcon,
+                    expandIcon: widget.expandIcon,
+                    removeTooltip: widget.removeTooltip,
+                    removeSemanticLabel: widget.removeCategorySemanticLabel,
+                    categorySemanticLabel: widget.categorySemanticLabel,
                     onCategoryChanged: (cat) {
                       setState(
                         () => _entries[i] = _SplitEntry(
@@ -317,7 +417,7 @@ class _BankTransactionCategorySplitSheetState
                 children: [
                   Expanded(
                     child: Text(
-                      'Allocated',
+                      widget.allocatedLabel,
                       style: BankTokens.bodySmall.copyWith(
                         color: bankTheme.onSurfaceVariant,
                       ),
@@ -346,7 +446,7 @@ class _BankTransactionCategorySplitSheetState
                   horizontal: BankTokens.space4,
                 ),
                 child: Text(
-                  'Add at least one more category to split',
+                  widget.addMoreHint,
                   style: BankTokens.bodySmall.copyWith(
                     color: BankTokens.warning,
                   ),
@@ -368,10 +468,9 @@ class _BankTransactionCategorySplitSheetState
                 child: FilledButton(
                   onPressed: _isValid ? _confirm : null,
                   style: FilledButton.styleFrom(
-                    backgroundColor: bankTheme.primary,
+                    backgroundColor: accent,
                     foregroundColor: bankTheme.onPrimary,
-                    disabledBackgroundColor:
-                        bankTheme.primary.withValues(alpha: 0.38),
+                    disabledBackgroundColor: accent.withValues(alpha: 0.38),
                     minimumSize: const Size(
                       double.infinity,
                       BankTokens.minTapTarget,
@@ -417,6 +516,13 @@ class _CategorySplitRow extends StatelessWidget {
   final bool canDelete;
   final BankThemeData bankTheme;
   final String Function(TransactionCategory) categoryLabel;
+  final Color accentColor;
+  final Color? avatarBackgroundColor;
+  final IconData? deleteIcon;
+  final IconData? expandIcon;
+  final String removeTooltip;
+  final String removeSemanticLabel;
+  final String categorySemanticLabel;
   final ValueChanged<TransactionCategory> onCategoryChanged;
   final VoidCallback onDelete;
   final ValueChanged<String> onAmountChanged;
@@ -427,9 +533,16 @@ class _CategorySplitRow extends StatelessWidget {
     required this.canDelete,
     required this.bankTheme,
     required this.categoryLabel,
+    required this.accentColor,
+    required this.removeTooltip,
+    required this.removeSemanticLabel,
+    required this.categorySemanticLabel,
     required this.onCategoryChanged,
     required this.onDelete,
     required this.onAmountChanged,
+    this.avatarBackgroundColor,
+    this.deleteIcon,
+    this.expandIcon,
   });
 
   @override
@@ -444,18 +557,19 @@ class _CategorySplitRow extends StatelessWidget {
           // Category icon
           CircleAvatar(
             radius: 16,
-            backgroundColor: bankTheme.surfaceVariant,
+            backgroundColor: avatarBackgroundColor ?? bankTheme.surfaceVariant,
             child: Icon(
               BankIcons.forCategoryName(entry.category.name),
               size: 16,
-              color: bankTheme.primary,
+              color: accentColor,
             ),
           ),
           const SizedBox(width: BankTokens.space2),
           // Category dropdown
           Expanded(
             child: Semantics(
-              label: 'Category ${index + 1}: ${categoryLabel(entry.category)}',
+              label: '$categorySemanticLabel ${index + 1}: '
+                  '${categoryLabel(entry.category)}',
               child: DropdownButtonHideUnderline(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -475,7 +589,7 @@ class _CategorySplitRow extends StatelessWidget {
                       color: bankTheme.onSurface,
                     ),
                     icon: Icon(
-                      BankIcons.expand,
+                      expandIcon ?? BankIcons.expand,
                       size: 16,
                       color: bankTheme.onSurfaceVariant,
                     ),
@@ -532,7 +646,7 @@ class _CategorySplitRow extends StatelessWidget {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: bankTheme.buttonRadius,
-                  borderSide: BorderSide(color: bankTheme.primary),
+                  borderSide: BorderSide(color: accentColor),
                 ),
               ),
               style: bankTheme.numeralSmall.copyWith(
@@ -548,15 +662,15 @@ class _CategorySplitRow extends StatelessWidget {
             child: canDelete
                 ? Semantics(
                     button: true,
-                    label: 'Remove category ${index + 1}',
+                    label: '$removeSemanticLabel ${index + 1}',
                     child: IconButton(
                       icon: Icon(
-                        BankIcons.delete,
+                        deleteIcon ?? BankIcons.delete,
                         size: 18,
                         color: bankTheme.onSurfaceVariant,
                       ),
                       onPressed: onDelete,
-                      tooltip: 'Remove',
+                      tooltip: removeTooltip,
                       padding: EdgeInsets.zero,
                     ),
                   )

@@ -155,6 +155,23 @@ class BankFamilyCardTile extends StatefulWidget {
     this.limitTemplate = '{spent} of {limit} this month',
     this.setLimitsLabel = 'Set limits',
     this.freezeSwitchLabel = 'Freeze card',
+    this.cardNumberPrefix = '•• ',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.accentColor,
+    this.frozenChipBackgroundColor,
+    this.frozenChipForegroundColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.freezeChipIcon,
+    this.notificationIcon,
+    this.chevronIcon,
+    this.leading,
+    this.semanticLabel,
+    this.minHeight,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   /// The family member whose card this tile manages.
@@ -185,6 +202,71 @@ class BankFamilyCardTile extends StatefulWidget {
 
   /// Semantics label for the trailing freeze [Switch].
   final String freezeSwitchLabel;
+
+  /// Prefix rendered before the card's last four digits. Defaults to
+  /// `'•• '`.
+  final String cardNumberPrefix;
+
+  /// Overrides the tile's content padding. Defaults to
+  /// [BankTokens.space4] horizontal by [BankTokens.space3] vertical.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the ink splash radius. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the tile background color. Defaults to transparent.
+  final Color? backgroundColor;
+
+  /// Overrides the accent used by the progress bar, freeze switch,
+  /// pending spinner, and "Set limits" button. Defaults to the theme
+  /// primary color.
+  final Color? accentColor;
+
+  /// Overrides the frost chip background. Defaults to the kit's
+  /// ice-blue `Color(0xFFB3E5FC)`.
+  final Color? frozenChipBackgroundColor;
+
+  /// Overrides the frost chip text and icon color. Defaults to
+  /// `Color(0xFF333333)`.
+  final Color? frozenChipForegroundColor;
+
+  /// Merged over the member name style ([BankTokens.labelLarge] in the
+  /// theme onSurface color), so partial overrides work.
+  final TextStyle? titleStyle;
+
+  /// Merged over the card number and limit caption style
+  /// ([BankTokens.bodySmall] in the theme onSurfaceVariant color).
+  final TextStyle? subtitleStyle;
+
+  /// Overrides the frost chip glyph. Defaults to [BankIcons.cardFreeze].
+  final IconData? freezeChipIcon;
+
+  /// Overrides the spend notification glyph next to the card number.
+  /// Defaults to [BankIcons.notification].
+  final IconData? notificationIcon;
+
+  /// Overrides the trailing chevron shown when [onTap] is set. Defaults
+  /// to [BankIcons.forward].
+  final IconData? chevronIcon;
+
+  /// Replaces the leading emblem. Defaults to a 44 px [BankEmblem] with
+  /// the member's initials.
+  final Widget? leading;
+
+  /// Semantics label for the whole tile. Defaults to none, letting the
+  /// child semantics describe the row.
+  final String? semanticLabel;
+
+  /// Overrides the tile's minimum height. Defaults to 72.
+  final double? minHeight;
+
+  /// Overrides the pending/switch cross-fade duration. Defaults to
+  /// [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Overrides the pending/switch cross-fade curve. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
 
   @override
   State<BankFamilyCardTile> createState() => _BankFamilyCardTileState();
@@ -242,6 +324,17 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
     final disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
+    final resolvedAccentColor = widget.accentColor ?? theme.primary;
+    final resolvedTitleStyle = BankTokens.labelLarge
+        .copyWith(color: theme.onSurface)
+        .merge(widget.titleStyle);
+    final resolvedSubtitleStyle = BankTokens.bodySmall
+        .copyWith(color: theme.onSurfaceVariant)
+        .merge(widget.subtitleStyle);
+    final resolvedDuration =
+        widget.animationDuration ?? BankTokens.durationFast;
+    final resolvedCurve = widget.animationCurve ?? BankTokens.curveStandard;
+
     // ── Spent / limit progress ────────────────────────────────────────────
     final limitAmount = member.spendLimit.amount.toDouble();
     final spentAmount = member.spentThisPeriod.amount.toDouble();
@@ -249,7 +342,7 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
     if (limitAmount > 0) {
       ratio = (spentAmount / limitAmount).clamp(0, 1).toDouble();
     }
-    final barColor = ratio > 0.8 ? BankTokens.warning : theme.primary;
+    final barColor = ratio > 0.8 ? BankTokens.warning : resolvedAccentColor;
 
     final limitLine = widget.limitTemplate
         .replaceAll('{spent}', _formatAmount(scope, member.spentThisPeriod))
@@ -261,7 +354,7 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
         Flexible(
           child: Text(
             member.memberName,
-            style: BankTokens.labelLarge.copyWith(color: theme.onSurface),
+            style: resolvedTitleStyle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -280,10 +373,12 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
           _MiniChip(
             label: scope.strings.frozen,
             // Ice-blue frost chip, matching the kit's frozen-account chip.
-            background: const Color(0xFFB3E5FC),
-            foreground: const Color(0xFF333333),
+            background:
+                widget.frozenChipBackgroundColor ?? const Color(0xFFB3E5FC),
+            foreground:
+                widget.frozenChipForegroundColor ?? const Color(0xFF333333),
             chipRadius: theme.chipRadius,
-            icon: BankIcons.cardFreeze,
+            icon: widget.freezeChipIcon ?? BankIcons.cardFreeze,
           ),
         ],
       ],
@@ -293,15 +388,15 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
     final cardLine = Row(
       children: [
         Text(
-          '•• ${member.cardLast4}',
-          style: BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+          '${widget.cardNumberPrefix}${member.cardLast4}',
+          style: resolvedSubtitleStyle,
           // Masked card digits always read left-to-right.
           textDirection: TextDirection.ltr,
         ),
         if (member.notificationsOnSpend) ...[
           const SizedBox(width: BankTokens.space1),
           Icon(
-            BankIcons.notification,
+            widget.notificationIcon ?? BankIcons.notification,
             size: 14,
             color: theme.onSurfaceVariant,
           ),
@@ -336,7 +431,7 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
         const SizedBox(height: BankTokens.space1),
         Text(
           limitLine,
-          style: BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+          style: resolvedSubtitleStyle,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -346,7 +441,7 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
             child: TextButton(
               onPressed: widget.onLimits,
               style: TextButton.styleFrom(
-                foregroundColor: theme.primary,
+                foregroundColor: resolvedAccentColor,
                 minimumSize: const Size(
                   BankTokens.minTapTarget,
                   BankTokens.minTapTarget,
@@ -363,7 +458,7 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
     // ── Leading emblem + details, dimmed while frozen ─────────────────────
     Widget body = Row(
       children: [
-        BankEmblem(initialsFrom: member.memberName, size: 44),
+        widget.leading ?? BankEmblem(initialsFrom: member.memberName, size: 44),
         const SizedBox(width: BankTokens.space3),
         Expanded(child: details),
       ],
@@ -377,9 +472,9 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
       height: BankTokens.minTapTarget,
       child: Center(
         child: AnimatedSwitcher(
-          duration: disableAnimations ? Duration.zero : BankTokens.durationFast,
-          switchInCurve: BankTokens.curveStandard,
-          switchOutCurve: BankTokens.curveStandard,
+          duration: disableAnimations ? Duration.zero : resolvedDuration,
+          switchInCurve: resolvedCurve,
+          switchOutCurve: resolvedCurve,
           child: _pending
               ? SizedBox(
                   key: const ValueKey<String>('bank_family_card_pending'),
@@ -387,14 +482,14 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: theme.primary,
+                    color: resolvedAccentColor,
                   ),
                 )
               : Switch(
                   key: const ValueKey<String>('bank_family_card_switch'),
                   value: frozen,
                   onChanged: _toggleFreeze,
-                  activeColor: theme.primary,
+                  activeColor: resolvedAccentColor,
                 ),
         ),
       ),
@@ -415,7 +510,7 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
         if (widget.onTap != null) ...[
           const SizedBox(width: BankTokens.space1),
           Icon(
-            BankIcons.forward,
+            widget.chevronIcon ?? BankIcons.forward,
             size: 20,
             color: theme.onSurfaceVariant,
           ),
@@ -423,20 +518,24 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
       ],
     );
 
+    final resolvedPadding = widget.padding ??
+        const EdgeInsets.symmetric(
+          horizontal: BankTokens.space4,
+          vertical: BankTokens.space3,
+        );
+
     return Semantics(
       container: true,
+      label: widget.semanticLabel,
       child: Material(
-        color: Colors.transparent,
+        color: widget.backgroundColor ?? Colors.transparent,
         child: InkWell(
           onTap: widget.onTap,
-          borderRadius: theme.cardRadius,
+          borderRadius: widget.radius ?? theme.cardRadius,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 72),
+            constraints: BoxConstraints(minHeight: widget.minHeight ?? 72),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: BankTokens.space4,
-                vertical: BankTokens.space3,
-              ),
+              padding: resolvedPadding,
               child: content,
             ),
           ),

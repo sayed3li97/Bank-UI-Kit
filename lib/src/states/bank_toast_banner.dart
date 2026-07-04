@@ -58,6 +58,47 @@ class BankToastBanner extends StatefulWidget {
   /// When `true`, calls [HapticFeedback.lightImpact] when the banner appears.
   final bool hapticFeedback;
 
+  /// Overrides the content padding. Defaults to [BankTokens.space4]
+  /// horizontal by [BankTokens.space3] vertical.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the banner corner radius. Defaults to
+  /// [BankTokens.radiusMedium].
+  final BorderRadius? radius;
+
+  /// Overrides the per-variant background colour.
+  final Color? backgroundColor;
+
+  /// Overrides the icon, text, and button colour. Defaults to white.
+  final Color? foregroundColor;
+
+  /// Overrides the banner elevation. Defaults to `4`; pass `0` to
+  /// flatten the banner.
+  final double? elevation;
+
+  /// Overrides the per-variant leading glyph.
+  final IconData? icon;
+
+  /// Merged over the computed message style ([BankTokens.bodyMedium]
+  /// in the foreground colour).
+  final TextStyle? messageStyle;
+
+  /// Semantics label and tooltip of the close button. Defaults to
+  /// 'Dismiss'.
+  final String dismissLabel;
+
+  /// Overrides the live-region label. Defaults to
+  /// '`<variant name>`: `<message>`'.
+  final String? semanticLabel;
+
+  /// Overrides the slide-in duration. Defaults to
+  /// [BankTokens.durationBase].
+  final Duration? animationDuration;
+
+  /// Overrides the slide-in curve. Defaults to
+  /// [BankTokens.curveDecelerate].
+  final Curve? animationCurve;
+
   const BankToastBanner({
     required this.variant,
     required this.message,
@@ -68,6 +109,17 @@ class BankToastBanner extends StatefulWidget {
     this.onDismiss,
     this.autoHideDuration = const Duration(seconds: 4),
     this.hapticFeedback = true,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.elevation,
+    this.icon,
+    this.messageStyle,
+    this.dismissLabel = 'Dismiss',
+    this.semanticLabel,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   @override
@@ -77,7 +129,7 @@ class BankToastBanner extends StatefulWidget {
 class _BankToastBannerState extends State<BankToastBanner>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<Offset> _slideAnimation;
+  late Animation<Offset> _slideAnimation;
   late final Animation<double> _opacityAnimation;
 
   // Tracks the current dismiss timer so it can be cancelled on rebuild.
@@ -91,18 +143,10 @@ class _BankToastBannerState extends State<BankToastBanner>
 
     _controller = AnimationController(
       vsync: this,
-      duration: BankTokens.durationBase,
+      duration: widget.animationDuration ?? BankTokens.durationBase,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, -1),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: BankTokens.curveDecelerate,
-      ),
-    );
+    _slideAnimation = _buildSlideAnimation();
 
     _opacityAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
@@ -116,9 +160,28 @@ class _BankToastBannerState extends State<BankToastBanner>
     }
   }
 
+  Animation<Offset> _buildSlideAnimation() {
+    return Tween<Offset>(
+      begin: const Offset(0, -1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: widget.animationCurve ?? BankTokens.curveDecelerate,
+      ),
+    );
+  }
+
   @override
   void didUpdateWidget(BankToastBanner old) {
     super.didUpdateWidget(old);
+    if (widget.animationDuration != old.animationDuration) {
+      _controller.duration =
+          widget.animationDuration ?? BankTokens.durationBase;
+    }
+    if (widget.animationCurve != old.animationCurve) {
+      _slideAnimation = _buildSlideAnimation();
+    }
     if (widget.isVisible && !old.isVisible) {
       _show();
     } else if (!widget.isVisible && old.isVisible) {
@@ -171,13 +234,15 @@ class _BankToastBannerState extends State<BankToastBanner>
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final bg = _backgroundColor(theme);
-    const fg = Color(0xFFFFFFFF);
+    final bg = widget.backgroundColor ?? _backgroundColor(theme);
+    final fg = widget.foregroundColor ?? const Color(0xFFFFFFFF);
     final showAction = widget.actionLabel != null && widget.onAction != null;
+    final liveLabel =
+        widget.semanticLabel ?? '${_variantLabel()}: ${widget.message}';
 
     return Semantics(
       liveRegion: widget.isVisible,
-      label: widget.isVisible ? '${_variantLabel()}: ${widget.message}' : null,
+      label: widget.isVisible ? liveLabel : null,
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
@@ -195,21 +260,25 @@ class _BankToastBannerState extends State<BankToastBanner>
         child: RepaintBoundary(
           child: Material(
             color: bg,
-            borderRadius: BorderRadius.circular(BankTokens.radiusMedium),
-            elevation: 4,
+            borderRadius:
+                widget.radius ?? BorderRadius.circular(BankTokens.radiusMedium),
+            elevation: widget.elevation ?? 4,
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: BankTokens.space4,
-                vertical: BankTokens.space3,
-              ),
+              padding: widget.padding ??
+                  const EdgeInsets.symmetric(
+                    horizontal: BankTokens.space4,
+                    vertical: BankTokens.space3,
+                  ),
               child: Row(
                 children: [
-                  Icon(_leadingIcon(), color: fg, size: 20),
+                  Icon(widget.icon ?? _leadingIcon(), color: fg, size: 20),
                   const SizedBox(width: BankTokens.space3),
                   Expanded(
                     child: Text(
                       widget.message,
-                      style: BankTokens.bodyMedium.copyWith(color: fg),
+                      style: BankTokens.bodyMedium
+                          .copyWith(color: fg)
+                          .merge(widget.messageStyle),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -238,7 +307,7 @@ class _BankToastBannerState extends State<BankToastBanner>
                   ],
                   Semantics(
                     button: true,
-                    label: 'Dismiss',
+                    label: widget.dismissLabel,
                     child: IconButton(
                       icon: const Icon(Icons.close, size: 18),
                       color: fg,
@@ -248,7 +317,7 @@ class _BankToastBannerState extends State<BankToastBanner>
                         minWidth: BankTokens.minTapTarget,
                         minHeight: BankTokens.minTapTarget,
                       ),
-                      tooltip: 'Dismiss',
+                      tooltip: widget.dismissLabel,
                     ),
                   ),
                 ],

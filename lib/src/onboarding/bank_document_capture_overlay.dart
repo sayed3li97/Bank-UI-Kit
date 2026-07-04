@@ -53,6 +53,49 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
   /// dashed lines.
   final bool showGrid;
 
+  /// Overrides the dark scrim around the cutout. Defaults to black at
+  /// 60% opacity.
+  final Color? scrimColor;
+
+  /// Corner guide color when aligned. Defaults to the theme primary.
+  final Color? alignedCornerColor;
+
+  /// Corner guide color when not aligned. Defaults to the theme
+  /// outline.
+  final Color? idleCornerColor;
+
+  /// Overrides the capture button fill (and its glow). Defaults to the
+  /// theme primary.
+  final Color? captureButtonColor;
+
+  /// Overrides the capture button glyph color. Defaults to white.
+  final Color? captureIconColor;
+
+  /// Overrides the capture button glyph. Defaults to
+  /// [Icons.camera_alt_outlined].
+  final IconData? captureIcon;
+
+  /// Semantics label of the capture button. Defaults to
+  /// 'Capture document'.
+  final String? captureSemanticLabel;
+
+  /// Overrides the state-derived status pill color.
+  final Color? statusPillColor;
+
+  /// Overrides the state-derived status pill glyph.
+  final IconData? statusIcon;
+
+  /// Merged over the computed status pill text style (labelMedium).
+  final TextStyle? statusTextStyle;
+
+  /// Duration of the corner guide color animation. Defaults to
+  /// [BankTokens.durationSlow].
+  final Duration? animationDuration;
+
+  /// Curve of the corner guide color animation. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
   const BankDocumentCaptureOverlay({
     required this.framingState,
     required this.cameraChild,
@@ -60,6 +103,18 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
     this.statusMessage,
     this.onCapture,
     this.showGrid = false,
+    this.scrimColor,
+    this.alignedCornerColor,
+    this.idleCornerColor,
+    this.captureButtonColor,
+    this.captureIconColor,
+    this.captureIcon,
+    this.captureSemanticLabel,
+    this.statusPillColor,
+    this.statusIcon,
+    this.statusTextStyle,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   // ---------------------------------------------------------------------------
@@ -100,6 +155,7 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
     final bankTheme = BankThemeData.of(context);
     final message = statusMessage ?? _defaultMessage(framingState);
     final isAligned = framingState == BankDocumentFramingState.aligned;
+    final buttonColor = captureButtonColor ?? bankTheme.primary;
 
     return Stack(
       fit: StackFit.expand,
@@ -111,7 +167,11 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
         RepaintBoundary(
           child: _DocumentOverlayPainterWidget(
             framingState: framingState,
-            bankTheme: bankTheme,
+            alignedColor: alignedCornerColor ?? bankTheme.primary,
+            idleColor: idleCornerColor ?? bankTheme.outline,
+            scrimColor: scrimColor ?? Colors.black.withValues(alpha: 0.6),
+            duration: animationDuration ?? BankTokens.durationSlow,
+            curve: animationCurve ?? BankTokens.curveStandard,
             showGrid: showGrid,
           ),
         ),
@@ -128,26 +188,26 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
               if (isAligned && onCapture != null) ...[
                 Semantics(
                   button: true,
-                  label: 'Capture document',
+                  label: captureSemanticLabel ?? 'Capture document',
                   child: GestureDetector(
                     onTap: onCapture,
                     child: Container(
                       width: 72,
                       height: 72,
                       decoration: BoxDecoration(
-                        color: bankTheme.primary,
+                        color: buttonColor,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: bankTheme.primary.withValues(alpha: 0.4),
+                            color: buttonColor.withValues(alpha: 0.4),
                             blurRadius: 16,
                             spreadRadius: 2,
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.camera_alt_outlined,
-                        color: Colors.white,
+                      child: Icon(
+                        captureIcon ?? Icons.camera_alt_outlined,
+                        color: captureIconColor ?? Colors.white,
                         size: 32,
                       ),
                     ),
@@ -159,8 +219,9 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
               // Status pill.
               _StatusPill(
                 message: message,
-                color: _pillColor(framingState),
-                icon: _pillIcon(framingState),
+                color: statusPillColor ?? _pillColor(framingState),
+                icon: statusIcon ?? _pillIcon(framingState),
+                textStyle: statusTextStyle,
               ),
             ],
           ),
@@ -177,12 +238,20 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
 class _DocumentOverlayPainterWidget extends StatefulWidget {
   const _DocumentOverlayPainterWidget({
     required this.framingState,
-    required this.bankTheme,
+    required this.alignedColor,
+    required this.idleColor,
+    required this.scrimColor,
+    required this.duration,
+    required this.curve,
     required this.showGrid,
   });
 
   final BankDocumentFramingState framingState;
-  final BankThemeData bankTheme;
+  final Color alignedColor;
+  final Color idleColor;
+  final Color scrimColor;
+  final Duration duration;
+  final Curve curve;
   final bool showGrid;
 
   @override
@@ -194,15 +263,16 @@ class _DocumentOverlayPainterWidgetState
     extends State<_DocumentOverlayPainterWidget>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<Color?> _cornerColor;
+  late Animation<Color?> _cornerColor;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: BankTokens.durationSlow,
+      duration: widget.duration,
     );
+    _cornerColor = AlwaysStoppedAnimation<Color?>(widget.idleColor);
     _updateColorTween();
     _syncAnimation();
   }
@@ -210,8 +280,10 @@ class _DocumentOverlayPainterWidgetState
   @override
   void didUpdateWidget(_DocumentOverlayPainterWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _controller.duration = widget.duration;
     if (oldWidget.framingState != widget.framingState ||
-        oldWidget.bankTheme != widget.bankTheme) {
+        oldWidget.alignedColor != widget.alignedColor ||
+        oldWidget.idleColor != widget.idleColor) {
       _updateColorTween();
       _syncAnimation();
     }
@@ -219,14 +291,14 @@ class _DocumentOverlayPainterWidgetState
 
   void _updateColorTween() {
     final targetColor = widget.framingState == BankDocumentFramingState.aligned
-        ? widget.bankTheme.primary
-        : widget.bankTheme.outline;
+        ? widget.alignedColor
+        : widget.idleColor;
 
     _cornerColor = ColorTween(
-      begin: _cornerColor.value ?? widget.bankTheme.outline,
+      begin: _cornerColor.value ?? widget.idleColor,
       end: targetColor,
     ).animate(
-      CurvedAnimation(parent: _controller, curve: BankTokens.curveStandard),
+      CurvedAnimation(parent: _controller, curve: widget.curve),
     );
   }
 
@@ -247,7 +319,8 @@ class _DocumentOverlayPainterWidgetState
       builder: (context, _) {
         return CustomPaint(
           painter: _DocumentOverlayPainter(
-            cornerColor: _cornerColor.value ?? widget.bankTheme.outline,
+            cornerColor: _cornerColor.value ?? widget.idleColor,
+            scrimColor: widget.scrimColor,
             showGrid: widget.showGrid,
           ),
         );
@@ -263,17 +336,18 @@ class _DocumentOverlayPainterWidgetState
 class _DocumentOverlayPainter extends CustomPainter {
   const _DocumentOverlayPainter({
     required this.cornerColor,
+    required this.scrimColor,
     required this.showGrid,
   });
 
   final Color cornerColor;
+  final Color scrimColor;
   final bool showGrid;
 
   static const double _widthFraction = 0.85;
   static const double _heightFraction = 0.55;
   static const double _cornerLength = 24;
   static const double _cornerStroke = 4;
-  static const double _overlayOpacity = 0.6;
 
   Rect _cutoutRect(Size size) {
     final cutW = size.width * _widthFraction;
@@ -288,8 +362,7 @@ class _DocumentOverlayPainter extends CustomPainter {
     final cutout = _cutoutRect(size);
 
     // ── Dark overlay with rectangular cutout ──
-    final overlayPaint = Paint()
-      ..color = Colors.black.withValues(alpha: _overlayOpacity);
+    final overlayPaint = Paint()..color = scrimColor;
 
     final overlayPath = Path()
       ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -365,7 +438,9 @@ class _DocumentOverlayPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_DocumentOverlayPainter old) =>
-      old.cornerColor != cornerColor || old.showGrid != showGrid;
+      old.cornerColor != cornerColor ||
+      old.scrimColor != scrimColor ||
+      old.showGrid != showGrid;
 }
 
 // ---------------------------------------------------------------------------
@@ -377,11 +452,13 @@ class _StatusPill extends StatelessWidget {
     required this.message,
     required this.color,
     required this.icon,
+    required this.textStyle,
   });
 
   final String message;
   final Color color;
   final IconData icon;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -417,7 +494,9 @@ class _StatusPill extends StatelessWidget {
             Flexible(
               child: Text(
                 message,
-                style: BankTokens.labelMedium.copyWith(color: textColor),
+                style: BankTokens.labelMedium
+                    .copyWith(color: textColor)
+                    .merge(textStyle),
                 textAlign: TextAlign.center,
               ),
             ),

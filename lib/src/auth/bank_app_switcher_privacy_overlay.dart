@@ -42,11 +42,28 @@ class BankAppSwitcherPrivacyOverlay extends StatefulWidget {
   /// When null, a blurred-and-dimmed version of the child is shown instead.
   final Widget? placeholder;
 
+  /// Overrides the Gaussian blur sigma in blur mode. Defaults to `12`.
+  final double? blurSigma;
+
+  /// Overrides the dark scrim painted over the blurred child in blur mode.
+  /// Defaults to [Colors.black26].
+  final Color? scrimColor;
+
+  /// Overrides the fade in/out duration. Defaults to 200 ms.
+  final Duration? animationDuration;
+
+  /// Overrides the fade in/out curve. Defaults to [Curves.easeInOut].
+  final Curve? animationCurve;
+
   const BankAppSwitcherPrivacyOverlay({
     required this.child,
     super.key,
     this.enabled = true,
     this.placeholder,
+    this.blurSigma,
+    this.scrimColor,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   @override
@@ -83,6 +100,9 @@ class _BankAppSwitcherPrivacyOverlayState
   @override
   Widget build(BuildContext context) {
     final active = widget.enabled && _obscured;
+    final resolvedDuration =
+        widget.animationDuration ?? const Duration(milliseconds: 200);
+    final resolvedCurve = widget.animationCurve ?? Curves.easeInOut;
 
     if (widget.placeholder != null) {
       // Placeholder mode: cross-fade between child and placeholder.
@@ -92,8 +112,8 @@ class _BankAppSwitcherPrivacyOverlayState
           widget.child,
           AnimatedOpacity(
             opacity: active ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
+            duration: resolvedDuration,
+            curve: resolvedCurve,
             // Absorb pointer events only when visible to avoid blocking the
             // child during fade-out.
             child: IgnorePointer(
@@ -114,15 +134,18 @@ class _BankAppSwitcherPrivacyOverlayState
         if (active) const Positioned.fill(child: AbsorbPointer()),
         AnimatedOpacity(
           opacity: active ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
+          duration: resolvedDuration,
+          curve: resolvedCurve,
           child: IgnorePointer(
             ignoring: !active,
             child: ClipRect(
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                filter: ImageFilter.blur(
+                  sigmaX: widget.blurSigma ?? 12,
+                  sigmaY: widget.blurSigma ?? 12,
+                ),
                 child: Container(
-                  color: Colors.black26,
+                  color: widget.scrimColor ?? Colors.black26,
                 ),
               ),
             ),

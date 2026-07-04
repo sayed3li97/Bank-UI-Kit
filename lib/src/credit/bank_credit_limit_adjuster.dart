@@ -11,8 +11,8 @@ import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
-/// User-controlled credit limit card, equivalent to Nubank's
-/// drag-your-own-limit slider.
+/// User-controlled credit limit card: the customer drags their own
+/// limit.
 ///
 /// Shows the currently selected limit as a large numeral that updates
 /// live while dragging, above a slider spanning from the amount already
@@ -51,6 +51,18 @@ class BankCreditLimitAdjuster extends StatefulWidget {
     this.usedTemplate = '{used} used of {limit}',
     this.maxLabel = 'Bank approved maximum',
     this.commitLabel = 'Confirm new limit',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.shadow,
+    this.accentColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.successIcon,
+    this.animationDuration,
+    this.animationCurve,
+    this.semanticLabel,
   });
 
   /// The limit configured on the card today, drawn as a subtle marker
@@ -81,6 +93,50 @@ class BankCreditLimitAdjuster extends StatefulWidget {
 
   /// Label of the commit button shown when the selection changed.
   final String commitLabel;
+
+  /// Overrides the card content padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card fill color. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
+  /// pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Overrides the accent used by the progress fill, slider, spinner,
+  /// and commit button. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Merged over the computed [title] style (bodyMedium, variant color).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed microtext style (labelSmall, variant
+  /// color) used under the progress bar and on the maximum row.
+  final TextStyle? subtitleStyle;
+
+  /// Style for the large selected-limit numeral. Defaults to the
+  /// [BankBalanceText] default style.
+  final TextStyle? amountStyle;
+
+  /// Icon flashed on the commit button after a successful commit.
+  /// Defaults to [BankIcons.success].
+  final IconData? successIcon;
+
+  /// Duration of the commit-button reveal animation. Defaults to
+  /// [BankTokens.durationBase].
+  final Duration? animationDuration;
+
+  /// Curve of the commit-button reveal animation. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
+  /// Overrides the slider semantics label. Defaults to [title].
+  final String? semanticLabel;
 
   @override
   State<BankCreditLimitAdjuster> createState() =>
@@ -209,32 +265,38 @@ class _BankCreditLimitAdjusterState extends State<BankCreditLimitAdjuster> {
         _selected <= 0 ? 1.0 : (_min / _selected).clamp(0.0, 1.0);
     final nearLimit = usedFraction > 0.9;
 
-    final microStyle =
-        BankTokens.labelSmall.copyWith(color: theme.onSurfaceVariant);
+    final microStyle = BankTokens.labelSmall
+        .copyWith(color: theme.onSurfaceVariant)
+        .merge(widget.subtitleStyle);
+    final accent = widget.accentColor ?? theme.primary;
     final changed = _selected != _committed;
     final showButton = changed || _busy || _showSuccess;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.cardRadius,
-        boxShadow: BankTokens.shadowCard,
+        color: widget.backgroundColor ?? theme.surface,
+        borderRadius: widget.radius ?? theme.cardRadius,
+        boxShadow: widget.shadow ?? BankTokens.shadowCard,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space4),
+        padding: widget.padding ?? const EdgeInsets.all(BankTokens.space4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               widget.title,
-              style:
-                  BankTokens.bodyMedium.copyWith(color: theme.onSurfaceVariant),
+              style: BankTokens.bodyMedium
+                  .copyWith(color: theme.onSurfaceVariant)
+                  .merge(widget.titleStyle),
             ),
             const SizedBox(height: BankTokens.space2),
             Align(
               alignment: AlignmentDirectional.centerStart,
-              child: BankBalanceText(money: _asMoney(_selected)),
+              child: BankBalanceText(
+                money: _asMoney(_selected),
+                style: widget.amountStyle,
+              ),
             ),
             const SizedBox(height: BankTokens.space3),
             ClipRRect(
@@ -243,7 +305,7 @@ class _BankCreditLimitAdjusterState extends State<BankCreditLimitAdjuster> {
                 value: usedFraction,
                 minHeight: 4,
                 backgroundColor: theme.surfaceVariant,
-                color: nearLimit ? BankTokens.danger : theme.primary,
+                color: nearLimit ? BankTokens.danger : accent,
               ),
             ),
             const SizedBox(height: BankTokens.space1),
@@ -258,14 +320,14 @@ class _BankCreditLimitAdjusterState extends State<BankCreditLimitAdjuster> {
                 if (_hasRange) _buildCurrentLimitMarker(theme),
                 Semantics(
                   slider: true,
-                  label: widget.title,
+                  label: widget.semanticLabel ?? widget.title,
                   value: formattedSelected,
                   excludeSemantics: true,
                   child: Slider(
                     value: _hasRange ? _selected.clamp(_min, _max) : 0,
                     min: _hasRange ? _min : 0,
                     max: _hasRange ? _max : 1,
-                    activeColor: theme.primary,
+                    activeColor: accent,
                     inactiveColor: theme.surfaceVariant,
                     onChanged: _busy || !_hasRange ? null : _onSliderChanged,
                   ),
@@ -281,9 +343,10 @@ class _BankCreditLimitAdjusterState extends State<BankCreditLimitAdjuster> {
               ],
             ),
             AnimatedSize(
-              duration:
-                  disableAnimations ? Duration.zero : BankTokens.durationBase,
-              curve: BankTokens.curveStandard,
+              duration: disableAnimations
+                  ? Duration.zero
+                  : widget.animationDuration ?? BankTokens.durationBase,
+              curve: widget.animationCurve ?? BankTokens.curveStandard,
               child: showButton
                   ? Padding(
                       padding: const EdgeInsetsDirectional.only(
@@ -328,6 +391,7 @@ class _BankCreditLimitAdjusterState extends State<BankCreditLimitAdjuster> {
   }
 
   Widget _buildCommitButton(BankThemeData theme) {
+    final accent = widget.accentColor ?? theme.primary;
     final Widget child;
     if (_busy) {
       child = SizedBox(
@@ -335,11 +399,15 @@ class _BankCreditLimitAdjusterState extends State<BankCreditLimitAdjuster> {
         height: 16,
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          color: theme.primary,
+          color: accent,
         ),
       );
     } else if (_showSuccess) {
-      child = Icon(BankIcons.success, size: 20, color: theme.onPrimary);
+      child = Icon(
+        widget.successIcon ?? BankIcons.success,
+        size: 20,
+        color: theme.onPrimary,
+      );
     } else {
       child = Text(widget.commitLabel, style: BankTokens.labelLarge);
     }
@@ -349,7 +417,7 @@ class _BankCreditLimitAdjusterState extends State<BankCreditLimitAdjuster> {
       child: FilledButton(
         onPressed: _busy || _showSuccess ? null : _commit,
         style: FilledButton.styleFrom(
-          backgroundColor: theme.primary,
+          backgroundColor: accent,
           foregroundColor: theme.onPrimary,
           disabledBackgroundColor:
               _showSuccess ? BankTokens.success : theme.surfaceVariant,

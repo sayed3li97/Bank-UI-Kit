@@ -30,6 +30,41 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
   final BankChartTimeRange selectedRange;
   final ValueChanged<BankChartTimeRange>? onRangeChanged;
 
+  /// Overrides the chart height. Defaults to 200.
+  final double? height;
+
+  /// Overrides the line thickness. Defaults to 2.
+  final double? lineWidth;
+
+  /// Overrides the below-line fill. Defaults to a vertical fade of the
+  /// line colour from 24% opacity to transparent.
+  final Gradient? gradient;
+
+  /// Overrides the horizontal grid line colour. Defaults to the theme
+  /// outline.
+  final Color? gridColor;
+
+  /// Merged over the touch tooltip text style (labelSmall, white).
+  final TextStyle? tooltipStyle;
+
+  /// Overrides the selected range pill tint. Defaults to the theme
+  /// primary.
+  final Color? accentColor;
+
+  /// Overrides the built-in range captions ('1D', '1W', ...); missing
+  /// entries fall back to the defaults.
+  final Map<BankChartTimeRange, String>? rangeLabels;
+
+  /// Empty-state text. Defaults to 'No data available'.
+  final String emptyLabel;
+
+  /// Merged over the empty-state style (bodyMedium, onSurfaceVariant).
+  final TextStyle? emptyLabelStyle;
+
+  /// Wraps the chart in a [Semantics] node when provided; no semantics
+  /// node is added by default.
+  final String? semanticLabel;
+
   const BankPortfolioPerformanceChart({
     required this.dataPoints,
     super.key,
@@ -37,6 +72,16 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
     this.lineColor,
     this.selectedRange = BankChartTimeRange.oneMonth,
     this.onRangeChanged,
+    this.height,
+    this.lineWidth,
+    this.gradient,
+    this.gridColor,
+    this.tooltipStyle,
+    this.accentColor,
+    this.rangeLabels,
+    this.emptyLabel = 'No data available',
+    this.emptyLabelStyle,
+    this.semanticLabel,
   });
 
   static const _rangeLabels = <BankChartTimeRange, String>{
@@ -59,8 +104,10 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
     if (dataPoints.isEmpty) {
       return Center(
         child: Text(
-          'No data available',
-          style: BankTokens.bodyMedium.copyWith(color: theme.onSurfaceVariant),
+          emptyLabel,
+          style: BankTokens.bodyMedium
+              .copyWith(color: theme.onSurfaceVariant)
+              .merge(emptyLabelStyle),
         ),
       );
     }
@@ -75,11 +122,11 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
     final maxY = dataPoints.map((d) => d.value).reduce((a, b) => a > b ? a : b);
     final padding = (maxY - minY) * 0.1;
 
-    return RepaintBoundary(
+    final chart = RepaintBoundary(
       child: Column(
         children: [
           SizedBox(
-            height: 200,
+            height: height ?? 200,
             child: LineChart(
               LineChartData(
                 minY: minY - padding,
@@ -90,7 +137,9 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
                         .map(
                           (s) => LineTooltipItem(
                             '\$${s.y.toStringAsFixed(2)}',
-                            BankTokens.labelSmall.copyWith(color: Colors.white),
+                            BankTokens.labelSmall
+                                .copyWith(color: Colors.white)
+                                .merge(tooltipStyle),
                           ),
                         )
                         .toList(),
@@ -100,7 +149,7 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
                   show: showGrid,
                   drawVerticalLine: false,
                   getDrawingHorizontalLine: (_) => FlLine(
-                    color: theme.outline,
+                    color: gridColor ?? theme.outline,
                     strokeWidth: 1,
                   ),
                 ),
@@ -116,17 +165,19 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
                     spots: spots,
                     isCurved: true,
                     color: color,
+                    barWidth: lineWidth ?? 2.0,
                     dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          color.withValues(alpha: 0.24),
-                          color.withValues(alpha: 0),
-                        ],
-                      ),
+                      gradient: gradient ??
+                          LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              color.withValues(alpha: 0.24),
+                              color.withValues(alpha: 0),
+                            ],
+                          ),
                     ),
                   ),
                 ],
@@ -139,22 +190,25 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
             child: Row(
               children: BankChartTimeRange.values.map((range) {
                 final isSelected = range == selectedRange;
+                final rangeAccent = accentColor ?? theme.primary;
                 return Padding(
                   padding: const EdgeInsets.only(right: BankTokens.space2),
                   child: TextButton(
                     onPressed: () => onRangeChanged?.call(range),
                     style: TextButton.styleFrom(
                       backgroundColor: isSelected
-                          ? theme.primary.withValues(alpha: 0.12)
+                          ? rangeAccent.withValues(alpha: 0.12)
                           : Colors.transparent,
                       foregroundColor:
-                          isSelected ? theme.primary : theme.onSurfaceVariant,
+                          isSelected ? rangeAccent : theme.onSurfaceVariant,
                       minimumSize: const Size(44, 36),
                       padding: const EdgeInsets.symmetric(
                         horizontal: BankTokens.space3,
                       ),
                     ),
-                    child: Text(_rangeLabels[range]!),
+                    child: Text(
+                      rangeLabels?[range] ?? _rangeLabels[range]!,
+                    ),
                   ),
                 );
               }).toList(),
@@ -163,5 +217,8 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
         ],
       ),
     );
+
+    if (semanticLabel == null) return chart;
+    return Semantics(label: semanticLabel, child: chart);
   }
 }

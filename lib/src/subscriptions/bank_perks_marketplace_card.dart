@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 
@@ -42,11 +43,98 @@ class BankPerksMarketplaceCard extends StatefulWidget {
   final VoidCallback? onActivate;
   final VoidCallback? onTap;
 
+  /// Overrides the card content padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card background color. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the accent used for the initials avatar, tap splash and
+  /// activate button. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the card shadow. Defaults to a soft black drop shadow;
+  /// pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Merged over the perk title style (BankTokens.labelLarge in
+  /// onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the partner-name style (BankTokens.bodySmall in
+  /// onSurfaceVariant).
+  final TextStyle? partnerStyle;
+
+  /// Merged over the description style (BankTokens.bodySmall in
+  /// onSurfaceVariant).
+  final TextStyle? descriptionStyle;
+
+  /// Radius of the partner logo avatar. Defaults to 24.
+  final double? logoRadius;
+
+  /// Glyph beside the activated label. Defaults to [Icons.check_circle].
+  final IconData? activatedIcon;
+
+  /// Activate button label. Defaults to `'Activate'`.
+  final String activateLabel;
+
+  /// Activated chip label. Defaults to `'Activated'`.
+  final String activatedLabel;
+
+  /// Expiry text once past [BankPerk.expiresAt]. Defaults to
+  /// `'Expired'`.
+  final String expiredLabel;
+
+  /// Expiry text on the final day. Defaults to `'Expires today'`.
+  final String expiresTodayLabel;
+
+  /// Expiry text one day before. Defaults to `'Expires tomorrow'`.
+  final String expiresTomorrowLabel;
+
+  /// Expiry text within 30 days; `{n}` is substituted. Defaults to
+  /// `'Expires in {n} days'`.
+  final String expiresInDaysTemplate;
+
+  /// Expiry text at exactly one month. Defaults to
+  /// `'Expires in 1 month'`.
+  final String expiresInMonthLabel;
+
+  /// Expiry text beyond one month; `{n}` is substituted. Defaults to
+  /// `'Expires in {n} months'`.
+  final String expiresInMonthsTemplate;
+
+  /// Overrides the generated card semantics label. Supply for
+  /// non-English locales.
+  final String? semanticLabel;
+
   const BankPerksMarketplaceCard({
     required this.perk,
     super.key,
     this.onActivate,
     this.onTap,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.accentColor,
+    this.shadow,
+    this.titleStyle,
+    this.partnerStyle,
+    this.descriptionStyle,
+    this.logoRadius,
+    this.activatedIcon,
+    this.activateLabel = 'Activate',
+    this.activatedLabel = 'Activated',
+    this.expiredLabel = 'Expired',
+    this.expiresTodayLabel = 'Expires today',
+    this.expiresTomorrowLabel = 'Expires tomorrow',
+    this.expiresInDaysTemplate = 'Expires in {n} days',
+    this.expiresInMonthLabel = 'Expires in 1 month',
+    this.expiresInMonthsTemplate = 'Expires in {n} months',
+    this.semanticLabel,
   });
 
   @override
@@ -75,18 +163,24 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
 
   String _formatExpiry(DateTime expiresAt) {
     final diff = expiresAt.difference(DateTime.now());
-    if (diff.isNegative) return 'Expired';
-    if (diff.inDays == 0) return 'Expires today';
-    if (diff.inDays == 1) return 'Expires tomorrow';
-    if (diff.inDays <= 30) return 'Expires in ${diff.inDays} days';
+    if (diff.isNegative) return widget.expiredLabel;
+    if (diff.inDays == 0) return widget.expiresTodayLabel;
+    if (diff.inDays == 1) return widget.expiresTomorrowLabel;
+    if (diff.inDays <= 30) {
+      return widget.expiresInDaysTemplate.replaceAll('{n}', '${diff.inDays}');
+    }
     final months = (diff.inDays / 30).round();
-    return 'Expires in $months month${months == 1 ? '' : 's'}';
+    if (months == 1) return widget.expiresInMonthLabel;
+    return widget.expiresInMonthsTemplate.replaceAll('{n}', '$months');
   }
 
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
     final perk = widget.perk;
+    final accent = widget.accentColor ?? bankTheme.primary;
+    final cardRadius = widget.radius ?? bankTheme.cardRadius;
+    final avatarRadius = widget.logoRadius ?? 24;
 
     final expiryText =
         perk.expiresAt != null ? _formatExpiry(perk.expiresAt!) : '';
@@ -96,53 +190,56 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
     Widget logoWidget;
     if (perk.logoUrl != null && !_logoFailed) {
       logoWidget = CircleAvatar(
-        radius: 24,
+        radius: avatarRadius,
         backgroundColor: bankTheme.surfaceVariant,
-        backgroundImage: NetworkImage(perk.logoUrl!),
+        backgroundImage: BankUiScope.imageProviderFor(context, perk.logoUrl!),
         onBackgroundImageError: (_, __) {
           if (mounted) setState(() => _logoFailed = true);
         },
       );
     } else {
       logoWidget = CircleAvatar(
-        radius: 24,
-        backgroundColor: bankTheme.primary.withValues(alpha: 0.12),
+        radius: avatarRadius,
+        backgroundColor: accent.withValues(alpha: 0.12),
         child: Text(
           _initials(perk.partnerName),
-          style: BankTokens.labelMedium.copyWith(color: bankTheme.primary),
+          style: BankTokens.labelMedium.copyWith(color: accent),
         ),
       );
     }
 
-    final semanticLabel = '${perk.partnerName}: ${perk.title}. '
-        '${perk.discountLabel != null ? '${perk.discountLabel!}. ' : ''}'
-        '${expiryText.isNotEmpty ? '$expiryText. ' : ''}'
-        '${perk.isActivated ? 'Activated.' : 'Not activated.'}';
+    final semanticLabel = widget.semanticLabel ??
+        '${perk.partnerName}: ${perk.title}. '
+            '${perk.discountLabel != null ? '${perk.discountLabel!}. ' : ''}'
+            '${expiryText.isNotEmpty ? '$expiryText. ' : ''}'
+            '${perk.isActivated ? 'Activated.' : 'Not activated.'}';
 
     return Semantics(
       label: semanticLabel,
       button: widget.onTap != null,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: bankTheme.surface,
-          borderRadius: bankTheme.cardRadius,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: widget.backgroundColor ?? bankTheme.surface,
+          borderRadius: cardRadius,
+          boxShadow: widget.shadow ??
+              [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
         ),
         child: Material(
           color: Colors.transparent,
-          borderRadius: bankTheme.cardRadius,
+          borderRadius: cardRadius,
           child: InkWell(
             onTap: widget.onTap,
-            borderRadius: bankTheme.cardRadius,
-            splashColor: bankTheme.primary.withValues(alpha: 0.06),
+            borderRadius: cardRadius,
+            splashColor: accent.withValues(alpha: 0.06),
             child: Padding(
-              padding: const EdgeInsets.all(BankTokens.space4),
+              padding:
+                  widget.padding ?? const EdgeInsets.all(BankTokens.space4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -161,9 +258,11 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
                             // Partner name
                             Text(
                               perk.partnerName,
-                              style: BankTokens.bodySmall.copyWith(
-                                color: bankTheme.onSurfaceVariant,
-                              ),
+                              style: BankTokens.bodySmall
+                                  .copyWith(
+                                    color: bankTheme.onSurfaceVariant,
+                                  )
+                                  .merge(widget.partnerStyle),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -171,9 +270,9 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
                             // Perk title
                             Text(
                               perk.title,
-                              style: BankTokens.labelLarge.copyWith(
-                                color: bankTheme.onSurface,
-                              ),
+                              style: BankTokens.labelLarge
+                                  .copyWith(color: bankTheme.onSurface)
+                                  .merge(widget.titleStyle),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -181,9 +280,11 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
                             // Description
                             Text(
                               perk.description,
-                              style: BankTokens.bodySmall.copyWith(
-                                color: bankTheme.onSurfaceVariant,
-                              ),
+                              style: BankTokens.bodySmall
+                                  .copyWith(
+                                    color: bankTheme.onSurfaceVariant,
+                                  )
+                                  .merge(widget.descriptionStyle),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -224,6 +325,10 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
                       perk: perk,
                       bankTheme: bankTheme,
                       onActivate: widget.onActivate,
+                      accent: accent,
+                      activateLabel: widget.activateLabel,
+                      activatedLabel: widget.activatedLabel,
+                      activatedIcon: widget.activatedIcon,
                     ),
                   ],
                 ],
@@ -273,11 +378,19 @@ class _ActionRow extends StatelessWidget {
   final BankPerk perk;
   final BankThemeData bankTheme;
   final VoidCallback? onActivate;
+  final Color accent;
+  final String activateLabel;
+  final String activatedLabel;
+  final IconData? activatedIcon;
 
   const _ActionRow({
     required this.perk,
     required this.bankTheme,
     required this.onActivate,
+    required this.accent,
+    required this.activateLabel,
+    required this.activatedLabel,
+    required this.activatedIcon,
   });
 
   @override
@@ -288,10 +401,14 @@ class _ActionRow extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, size: 16, color: BankTokens.success),
+            Icon(
+              activatedIcon ?? Icons.check_circle,
+              size: 16,
+              color: BankTokens.success,
+            ),
             const SizedBox(width: BankTokens.space1),
             Text(
-              'Activated',
+              activatedLabel,
               style: BankTokens.labelMedium.copyWith(
                 color: BankTokens.success,
               ),
@@ -310,14 +427,14 @@ class _ActionRow extends StatelessWidget {
           child: FilledButton(
             onPressed: onActivate,
             style: FilledButton.styleFrom(
-              backgroundColor: bankTheme.primary,
+              backgroundColor: accent,
               foregroundColor: bankTheme.onPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: bankTheme.buttonRadius,
               ),
             ),
             child: Text(
-              'Activate',
+              activateLabel,
               style: BankTokens.labelLarge.copyWith(
                 color: bankTheme.onPrimary,
               ),

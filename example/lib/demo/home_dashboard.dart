@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'sample_data.dart';
 
-/// A polished, Revolut-style home dashboard composed entirely from
+/// A polished neo-bank home dashboard composed entirely from
 /// Bank UI Kit widgets. Used as the demo "full app" hero and as a
 /// screenshot target across all three presets.
 class HomeDashboard extends StatelessWidget {

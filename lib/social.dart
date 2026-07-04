@@ -10,6 +10,7 @@ library;
 
 export 'src/social/bank_account_ownership_badge.dart';
 export 'src/social/bank_joint_transaction_list_tile.dart';
+export 'src/social/bank_money_circle_card.dart';
 export 'src/social/bank_shared_goal_progress_card.dart';
 export 'src/transactions/bank_transaction_category_split_sheet.dart';
 export 'src/transactions/bank_transaction_cost_split_sheet.dart';

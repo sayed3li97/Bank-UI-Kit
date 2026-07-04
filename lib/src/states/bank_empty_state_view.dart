@@ -41,6 +41,26 @@ class BankEmptyStateView extends StatelessWidget {
   /// Callback invoked when the call-to-action button is tapped.
   final VoidCallback? onAction;
 
+  /// Overrides the content padding. Defaults to
+  /// `EdgeInsets.symmetric(horizontal: BankTokens.space8)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Background of the call-to-action button. Defaults to
+  /// [BankThemeData.primary].
+  final Color? accentColor;
+
+  /// Merged over the computed title style ([BankTokens.headlineMedium]
+  /// in [BankThemeData.onSurface]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed subtitle style ([BankTokens.bodyMedium]
+  /// in [BankThemeData.onSurfaceVariant]).
+  final TextStyle? subtitleStyle;
+
+  /// Container semantics label for the whole view. Defaults to none
+  /// (children are read individually, as today).
+  final String? semanticLabel;
+
   const BankEmptyStateView({
     required this.title,
     super.key,
@@ -48,16 +68,23 @@ class BankEmptyStateView extends StatelessWidget {
     this.subtitle,
     this.actionLabel,
     this.onAction,
+    this.padding,
+    this.accentColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.semanticLabel,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final showAction = actionLabel != null && onAction != null;
+    final resolvedPadding =
+        padding ?? const EdgeInsets.symmetric(horizontal: BankTokens.space8);
 
-    return Center(
+    Widget content = Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: BankTokens.space8),
+        padding: resolvedPadding,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -70,18 +97,18 @@ class BankEmptyStateView extends StatelessWidget {
             ],
             Text(
               title,
-              style: BankTokens.headlineMedium.copyWith(
-                color: theme.onSurface,
-              ),
+              style: BankTokens.headlineMedium
+                  .copyWith(color: theme.onSurface)
+                  .merge(titleStyle),
               textAlign: TextAlign.center,
             ),
             if (subtitle != null) ...[
               const SizedBox(height: BankTokens.space2),
               Text(
                 subtitle!,
-                style: BankTokens.bodyMedium.copyWith(
-                  color: theme.onSurfaceVariant,
-                ),
+                style: BankTokens.bodyMedium
+                    .copyWith(color: theme.onSurfaceVariant)
+                    .merge(subtitleStyle),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -93,7 +120,7 @@ class BankEmptyStateView extends StatelessWidget {
                 child: FilledButton(
                   onPressed: onAction,
                   style: FilledButton.styleFrom(
-                    backgroundColor: theme.primary,
+                    backgroundColor: accentColor ?? theme.primary,
                     foregroundColor: theme.onPrimary,
                     minimumSize: const Size(double.infinity, 48),
                     shape: RoundedRectangleBorder(
@@ -109,5 +136,14 @@ class BankEmptyStateView extends StatelessWidget {
         ),
       ),
     );
+
+    if (semanticLabel != null) {
+      content = Semantics(
+        container: true,
+        label: semanticLabel,
+        child: content,
+      );
+    }
+    return content;
   }
 }

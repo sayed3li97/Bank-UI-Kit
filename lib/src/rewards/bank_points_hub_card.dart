@@ -55,8 +55,7 @@ class BankPointsAction {
 /// is about to expire, and a row of action pills (Redeem, Gift cards,
 /// Donate, Invest, or whatever [actions] you provide).
 ///
-/// Equivalent surfaces in production apps: Al Rajhi Mokafaa, Revolut
-/// RevPoints, CommBank Yello, Sber Spasibo.
+/// The loyalty points hub pattern found in leading banking apps.
 ///
 /// The points balance and the cash-value line are masked when privacy mode
 /// is active on the ambient [BankUiScope], mirroring how account balances

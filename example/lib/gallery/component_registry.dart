@@ -3312,6 +3312,298 @@ final List<GalleryEntry> kGalleryEntries = [
       onLimits: () {},
     ),
   ),
+  // ── COMMUNITY SAVINGS & ASSISTANT ───────────────────────────────────────
+  GalleryEntry(
+    name: 'BankMoneyCircleCard',
+    description: 'Rotating saving circle with turn tracker.',
+    category: GalleryCategory.social,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankMoneyCircleCard(
+      name: 'Family circle',
+      contribution: Money.fromDouble(100, 'BHD'),
+      members: const [
+        BankCircleMember(
+          id: 'm1',
+          name: 'Noora',
+          turnIndex: 1,
+          paidThisCycle: true,
+        ),
+        BankCircleMember(
+          id: 'm2',
+          name: 'Khalid',
+          turnIndex: 2,
+          paidThisCycle: true,
+          isAdmin: true,
+        ),
+        BankCircleMember(
+          id: 'm3',
+          name: 'Sara',
+          turnIndex: 3,
+          paidThisCycle: true,
+        ),
+        BankCircleMember(
+          id: 'm4',
+          name: 'You',
+          turnIndex: 4,
+          paidThisCycle: true,
+          isMe: true,
+        ),
+        BankCircleMember(
+          id: 'm5',
+          name: 'Ali',
+          turnIndex: 5,
+          paidThisCycle: true,
+        ),
+        BankCircleMember(
+          id: 'm6',
+          name: 'Mariam',
+          turnIndex: 6,
+          paidThisCycle: true,
+        ),
+        BankCircleMember(id: 'm7', name: 'Hassan', turnIndex: 7),
+        BankCircleMember(id: 'm8', name: 'Fatima', turnIndex: 8),
+      ],
+      currentCycle: 3,
+      totalCycles: 8,
+      nextCollectionDate: DateTime(2026, 8, 2),
+      isAdminView: true,
+      onRemind: () {},
+      onViewDetails: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankPrizeDrawCard',
+    description: 'Prize-linked savings with draw calendar.',
+    category: GalleryCategory.rewards,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankPrizeDrawCard(
+      balance: Money.fromDouble(1250, 'BHD'),
+      entriesCount: 25,
+      draws: [
+        BankPrizeDraw(
+          id: 'd1',
+          prizeLabel: 'Porsche 911 Carrera S',
+          drawDate: DateTime(2026, 8, 12),
+          lastDepositDate: DateTime(2026, 7, 31),
+          isGrand: true,
+        ),
+        BankPrizeDraw(
+          id: 'd2',
+          prizeLabel: 'USD 500,000',
+          drawDate: DateTime(2026, 9, 13),
+          lastDepositDate: DateTime(2026, 8, 31),
+        ),
+        BankPrizeDraw(
+          id: 'd3',
+          prizeLabel: 'USD 100,000',
+          drawDate: DateTime(2026, 10, 13),
+          lastDepositDate: DateTime(2026, 9, 30),
+        ),
+      ],
+      minDeposit: Money.fromDouble(50, 'BHD'),
+      clock: () => DateTime(2026, 7, 4, 9),
+      onAddMoney: () {},
+      onSendGift: () {},
+      onViewWinners: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankSavingsProjectionCard',
+    description: 'Deposit and duration sliders with live earnings.',
+    category: GalleryCategory.saving,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankSavingsProjectionCard(
+      currencyCode: 'BHD',
+      annualRate: 3.5,
+      initialAmount: 5000,
+      onApply: (_, __) {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankAssistantPanel',
+    description: 'Named AI assistant entry with prompt chips.',
+    category: GalleryCategory.support,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankAssistantPanel(
+      assistantName: 'Aya',
+      prompts: const [
+        BankAssistantPrompt(
+          id: 'p1',
+          label: 'Spending this month',
+          icon: Icons.pie_chart_outline,
+        ),
+        BankAssistantPrompt(
+          id: 'p2',
+          label: 'Freeze my card',
+          icon: Icons.ac_unit_outlined,
+        ),
+        BankAssistantPrompt(
+          id: 'p3',
+          label: 'Upcoming bills',
+          icon: Icons.receipt_long_outlined,
+        ),
+        BankAssistantPrompt(
+          id: 'p4',
+          label: 'Best savings rate',
+          icon: Icons.savings_outlined,
+        ),
+      ],
+      onPromptTap: (_) {},
+      onSubmitted: (_) {},
+      onMicTap: () {},
+      recentQueries: const [
+        'How much did I spend on dining?',
+        'Set a travel notice for Turkey',
+      ],
+      onRecentTap: (_) {},
+      disclaimerText:
+          'Aya is an AI assistant. For urgent card issues, call us.',
+    ),
+  ),
+  // ── APP GATES & DEGRADED STATES ──────────────────────────────────────────
+  GalleryEntry(
+    name: 'BankAppGateScreen',
+    description: 'Full-screen gate: maintenance, blocks, force update.',
+    category: GalleryCategory.states,
+    isFullScreen: true,
+    params: const [
+      GalleryParam(
+        name: 'reason',
+        label: 'Gate reason',
+        type: ParamType.enumType,
+        defaultValue: 'maintenance',
+        enumValues: [
+          'maintenance',
+          'offline',
+          'forceUpdate',
+          'rootedDevice',
+          'vpnDetected',
+          'emulatorDetected',
+          'tamperDetected',
+          'geoRestricted',
+          'clockSkew',
+          'developerMode',
+          'queueFull',
+        ],
+      ),
+    ],
+    builder: (ctx, p) {
+      final reason = BankAppGateReason.values
+          .firstWhere((e) => e.name == (p['reason'] as String));
+      return BankAppGateScreen(
+        reason: reason,
+        resumesAt: reason == BankAppGateReason.maintenance
+            ? DateTime(2026, 7, 4, 2, 30)
+            : null,
+        clock: () => DateTime(2026, 7, 4, 1, 12),
+        onPrimaryAction: () {},
+        referenceCode: reason == BankAppGateReason.rootedDevice ||
+                reason == BankAppGateReason.vpnDetected ||
+                reason == BankAppGateReason.tamperDetected
+            ? 'RC-7F2K-401'
+            : null,
+        supportPhoneLabel: '+973 1758 3300',
+        onContactSupport: () {},
+        appVersion: '4.13.0',
+        queuePosition: reason == BankAppGateReason.queueFull ? 1240 : null,
+        queueInitialPosition:
+            reason == BankAppGateReason.queueFull ? 5000 : null,
+        estimatedWait: reason == BankAppGateReason.queueFull
+            ? const Duration(minutes: 4)
+            : null,
+        stillWorking: reason == BankAppGateReason.maintenance
+            ? const ['Card payments', 'ATM withdrawals', 'Standing orders']
+            : const [],
+      );
+    },
+  ),
+  GalleryEntry(
+    name: 'BankConnectivityBanner',
+    description: 'Offline and degraded-service banner with retry.',
+    category: GalleryCategory.states,
+    isFullScreen: true,
+    params: const [
+      GalleryParam(
+        name: 'status',
+        label: 'Status',
+        type: ParamType.enumType,
+        defaultValue: 'deviceOffline',
+        enumValues: ['deviceOffline', 'serviceDegraded', 'reconnected'],
+      ),
+    ],
+    builder: (ctx, p) => Align(
+      alignment: Alignment.topCenter,
+      child: BankConnectivityBanner(
+        status: BankConnectivityStatus.values
+            .firstWhere((e) => e.name == (p['status'] as String)),
+        lastSyncedAt: DateTime(2026, 7, 4, 0, 58),
+        nextRetryAt: DateTime(2026, 7, 4, 1, 12, 45),
+        clock: () => DateTime(2026, 7, 4, 1, 12, 30),
+        onRetry: () {},
+        onViewStatus: () {},
+      ),
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankServiceStatusList',
+    description: 'Per-service health with incident notes.',
+    category: GalleryCategory.states,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankServiceStatusList(
+      services: [
+        const BankServiceStatusEntry(
+          name: 'Cards & payments',
+          health: BankServiceHealth.operational,
+          icon: Icons.credit_card_outlined,
+        ),
+        BankServiceStatusEntry(
+          name: 'Instant transfers',
+          health: BankServiceHealth.degraded,
+          note: 'Transfers may take up to 30 minutes.',
+          updatedAt: DateTime(2026, 7, 4, 0, 40),
+          icon: Icons.swap_horiz_outlined,
+        ),
+        const BankServiceStatusEntry(
+          name: 'International payments',
+          health: BankServiceHealth.maintenance,
+          note: 'Scheduled work until 02:30.',
+          icon: Icons.public_outlined,
+        ),
+        const BankServiceStatusEntry(
+          name: 'Sign-in & security',
+          health: BankServiceHealth.operational,
+          icon: Icons.lock_outline,
+        ),
+      ],
+      lastUpdatedAt: DateTime(2026, 7, 4, 1, 5),
+      clock: () => DateTime(2026, 7, 4, 1, 12),
+      onViewStatusPage: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankUpdatePromptSheet',
+    description: 'Soft update prompt with release highlights.',
+    category: GalleryCategory.states,
+    isFullScreen: true,
+    params: const [],
+    builder: (ctx, p) => BankUpdatePromptSheet(
+      onUpdate: () {},
+      onNotNow: () {},
+      availableVersion: '4.14.0',
+      installedVersion: '4.13.0',
+      highlights: const [
+        'Faster sign-in with passkeys',
+        'Redesigned spending insights',
+        'Fixes for scheduled transfers',
+      ],
+      unsupportedAfter: DateTime(2026, 8, 31),
+    ),
+  ),
   GalleryEntry(
     name: 'BankDisposableCardTile',
     description: 'Single-use virtual card with auto-regeneration.',

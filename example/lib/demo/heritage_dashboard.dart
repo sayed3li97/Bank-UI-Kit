@@ -223,14 +223,22 @@ class _HeritageDashboardState extends State<HeritageDashboard> {
         body = _HomeTab(theme: theme);
     }
 
-    return Scaffold(
-      backgroundColor: theme.background,
-      bottomNavigationBar: BankBottomNavBar(
-        items: _navItems,
-        currentIndex: _tab,
-        onTap: (i) => setState(() => _tab = i),
+    // Heritage is the kit's Islamic-banking showcase: every rate reads
+    // as expected profit, never interest.
+    return BankUiScope(
+      initialData: const BankUiScopeData(
+        preset: BankPreset.heritage,
+        islamicFinanceMode: true,
       ),
-      body: body,
+      child: Scaffold(
+        backgroundColor: theme.background,
+        bottomNavigationBar: BankBottomNavBar(
+          items: _navItems,
+          currentIndex: _tab,
+          onTap: (i) => setState(() => _tab = i),
+        ),
+        body: body,
+      ),
     );
   }
 }

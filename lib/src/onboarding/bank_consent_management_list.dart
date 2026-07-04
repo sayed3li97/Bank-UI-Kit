@@ -72,6 +72,16 @@ class BankConsentManagementList extends StatefulWidget {
     this.emptyTitle = 'No connected apps',
     this.emptySubtitle =
         'Apps you allow to access your account data appear here.',
+    this.learnMoreLabel = 'How data sharing works',
+    this.itemMargin,
+    this.cardPadding,
+    this.cardRadius,
+    this.cardColor,
+    this.cardShadow,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.animationDuration,
+    this.animationCurve,
   });
 
   final List<BankConsent> consents;
@@ -97,6 +107,43 @@ class BankConsentManagementList extends StatefulWidget {
   final String moreScopesSuffix;
   final String emptyTitle;
   final String emptySubtitle;
+
+  /// Label of the [onLearnMore] button. Defaults to
+  /// 'How data sharing works'.
+  final String learnMoreLabel;
+
+  /// Outer margin around each consent card. Defaults to
+  /// [BankTokens.space4] horizontal and [BankTokens.space2] vertical.
+  final EdgeInsetsGeometry? itemMargin;
+
+  /// Inner padding of each consent card. Defaults to
+  /// [BankTokens.space4] on all sides.
+  final EdgeInsetsGeometry? cardPadding;
+
+  /// Corner radius of each consent card. Defaults to the theme
+  /// cardRadius.
+  final BorderRadius? cardRadius;
+
+  /// Fill of each consent card. Defaults to the theme surface.
+  final Color? cardColor;
+
+  /// Shadow of each consent card. Defaults to [BankTokens.shadowCard];
+  /// pass `const []` to flatten.
+  final List<BoxShadow>? cardShadow;
+
+  /// Merged over the computed grantee name style (bodyLarge).
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed granted/expiry line style (bodySmall).
+  final TextStyle? subtitleStyle;
+
+  /// Duration of the scope expander resize. Defaults to
+  /// [BankTokens.durationBase].
+  final Duration? animationDuration;
+
+  /// Curve of the scope expander resize. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
 
   @override
   State<BankConsentManagementList> createState() =>
@@ -174,10 +221,11 @@ class _BankConsentManagementListState extends State<BankConsentManagementList> {
       children: [
         for (final consent in widget.consents)
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: BankTokens.space4,
-              vertical: BankTokens.space2,
-            ),
+            padding: widget.itemMargin ??
+                const EdgeInsets.symmetric(
+                  horizontal: BankTokens.space4,
+                  vertical: BankTokens.space2,
+                ),
             child: _ConsentCard(
               consent: consent,
               state: _effectiveState(consent),
@@ -197,7 +245,7 @@ class _BankConsentManagementListState extends State<BankConsentManagementList> {
           TextButton(
             onPressed: widget.onLearnMore,
             child: Text(
-              'How data sharing works',
+              widget.learnMoreLabel,
               style: BankTokens.labelLarge.copyWith(color: theme.primary),
             ),
           ),
@@ -265,20 +313,21 @@ class _ConsentCard extends StatelessWidget {
     final hiddenCount = consent.scopes.length - 3;
 
     return AnimatedSize(
-      duration: BankTokens.durationBase,
-      curve: BankTokens.curveStandard,
+      duration: widget.animationDuration ?? BankTokens.durationBase,
+      curve: widget.animationCurve ?? BankTokens.curveStandard,
       alignment: Alignment.topCenter,
       child: Opacity(
         opacity: inactive ? 0.4 : 1,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: theme.surface,
-            borderRadius: theme.cardRadius,
+            color: widget.cardColor ?? theme.surface,
+            borderRadius: widget.cardRadius ?? theme.cardRadius,
             border: Border.all(color: theme.outline),
-            boxShadow: BankTokens.shadowCard,
+            boxShadow: widget.cardShadow ?? BankTokens.shadowCard,
           ),
           child: Padding(
-            padding: const EdgeInsets.all(BankTokens.space4),
+            padding:
+                widget.cardPadding ?? const EdgeInsets.all(BankTokens.space4),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -292,13 +341,15 @@ class _ConsentCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         consent.granteeName,
-                        style: BankTokens.bodyLarge.copyWith(
-                          color: theme.onSurface,
-                          fontWeight: FontWeight.w600,
-                          decoration: state == BankConsentState.revoked
-                              ? TextDecoration.lineThrough
-                              : null,
-                        ),
+                        style: BankTokens.bodyLarge
+                            .copyWith(
+                              color: theme.onSurface,
+                              fontWeight: FontWeight.w600,
+                              decoration: state == BankConsentState.revoked
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            )
+                            .merge(widget.titleStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -369,11 +420,13 @@ class _ConsentCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         grantedLine,
-                        style: BankTokens.bodySmall.copyWith(
-                          color: state == BankConsentState.expiringSoon
-                              ? BankTokens.warning
-                              : theme.onSurfaceVariant,
-                        ),
+                        style: BankTokens.bodySmall
+                            .copyWith(
+                              color: state == BankConsentState.expiringSoon
+                                  ? BankTokens.warning
+                                  : theme.onSurfaceVariant,
+                            )
+                            .merge(widget.subtitleStyle),
                       ),
                     ),
                     if (revoking)

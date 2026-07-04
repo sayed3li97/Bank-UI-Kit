@@ -15,10 +15,31 @@ class BankTransactionGroupHeader extends StatelessWidget {
   /// [BankUiScope.of(context).strings].
   final BankUiStrings? strings;
 
+  /// Overrides the header height. Defaults to 36.
+  final double? height;
+
+  /// Overrides the label padding. Defaults to horizontal
+  /// [BankTokens.space4].
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the header background. Defaults to the theme background.
+  final Color? backgroundColor;
+
+  /// Merged over the label style ([BankTokens.labelSmall]).
+  final TextStyle? labelStyle;
+
+  /// Overrides the header semantics label. Defaults to the visible text.
+  final String? semanticLabel;
+
   const BankTransactionGroupHeader({
     required this.date,
     super.key,
     this.strings,
+    this.height,
+    this.padding,
+    this.backgroundColor,
+    this.labelStyle,
+    this.semanticLabel,
   });
 
   @override
@@ -35,19 +56,21 @@ class BankTransactionGroupHeader extends StatelessWidget {
 
     return Semantics(
       header: true,
+      label: semanticLabel,
       child: SizedBox(
-        height: 36,
+        height: height ?? 36,
         child: Container(
-          color: bankTheme.background,
+          color: backgroundColor ?? bankTheme.background,
           alignment: AlignmentDirectional.centerStart,
-          padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: BankTokens.space4,
-          ),
+          padding: padding ??
+              const EdgeInsetsDirectional.symmetric(
+                horizontal: BankTokens.space4,
+              ),
           child: Text(
             label.toUpperCase(),
-            style: BankTokens.labelSmall.copyWith(
-              color: bankTheme.onSurfaceVariant,
-            ),
+            style: BankTokens.labelSmall
+                .copyWith(color: bankTheme.onSurfaceVariant)
+                .merge(labelStyle),
           ),
         ),
       ),

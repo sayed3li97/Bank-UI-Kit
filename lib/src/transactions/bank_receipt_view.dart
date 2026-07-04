@@ -21,6 +21,91 @@ class BankReceiptView extends StatelessWidget {
   /// Optional brand logo shown at the top of the receipt.
   final Widget? logoSlot;
 
+  /// Overrides the padding of each receipt section. Defaults to
+  /// [BankTokens.space6] on all sides.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the receipt corner radius. Defaults to
+  /// [BankTokens.radiusMedium].
+  final BorderRadius? radius;
+
+  /// Overrides the paper color. Defaults to white.
+  final Color? backgroundColor;
+
+  /// Overrides the drop shadow. Defaults to a soft black shadow;
+  /// pass const [] to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Overrides the dashed divider color. Defaults to a light grey.
+  final Color? dividerColor;
+
+  /// Overrides the export button background. Defaults to theme primary.
+  final Color? accentColor;
+
+  /// Merged over the receipt heading style ([BankTokens.headlineMedium]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the date line style ([BankTokens.bodySmall]).
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the merchant name style ([BankTokens.labelLarge]).
+  final TextStyle? merchantStyle;
+
+  /// Merged over the hero amount style ([BankTokens.numeralHero]).
+  final TextStyle? amountStyle;
+
+  /// Merged over the detail row label style ([BankTokens.bodySmall]).
+  final TextStyle? rowLabelStyle;
+
+  /// Merged over the detail row value style ([BankTokens.bodyMedium]).
+  final TextStyle? rowValueStyle;
+
+  /// Overrides the receipt heading. Defaults to 'Receipt'.
+  final String titleText;
+
+  /// Overrides the sender row label. Defaults to 'From'.
+  final String fromLabel;
+
+  /// Overrides the recipient row label. Defaults to 'To'.
+  final String toLabel;
+
+  /// Overrides the reference row label. Defaults to 'Reference'.
+  final String referenceLabel;
+
+  /// Overrides the category row label. Defaults to 'Category'.
+  final String categoryLabel;
+
+  /// Overrides the status row label. Defaults to 'Status'.
+  final String statusRowLabel;
+
+  /// Overrides the transaction id row label. Defaults to
+  /// 'Transaction ID'.
+  final String transactionIdLabel;
+
+  /// Overrides the QR placeholder caption. Defaults to 'QR code'.
+  final String qrLabel;
+
+  /// Overrides the export button text. Defaults to 'Export Receipt'.
+  final String exportLabel;
+
+  /// Overrides the export button semantics. Defaults to
+  /// 'Export receipt'.
+  final String exportSemanticLabel;
+
+  /// Overrides the receipt semantics label. Defaults to
+  /// 'Receipt for merchant, amount'.
+  final String? semanticLabel;
+
+  /// Overrides the category display name. Defaults to built-in
+  /// English labels.
+  final String Function(TransactionCategory)? categoryLabelBuilder;
+
+  /// Overrides the QR placeholder glyph. Defaults to [BankIcons.scan].
+  final IconData? qrIcon;
+
+  /// Overrides the export button glyph. Defaults to [BankIcons.share].
+  final IconData? exportIcon;
+
   const BankReceiptView({
     required this.transaction,
     super.key,
@@ -29,6 +114,32 @@ class BankReceiptView extends StatelessWidget {
     this.referenceNumber,
     this.onExport,
     this.logoSlot,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.shadow,
+    this.dividerColor,
+    this.accentColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.merchantStyle,
+    this.amountStyle,
+    this.rowLabelStyle,
+    this.rowValueStyle,
+    this.titleText = 'Receipt',
+    this.fromLabel = 'From',
+    this.toLabel = 'To',
+    this.referenceLabel = 'Reference',
+    this.categoryLabel = 'Category',
+    this.statusRowLabel = 'Status',
+    this.transactionIdLabel = 'Transaction ID',
+    this.qrLabel = 'QR code',
+    this.exportLabel = 'Export Receipt',
+    this.exportSemanticLabel = 'Export receipt',
+    this.semanticLabel,
+    this.categoryLabelBuilder,
+    this.qrIcon,
+    this.exportIcon,
   });
 
   String _categoryLabel(TransactionCategory cat) => switch (cat) {
@@ -74,26 +185,34 @@ class BankReceiptView extends StatelessWidget {
     final amountColor =
         isCredit ? bankTheme.positiveBalance : bankTheme.onSurface;
 
+    final sectionPadding = padding ?? const EdgeInsets.all(BankTokens.space6);
+    final resolvedDividerColor = dividerColor ?? const Color(0xFFE5E7EB);
+    final resolvedCategoryLabel =
+        (categoryLabelBuilder ?? _categoryLabel)(transaction.category);
+
     return Semantics(
-      label: 'Receipt for ${transaction.merchantName}, $formattedAmount',
+      label: semanticLabel ??
+          'Receipt for ${transaction.merchantName}, $formattedAmount',
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(BankTokens.radiusMedium),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: backgroundColor ?? Colors.white,
+          borderRadius:
+              radius ?? BorderRadius.circular(BankTokens.radiusMedium),
+          boxShadow: shadow ??
+              [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // ---- Receipt header ----
             Padding(
-              padding: const EdgeInsets.all(BankTokens.space6),
+              padding: sectionPadding,
               child: Column(
                 children: [
                   if (logoSlot != null) ...[
@@ -101,34 +220,34 @@ class BankReceiptView extends StatelessWidget {
                     const SizedBox(height: BankTokens.space3),
                   ],
                   Text(
-                    'Receipt',
-                    style: BankTokens.headlineMedium.copyWith(
-                      color: const Color(0xFF111111),
-                    ),
+                    titleText,
+                    style: BankTokens.headlineMedium
+                        .copyWith(color: const Color(0xFF111111))
+                        .merge(titleStyle),
                   ),
                   const SizedBox(height: BankTokens.space1),
                   Text(
                     BankDateFormatter.formatLong(transaction.settledAt),
-                    style: BankTokens.bodySmall.copyWith(
-                      color: const Color(0xFF6B7280),
-                    ),
+                    style: BankTokens.bodySmall
+                        .copyWith(color: const Color(0xFF6B7280))
+                        .merge(subtitleStyle),
                   ),
                   const SizedBox(height: BankTokens.space6),
                   // Merchant name
                   Text(
                     transaction.merchantName,
-                    style: BankTokens.labelLarge.copyWith(
-                      color: const Color(0xFF374151),
-                    ),
+                    style: BankTokens.labelLarge
+                        .copyWith(color: const Color(0xFF374151))
+                        .merge(merchantStyle),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: BankTokens.space2),
                   // Amount: hero display
                   Text(
                     formattedAmount,
-                    style: BankTokens.numeralHero.copyWith(
-                      color: amountColor,
-                    ),
+                    style: BankTokens.numeralHero
+                        .copyWith(color: amountColor)
+                        .merge(amountStyle),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -136,51 +255,63 @@ class BankReceiptView extends StatelessWidget {
             ),
 
             // ---- Dashed divider (perforated edge effect) ----
-            const _DashedDivider(color: Color(0xFFE5E7EB)),
+            _DashedDivider(color: resolvedDividerColor),
 
             // ---- Receipt body ----
             Padding(
-              padding: const EdgeInsets.all(BankTokens.space6),
+              padding: sectionPadding,
               child: Column(
                 children: [
                   if (fromAccountName != null)
                     _ReceiptRow(
-                      label: 'From',
+                      label: fromLabel,
                       value: fromAccountName!,
+                      labelStyle: rowLabelStyle,
+                      valueStyle: rowValueStyle,
                     ),
                   if (toName != null)
                     _ReceiptRow(
-                      label: 'To',
+                      label: toLabel,
                       value: toName!,
+                      labelStyle: rowLabelStyle,
+                      valueStyle: rowValueStyle,
                     ),
                   if (referenceNumber != null)
                     _ReceiptRow(
-                      label: 'Reference',
+                      label: referenceLabel,
                       value: referenceNumber!,
+                      labelStyle: rowLabelStyle,
+                      valueStyle: rowValueStyle,
                     ),
                   _ReceiptRow(
-                    label: 'Category',
-                    value: _categoryLabel(transaction.category),
+                    label: categoryLabel,
+                    value: resolvedCategoryLabel,
+                    labelStyle: rowLabelStyle,
+                    valueStyle: rowValueStyle,
                   ),
                   _ReceiptRow(
-                    label: 'Status',
+                    label: statusRowLabel,
                     value: _statusLabel(transaction.status, scope),
+                    labelStyle: rowLabelStyle,
+                    valueStyle: rowValueStyle,
                   ),
                   if (transaction.reference != null)
                     _ReceiptRow(
-                      label: 'Transaction ID',
+                      label: transactionIdLabel,
                       value: transaction.reference!,
+                      labelStyle: rowLabelStyle,
+                      valueStyle: rowValueStyle,
                     ),
                 ],
               ),
             ),
 
             // ---- Dashed divider ----
-            const _DashedDivider(color: Color(0xFFE5E7EB)),
+            _DashedDivider(color: resolvedDividerColor),
 
             // ---- QR code placeholder ----
             Padding(
-              padding: const EdgeInsets.all(BankTokens.space6),
+              padding: sectionPadding,
               child: Column(
                 children: [
                   Container(
@@ -197,14 +328,14 @@ class BankReceiptView extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
-                          BankIcons.scan,
+                        Icon(
+                          qrIcon ?? BankIcons.scan,
                           size: 32,
-                          color: Color(0xFF9CA3AF),
+                          color: const Color(0xFF9CA3AF),
                         ),
                         const SizedBox(height: BankTokens.space1),
                         Text(
-                          'QR code',
+                          qrLabel,
                           style: BankTokens.bodySmall.copyWith(
                             color: const Color(0xFF9CA3AF),
                           ),
@@ -216,22 +347,22 @@ class BankReceiptView extends StatelessWidget {
                     const SizedBox(height: BankTokens.space4),
                     Semantics(
                       button: true,
-                      label: 'Export receipt',
+                      label: exportSemanticLabel,
                       child: FilledButton.icon(
                         onPressed: onExport,
                         icon: Icon(
-                          BankIcons.share,
+                          exportIcon ?? BankIcons.share,
                           color: bankTheme.onPrimary,
                           size: 18,
                         ),
                         label: Text(
-                          'Export Receipt',
+                          exportLabel,
                           style: BankTokens.labelLarge.copyWith(
                             color: bankTheme.onPrimary,
                           ),
                         ),
                         style: FilledButton.styleFrom(
-                          backgroundColor: bankTheme.primary,
+                          backgroundColor: accentColor ?? bankTheme.primary,
                           minimumSize: const Size(
                             double.infinity,
                             BankTokens.minTapTarget,
@@ -260,8 +391,15 @@ class BankReceiptView extends StatelessWidget {
 class _ReceiptRow extends StatelessWidget {
   final String label;
   final String value;
+  final TextStyle? labelStyle;
+  final TextStyle? valueStyle;
 
-  const _ReceiptRow({required this.label, required this.value});
+  const _ReceiptRow({
+    required this.label,
+    required this.value,
+    this.labelStyle,
+    this.valueStyle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -274,18 +412,18 @@ class _ReceiptRow extends StatelessWidget {
             width: 100,
             child: Text(
               label,
-              style: BankTokens.bodySmall.copyWith(
-                color: const Color(0xFF6B7280),
-              ),
+              style: BankTokens.bodySmall
+                  .copyWith(color: const Color(0xFF6B7280))
+                  .merge(labelStyle),
             ),
           ),
           const SizedBox(width: BankTokens.space2),
           Expanded(
             child: Text(
               value,
-              style: BankTokens.bodyMedium.copyWith(
-                color: const Color(0xFF111111),
-              ),
+              style: BankTokens.bodyMedium
+                  .copyWith(color: const Color(0xFF111111))
+                  .merge(valueStyle),
               textAlign: TextAlign.end,
             ),
           ),

@@ -294,6 +294,16 @@ if (!screensOnly) {
     { name: 'BankMerchantBlockList',      fullScreen: true  },
     { name: 'BankFamilyCardTile',         fullScreen: true  },
     { name: 'BankDisposableCardTile',     fullScreen: true  },
+    // Community savings & assistant
+    { name: 'BankMoneyCircleCard',        fullScreen: true  },
+    { name: 'BankPrizeDrawCard',          fullScreen: true  },
+    { name: 'BankSavingsProjectionCard',  fullScreen: true  },
+    { name: 'BankAssistantPanel',         fullScreen: true  },
+    // App gates & degraded states
+    { name: 'BankAppGateScreen',          fullScreen: true  },
+    { name: 'BankConnectivityBanner',     fullScreen: true  },
+    { name: 'BankServiceStatusList',      fullScreen: true  },
+    { name: 'BankUpdatePromptSheet',      fullScreen: true  },
   ];
 
   // --only=Name1,Name2 restricts the component sweep (incremental capture).

@@ -72,6 +72,16 @@ class BankRecurringMerchantTile extends StatelessWidget {
     this.blockConfirmBody =
         'Future charges from this merchant will be declined.',
     this.cancelLabel = 'Cancel',
+    this.padding,
+    this.height,
+    this.leading,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.priceRiseColor,
+    this.moreIcon,
+    this.cancelHelpIcon,
+    this.blockIcon,
+    this.semanticLabel,
   });
 
   final BankRecurringMerchant merchant;
@@ -92,6 +102,42 @@ class BankRecurringMerchantTile extends StatelessWidget {
   final String blockConfirmBody;
   final String cancelLabel;
 
+  /// Overrides the row content padding. Defaults to space4 by space2.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the row minimum height. Defaults to 72.
+  final double? height;
+
+  /// Replaces the merchant emblem. Defaults to a [BankEmblem] built
+  /// from the merchant logo or initials.
+  final Widget? leading;
+
+  /// Merged over the merchant name style (bodyLarge, onSurface).
+  final TextStyle? titleStyle;
+
+  /// Merged over the cadence line style (bodySmall, onSurfaceVariant).
+  final TextStyle? subtitleStyle;
+
+  /// Overrides the price-rise chip tint. Defaults to
+  /// [BankTokens.warning].
+  final Color? priceRiseColor;
+
+  /// Overrides the overflow menu glyph. Defaults to
+  /// [Icons.more_vert_rounded].
+  final IconData? moreIcon;
+
+  /// Overrides the cancel-help sheet glyph. Defaults to
+  /// [Icons.help_outline_rounded].
+  final IconData? cancelHelpIcon;
+
+  /// Overrides the block sheet glyph. Defaults to
+  /// [Icons.block_rounded].
+  final IconData? blockIcon;
+
+  /// Overrides the tile semantics label. Defaults to the merchant name
+  /// and cadence line.
+  final String? semanticLabel;
+
   Future<void> _showActions(BuildContext context) async {
     final theme = BankThemeData.of(context);
     await showModalBottomSheet<void>(
@@ -105,7 +151,7 @@ class BankRecurringMerchantTile extends StatelessWidget {
             if (onCancelHelp != null)
               ListTile(
                 leading: Icon(
-                  Icons.help_outline_rounded,
+                  cancelHelpIcon ?? Icons.help_outline_rounded,
                   color: theme.onSurface,
                 ),
                 title: Text(
@@ -119,8 +165,8 @@ class BankRecurringMerchantTile extends StatelessWidget {
               ),
             if (onBlock != null)
               ListTile(
-                leading: const Icon(
-                  Icons.block_rounded,
+                leading: Icon(
+                  blockIcon ?? Icons.block_rounded,
                   color: BankTokens.danger,
                 ),
                 title: Text(
@@ -181,22 +227,24 @@ class BankRecurringMerchantTile extends StatelessWidget {
 
     return Semantics(
       button: onTap != null,
-      label: '${merchant.merchantName}, $cadenceLine',
+      label: semanticLabel ?? '${merchant.merchantName}, $cadenceLine',
       child: InkWell(
         onTap: onTap,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 72),
+          constraints: BoxConstraints(minHeight: height ?? 72),
           child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: BankTokens.space4,
-              vertical: BankTokens.space2,
-            ),
+            padding: padding ??
+                const EdgeInsetsDirectional.symmetric(
+                  horizontal: BankTokens.space4,
+                  vertical: BankTokens.space2,
+                ),
             child: Row(
               children: [
-                BankEmblem(
-                  imageUrl: merchant.merchantLogoUrl,
-                  initialsFrom: merchant.merchantName,
-                ),
+                leading ??
+                    BankEmblem(
+                      imageUrl: merchant.merchantLogoUrl,
+                      initialsFrom: merchant.merchantName,
+                    ),
                 const SizedBox(width: BankTokens.space3),
                 Expanded(
                   child: Column(
@@ -208,7 +256,8 @@ class BankRecurringMerchantTile extends StatelessWidget {
                             child: Text(
                               merchant.merchantName,
                               style: BankTokens.bodyLarge
-                                  .copyWith(color: theme.onSurface),
+                                  .copyWith(color: theme.onSurface)
+                                  .merge(titleStyle),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -217,8 +266,8 @@ class BankRecurringMerchantTile extends StatelessWidget {
                             const SizedBox(width: BankTokens.space2),
                             DecoratedBox(
                               decoration: BoxDecoration(
-                                color:
-                                    BankTokens.warning.withValues(alpha: 0.12),
+                                color: (priceRiseColor ?? BankTokens.warning)
+                                    .withValues(alpha: 0.12),
                                 borderRadius: theme.chipRadius,
                               ),
                               child: Padding(
@@ -228,8 +277,9 @@ class BankRecurringMerchantTile extends StatelessWidget {
                                 ),
                                 child: Text(
                                   priceRiseLabel,
-                                  style: BankTokens.labelSmall
-                                      .copyWith(color: BankTokens.warning),
+                                  style: BankTokens.labelSmall.copyWith(
+                                    color: priceRiseColor ?? BankTokens.warning,
+                                  ),
                                 ),
                               ),
                             ),
@@ -240,7 +290,8 @@ class BankRecurringMerchantTile extends StatelessWidget {
                       Text(
                         cadenceLine,
                         style: BankTokens.bodySmall
-                            .copyWith(color: theme.onSurfaceVariant),
+                            .copyWith(color: theme.onSurfaceVariant)
+                            .merge(subtitleStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -274,7 +325,7 @@ class BankRecurringMerchantTile extends StatelessWidget {
                   IconButton(
                     onPressed: () => _showActions(context),
                     icon: Icon(
-                      Icons.more_vert_rounded,
+                      moreIcon ?? Icons.more_vert_rounded,
                       size: 20,
                       color: theme.onSurfaceVariant,
                     ),
@@ -296,6 +347,11 @@ class BankRecurringTotalHeader extends StatefulWidget {
     super.key,
     this.monthlyTemplate = 'You spend {amount}/month on {count} subscriptions',
     this.yearlyTemplate = 'About {amount}/year',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.headlineStyle,
+    this.sublineStyle,
   });
 
   final List<BankRecurringMerchant> merchants;
@@ -305,6 +361,22 @@ class BankRecurringTotalHeader extends StatefulWidget {
 
   /// Shown under the headline; `{amount}` is substituted.
   final String yearlyTemplate;
+
+  /// Overrides the bar content padding. Defaults to space4 all round.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the bar corner radius. Defaults to the theme cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the bar fill. Defaults to the theme primary at 8%
+  /// opacity.
+  final Color? backgroundColor;
+
+  /// Merged over the headline style (bodyLarge w600, onSurface).
+  final TextStyle? headlineStyle;
+
+  /// Merged over the subline style (bodySmall, onSurfaceVariant).
+  final TextStyle? sublineStyle;
 
   @override
   State<BankRecurringTotalHeader> createState() =>
@@ -349,26 +421,29 @@ class _BankRecurringTotalHeaderState extends State<BankRecurringTotalHeader> {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.primary.withValues(alpha: 0.08),
-        borderRadius: theme.cardRadius,
+        color: widget.backgroundColor ?? theme.primary.withValues(alpha: 0.08),
+        borderRadius: widget.radius ?? theme.cardRadius,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space4),
+        padding: widget.padding ?? const EdgeInsets.all(BankTokens.space4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               headline,
-              style: BankTokens.bodyLarge.copyWith(
-                color: theme.onSurface,
-                fontWeight: FontWeight.w600,
-              ),
+              style: BankTokens.bodyLarge
+                  .copyWith(
+                    color: theme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  )
+                  .merge(widget.headlineStyle),
             ),
             const SizedBox(height: 2),
             Text(
               subline,
-              style:
-                  BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+              style: BankTokens.bodySmall
+                  .copyWith(color: theme.onSurfaceVariant)
+                  .merge(widget.sublineStyle),
             ),
           ],
         ),

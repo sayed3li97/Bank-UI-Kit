@@ -148,6 +148,33 @@ class BankSummaryStack extends StatelessWidget {
   /// `'$copyActionLabel: <row label>'`.
   final String copyActionLabel;
 
+  /// Overrides the divider colour. Defaults to [BankThemeData.onSurface]
+  /// at 8 % opacity.
+  final Color? dividerColor;
+
+  /// Merged over the computed row label style ([BankTokens.bodySmall] in
+  /// [BankThemeData.onSurfaceVariant]).
+  final TextStyle? labelStyle;
+
+  /// Merged over the computed textual value style ([BankTokens.bodyMedium],
+  /// or [BankTokens.labelLarge] when emphasized).
+  final TextStyle? valueStyle;
+
+  /// Merged over the computed monetary value style used by
+  /// [BankBalanceText].
+  final TextStyle? amountStyle;
+
+  /// Overrides the copy affordance glyph. Defaults to [BankIcons.copy].
+  final IconData? copyIcon;
+
+  /// Overrides the post-copy confirmation glyph. Defaults to
+  /// [BankIcons.success].
+  final IconData? copiedIcon;
+
+  /// Overrides the trailing chevron of tappable rows. Defaults to a
+  /// direction-aware [Icons.chevron_right] / [Icons.chevron_left].
+  final IconData? chevronIcon;
+
   /// Creates a stack of label/value summary rows.
   const BankSummaryStack({
     required this.items,
@@ -156,6 +183,13 @@ class BankSummaryStack extends StatelessWidget {
     this.padding,
     this.valueAlignment = CrossAxisAlignment.end,
     this.copyActionLabel = 'Copy',
+    this.dividerColor,
+    this.labelStyle,
+    this.valueStyle,
+    this.amountStyle,
+    this.copyIcon,
+    this.copiedIcon,
+    this.chevronIcon,
   });
 
   @override
@@ -163,7 +197,8 @@ class BankSummaryStack extends StatelessWidget {
     if (items.isEmpty) return const SizedBox.shrink();
 
     final theme = BankThemeData.of(context);
-    final dividerColor = theme.onSurface.withValues(alpha: 0.08);
+    final resolvedDividerColor =
+        dividerColor ?? theme.onSurface.withValues(alpha: 0.08);
 
     final children = <Widget>[];
     for (var i = 0; i < items.length; i++) {
@@ -172,10 +207,18 @@ class BankSummaryStack extends StatelessWidget {
           item: items[i],
           valueAlignment: valueAlignment,
           copyActionLabel: copyActionLabel,
+          labelStyle: labelStyle,
+          valueStyle: valueStyle,
+          amountStyle: amountStyle,
+          copyIcon: copyIcon,
+          copiedIcon: copiedIcon,
+          chevronIcon: chevronIcon,
         ),
       );
       if (showDividers && i < items.length - 1) {
-        children.add(Divider(height: 1, thickness: 1, color: dividerColor));
+        children.add(
+          Divider(height: 1, thickness: 1, color: resolvedDividerColor),
+        );
       }
     }
 
@@ -198,11 +241,23 @@ class _BankSummaryRow extends StatelessWidget {
   final BankSummaryItem item;
   final CrossAxisAlignment valueAlignment;
   final String copyActionLabel;
+  final TextStyle? labelStyle;
+  final TextStyle? valueStyle;
+  final TextStyle? amountStyle;
+  final IconData? copyIcon;
+  final IconData? copiedIcon;
+  final IconData? chevronIcon;
 
   const _BankSummaryRow({
     required this.item,
     required this.valueAlignment,
     required this.copyActionLabel,
+    this.labelStyle,
+    this.valueStyle,
+    this.amountStyle,
+    this.copyIcon,
+    this.copiedIcon,
+    this.chevronIcon,
   });
 
   AlignmentGeometry get _valueCellAlignment => switch (valueAlignment) {
@@ -220,15 +275,22 @@ class _BankSummaryRow extends StatelessWidget {
   Widget _buildValue(BankThemeData theme) {
     if (item.valueWidget != null) return item.valueWidget!;
     if (item.money != null) {
+      final computed = item.emphasized
+          ? theme.numeralSmall.copyWith(
+              color: theme.onSurface,
+              fontWeight: FontWeight.w600,
+            )
+          : null;
+      // Merge over the same base style BankBalanceText derives on its own
+      // so partial amountStyle overrides behave as expected.
+      final merged = amountStyle == null
+          ? computed
+          : (computed ?? theme.numeralSmall.copyWith(color: theme.onSurface))
+              .merge(amountStyle);
       return BankBalanceText(
         money: item.money!,
         size: BankBalanceSize.small,
-        style: item.emphasized
-            ? theme.numeralSmall.copyWith(
-                color: theme.onSurface,
-                fontWeight: FontWeight.w600,
-              )
-            : null,
+        style: merged,
       );
     }
     final style = item.emphasized
@@ -236,7 +298,7 @@ class _BankSummaryRow extends StatelessWidget {
         : BankTokens.bodyMedium.copyWith(color: theme.onSurface);
     return Text(
       item.value ?? '',
-      style: style,
+      style: style.merge(valueStyle),
       textAlign: _valueTextAlign,
     );
   }
@@ -265,14 +327,19 @@ class _BankSummaryRow extends StatelessWidget {
       semanticValue = item.value;
     }
 
+    // Money rows never copy the raw amount while privacy mode is on;
+    // the affordance disappears rather than copying a masked string.
+    final moneyCopyBlocked = item.money != null && scope.privacyEnabled;
     final copyText = item.value ?? formattedMoney;
-    final showCopy = item.copyable && copyText != null;
+    final showCopy = item.copyable && copyText != null && !moneyCopyBlocked;
 
     Widget cluster = Row(
       children: [
         Text(
           item.label,
-          style: BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+          style: BankTokens.bodySmall
+              .copyWith(color: theme.onSurfaceVariant)
+              .merge(labelStyle),
         ),
         const SizedBox(width: BankTokens.space4),
         Expanded(
@@ -308,12 +375,15 @@ class _BankSummaryRow extends StatelessWidget {
               _CopyAffordance(
                 text: copyText,
                 semanticLabel: '$copyActionLabel: ${item.label}',
+                copyIcon: copyIcon,
+                copiedIcon: copiedIcon,
               ),
             ],
             if (item.onTap != null) ...[
               const SizedBox(width: BankTokens.space1),
               Icon(
-                isRtl ? Icons.chevron_left : Icons.chevron_right,
+                chevronIcon ??
+                    (isRtl ? Icons.chevron_left : Icons.chevron_right),
                 size: 20,
                 color: theme.onSurfaceVariant,
               ),
@@ -348,10 +418,14 @@ class _BankSummaryRow extends StatelessWidget {
 class _CopyAffordance extends StatefulWidget {
   final String text;
   final String semanticLabel;
+  final IconData? copyIcon;
+  final IconData? copiedIcon;
 
   const _CopyAffordance({
     required this.text,
     required this.semanticLabel,
+    this.copyIcon,
+    this.copiedIcon,
   });
 
   @override
@@ -402,7 +476,9 @@ class _CopyAffordanceState extends State<_CopyAffordance> {
             switchInCurve: BankTokens.curveStandard,
             switchOutCurve: BankTokens.curveStandard,
             child: Icon(
-              _copied ? BankIcons.success : BankIcons.copy,
+              _copied
+                  ? (widget.copiedIcon ?? BankIcons.success)
+                  : (widget.copyIcon ?? BankIcons.copy),
               key: ValueKey<bool>(_copied),
               size: 18,
               color: _copied ? BankTokens.success : theme.onSurfaceVariant,

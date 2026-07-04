@@ -10,8 +10,7 @@ import '../theme/tokens.dart';
 
 /// Hold-to-activate emergency "freeze everything" control.
 ///
-/// Equivalent to Revolut's freeze-everything and Al Rajhi's security freeze:
-/// one panic gesture blocks all cards and outgoing payments.
+/// One panic gesture blocks all cards and outgoing payments.
 ///
 /// Two visual states, driven by [frozen]:
 ///
@@ -85,6 +84,57 @@ class BankPanicFreezeButton extends StatefulWidget {
   /// Label of the dialog action that keeps everything frozen.
   final String cancelLabel;
 
+  /// Overrides the danger accent (ring, borders, icons, frozen surface).
+  /// Defaults to [BankTokens.danger].
+  final Color? accentColor;
+
+  /// Overrides the text and icon colour on the frozen panel. Defaults to
+  /// white.
+  final Color? foregroundColor;
+
+  /// Overrides the snowflake glyph in both states. Defaults to
+  /// [BankIcons.cardFreeze].
+  final IconData? icon;
+
+  /// Overrides the hold button diameter. Defaults to `128`.
+  final double? size;
+
+  /// Overrides the frozen panel corner radius. Defaults to
+  /// [BankThemeData.cardRadius].
+  final BorderRadius? radius;
+
+  /// Overrides the frozen panel content padding. Defaults to
+  /// [BankTokens.space5] on all sides.
+  final EdgeInsetsGeometry? padding;
+
+  /// Merged over the computed [freezeLabel] style
+  /// ([BankTokens.labelLarge]).
+  final TextStyle? labelStyle;
+
+  /// Merged over the computed [frozenLabel] style
+  /// ([BankTokens.headlineSmall]).
+  final TextStyle? frozenTitleStyle;
+
+  /// Merged over the computed [frozenBody] style
+  /// ([BankTokens.bodySmall]).
+  final TextStyle? frozenBodyStyle;
+
+  /// Overrides the semantics hint of the hold button. Defaults to a
+  /// press-and-hold instruction including the hold duration.
+  final String? holdHint;
+
+  /// Semantics hint of the unfreeze button. Defaults to
+  /// `'Opens a confirmation dialog before unfreezing'`.
+  final String unfreezeHint;
+
+  /// Overrides the state cross-fade and press-scale durations. Defaults
+  /// to [BankTokens.durationBase] and [BankTokens.durationFast].
+  final Duration? animationDuration;
+
+  /// Overrides the state cross-fade and press-scale curves. Defaults to
+  /// [BankTokens.curveStandard] and [BankTokens.curveEmphasized].
+  final Curve? animationCurve;
+
   const BankPanicFreezeButton({
     required this.frozen,
     required this.onToggle,
@@ -98,6 +148,19 @@ class BankPanicFreezeButton extends StatefulWidget {
     this.unfreezeConfirmBody =
         'Your cards and outgoing payments will start working again.',
     this.cancelLabel = 'Cancel',
+    this.accentColor,
+    this.foregroundColor,
+    this.icon,
+    this.size,
+    this.radius,
+    this.padding,
+    this.labelStyle,
+    this.frozenTitleStyle,
+    this.frozenBodyStyle,
+    this.holdHint,
+    this.unfreezeHint = 'Opens a confirmation dialog before unfreezing',
+    this.animationDuration,
+    this.animationCurve,
   });
 
   @override
@@ -245,8 +308,8 @@ class _BankPanicFreezeButtonState extends State<BankPanicFreezeButton>
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: FilledButton.styleFrom(
-              backgroundColor: BankTokens.danger,
-              foregroundColor: _onDanger,
+              backgroundColor: widget.accentColor ?? BankTokens.danger,
+              foregroundColor: widget.foregroundColor ?? _onDanger,
               minimumSize: const Size(
                 BankTokens.minTapTarget,
                 BankTokens.minTapTarget,
@@ -273,10 +336,13 @@ class _BankPanicFreezeButtonState extends State<BankPanicFreezeButton>
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final reducedMotion = MediaQuery.disableAnimationsOf(context);
+    final switchCurve = widget.animationCurve ?? BankTokens.curveStandard;
     return AnimatedSwitcher(
-      duration: reducedMotion ? Duration.zero : BankTokens.durationBase,
-      switchInCurve: BankTokens.curveStandard,
-      switchOutCurve: BankTokens.curveStandard,
+      duration: reducedMotion
+          ? Duration.zero
+          : widget.animationDuration ?? BankTokens.durationBase,
+      switchInCurve: switchCurve,
+      switchOutCurve: switchCurve,
       child: _frozen
           ? _FrozenPanel(
               key: const ValueKey<String>('frozen'),
@@ -285,7 +351,14 @@ class _BankPanicFreezeButtonState extends State<BankPanicFreezeButton>
               frozenBody: widget.frozenBody,
               unfreezeLabel: widget.unfreezeLabel,
               busy: _busy,
-              onDanger: _onDanger,
+              accent: widget.accentColor ?? BankTokens.danger,
+              onDanger: widget.foregroundColor ?? _onDanger,
+              icon: widget.icon ?? BankIcons.cardFreeze,
+              radius: widget.radius,
+              padding: widget.padding,
+              titleStyle: widget.frozenTitleStyle,
+              bodyStyle: widget.frozenBodyStyle,
+              unfreezeHint: widget.unfreezeHint,
               onUnfreeze: _onUnfreezePressed,
             )
           : _buildHoldButton(theme, reducedMotion),
@@ -297,13 +370,16 @@ class _BankPanicFreezeButtonState extends State<BankPanicFreezeButton>
     final secondsText = seconds == seconds.roundToDouble()
         ? seconds.round().toString()
         : seconds.toStringAsFixed(1);
+    final accent = widget.accentColor ?? BankTokens.danger;
+    final diameter = widget.size ?? _ringDiameter;
     return Semantics(
       key: const ValueKey<String>('unfrozen'),
       button: true,
       enabled: !_busy,
       label: widget.freezeLabel,
-      hint: 'Press and hold for $secondsText seconds to freeze all cards '
-          'and outgoing payments',
+      hint: widget.holdHint ??
+          'Press and hold for $secondsText seconds to freeze all cards '
+              'and outgoing payments',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -313,8 +389,8 @@ class _BankPanicFreezeButtonState extends State<BankPanicFreezeButton>
             onTapCancel: _cancelHold,
             behavior: HitTestBehavior.opaque,
             child: SizedBox(
-              width: _ringDiameter,
-              height: _ringDiameter,
+              width: diameter,
+              height: diameter,
               child: AnimatedBuilder(
                 animation: _holdController,
                 builder: (context, child) {
@@ -327,8 +403,8 @@ class _BankPanicFreezeButtonState extends State<BankPanicFreezeButton>
                   return CustomPaint(
                     painter: _HoldRingPainter(
                       progress: progress,
-                      trackColor: BankTokens.danger.withValues(alpha: 0.15),
-                      ringColor: BankTokens.danger,
+                      trackColor: accent.withValues(alpha: 0.15),
+                      ringColor: accent,
                       strokeWidth: _ringStrokeWidth,
                     ),
                     child: child,
@@ -337,34 +413,35 @@ class _BankPanicFreezeButtonState extends State<BankPanicFreezeButton>
                 child: Center(
                   child: AnimatedScale(
                     scale: _pressed && !reducedMotion ? 0.92 : 1,
-                    duration: BankTokens.durationFast,
-                    curve: BankTokens.curveEmphasized,
+                    duration:
+                        widget.animationDuration ?? BankTokens.durationFast,
+                    curve: widget.animationCurve ?? BankTokens.curveEmphasized,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: BankTokens.danger.withValues(alpha: 0.08),
+                        color: accent.withValues(alpha: 0.08),
                         border: Border.all(
-                          color: BankTokens.danger,
+                          color: accent,
                           width: 2,
                         ),
                       ),
                       child: SizedBox(
-                        width: _ringDiameter - BankTokens.space6,
-                        height: _ringDiameter - BankTokens.space6,
+                        width: diameter - BankTokens.space6,
+                        height: diameter - BankTokens.space6,
                         child: Center(
                           child: _busy
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 28,
                                   height: 28,
                                   child: CircularProgressIndicator(
-                                    color: BankTokens.danger,
+                                    color: accent,
                                     strokeWidth: 2.5,
                                   ),
                                 )
-                              : const Icon(
-                                  BankIcons.cardFreeze,
+                              : Icon(
+                                  widget.icon ?? BankIcons.cardFreeze,
                                   size: 44,
-                                  color: BankTokens.danger,
+                                  color: accent,
                                 ),
                         ),
                       ),
@@ -377,7 +454,9 @@ class _BankPanicFreezeButtonState extends State<BankPanicFreezeButton>
           const SizedBox(height: BankTokens.space3),
           Text(
             widget.freezeLabel,
-            style: BankTokens.labelLarge.copyWith(color: theme.onSurface),
+            style: BankTokens.labelLarge
+                .copyWith(color: theme.onSurface)
+                .merge(widget.labelStyle),
             textAlign: TextAlign.center,
           ),
         ],
@@ -396,7 +475,14 @@ class _FrozenPanel extends StatelessWidget {
   final String frozenBody;
   final String unfreezeLabel;
   final bool busy;
+  final Color accent;
   final Color onDanger;
+  final IconData icon;
+  final BorderRadius? radius;
+  final EdgeInsetsGeometry? padding;
+  final TextStyle? titleStyle;
+  final TextStyle? bodyStyle;
+  final String unfreezeHint;
   final VoidCallback onUnfreeze;
 
   const _FrozenPanel({
@@ -405,8 +491,15 @@ class _FrozenPanel extends StatelessWidget {
     required this.frozenBody,
     required this.unfreezeLabel,
     required this.busy,
+    required this.accent,
     required this.onDanger,
+    required this.icon,
+    required this.unfreezeHint,
     required this.onUnfreeze,
+    this.radius,
+    this.padding,
+    this.titleStyle,
+    this.bodyStyle,
     super.key,
   });
 
@@ -417,31 +510,34 @@ class _FrozenPanel extends StatelessWidget {
       label: '$frozenLabel. $frozenBody',
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: BankTokens.danger,
-          borderRadius: theme.cardRadius,
+          color: accent,
+          borderRadius: radius ?? theme.cardRadius,
         ),
         child: Padding(
-          padding: const EdgeInsetsDirectional.all(BankTokens.space5),
+          padding:
+              padding ?? const EdgeInsetsDirectional.all(BankTokens.space5),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                BankIcons.cardFreeze,
+                icon,
                 size: 40,
                 color: onDanger,
               ),
               const SizedBox(height: BankTokens.space3),
               Text(
                 frozenLabel,
-                style: BankTokens.headlineSmall.copyWith(color: onDanger),
+                style: BankTokens.headlineSmall
+                    .copyWith(color: onDanger)
+                    .merge(titleStyle),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: BankTokens.space1),
               Text(
                 frozenBody,
-                style: BankTokens.bodySmall.copyWith(
-                  color: onDanger.withValues(alpha: 0.85),
-                ),
+                style: BankTokens.bodySmall
+                    .copyWith(color: onDanger.withValues(alpha: 0.85))
+                    .merge(bodyStyle),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: BankTokens.space4),
@@ -449,12 +545,12 @@ class _FrozenPanel extends StatelessWidget {
                 button: true,
                 enabled: !busy,
                 label: unfreezeLabel,
-                hint: 'Opens a confirmation dialog before unfreezing',
+                hint: unfreezeHint,
                 child: FilledButton(
                   onPressed: busy ? null : onUnfreeze,
                   style: FilledButton.styleFrom(
                     backgroundColor: onDanger,
-                    foregroundColor: BankTokens.danger,
+                    foregroundColor: accent,
                     disabledBackgroundColor: onDanger.withValues(alpha: 0.7),
                     minimumSize: const Size(
                       double.infinity,
@@ -466,11 +562,11 @@ class _FrozenPanel extends StatelessWidget {
                     textStyle: BankTokens.labelLarge,
                   ),
                   child: busy
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
-                            color: BankTokens.danger,
+                            color: accent,
                             strokeWidth: 2,
                           ),
                         )

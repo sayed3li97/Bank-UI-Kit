@@ -73,6 +73,34 @@ class BankMoneyProtectionBanner extends StatelessWidget {
   /// Label of the learn-more control. Defaults to `'Learn more'`.
   final String learnMoreLabel;
 
+  /// Overrides the banner's content padding (default:
+  /// [BankTokens.space4] on all sides).
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides [BankThemeData.cardRadius] as the banner radius.
+  final BorderRadius? radius;
+
+  /// Overrides the computed background (default: an 8 % accent tint for
+  /// the prominent style, [BankThemeData.surfaceVariant] otherwise).
+  final Color? backgroundColor;
+
+  /// Overrides [BankThemeData.positiveBalance] as the accent used for
+  /// the shield icon, the prominent start border, and the learn-more
+  /// control.
+  final Color? accentColor;
+
+  /// Merged over the computed message style (default:
+  /// [BankTokens.bodyMedium] at w500 in [BankThemeData.onSurface]).
+  final TextStyle? messageStyle;
+
+  /// Merged over the computed [detailText] style (default:
+  /// [BankTokens.bodySmall] in [BankThemeData.onSurfaceVariant]).
+  final TextStyle? detailStyle;
+
+  /// Overrides the computed semantics label (default: the message
+  /// followed by [detailText]).
+  final String? semanticLabel;
+
   const BankMoneyProtectionBanner({
     required this.schemeName,
     this.detailText,
@@ -81,6 +109,13 @@ class BankMoneyProtectionBanner extends StatelessWidget {
     this.style = BankMoneyProtectionStyle.subtle,
     this.message,
     this.learnMoreLabel = 'Learn more',
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.accentColor,
+    this.messageStyle,
+    this.detailStyle,
+    this.semanticLabel,
     super.key,
   });
 
@@ -91,26 +126,28 @@ class BankMoneyProtectionBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final prominent = style == BankMoneyProtectionStyle.prominent;
+    final accent = accentColor ?? theme.positiveBalance;
+    final borderRadius = radius ?? theme.cardRadius;
 
     final decoration = prominent
         ? BoxDecoration(
-            color: theme.positiveBalance.withValues(alpha: 0.08),
-            borderRadius: theme.cardRadius,
+            color: backgroundColor ?? accent.withValues(alpha: 0.08),
+            borderRadius: borderRadius,
             border: BorderDirectional(
               start: BorderSide(
-                color: theme.positiveBalance,
+                color: accent,
                 width: 4,
               ),
             ),
           )
         : BoxDecoration(
-            color: theme.surfaceVariant,
-            borderRadius: theme.cardRadius,
+            color: backgroundColor ?? theme.surfaceVariant,
+            borderRadius: borderRadius,
           );
 
     final detail = detailText;
-    final semanticsLabel =
-        detail == null ? _effectiveMessage : '$_effectiveMessage. $detail';
+    final semanticsLabel = semanticLabel ??
+        (detail == null ? _effectiveMessage : '$_effectiveMessage. $detail');
 
     return Semantics(
       label: semanticsLabel,
@@ -118,7 +155,8 @@ class BankMoneyProtectionBanner extends StatelessWidget {
       child: DecoratedBox(
         decoration: decoration,
         child: Padding(
-          padding: const EdgeInsetsDirectional.all(BankTokens.space4),
+          padding:
+              padding ?? const EdgeInsetsDirectional.all(BankTokens.space4),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -127,7 +165,7 @@ class BankMoneyProtectionBanner extends StatelessWidget {
                 child: schemeLogo ??
                     Icon(
                       BankIcons.shield,
-                      color: theme.positiveBalance,
+                      color: accent,
                       size: 24,
                     ),
               ),
@@ -139,18 +177,20 @@ class BankMoneyProtectionBanner extends StatelessWidget {
                     children: [
                       Text(
                         _effectiveMessage,
-                        style: BankTokens.bodyMedium.copyWith(
-                          color: theme.onSurface,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: BankTokens.bodyMedium
+                            .copyWith(
+                              color: theme.onSurface,
+                              fontWeight: FontWeight.w500,
+                            )
+                            .merge(messageStyle),
                       ),
                       if (detail != null) ...[
                         const SizedBox(height: BankTokens.space1),
                         Text(
                           detail,
-                          style: BankTokens.bodySmall.copyWith(
-                            color: theme.onSurfaceVariant,
-                          ),
+                          style: BankTokens.bodySmall
+                              .copyWith(color: theme.onSurfaceVariant)
+                              .merge(detailStyle),
                         ),
                       ],
                     ],
@@ -162,7 +202,7 @@ class BankMoneyProtectionBanner extends StatelessWidget {
                 _LearnMoreButton(
                   label: learnMoreLabel,
                   onPressed: onLearnMore!,
-                  color: theme.positiveBalance,
+                  color: accent,
                 ),
               ],
             ],

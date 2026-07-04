@@ -68,6 +68,69 @@ class BankScheduledTransferToggle extends StatelessWidget {
   /// dropdown is rendered below the segmented button.
   final ValueChanged<String>? onRecurringPatternChanged;
 
+  /// Label of the instant segment. Defaults to `'Instant'`.
+  final String instantLabel;
+
+  /// Label of the later segment. Defaults to `'Later'`.
+  final String laterLabel;
+
+  /// Label of the recurring segment. Defaults to `'Recurring'`.
+  final String recurringLabel;
+
+  /// Options offered by the recurrence dropdown. Defaults to
+  /// `['Daily', 'Weekly', 'Biweekly', 'Monthly']`.
+  final List<String>? recurringOptions;
+
+  /// Placeholder of the date row before a date is picked. Defaults to
+  /// `'Select date & time'`.
+  final String selectDateLabel;
+
+  /// Help text of the date picker dialog. Defaults to
+  /// `'Select transfer date'`.
+  final String datePickerHelpText;
+
+  /// Help text of the time picker dialog. Defaults to
+  /// `'Select transfer time'`.
+  final String timePickerHelpText;
+
+  /// Overrides the instant segment glyph. Defaults to
+  /// [Icons.bolt_outlined].
+  final IconData? instantIcon;
+
+  /// Overrides the later segment glyph. Defaults to
+  /// [Icons.schedule_outlined].
+  final IconData? laterIcon;
+
+  /// Overrides the recurring segment glyph. Defaults to [Icons.repeat].
+  final IconData? recurringIcon;
+
+  /// Overrides the date row glyph. Defaults to
+  /// [Icons.calendar_today_outlined].
+  final IconData? calendarIcon;
+
+  /// Overrides the date row trailing glyph. Defaults to
+  /// [Icons.chevron_right].
+  final IconData? chevronIcon;
+
+  /// Overrides the dropdown glyph. Defaults to [Icons.expand_more].
+  final IconData? dropdownIcon;
+
+  /// Overrides the selected segment background and the picker dialog
+  /// primary color. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Overrides the corner radius of the segments, date row, and dropdown.
+  /// Defaults to the theme chipRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the fill color of the date row and dropdown. Defaults to
+  /// the theme surfaceVariant.
+  final Color? fieldColor;
+
+  /// Overrides the semantics label of the segmented button. Defaults to
+  /// `'Transfer timing: <selection>'`.
+  final String? semanticLabel;
+
   static const List<String> _recurringOptions = [
     'Daily',
     'Weekly',
@@ -83,11 +146,32 @@ class BankScheduledTransferToggle extends StatelessWidget {
     this.onDateChanged,
     this.recurringPattern,
     this.onRecurringPatternChanged,
+    this.instantLabel = 'Instant',
+    this.laterLabel = 'Later',
+    this.recurringLabel = 'Recurring',
+    this.recurringOptions,
+    this.selectDateLabel = 'Select date & time',
+    this.datePickerHelpText = 'Select transfer date',
+    this.timePickerHelpText = 'Select transfer time',
+    this.instantIcon,
+    this.laterIcon,
+    this.recurringIcon,
+    this.calendarIcon,
+    this.chevronIcon,
+    this.dropdownIcon,
+    this.accentColor,
+    this.radius,
+    this.fieldColor,
+    this.semanticLabel,
   });
 
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
+    final resolvedAccent = accentColor ?? bankTheme.primary;
+    final resolvedRadius = radius ?? bankTheme.chipRadius;
+    final resolvedFieldColor = fieldColor ?? bankTheme.surfaceVariant;
+    final resolvedOptions = recurringOptions ?? _recurringOptions;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -97,23 +181,23 @@ class BankScheduledTransferToggle extends StatelessWidget {
         // Segmented button
         // ----------------------------------------------------------------
         Semantics(
-          label: 'Transfer timing: ${selected.name}',
+          label: semanticLabel ?? 'Transfer timing: ${selected.name}',
           child: SegmentedButton<BankTransferTiming>(
-            segments: const [
+            segments: [
               ButtonSegment<BankTransferTiming>(
                 value: BankTransferTiming.instant,
-                label: Text('Instant'),
-                icon: Icon(Icons.bolt_outlined, size: 18),
+                label: Text(instantLabel),
+                icon: Icon(instantIcon ?? Icons.bolt_outlined, size: 18),
               ),
               ButtonSegment<BankTransferTiming>(
                 value: BankTransferTiming.later,
-                label: Text('Later'),
-                icon: Icon(Icons.schedule_outlined, size: 18),
+                label: Text(laterLabel),
+                icon: Icon(laterIcon ?? Icons.schedule_outlined, size: 18),
               ),
               ButtonSegment<BankTransferTiming>(
                 value: BankTransferTiming.recurring,
-                label: Text('Recurring'),
-                icon: Icon(Icons.repeat, size: 18),
+                label: Text(recurringLabel),
+                icon: Icon(recurringIcon ?? Icons.repeat, size: 18),
               ),
             ],
             selected: {selected},
@@ -125,7 +209,7 @@ class BankScheduledTransferToggle extends StatelessWidget {
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.resolveWith(
                 (states) => states.contains(WidgetState.selected)
-                    ? bankTheme.primary
+                    ? resolvedAccent
                     : bankTheme.surface,
               ),
               foregroundColor: WidgetStateProperty.resolveWith(
@@ -137,7 +221,7 @@ class BankScheduledTransferToggle extends StatelessWidget {
                 BorderSide(color: bankTheme.outline.withValues(alpha: 0.5)),
               ),
               shape: WidgetStateProperty.all(
-                RoundedRectangleBorder(borderRadius: bankTheme.chipRadius),
+                RoundedRectangleBorder(borderRadius: resolvedRadius),
               ),
               minimumSize: WidgetStateProperty.all(
                 const Size(0, BankTokens.minTapTarget),
@@ -154,6 +238,14 @@ class BankScheduledTransferToggle extends StatelessWidget {
             scheduledDate: scheduledDate,
             onDateChanged: onDateChanged!,
             bankTheme: bankTheme,
+            selectDateLabel: selectDateLabel,
+            datePickerHelpText: datePickerHelpText,
+            timePickerHelpText: timePickerHelpText,
+            calendarIcon: calendarIcon ?? Icons.calendar_today_outlined,
+            chevronIcon: chevronIcon ?? Icons.chevron_right,
+            accentColor: resolvedAccent,
+            radius: resolvedRadius,
+            fieldColor: resolvedFieldColor,
           ),
         ],
         // ----------------------------------------------------------------
@@ -163,9 +255,13 @@ class BankScheduledTransferToggle extends StatelessWidget {
             onRecurringPatternChanged != null) ...[
           const SizedBox(height: BankTokens.space3),
           _RecurringPatternDropdown(
-            value: recurringPattern ?? _recurringOptions.first,
+            value: recurringPattern ?? resolvedOptions.first,
             onChanged: onRecurringPatternChanged!,
             bankTheme: bankTheme,
+            options: resolvedOptions,
+            dropdownIcon: dropdownIcon ?? Icons.expand_more,
+            radius: resolvedRadius,
+            fieldColor: resolvedFieldColor,
           ),
         ],
       ],
@@ -182,14 +278,30 @@ class _DatePickerRow extends StatelessWidget {
     required this.scheduledDate,
     required this.onDateChanged,
     required this.bankTheme,
+    required this.selectDateLabel,
+    required this.datePickerHelpText,
+    required this.timePickerHelpText,
+    required this.calendarIcon,
+    required this.chevronIcon,
+    required this.accentColor,
+    required this.radius,
+    required this.fieldColor,
   });
 
   final DateTime? scheduledDate;
   final ValueChanged<DateTime> onDateChanged;
   final BankThemeData bankTheme;
+  final String selectDateLabel;
+  final String datePickerHelpText;
+  final String timePickerHelpText;
+  final IconData calendarIcon;
+  final IconData chevronIcon;
+  final Color accentColor;
+  final BorderRadius radius;
+  final Color fieldColor;
 
   String get _displayText {
-    if (scheduledDate == null) return 'Select date & time';
+    if (scheduledDate == null) return selectDateLabel;
     return BankDateFormatter.formatLong(scheduledDate!);
   }
 
@@ -204,11 +316,11 @@ class _DatePickerRow extends StatelessWidget {
       initialDate: initialDate,
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
-      helpText: 'Select transfer date',
+      helpText: datePickerHelpText,
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: ColorScheme.light(
-            primary: bankTheme.primary,
+            primary: accentColor,
             onPrimary: bankTheme.onPrimary,
             surface: bankTheme.surface,
             onSurface: bankTheme.onSurface,
@@ -223,11 +335,11 @@ class _DatePickerRow extends StatelessWidget {
     final pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(initialDate),
-      helpText: 'Select transfer time',
+      helpText: timePickerHelpText,
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: ColorScheme.light(
-            primary: bankTheme.primary,
+            primary: accentColor,
             onPrimary: bankTheme.onPrimary,
             surface: bankTheme.surface,
             onSurface: bankTheme.onSurface,
@@ -257,19 +369,19 @@ class _DatePickerRow extends StatelessWidget {
       label: 'Schedule date and time: $_displayText',
       child: InkWell(
         onTap: () => _pick(context),
-        borderRadius: bankTheme.chipRadius,
+        borderRadius: radius,
         child: Container(
           height: BankTokens.minTapTarget,
           padding: const EdgeInsets.symmetric(horizontal: BankTokens.space4),
           decoration: BoxDecoration(
-            borderRadius: bankTheme.chipRadius,
+            borderRadius: radius,
             border: Border.all(color: bankTheme.outline.withValues(alpha: 0.5)),
-            color: bankTheme.surfaceVariant,
+            color: fieldColor,
           ),
           child: Row(
             children: [
               Icon(
-                Icons.calendar_today_outlined,
+                calendarIcon,
                 size: 18,
                 color: bankTheme.onSurfaceVariant,
               ),
@@ -287,7 +399,7 @@ class _DatePickerRow extends StatelessWidget {
                 ),
               ),
               Icon(
-                Icons.chevron_right,
+                chevronIcon,
                 size: 18,
                 color: bankTheme.onSurfaceVariant,
               ),
@@ -308,18 +420,19 @@ class _RecurringPatternDropdown extends StatelessWidget {
     required this.value,
     required this.onChanged,
     required this.bankTheme,
+    required this.options,
+    required this.dropdownIcon,
+    required this.radius,
+    required this.fieldColor,
   });
 
   final String value;
   final ValueChanged<String> onChanged;
   final BankThemeData bankTheme;
-
-  static const List<String> _options = [
-    'Daily',
-    'Weekly',
-    'Biweekly',
-    'Monthly',
-  ];
+  final List<String> options;
+  final IconData dropdownIcon;
+  final BorderRadius radius;
+  final Color fieldColor;
 
   @override
   Widget build(BuildContext context) {
@@ -329,16 +442,16 @@ class _RecurringPatternDropdown extends StatelessWidget {
         height: BankTokens.minTapTarget,
         padding: const EdgeInsets.symmetric(horizontal: BankTokens.space4),
         decoration: BoxDecoration(
-          borderRadius: bankTheme.chipRadius,
+          borderRadius: radius,
           border: Border.all(color: bankTheme.outline.withValues(alpha: 0.5)),
-          color: bankTheme.surfaceVariant,
+          color: fieldColor,
         ),
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
           underline: const SizedBox.shrink(),
           icon: Icon(
-            Icons.expand_more,
+            dropdownIcon,
             color: bankTheme.onSurfaceVariant,
             size: 18,
           ),
@@ -347,7 +460,7 @@ class _RecurringPatternDropdown extends StatelessWidget {
           onChanged: (v) {
             if (v != null) onChanged(v);
           },
-          items: _options
+          items: options
               .map(
                 (option) => DropdownMenuItem<String>(
                   value: option,

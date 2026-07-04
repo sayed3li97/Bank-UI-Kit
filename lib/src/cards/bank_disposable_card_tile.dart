@@ -73,6 +73,62 @@ class BankDisposableCardTile extends StatefulWidget {
   /// Inline notice shown when [onRegenerate] fails.
   final String regenerateFailedNotice;
 
+  /// Overrides the tile content padding. Defaults to
+  /// `EdgeInsets.all(BankTokens.space4)`.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the tile and dashed border radius. Defaults to
+  /// [BankThemeData.cardRadius].
+  final BorderRadius? radius;
+
+  /// Overrides the background gradient. Defaults to the desaturated theme
+  /// accent gradient.
+  final Gradient? gradient;
+
+  /// Overrides the on-gradient content colour. Defaults to
+  /// [BankThemeData.onPrimary].
+  final Color? foregroundColor;
+
+  /// Overrides the regenerate button label and spinner colour. Defaults to
+  /// [BankThemeData.primary].
+  final Color? accentColor;
+
+  /// Merged over the computed title style ([BankTokens.labelLarge]).
+  final TextStyle? titleStyle;
+
+  /// Merged over the masked number style ([BankTokens.numeralMedium]).
+  final TextStyle? numberStyle;
+
+  /// Merged over the computed [infoLine] style ([BankTokens.bodySmall]).
+  final TextStyle? infoLineStyle;
+
+  /// Merged over the computed badge style ([BankTokens.labelSmall]).
+  final TextStyle? badgeLabelStyle;
+
+  /// Background watermark glyph. Defaults to [BankIcons.repeat].
+  final IconData watermarkIcon;
+
+  /// Icon of the used-number notice. Defaults to [BankIcons.info].
+  final IconData infoIcon;
+
+  /// Icon of the failure notice. Defaults to [BankIcons.error].
+  final IconData errorIcon;
+
+  /// Icon of the reveal-details button. Defaults to [BankIcons.visibility].
+  final IconData revealDetailsIcon;
+
+  /// Duration of the last-four crossfade. Defaults to
+  /// [BankTokens.durationBase]; reduced motion still forces zero.
+  final Duration? animationDuration;
+
+  /// Curve of the last-four crossfade. Defaults to
+  /// [BankTokens.curveStandard].
+  final Curve? animationCurve;
+
+  /// Overrides the computed tile semantics label. Defaults to the title,
+  /// last four digits, and used notice when applicable.
+  final String? semanticLabel;
+
   const BankDisposableCardTile({
     required this.cardLast4,
     required this.numberUsed,
@@ -86,6 +142,22 @@ class BankDisposableCardTile extends StatefulWidget {
     this.badgeLabel = 'One-time',
     this.revealDetailsLabel = 'Reveal details',
     this.regenerateFailedNotice = 'Could not generate a new number. Try again.',
+    this.padding,
+    this.radius,
+    this.gradient,
+    this.foregroundColor,
+    this.accentColor,
+    this.titleStyle,
+    this.numberStyle,
+    this.infoLineStyle,
+    this.badgeLabelStyle,
+    this.watermarkIcon = BankIcons.repeat,
+    this.infoIcon = BankIcons.info,
+    this.errorIcon = BankIcons.error,
+    this.revealDetailsIcon = BankIcons.visibility,
+    this.animationDuration,
+    this.animationCurve,
+    this.semanticLabel,
   });
 
   @override
@@ -173,29 +245,35 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    final switchDuration =
-        reduceMotion ? Duration.zero : BankTokens.durationBase;
+    final resolvedDuration =
+        widget.animationDuration ?? BankTokens.durationBase;
+    final switchDuration = reduceMotion ? Duration.zero : resolvedDuration;
 
-    final fg = theme.onPrimary;
+    final fg = widget.foregroundColor ?? theme.onPrimary;
     final fgMuted = fg.withValues(alpha: 0.72);
+    final resolvedRadius = widget.radius ?? theme.cardRadius;
+    final resolvedGradient = widget.gradient ?? _washedGradient(theme);
+    final resolvedPadding =
+        widget.padding ?? const EdgeInsets.all(BankTokens.space4);
 
-    final semanticLabel = _showUsedSection
+    final defaultSemanticLabel = _showUsedSection
         ? '${widget.title}, card ending $_displayLast4. ${widget.usedNotice}'
         : '${widget.title}, card ending $_displayLast4';
+    final semanticLabel = widget.semanticLabel ?? defaultSemanticLabel;
 
     return Semantics(
       container: true,
       label: semanticLabel,
       child: CustomPaint(
         foregroundPainter: _DashedBorderPainter(
-          radius: theme.cardRadius,
+          radius: resolvedRadius,
           color: fg.withValues(alpha: 0.55),
         ),
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            gradient: _washedGradient(theme),
-            borderRadius: theme.cardRadius,
+            gradient: resolvedGradient,
+            borderRadius: resolvedRadius,
           ),
           child: Stack(
             children: [
@@ -204,14 +282,14 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
                 bottom: -20,
                 child: ExcludeSemantics(
                   child: Icon(
-                    BankIcons.repeat,
+                    widget.watermarkIcon,
                     size: 116,
                     color: fg.withValues(alpha: 0.08),
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(BankTokens.space4),
+                padding: resolvedPadding,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -222,7 +300,9 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
                     const SizedBox(height: BankTokens.space2),
                     Text(
                       widget.infoLine,
-                      style: BankTokens.bodySmall.copyWith(color: fgMuted),
+                      style: BankTokens.bodySmall
+                          .copyWith(color: fgMuted)
+                          .merge(widget.infoLineStyle),
                     ),
                     if (_failed) ...[
                       const SizedBox(height: BankTokens.space3),
@@ -232,7 +312,7 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
                       const SizedBox(height: BankTokens.space3),
                       _buildUsedNotice(fg, fgMuted),
                       const SizedBox(height: BankTokens.space3),
-                      _buildRegenerateButton(theme),
+                      _buildRegenerateButton(theme, fg),
                     ],
                     if (widget.onRevealDetails != null) ...[
                       const SizedBox(height: BankTokens.space1),
@@ -258,7 +338,9 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
         Expanded(
           child: Text(
             widget.title,
-            style: BankTokens.labelLarge.copyWith(color: fg),
+            style: BankTokens.labelLarge
+                .copyWith(color: fg)
+                .merge(widget.titleStyle),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -275,7 +357,9 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
             ),
             child: Text(
               widget.badgeLabel.toUpperCase(),
-              style: BankTokens.labelSmall.copyWith(color: fg),
+              style: BankTokens.labelSmall
+                  .copyWith(color: fg)
+                  .merge(widget.badgeLabelStyle),
             ),
           ),
         ),
@@ -284,17 +368,20 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
   }
 
   Widget _buildMaskedNumber(Color fg, Duration switchDuration) {
+    final resolvedCurve = widget.animationCurve ?? BankTokens.curveStandard;
     return AnimatedSwitcher(
       duration: switchDuration,
-      switchInCurve: BankTokens.curveStandard,
-      switchOutCurve: BankTokens.curveStandard,
+      switchInCurve: resolvedCurve,
+      switchOutCurve: resolvedCurve,
       child: Text(
         '•••• •••• •••• $_displayLast4',
         key: ValueKey<String>(_displayLast4),
-        style: BankTokens.numeralMedium.copyWith(
-          color: fg,
-          letterSpacing: 2.4,
-        ),
+        style: BankTokens.numeralMedium
+            .copyWith(
+              color: fg,
+              letterSpacing: 2.4,
+            )
+            .merge(widget.numberStyle),
         textDirection: TextDirection.ltr,
       ),
     );
@@ -311,8 +398,8 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              BankIcons.error,
+            Icon(
+              widget.errorIcon,
               size: 16,
               color: BankTokens.danger,
             ),
@@ -335,7 +422,7 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(BankIcons.info, size: 16, color: fgMuted),
+        Icon(widget.infoIcon, size: 16, color: fgMuted),
         const SizedBox(width: BankTokens.space2),
         Expanded(
           child: Text(
@@ -347,7 +434,8 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
     );
   }
 
-  Widget _buildRegenerateButton(BankThemeData theme) {
+  Widget _buildRegenerateButton(BankThemeData theme, Color fg) {
+    final accent = widget.accentColor ?? theme.primary;
     return Semantics(
       button: true,
       enabled: !_regenerating,
@@ -355,10 +443,10 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
       child: FilledButton(
         onPressed: _regenerating ? null : _handleRegenerate,
         style: FilledButton.styleFrom(
-          backgroundColor: theme.onPrimary,
-          foregroundColor: theme.primary,
-          disabledBackgroundColor: theme.onPrimary.withValues(alpha: 0.7),
-          disabledForegroundColor: theme.primary.withValues(alpha: 0.7),
+          backgroundColor: fg,
+          foregroundColor: accent,
+          disabledBackgroundColor: fg.withValues(alpha: 0.7),
+          disabledForegroundColor: accent.withValues(alpha: 0.7),
           minimumSize: const Size(double.infinity, BankTokens.minTapTarget),
           shape: RoundedRectangleBorder(borderRadius: theme.buttonRadius),
           textStyle: BankTokens.labelLarge,
@@ -369,7 +457,7 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
                 height: 18,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: theme.primary,
+                  color: accent,
                 ),
               )
             : Text(widget.regenerateLabel),
@@ -396,7 +484,7 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
             ),
             textStyle: BankTokens.labelMedium,
           ),
-          icon: const Icon(BankIcons.visibility, size: 18),
+          icon: Icon(widget.revealDetailsIcon, size: 18),
           label: Text(widget.revealDetailsLabel),
         ),
       ),

@@ -36,6 +36,17 @@ class BankQrScannerOverlay extends StatefulWidget {
     this.onTorchToggle,
     this.torchOn = false,
     this.instruction = 'Point your camera at a payment code',
+    this.windowSize,
+    this.radius,
+    this.accentColor,
+    this.cornerColor,
+    this.scrimColor,
+    this.instructionStyle,
+    this.torchOnIcon,
+    this.torchOffIcon,
+    this.torchOnLabel = 'Torch on',
+    this.torchOffLabel = 'Torch off',
+    this.animationDuration,
   });
 
   /// The host's camera preview.
@@ -49,6 +60,43 @@ class BankQrScannerOverlay extends StatefulWidget {
   final bool torchOn;
   final String instruction;
 
+  /// Overrides the square viewfinder edge length. Defaults to 240.
+  final double? windowSize;
+
+  /// Overrides the viewfinder corner radius. Defaults to the theme
+  /// card radius.
+  final BorderRadius? radius;
+
+  /// Colour of the sweeping scan line. Defaults to the theme primary.
+  final Color? accentColor;
+
+  /// Corner-guide colour while searching. Defaults to the theme
+  /// on-primary colour; found/invalid states keep semantic colours.
+  final Color? cornerColor;
+
+  /// Overrides the dimmed scrim colour. Defaults to 55% black.
+  final Color? scrimColor;
+
+  /// Merged over the computed instruction text style.
+  final TextStyle? instructionStyle;
+
+  /// Torch-on glyph. Defaults to [Icons.flash_on_rounded].
+  final IconData? torchOnIcon;
+
+  /// Torch-off glyph. Defaults to [Icons.flash_off_rounded].
+  final IconData? torchOffIcon;
+
+  /// Semantics label of the torch button while on. Defaults to
+  /// 'Torch on'.
+  final String torchOnLabel;
+
+  /// Semantics label of the torch button while off. Defaults to
+  /// 'Torch off'.
+  final String torchOffLabel;
+
+  /// Duration of one scan-line sweep. Defaults to 1800 ms.
+  final Duration? animationDuration;
+
   @override
   State<BankQrScannerOverlay> createState() => _BankQrScannerOverlayState();
 }
@@ -56,6 +104,7 @@ class BankQrScannerOverlay extends StatefulWidget {
 class _BankQrScannerOverlayState extends State<BankQrScannerOverlay>
     with SingleTickerProviderStateMixin {
   static const _window = 240.0;
+  static const _defaultSweepDuration = Duration(milliseconds: 1800);
 
   late final AnimationController _sweep;
 
@@ -64,7 +113,7 @@ class _BankQrScannerOverlayState extends State<BankQrScannerOverlay>
     super.initState();
     _sweep = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1800),
+      duration: widget.animationDuration ?? _defaultSweepDuration,
     );
   }
 
@@ -82,6 +131,14 @@ class _BankQrScannerOverlayState extends State<BankQrScannerOverlay>
   @override
   void didUpdateWidget(BankQrScannerOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.animationDuration != oldWidget.animationDuration) {
+      _sweep.duration = widget.animationDuration ?? _defaultSweepDuration;
+      if (_sweep.isAnimating) {
+        _sweep
+          ..stop()
+          ..repeat();
+      }
+    }
     final reduced = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     if (widget.state == BankQrScanState.searching && !reduced) {
       if (!_sweep.isAnimating) _sweep.repeat();
@@ -97,7 +154,7 @@ class _BankQrScannerOverlayState extends State<BankQrScannerOverlay>
   }
 
   Color _cornerColor(BankThemeData theme) => switch (widget.state) {
-        BankQrScanState.searching => theme.onPrimary,
+        BankQrScanState.searching => widget.cornerColor ?? theme.onPrimary,
         BankQrScanState.found => theme.positiveBalance,
         BankQrScanState.invalid => BankTokens.danger,
       };
@@ -105,6 +162,9 @@ class _BankQrScannerOverlayState extends State<BankQrScannerOverlay>
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final window = widget.windowSize ?? _window;
+    final windowRadius = widget.radius ?? theme.cardRadius;
+    final accent = widget.accentColor ?? theme.primary;
 
     return Stack(
       fit: StackFit.expand,
@@ -113,7 +173,8 @@ class _BankQrScannerOverlayState extends State<BankQrScannerOverlay>
         // Dimmed scrim with a clear window.
         ColorFiltered(
           colorFilter: ColorFilter.mode(
-            const Color(0xFF000000).withValues(alpha: 0.55),
+            widget.scrimColor ??
+                const Color(0xFF000000).withValues(alpha: 0.55),
             BlendMode.srcOut,
           ),
           child: Stack(
@@ -122,11 +183,11 @@ class _BankQrScannerOverlayState extends State<BankQrScannerOverlay>
               const ColoredBox(color: Color(0x01000000)),
               Center(
                 child: Container(
-                  width: _window,
-                  height: _window,
+                  width: window,
+                  height: window,
                   decoration: BoxDecoration(
                     color: const Color(0xFF000000),
-                    borderRadius: theme.cardRadius,
+                    borderRadius: windowRadius,
                   ),
                 ),
               ),
@@ -135,15 +196,15 @@ class _BankQrScannerOverlayState extends State<BankQrScannerOverlay>
         ),
         Center(
           child: SizedBox(
-            width: _window,
-            height: _window,
+            width: window,
+            height: window,
             child: Stack(
               children: [
                 CustomPaint(
-                  size: const Size.square(_window),
+                  size: Size.square(window),
                   painter: _CornerGuidePainter(
                     color: _cornerColor(theme),
-                    radius: theme.cardRadius.topLeft.x,
+                    radius: windowRadius.topLeft.x,
                   ),
                 ),
                 if (widget.state == BankQrScanState.searching)
@@ -162,9 +223,9 @@ class _BankQrScannerOverlayState extends State<BankQrScannerOverlay>
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              theme.primary.withValues(alpha: 0),
-                              theme.primary,
-                              theme.primary.withValues(alpha: 0),
+                              accent.withValues(alpha: 0),
+                              accent,
+                              accent.withValues(alpha: 0),
                             ],
                           ),
                         ),
@@ -184,7 +245,9 @@ class _BankQrScannerOverlayState extends State<BankQrScannerOverlay>
                   ? const SizedBox.shrink()
                   : Semantics(
                       button: true,
-                      label: widget.torchOn ? 'Torch on' : 'Torch off',
+                      label: widget.torchOn
+                          ? widget.torchOnLabel
+                          : widget.torchOffLabel,
                       child: IconButton(
                         onPressed: widget.onTorchToggle,
                         style: IconButton.styleFrom(
@@ -194,8 +257,8 @@ class _BankQrScannerOverlayState extends State<BankQrScannerOverlay>
                         ),
                         icon: Icon(
                           widget.torchOn
-                              ? Icons.flash_on_rounded
-                              : Icons.flash_off_rounded,
+                              ? widget.torchOnIcon ?? Icons.flash_on_rounded
+                              : widget.torchOffIcon ?? Icons.flash_off_rounded,
                           color: const Color(0xFFFFFFFF),
                         ),
                       ),
@@ -212,7 +275,8 @@ class _BankQrScannerOverlayState extends State<BankQrScannerOverlay>
                 widget.instruction,
                 textAlign: TextAlign.center,
                 style: BankTokens.bodyMedium
-                    .copyWith(color: const Color(0xFFFFFFFF)),
+                    .copyWith(color: const Color(0xFFFFFFFF))
+                    .merge(widget.instructionStyle),
               ),
             ),
           ),
@@ -296,6 +360,18 @@ class BankMyQrCard extends StatelessWidget {
     this.shareLabel = 'Share',
     this.setAmountLabel = 'Set amount',
     this.qrSize = 200,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.borderColor,
+    this.shadow,
+    this.accentColor,
+    this.titleStyle,
+    this.subtitleStyle,
+    this.amountStyle,
+    this.setAmountIcon,
+    this.shareIcon,
+    this.semanticLabel,
   });
 
   /// The encoded payment string (IBAN URI, EMVCo payload, deep link…).
@@ -317,6 +393,47 @@ class BankMyQrCard extends StatelessWidget {
   final String setAmountLabel;
   final double qrSize;
 
+  /// Overrides the card content padding. Defaults to
+  /// [BankTokens.space5] on all sides.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme card
+  /// radius.
+  final BorderRadius? radius;
+
+  /// Overrides the card background. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card border colour. Defaults to the theme outline.
+  final Color? borderColor;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
+  /// pass `const []` to flatten the card.
+  final List<BoxShadow>? shadow;
+
+  /// Tint of the amount chip and action buttons. Defaults to the
+  /// theme primary.
+  final Color? accentColor;
+
+  /// Merged over the computed display-name style.
+  final TextStyle? titleStyle;
+
+  /// Merged over the computed masked-account style.
+  final TextStyle? subtitleStyle;
+
+  /// Merged over the computed requested-amount style.
+  final TextStyle? amountStyle;
+
+  /// Glyph of the set-amount action. Defaults to [Icons.tag_rounded].
+  final IconData? setAmountIcon;
+
+  /// Glyph of the share action. Defaults to [BankIcons.share].
+  final IconData? shareIcon;
+
+  /// Overrides the QR semantics label. Defaults to
+  /// 'Payment QR code for {displayName}'.
+  final String? semanticLabel;
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
@@ -325,23 +442,29 @@ class BankMyQrCard extends StatelessWidget {
       errorCorrectLevel: QrErrorCorrectLevel.M,
     );
     final qrImage = QrImage(qrCode);
+    final accent = accentColor ?? theme.primary;
+    final resolvedAmountStyle = amountStyle == null
+        ? null
+        : theme.numeralSmall
+            .copyWith(color: theme.onSurface)
+            .merge(amountStyle);
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.cardRadius,
-        border: Border.all(color: theme.outline),
-        boxShadow: BankTokens.shadowCard,
+        color: backgroundColor ?? theme.surface,
+        borderRadius: radius ?? theme.cardRadius,
+        border: Border.all(color: borderColor ?? theme.outline),
+        boxShadow: shadow ?? BankTokens.shadowCard,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space5),
+        padding: padding ?? const EdgeInsets.all(BankTokens.space5),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (requestAmount != null) ...[
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: theme.primary.withValues(alpha: 0.12),
+                  color: accent.withValues(alpha: 0.12),
                   borderRadius: theme.chipRadius,
                 ),
                 child: Padding(
@@ -352,13 +475,14 @@ class BankMyQrCard extends StatelessWidget {
                   child: BankBalanceText(
                     money: requestAmount!,
                     size: BankBalanceSize.small,
+                    style: resolvedAmountStyle,
                   ),
                 ),
               ),
               const SizedBox(height: BankTokens.space3),
             ],
             Semantics(
-              label: 'Payment QR code for $displayName',
+              label: semanticLabel ?? 'Payment QR code for $displayName',
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFFFF),
@@ -387,17 +511,20 @@ class BankMyQrCard extends StatelessWidget {
             const SizedBox(height: BankTokens.space4),
             Text(
               displayName,
-              style: BankTokens.bodyLarge.copyWith(
-                color: theme.onSurface,
-                fontWeight: FontWeight.w600,
-              ),
+              style: BankTokens.bodyLarge
+                  .copyWith(
+                    color: theme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  )
+                  .merge(titleStyle),
             ),
             if (accountMasked != null) ...[
               const SizedBox(height: 2),
               Text(
                 accountMasked!,
                 style: BankTokens.bodySmall
-                    .copyWith(color: theme.onSurfaceVariant),
+                    .copyWith(color: theme.onSurfaceVariant)
+                    .merge(subtitleStyle),
               ),
             ],
             if (onShare != null || onSetAmount != null) ...[
@@ -409,14 +536,13 @@ class BankMyQrCard extends StatelessWidget {
                     TextButton.icon(
                       onPressed: onSetAmount,
                       icon: Icon(
-                        Icons.tag_rounded,
+                        setAmountIcon ?? Icons.tag_rounded,
                         size: 18,
-                        color: theme.primary,
+                        color: accent,
                       ),
                       label: Text(
                         setAmountLabel,
-                        style: BankTokens.labelLarge
-                            .copyWith(color: theme.primary),
+                        style: BankTokens.labelLarge.copyWith(color: accent),
                       ),
                     ),
                   if (onShare != null && onSetAmount != null)
@@ -425,14 +551,13 @@ class BankMyQrCard extends StatelessWidget {
                     TextButton.icon(
                       onPressed: onShare,
                       icon: Icon(
-                        BankIcons.share,
+                        shareIcon ?? BankIcons.share,
                         size: 18,
-                        color: theme.primary,
+                        color: accent,
                       ),
                       label: Text(
                         shareLabel,
-                        style: BankTokens.labelLarge
-                            .copyWith(color: theme.primary),
+                        style: BankTokens.labelLarge.copyWith(color: accent),
                       ),
                     ),
                 ],

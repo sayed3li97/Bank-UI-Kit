@@ -52,8 +52,8 @@ class BankHealthFactor {
   int get hashCode => Object.hash(id, label, score, icon, tip);
 }
 
-/// Composite financial wellness score card, in the spirit of BBVA
-/// financial health, DBS NAV Planner, and BofA Life Plan checkups.
+/// Composite financial wellness score card: one glanceable number
+/// with tappable factor drill-downs.
 ///
 /// Renders a 270 degree segmented arc gauge (red, amber, green bands)
 /// with the overall [score] centered in hero numerals and the [title]
@@ -100,6 +100,21 @@ class BankFinancialHealthScore extends StatefulWidget {
     this.onFactorTap,
     this.title = 'Financial health',
     this.gaugeSize = 150,
+    this.padding,
+    this.radius,
+    this.backgroundColor,
+    this.shadow,
+    this.dangerColor,
+    this.warningColor,
+    this.positiveColor,
+    this.scoreStyle,
+    this.titleStyle,
+    this.factorLabelStyle,
+    this.factorTipStyle,
+    this.chevronIcon,
+    this.animationDuration,
+    this.animationCurve,
+    this.semanticLabel,
   });
 
   /// Overall wellness score from 0 to 100.
@@ -120,6 +135,59 @@ class BankFinancialHealthScore extends StatefulWidget {
   /// Diameter of the arc gauge.
   final double gaugeSize;
 
+  /// Overrides the card content padding. Defaults to space4 all round.
+  final EdgeInsetsGeometry? padding;
+
+  /// Overrides the card corner radius. Defaults to the theme
+  /// cardRadius.
+  final BorderRadius? radius;
+
+  /// Overrides the card fill colour. Defaults to the theme surface.
+  final Color? backgroundColor;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
+  /// pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Overrides the critical band tint (gauge band, factor bars, delta
+  /// chip). Defaults to [BankTokens.danger].
+  final Color? dangerColor;
+
+  /// Overrides the middling band tint. Defaults to
+  /// [BankTokens.warning].
+  final Color? warningColor;
+
+  /// Overrides the healthy band tint. Defaults to the theme
+  /// positiveBalance colour.
+  final Color? positiveColor;
+
+  /// Merged over the hero score numeral style inside the gauge.
+  final TextStyle? scoreStyle;
+
+  /// Merged over the [title] style (labelMedium, score tint).
+  final TextStyle? titleStyle;
+
+  /// Merged over each factor label style (bodyMedium, onSurface).
+  final TextStyle? factorLabelStyle;
+
+  /// Merged over each factor tip style (bodySmall, onSurfaceVariant).
+  final TextStyle? factorTipStyle;
+
+  /// Overrides the factor row chevron glyph. Defaults to
+  /// [Icons.chevron_right].
+  final IconData? chevronIcon;
+
+  /// Overrides the sweep animation duration. Defaults to
+  /// [BankTokens.durationXSlow].
+  final Duration? animationDuration;
+
+  /// Overrides the sweep animation curve. Defaults to
+  /// [BankTokens.curveEmphasized].
+  final Curve? animationCurve;
+
+  /// Overrides the computed gauge semantics label.
+  final String? semanticLabel;
+
   @override
   State<BankFinancialHealthScore> createState() =>
       _BankFinancialHealthScoreState();
@@ -137,11 +205,11 @@ class _BankFinancialHealthScoreState extends State<BankFinancialHealthScore>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: BankTokens.durationXSlow,
+      duration: widget.animationDuration ?? BankTokens.durationXSlow,
     );
     _sweep = CurvedAnimation(
       parent: _controller,
-      curve: BankTokens.curveEmphasized,
+      curve: widget.animationCurve ?? BankTokens.curveEmphasized,
     );
   }
 
@@ -168,9 +236,9 @@ class _BankFinancialHealthScoreState extends State<BankFinancialHealthScore>
   /// Tint for a normalised 0..1 score: danger below 0.4, warning below
   /// 0.7, positive otherwise.
   Color _tintFor(double score, BankThemeData theme) {
-    if (score < 0.4) return BankTokens.danger;
-    if (score < 0.7) return BankTokens.warning;
-    return theme.positiveBalance;
+    if (score < 0.4) return widget.dangerColor ?? BankTokens.danger;
+    if (score < 0.7) return widget.warningColor ?? BankTokens.warning;
+    return widget.positiveColor ?? theme.positiveBalance;
   }
 
   BankHealthFactor? get _weakestFactor {
@@ -184,9 +252,18 @@ class _BankFinancialHealthScoreState extends State<BankFinancialHealthScore>
     final numeralStyle = BankUiScope.of(context).numeralStyle;
 
     final segments = [
-      const _GaugeSegment(upTo: 0.4, color: BankTokens.danger),
-      const _GaugeSegment(upTo: 0.7, color: BankTokens.warning),
-      _GaugeSegment(upTo: 1, color: theme.positiveBalance),
+      _GaugeSegment(
+        upTo: 0.4,
+        color: widget.dangerColor ?? BankTokens.danger,
+      ),
+      _GaugeSegment(
+        upTo: 0.7,
+        color: widget.warningColor ?? BankTokens.warning,
+      ),
+      _GaugeSegment(
+        upTo: 1,
+        color: widget.positiveColor ?? theme.positiveBalance,
+      ),
     ];
 
     final delta =
@@ -205,17 +282,17 @@ class _BankFinancialHealthScoreState extends State<BankFinancialHealthScore>
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: theme.cardRadius,
-        boxShadow: BankTokens.shadowCard,
+        color: widget.backgroundColor ?? theme.surface,
+        borderRadius: widget.radius ?? theme.cardRadius,
+        boxShadow: widget.shadow ?? BankTokens.shadowCard,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(BankTokens.space4),
+        padding: widget.padding ?? const EdgeInsets.all(BankTokens.space4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Semantics(
-              label: gaugeLabel,
+              label: widget.semanticLabel ?? gaugeLabel,
               container: true,
               excludeSemantics: true,
               child: Column(
@@ -242,16 +319,19 @@ class _BankFinancialHealthScoreState extends State<BankFinancialHealthScore>
                               children: [
                                 Text(
                                   numeralStyle.convert('${widget.score}'),
-                                  style: BankTokens.numeralHero.copyWith(
-                                    color: theme.onSurface,
-                                    fontFamily: theme.fontFamily,
-                                    fontSize: widget.gaugeSize * 0.24,
-                                  ),
+                                  style: BankTokens.numeralHero
+                                      .copyWith(
+                                        color: theme.onSurface,
+                                        fontFamily: theme.fontFamily,
+                                        fontSize: widget.gaugeSize * 0.24,
+                                      )
+                                      .merge(widget.scoreStyle),
                                 ),
                                 Text(
                                   widget.title,
                                   style: BankTokens.labelMedium
-                                      .copyWith(color: scoreColor),
+                                      .copyWith(color: scoreColor)
+                                      .merge(widget.titleStyle),
                                   textAlign: TextAlign.center,
                                 ),
                               ],
@@ -266,8 +346,8 @@ class _BankFinancialHealthScoreState extends State<BankFinancialHealthScore>
                     DecoratedBox(
                       decoration: BoxDecoration(
                         color: (delta > 0
-                                ? theme.positiveBalance
-                                : BankTokens.danger)
+                                ? widget.positiveColor ?? theme.positiveBalance
+                                : widget.dangerColor ?? BankTokens.danger)
                             .withValues(alpha: 0.12),
                         borderRadius: theme.chipRadius,
                       ),
@@ -282,8 +362,8 @@ class _BankFinancialHealthScoreState extends State<BankFinancialHealthScore>
                           ),
                           style: BankTokens.labelSmall.copyWith(
                             color: delta > 0
-                                ? theme.positiveBalance
-                                : BankTokens.danger,
+                                ? widget.positiveColor ?? theme.positiveBalance
+                                : widget.dangerColor ?? BankTokens.danger,
                           ),
                         ),
                       ),
@@ -298,6 +378,9 @@ class _BankFinancialHealthScoreState extends State<BankFinancialHealthScore>
                 _FactorRow(
                   factor: factor,
                   tint: _tintFor(factor.score, theme),
+                  labelStyle: widget.factorLabelStyle,
+                  tipStyle: widget.factorTipStyle,
+                  chevronIcon: widget.chevronIcon,
                   onTap: widget.onFactorTap == null
                       ? null
                       : () => widget.onFactorTap!(factor),
@@ -318,11 +401,17 @@ class _FactorRow extends StatelessWidget {
   const _FactorRow({
     required this.factor,
     required this.tint,
+    this.labelStyle,
+    this.tipStyle,
+    this.chevronIcon,
     this.onTap,
   });
 
   final BankHealthFactor factor;
   final Color tint;
+  final TextStyle? labelStyle;
+  final TextStyle? tipStyle;
+  final IconData? chevronIcon;
   final VoidCallback? onTap;
 
   @override
@@ -360,7 +449,8 @@ class _FactorRow extends StatelessWidget {
                       Text(
                         factor.label,
                         style: BankTokens.bodyMedium
-                            .copyWith(color: theme.onSurface),
+                            .copyWith(color: theme.onSurface)
+                            .merge(labelStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -385,7 +475,8 @@ class _FactorRow extends StatelessWidget {
                         Text(
                           factor.tip!,
                           style: BankTokens.bodySmall
-                              .copyWith(color: theme.onSurfaceVariant),
+                              .copyWith(color: theme.onSurfaceVariant)
+                              .merge(tipStyle),
                         ),
                       ],
                     ],
@@ -396,7 +487,7 @@ class _FactorRow extends StatelessWidget {
                   Transform.flip(
                     flipX: isRtl,
                     child: Icon(
-                      Icons.chevron_right,
+                      chevronIcon ?? Icons.chevron_right,
                       size: 20,
                       color: theme.onSurfaceVariant,
                     ),
