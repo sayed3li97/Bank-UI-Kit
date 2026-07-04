@@ -100,3 +100,37 @@ node tool/screenshots.mjs
 
 By contributing you agree that your contributions are licensed under the
 project's [MIT License](LICENSE).
+
+## Releasing to pub.dev
+
+Publishing is automated and driven by the version in `pubspec.yaml`.
+
+1. Bump `version:` in `pubspec.yaml` and add a matching `CHANGELOG.md`
+   entry (this project follows semantic versioning).
+2. Merge that change to `main`.
+3. `Tag release on version bump` (`.github/workflows/release-tag.yml`)
+   sees the new version, creates the `vX.Y.Z` tag, and pushes it.
+4. The tag push triggers `Publish to pub.dev`
+   (`.github/workflows/publish.yml`), which verifies the tag matches the
+   pubspec version and publishes over OIDC (no stored credentials).
+
+A merge that does not change the version, or one whose version is already
+tagged, publishes nothing. You cannot republish an existing version, so
+every release needs a version bump.
+
+### One-time setup for auto-tagging
+
+pub.dev only trusts publish workflows triggered by a tag push, and a tag
+pushed with the default `GITHUB_TOKEN` does not start other workflows.
+So the auto-tagger pushes the tag with a personal access token:
+
+1. Create a fine-grained PAT scoped to this repository with
+   `Contents: read and write`.
+2. Add it as an Actions secret named `RELEASE_TOKEN`
+   (Settings > Secrets and variables > Actions).
+3. Confirm pub.dev automated publishing is enabled for the package with a
+   tag pattern of `v{{version}}` (package Admin > Automated publishing).
+
+Prefer to tag by hand instead? Delete `release-tag.yml` and cut releases
+with `git tag vX.Y.Z && git push origin vX.Y.Z`; `publish.yml` still does
+the rest with no secrets.
