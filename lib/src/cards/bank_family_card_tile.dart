@@ -489,7 +489,7 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
                   key: const ValueKey<String>('bank_family_card_switch'),
                   value: frozen,
                   onChanged: _toggleFreeze,
-                  activeColor: resolvedAccentColor,
+                  activeThumbColor: resolvedAccentColor,
                 ),
         ),
       ),

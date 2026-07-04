@@ -247,7 +247,7 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
                       style: BankTokens.bodyMedium
                           .copyWith(color: theme.onSurface),
                     ),
-                    activeColor: accent,
+                    activeThumbColor: accent,
                     contentPadding: EdgeInsets.zero,
                   ),
                   const SizedBox(height: BankTokens.space4),

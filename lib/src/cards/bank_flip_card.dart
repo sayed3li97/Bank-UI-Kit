@@ -309,8 +309,8 @@ class _BankFlipCardState extends State<BankFlipCard>
             child: Transform(
               alignment: Alignment.center,
               transform: isH
-                  ? (Matrix4.identity()..scale(-1, 1, 1))
-                  : (Matrix4.identity()..scale(1, -1, 1)),
+                  ? (Matrix4.identity()..scaleByDouble(-1, 1, 1, 1))
+                  : (Matrix4.identity()..scaleByDouble(1, -1, 1, 1)),
               child: widget.backBuilder(context, true),
             ),
           );

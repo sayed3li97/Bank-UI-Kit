@@ -393,7 +393,7 @@ class _PreferenceRow extends StatelessWidget {
                   label: '$label, ${channel.name}',
                   child: Switch(
                     value: pref.locked || pref.valueFor(channel),
-                    activeColor: thumbColor,
+                    activeThumbColor: thumbColor,
                     activeTrackColor: trackColor,
                     onChanged: pref.locked
                         ? null

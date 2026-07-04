@@ -437,9 +437,9 @@ class BankMyQrCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final qrCode = QrCode.fromData(
-      data: payload,
-      errorCorrectLevel: QrErrorCorrectLevel.M,
+    final qrCode = QrCode(
+      payload: QrPayload.fromString(payload),
+      errorCorrectLevel: QrErrorCorrectLevel.medium,
     );
     final qrImage = QrImage(qrCode);
     final accent = accentColor ?? theme.primary;

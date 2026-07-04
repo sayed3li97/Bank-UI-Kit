@@ -331,7 +331,7 @@ class BankEarlyPaydayCard extends StatelessWidget {
                   child: Switch(
                     value: enabled,
                     onChanged: onChanged,
-                    activeColor: accent,
+                    activeThumbColor: accent,
                   ),
                 ),
               ),

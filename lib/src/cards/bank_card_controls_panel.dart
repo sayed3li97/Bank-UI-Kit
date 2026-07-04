@@ -435,7 +435,7 @@ class _ControlRow extends StatelessWidget {
                       child: Switch(
                         value: value,
                         onChanged: onChanged,
-                        activeColor: activeColor,
+                        activeThumbColor: activeColor,
                       ),
                     ),
                   ),

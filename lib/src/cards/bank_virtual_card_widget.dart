@@ -854,7 +854,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
               ..rotateY(angle - pi),
             child: Transform(
               alignment: Alignment.center,
-              transform: Matrix4.identity()..scale(-1.0, 1, 1),
+              transform: Matrix4.identity()..scaleByDouble(-1, 1, 1, 1),
               child: _buildFaceStack(
                 context: context,
                 bankTheme: bankTheme,
