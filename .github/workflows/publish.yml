@@ -1,51 +1,24 @@
-# Publishes the package to pub.dev.
+# Publishes the package to pub.dev over OIDC (no stored credentials).
 #
-# pub.dev's automated publishing only trusts workflows triggered by a git
-# tag whose name matches the tag pattern configured on the package's
-# Admin > Automated publishing page (default `v{{version}}`). Publishing
-# from a branch push is rejected by pub.dev, so this workflow runs only on
-# version tags. Authentication is OIDC (`id-token: write`); no secrets or
-# stored pub.dev credentials are required.
+# Triggered by a version tag push and by workflow_dispatch (release.yml
+# dispatches this against the tag it creates). pub.dev's trusted publishing
+# must be configured for this repo with tag pattern `v{{version}}` and both
+# push and workflow_dispatch events enabled (package Admin > Automated
+# publishing).
+#
+# The dart-lang/setup-dart reusable workflow installs both the Dart and
+# Flutter SDKs, runs the publish dry-run, performs the OIDC handshake, and
+# publishes. `id-token: write` is required for OIDC.
 name: Publish to pub.dev
 
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-  # Allow a manual run against a chosen tag from the Actions tab.
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
   workflow_dispatch:
 
 jobs:
   publish:
-    name: Publish
-    runs-on: ubuntu-latest
     permissions:
       id-token: write # required for pub.dev OIDC authentication
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.44.4'
-          channel: stable
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Verify the tag matches the pubspec version
-        run: |
-          pubspec_version="$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | tr -d '[:space:]')"
-          tag_version="${GITHUB_REF_NAME#v}"
-          echo "pubspec: $pubspec_version, tag: $tag_version"
-          if [ "$pubspec_version" != "$tag_version" ]; then
-            echo "::error::Tag ${GITHUB_REF_NAME} does not match pubspec version ${pubspec_version}."
-            exit 1
-          fi
-
-      - name: Publish (dry run)
-        run: flutter pub publish --dry-run
-
-      - name: Publish
-        run: flutter pub publish --force
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1

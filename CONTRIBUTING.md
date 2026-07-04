@@ -103,34 +103,43 @@ project's [MIT License](LICENSE).
 
 ## Releasing to pub.dev
 
-Publishing is automated and driven by the version in `pubspec.yaml`.
+Publishing is fully automated and driven by the version in
+`pubspec.yaml`. There are no stored credentials and no personal access
+tokens: pub.dev trusts the workflow over OIDC.
 
 1. Bump `version:` in `pubspec.yaml` and add a matching `CHANGELOG.md`
-   entry (this project follows semantic versioning).
+   entry under a bare `## <version>` heading (semantic versioning).
 2. Merge that change to `main`.
-3. `Tag release on version bump` (`.github/workflows/release-tag.yml`)
-   sees the new version, creates the `vX.Y.Z` tag, and pushes it.
-4. The tag push triggers `Publish to pub.dev`
-   (`.github/workflows/publish.yml`), which verifies the tag matches the
-   pubspec version and publishes over OIDC (no stored credentials).
+3. `Release on version bump` (`.github/workflows/release.yml`) sees the
+   new version, creates a GitHub Release and `v<version>` tag with the
+   CHANGELOG section as notes, then dispatches the publisher against that
+   tag with `gh workflow run publish.yml --ref v<version>`.
+4. `Publish to pub.dev` (`.github/workflows/publish.yml`) runs the
+   `dart-lang/setup-dart` reusable workflow, which sets up Flutter,
+   dry-runs, and publishes over OIDC.
 
 A merge that does not change the version, or one whose version is already
 tagged, publishes nothing. You cannot republish an existing version, so
 every release needs a version bump.
 
-### One-time setup for auto-tagging
+Why the explicit dispatch in step 3: a tag created with the built-in
+`GITHUB_TOKEN` does not trigger another workflow's `push:` listener
+(GitHub's loop-prevention rule). `workflow_dispatch` is the exemption,
+and it must target the tag ref (`--ref v<version>`), never a branch,
+because pub.dev's trusted publishing only accepts an OIDC token whose ref
+has refType `tag`.
 
-pub.dev only trusts publish workflows triggered by a tag push, and a tag
-pushed with the default `GITHUB_TOKEN` does not start other workflows.
-So the auto-tagger pushes the tag with a personal access token:
+### One-time setup on pub.dev
 
-1. Create a fine-grained PAT scoped to this repository with
-   `Contents: read and write`.
-2. Add it as an Actions secret named `RELEASE_TOKEN`
-   (Settings > Secrets and variables > Actions).
-3. Confirm pub.dev automated publishing is enabled for the package with a
-   tag pattern of `v{{version}}` (package Admin > Automated publishing).
+Enable trusted publishing once at
+`https://pub.dev/packages/bank_ui_kit/admin` under Automated publishing:
 
-Prefer to tag by hand instead? Delete `release-tag.yml` and cut releases
-with `git tag vX.Y.Z && git push origin vX.Y.Z`; `publish.yml` still does
-the rest with no secrets.
+- Enable publishing from GitHub Actions.
+- Repository: `sayed3li97/bank-ui-kit`.
+- Tag pattern: `v{{version}}`.
+- Enable publishing from push events: checked.
+- Enable publishing from workflow_dispatch events: checked.
+
+Prefer to cut a release by hand? `git tag vX.Y.Z && git push origin
+vX.Y.Z` still works; the tag push (or a manual `workflow_dispatch` of
+`publish.yml` against the tag) publishes with no other setup.
