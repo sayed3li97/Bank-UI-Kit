@@ -4,6 +4,37 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/) and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## 0.0.3
+
+Adds a product-origination surface and a complete reference app.
+
+### Added
+
+- **Products & applications module** (`lib/src/products/`): `BankProductCard`
+  (rate hero, feature list, badges, dual call to action),
+  `BankProductCategoryTile` (catalogue grid), `BankEligibilityResultCard`
+  (soft-search outcome with a no-credit-impact reassurance),
+  `BankOfferSummaryCard` (firm or indicative offer with the regulatory
+  representative example), `BankRatioGauge` (LTV / DTI / LTI affordability
+  bands), `BankDisclosureConsentSheet` (pre-contract disclosures and
+  no-dark-pattern consents), and `BankESignaturePad` (typed or drawn,
+  timestamped signature). Every visual decision is an optional constructor
+  parameter defaulting to the active theme.
+- Headless `BankApplicationController`: a seven-step application state
+  machine (eligibility, customise, offer, documents, disclosures, sign,
+  decision) with validity and completion tracking, exported from `core.dart`.
+- A **flagship reference app** ("Meridian") in the example, composed entirely
+  from kit widgets: product catalogue, product detail with a
+  conventional/Shariah toggle, the end-to-end Auto Finance application, and a
+  servicing view. Run it with `flutter run -t lib/flagship_main.dart`.
+- A consolidated banking-products reference in
+  `doc/research/banking-products.md`.
+
+### Fixed
+
+- `BankEligibilityResultCard`'s primary action now sets its label colour
+  explicitly so the call to action stays legible under every preset.
+
 ## 0.0.2
 
 Maintenance release: clears the pub.dev analysis findings for a clean score.

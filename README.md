@@ -13,7 +13,7 @@ four built-in themes, your backend.
 [![Flutter](https://img.shields.io/badge/Flutter-3.27%2B-027DFD.svg)](https://flutter.dev)
 [![style: flutter_lints](https://img.shields.io/badge/style-flutter__lints-40c4ff.svg)](https://pub.dev/packages/flutter_lints)
 
-**140+ components** · **22 banking domains** · **4 built-in themes** · **built toward WCAG 2.1 AA** · **RTL + Arabic-Indic numerals**
+**147+ components** · **23 banking domains** · **4 built-in themes** · **built toward WCAG 2.1 AA** · **RTL + Arabic-Indic numerals**
 
 <br />
 
@@ -45,6 +45,7 @@ four built-in themes, your backend.
 - [Quick start](#quick-start)
 - [Design presets](#design-presets)
 - [Custom themes](#custom-themes)
+- [The flagship app: a complete product suite](#the-flagship-app-a-complete-product-suite)
 - [Journeys, not just widgets](#journeys-not-just-widgets)
 - [Component catalogue](#component-catalogue)
 - [Full API reference](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/component-reference.md)
@@ -265,6 +266,71 @@ final tweaked = BankPreset.bloom
 
 ---
 
+## The flagship app: a complete product suite
+
+The kit ships with **Meridian**, a full reference banking app built entirely
+from Bank UI Kit widgets: a real product catalogue (accounts, cards, loans,
+mortgages, investments, protection), product detail pages with a
+conventional/Shariah toggle, an end-to-end lending application, and a
+servicing view with a live application tracker. It is the app a bank CEO
+reviews before signing off a launch: every rate, disclosure, and
+representative example is presented the way a regulator expects.
+
+Run it in any of the four presets:
+
+```bash
+cd example
+flutter run -t lib/flagship_main.dart      # switch BankPreset in flagship_main.dart
+```
+
+### The Auto Finance application, end to end
+
+One `BankApplicationController` drives seven steps; each step is a real kit
+widget. This is the actual journey, captured stage by stage from the running
+app:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/screenshots/flagship-apply-walkthrough.gif" width="300" alt="The Auto Finance apply journey: eligibility, customise, offer, documents, disclosures, e-signature, approval" />
+</p>
+
+*Eligibility (soft search, no credit impact) → customise amount and term →
+firm personalised offer with the representative example → document capture →
+pre-contract disclosures and consents → e-signature → approval with a
+reference and funding timeline.*
+
+### The product suite
+
+<table>
+  <tr>
+    <td align="center"><b>Home</b></td>
+    <td align="center"><b>Explore catalogue</b></td>
+    <td align="center"><b>Product detail</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/screenshots/flagship-home-studio-light.png" width="240" alt="Meridian home with total position, accounts, and a pre-qualified offer" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/screenshots/flagship-catalog-studio-light.png" width="240" alt="Product catalogue with category grid, featured Auto Finance, and the loans line-up" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/screenshots/flagship-product-studio-light.png" width="240" alt="Auto Finance product detail with a conventional and Shariah toggle" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Apply: your offer</b></td>
+    <td align="center"><b>My products</b></td>
+    <td align="center"><b>Shariah variant (Heritage)</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/screenshots/flagship-apply-studio-light.png" width="240" alt="A firm, personalised credit offer with the full cost breakdown" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/screenshots/flagship-my-products-studio-light.png" width="240" alt="Servicing view: holdings, a live application tracker, and relationship summary" /></td>
+    <td><img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/screenshots/flagship-product-heritage-light.png" width="240" alt="The same product detail in the Heritage Islamic-banking preset" /></td>
+  </tr>
+</table>
+
+Every product line in the app maps to a documented, regulator-aware pattern.
+The complete banking-products reference (lending, deposits, cards, wealth,
+insurance, and their Islamic variants, with the metrics, journeys, and
+servicing views each one needs) lives in
+[doc/research/banking-products.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/research/banking-products.md).
+
+---
+
 ## Journeys, not just widgets
 
 Components are designed to chain into complete, compliant banking
@@ -292,7 +358,7 @@ states) lives in [docs/banking-journeys.md](https://raw.githubusercontent.com/sa
 
 ## Component catalogue
 
-140+ widgets across 22 modules. Each screenshot below is a live render of that module's
+147+ widgets across 23 modules. Each screenshot below is a live render of that module's
 showcase screen (Studio preset, light mode) from the example app.
 
 For the full parameter-level API reference (every constructor argument, type, required/optional status, and default value) see **[docs/component-reference.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/component-reference.md)**.
@@ -444,6 +510,15 @@ BankVirtualCardWidget(
 ### Payments & billing
 `BankBillPayTile` + `BankBillCalendarStrip` · `BankStandingOrderTile` · `BankTransferLimitManager` (SCA-gated) · `BankQrScannerOverlay` + `BankMyQrCard` (local QR encoding) · `BankBillForecastList` (bill prediction) · `BankAtmLocatorTile` + `BankCardlessCashCode`
 
+### Products & applications
+The origination surface behind the [flagship app](#the-flagship-app-a-complete-product-suite): market a product, check eligibility, present an offer, and take an application to signature.
+
+| Product card | Personalised offer | Eligibility result |
+|---|---|---|
+| <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/screenshots/components/BankProductCard.png" width="230" /> | <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/screenshots/components/BankOfferSummaryCard.png" width="230" /> | <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/screenshots/components/BankEligibilityResultCard.png" width="230" /> |
+
+`BankProductCard` (rate hero, features, badges, dual CTA) · `BankProductCategoryTile` (catalogue grid) · `BankEligibilityResultCard` (soft-search outcome, no credit impact) · `BankOfferSummaryCard` (firm/indicative offer with the representative example) · `BankRatioGauge` (LTV / DTI / LTI affordability bands) · `BankDisclosureConsentSheet` (pre-contract disclosures + no-dark-pattern consents) · `BankESignaturePad` (typed or drawn, timestamped) · headless `BankApplicationController` (the seven-step state machine)
+
 ### Rewards & engagement
 `BankPointsHubCard` (earn/burn) · `BankOffersRail` (card-linked offers) · `BankCashbackCategoryPicker` (quarterly picks) · `BankStoriesCarousel` (stories + full-screen viewer) · `BankPrizeDrawCard` (prize-linked savings)
 
@@ -573,6 +648,7 @@ cd example
 flutter build web -t lib/screenshot_harness.dart --release --no-web-resources-cdn --no-tree-shake-icons
 cd ..
 node tool/screenshots.mjs          # requires playwright + a Chromium
+node tool/walkthrough.mjs           # rebuilds the flagship apply-journey GIF
 ```
 
 ---

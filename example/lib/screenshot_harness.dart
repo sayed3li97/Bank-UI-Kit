@@ -14,6 +14,11 @@
 import 'package:bank_ui_kit/core.dart';
 import 'package:flutter/material.dart';
 
+import 'demo/flagship/flagship_apply.dart';
+import 'demo/flagship/flagship_catalog.dart';
+import 'demo/flagship/flagship_home.dart';
+import 'demo/flagship/flagship_my_products.dart';
+import 'demo/flagship/flagship_product_detail.dart';
 import 'demo/heritage_dashboard.dart';
 import 'demo/home_dashboard.dart';
 import 'gallery/component_registry.dart';
@@ -35,6 +40,11 @@ import 'screens/transfers_screen.dart';
 final Map<String, Widget Function()> _screens = {
   'home': HomeDashboard.new,
   'heritage': HeritageDashboard.new,
+  'flagship-home': FlagshipHome.new,
+  'flagship-catalog': FlagshipCatalog.new,
+  'flagship-product': FlagshipProductDetail.new,
+  'flagship-apply': () => const FlagshipApplyFlow(initialStep: 2),
+  'flagship-my-products': FlagshipMyProducts.new,
   'states': StatesScreen.new,
   'accounts': AccountsScreen.new,
   'transactions': TransactionsScreen.new,
@@ -101,7 +111,15 @@ void main() {
 
   // ── Screen mode (existing) ─────────────────────────────────────────────────
   final screenKey = params['screen'] ?? 'home';
-  final builder = _screens[screenKey] ?? _screens['home']!;
+  // The apply flow can be pinned to a specific step via ?step=N so the
+  // documentation walkthrough can capture every stage of the journey.
+  Widget Function() builder;
+  if (screenKey == 'flagship-apply') {
+    final step = int.tryParse(params['step'] ?? '2') ?? 2;
+    builder = () => FlagshipApplyFlow(initialStep: step);
+  } else {
+    builder = _screens[screenKey] ?? _screens['home']!;
+  }
 
   runApp(
     BankUiScope(

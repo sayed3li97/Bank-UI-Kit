@@ -26,6 +26,7 @@ enum GalleryCategory {
   notifications('Notifications', Icons.notifications),
   forms('Common & Forms', Icons.tune),
   payments('Payments & Billing', Icons.request_page),
+  products('Products & Applications', Icons.inventory_2_outlined),
   business('Business Banking', Icons.business_center),
   documents('Documents & Deposits', Icons.description),
   support('Support & Servicing', Icons.support_agent),
@@ -3615,6 +3616,275 @@ final List<GalleryEntry> kGalleryEntries = [
       numberUsed: true,
       onRegenerate: () async => '5502',
       onRevealDetails: () {},
+    ),
+  ),
+
+  // ── PRODUCTS & APPLICATIONS ───────────────────────────────────────────────
+
+  GalleryEntry(
+    name: 'BankProductCard',
+    description: 'Marketing card for a lending or deposit product: rate hero, '
+        'feature bullets, badges, and a primary and secondary call to action.',
+    category: GalleryCategory.products,
+    isFullScreen: true,
+    codeExample: '''BankProductCard(
+  title: 'Auto Finance',
+  subtitle: 'Drive away sooner, from 5.9% APR.',
+  leadingIcon: Icons.directions_car_outlined,
+  rate: BankProductRate(
+    value: '5.9%', label: 'from APR', caption: 'Representative'),
+  features: const ['No fee for settling early', 'Decision in minutes'],
+  badges: const [BankProductBadge(label: 'Featured', tone: BankProductBadgeTone.promo)],
+  highlighted: true,
+  ctaLabel: 'View details',
+  secondaryLabel: 'Check eligibility',
+  onTap: () {},
+  onSecondary: () {},
+)''',
+    params: const [
+      GalleryParam(
+        name: 'highlighted',
+        label: 'Highlighted',
+        type: ParamType.boolType,
+        defaultValue: true,
+      ),
+    ],
+    builder: (ctx, p) => BankProductCard(
+      title: 'Auto Finance',
+      subtitle: 'Drive away sooner, from 5.9% APR.',
+      leadingIcon: Icons.directions_car_outlined,
+      rate: const BankProductRate(
+        value: '5.9%',
+        label: 'from APR',
+        caption: 'Representative',
+      ),
+      features: const [
+        'Borrow 3,000 to 60,000 GBP over 1 to 7 years',
+        'No fee for settling early',
+        'Personalised rate with no impact to your credit score',
+      ],
+      badges: const [
+        BankProductBadge(label: 'Featured', tone: BankProductBadgeTone.promo),
+        BankProductBadge(
+          label: 'No early-settlement fee',
+          tone: BankProductBadgeTone.positive,
+        ),
+      ],
+      highlighted: p['highlighted'] as bool,
+      ctaLabel: 'View details',
+      secondaryLabel: 'Check eligibility',
+      onTap: () {},
+      onSecondary: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankProductCategoryTile',
+    description: 'Compact tile for a product catalogue category, with an icon, '
+        'title, optional subtitle, and product count.',
+    category: GalleryCategory.products,
+    isFullScreen: true,
+    codeExample: '''BankProductCategoryTile(
+  icon: Icons.directions_car_outlined,
+  title: 'Loans',
+  subtitle: 'Auto, personal, and home equity',
+  count: 4,
+  onTap: () {},
+)''',
+    params: const [],
+    builder: (ctx, p) => BankProductCategoryTile(
+      icon: Icons.directions_car_outlined,
+      title: 'Loans',
+      subtitle: 'Auto, personal, and home equity',
+      count: 4,
+      onTap: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankEligibilityResultCard',
+    description: 'Soft-search eligibility outcome with a likelihood tone, an '
+        'estimated rate, a maximum amount, and a no-credit-impact reassurance.',
+    category: GalleryCategory.products,
+    isFullScreen: true,
+    codeExample: '''BankEligibilityResultCard(
+  outcome: BankEligibilityOutcome.likely,
+  estimatedRate: '5.9% to 8.4%',
+  maxAmount: Money.fromDouble(25000, 'GBP'),
+  reasons: const ['Based on a soft search only'],
+  noCreditImpact: true,
+  onApply: () {},
+)''',
+    params: [
+      GalleryParam(
+        name: 'outcome',
+        label: 'Outcome',
+        type: ParamType.enumType,
+        defaultValue: 'likely',
+        enumValues: BankEligibilityOutcome.values.map(_enumLabel).toList(),
+      ),
+    ],
+    builder: (ctx, p) => BankEligibilityResultCard(
+      outcome: BankEligibilityOutcome.values
+          .firstWhere((e) => e.name == p['outcome']),
+      estimatedRate: '5.9% to 8.4%',
+      maxAmount: Money.fromDouble(25000, 'GBP'),
+      reasons: const [
+        'Based on a soft search that does not affect your credit score',
+        'Final rate depends on the amount and term you choose',
+      ],
+      onApply: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankOfferSummaryCard',
+    description:
+        'Personalised credit offer: headline payment, amount, rate, term, '
+        'total repayable, fees, and the regulatory representative example.',
+    category: GalleryCategory.products,
+    isFullScreen: true,
+    codeExample: '''BankOfferSummaryCard(
+  payment: Money.fromDouble(432.10, 'GBP'),
+  amount: Money.fromDouble(25000, 'GBP'),
+  rate: '6.4% APR',
+  term: '60 months',
+  totalRepayable: Money.fromDouble(25926, 'GBP'),
+  totalInterest: Money.fromDouble(926, 'GBP'),
+  firmness: BankOfferFirmness.firm,
+  onAccept: () {},
+  onAdjust: () {},
+)''',
+    params: [
+      GalleryParam(
+        name: 'firmness',
+        label: 'Firmness',
+        type: ParamType.enumType,
+        defaultValue: 'firm',
+        enumValues: BankOfferFirmness.values.map(_enumLabel).toList(),
+      ),
+    ],
+    builder: (ctx, p) => BankOfferSummaryCard(
+      payment: Money.fromDouble(432.10, 'GBP'),
+      amount: Money.fromDouble(25000, 'GBP'),
+      rate: '6.4% APR',
+      term: '60 months',
+      totalRepayable: Money.fromDouble(25926, 'GBP'),
+      totalInterest: Money.fromDouble(926, 'GBP'),
+      firmness:
+          BankOfferFirmness.values.firstWhere((e) => e.name == p['firmness']),
+      representativeExample:
+          'Representative example: borrowing 25,000 GBP over 60 months at '
+          '6.4% APR (fixed), 60 monthly payments of 432.10 GBP. Total '
+          'amount repayable 25,926 GBP.',
+      onAccept: () {},
+      onAdjust: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankRatioGauge',
+    description:
+        'Horizontal ratio gauge for affordability metrics (LTV, DTI, LTI) '
+        'with coloured bands and an optional threshold marker.',
+    category: GalleryCategory.products,
+    isFullScreen: true,
+    codeExample: '''BankRatioGauge(
+  value: 0.62,
+  title: 'Loan to value',
+  threshold: 0.85,
+  thresholdLabel: 'Max 85%',
+  bands: const [
+    BankRatioBand(upTo: 0.6, tone: BankRatioTone.positive),
+    BankRatioBand(upTo: 0.8, tone: BankRatioTone.warning),
+    BankRatioBand(upTo: 1.0, tone: BankRatioTone.danger),
+  ],
+)''',
+    params: const [
+      GalleryParam(
+        name: 'value',
+        label: 'Value',
+        type: ParamType.doubleType,
+        defaultValue: 0.62,
+        min: 0.0,
+        max: 1.0,
+      ),
+    ],
+    builder: (ctx, p) => BankRatioGauge(
+      value: (p['value'] as num).toDouble(),
+      title: 'Loan to value',
+      threshold: 0.85,
+      thresholdLabel: 'Max 85%',
+      bands: const [
+        BankRatioBand(upTo: 0.6, tone: BankRatioTone.positive),
+        BankRatioBand(upTo: 0.8, tone: BankRatioTone.warning),
+        BankRatioBand(upTo: 1.0, tone: BankRatioTone.danger),
+      ],
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankDisclosureConsentSheet',
+    description:
+        'Pre-contract disclosures and tick-box consents gated behind an '
+        'agree action, for the final step of an application.',
+    category: GalleryCategory.products,
+    isFullScreen: true,
+    codeExample: '''BankDisclosureConsentSheet(
+  disclosures: const [
+    BankDisclosure(
+      title: 'Representative example',
+      body: 'Borrowing 25,000 GBP over 60 months at 6.4% APR...'),
+  ],
+  consents: const [
+    BankConsentItem(
+      id: 'agreement', label: 'I agree to the loan agreement',
+      required: true),
+    BankConsentItem(id: 'marketing', label: 'Send me product news'),
+  ],
+  onChanged: (ids) {},
+  onAgree: () {},
+)''',
+    params: const [],
+    builder: (ctx, p) => BankDisclosureConsentSheet(
+      disclosures: const [
+        BankDisclosure(
+          title: 'Representative example',
+          body: 'Borrowing 25,000 GBP over 60 months at 6.4% APR (fixed), you '
+              'would pay 60 monthly payments of 432.10 GBP.',
+          required: true,
+        ),
+        BankDisclosure(
+          title: 'Your right to cancel',
+          body: 'You have 14 days to withdraw from the agreement without '
+              'giving a reason.',
+        ),
+      ],
+      consents: const [
+        BankConsentItem(
+          id: 'agreement',
+          label: 'I have read and agree to the loan agreement',
+          required: true,
+        ),
+        BankConsentItem(
+          id: 'marketing',
+          label: 'Keep me updated about products and offers',
+        ),
+      ],
+      onChanged: (_) {},
+      onAgree: () {},
+    ),
+  ),
+  GalleryEntry(
+    name: 'BankESignaturePad',
+    description:
+        'Electronic signature capture with typed or drawn signature and a '
+        'timestamped legal attestation.',
+    category: GalleryCategory.products,
+    isFullScreen: true,
+    codeExample: '''BankESignaturePad(
+  now: () => DateTime(2026, 7, 4, 10),
+  onSigned: (result) {},
+)''',
+    params: const [],
+    builder: (ctx, p) => BankESignaturePad(
+      now: () => DateTime(2026, 7, 4, 10),
+      onSigned: (_) {},
     ),
   ),
 ];

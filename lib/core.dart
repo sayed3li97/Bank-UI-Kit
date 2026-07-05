@@ -65,6 +65,7 @@ export 'src/common/bank_stories_carousel.dart';
 export 'src/common/bank_summary_stack.dart';
 export 'src/common/bank_text_field.dart';
 export 'src/common/money_formatter.dart';
+export 'src/controllers/bank_application_controller.dart';
 export 'src/controllers/bank_income_sorter_controller.dart';
 // Headless controllers
 export 'src/controllers/bank_kyc_flow_controller.dart';
@@ -112,6 +113,14 @@ export 'src/payments/bank_bill_pay_tile.dart';
 export 'src/payments/bank_qr_pay_view.dart';
 export 'src/payments/bank_standing_order_tile.dart';
 export 'src/payments/bank_transfer_limit_manager.dart';
+export 'src/products/bank_disclosure_consent_sheet.dart';
+export 'src/products/bank_e_signature_pad.dart';
+export 'src/products/bank_eligibility_result_card.dart';
+export 'src/products/bank_offer_summary_card.dart';
+// Products & applications
+export 'src/products/bank_product_card.dart';
+export 'src/products/bank_product_category_tile.dart';
+export 'src/products/bank_ratio_gauge.dart';
 // Rewards & engagement
 export 'src/rewards/bank_cashback_category_picker.dart';
 export 'src/rewards/bank_offers_rail.dart';
