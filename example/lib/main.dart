@@ -1,6 +1,11 @@
 import 'package:bank_ui_kit/core.dart';
 import 'package:flutter/material.dart';
 
+import 'demo/flagship/flagship_apply.dart';
+import 'demo/flagship/flagship_catalog.dart';
+import 'demo/flagship/flagship_home.dart';
+import 'demo/flagship/flagship_my_products.dart';
+import 'demo/flagship/flagship_product_detail.dart';
 import 'demo/heritage_dashboard.dart';
 import 'demo/home_dashboard.dart';
 import 'screens/accounts_screen.dart';
@@ -85,6 +90,31 @@ class _ExampleShell extends StatefulWidget {
 class _ExampleShellState extends State<_ExampleShell> {
   static const _modules =
       <({String label, IconData icon, Widget Function() screen})>[
+    (
+      label: 'Meridian: Home',
+      icon: Icons.star_outline,
+      screen: FlagshipHome.new,
+    ),
+    (
+      label: 'Meridian: Explore products',
+      icon: Icons.inventory_2_outlined,
+      screen: FlagshipCatalog.new,
+    ),
+    (
+      label: 'Meridian: Product detail',
+      icon: Icons.directions_car_outlined,
+      screen: FlagshipProductDetail.new,
+    ),
+    (
+      label: 'Meridian: Apply (Auto Finance)',
+      icon: Icons.assignment_turned_in_outlined,
+      screen: FlagshipApplyFlow.new,
+    ),
+    (
+      label: 'Meridian: My products',
+      icon: Icons.account_balance_outlined,
+      screen: FlagshipMyProducts.new,
+    ),
     (
       label: 'Home (full-app demo)',
       icon: Icons.home_outlined,

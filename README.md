@@ -15,6 +15,10 @@ four built-in themes, your backend.
 
 **147+ components** · **23 banking domains** · **4 built-in themes** · **built toward WCAG 2.1 AA** · **RTL + Arabic-Indic numerals**
 
+### [▶ Try the live demo](https://sayed3li97.github.io/Bank-UI-Kit/)
+
+Browse every component and the full Meridian flagship app in your browser: switch themes, dark mode, and RTL live.
+
 <br />
 
 <table>
