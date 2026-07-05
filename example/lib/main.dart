@@ -197,79 +197,210 @@ class _ExampleShellState extends State<_ExampleShell> {
     ),
   ];
 
+  // The module shown in the detail pane on wide (tablet / laptop) layouts.
+  int _selected = 0;
+
+  // Below this width we use a single-column, push-navigation layout (phones);
+  // at or above it we use a two-pane list + device-frame layout (tablets,
+  // laptops, desktops), so the mobile-first banking screens render at their
+  // natural phone width instead of stretching across the viewport.
+  static const double _twoPaneBreakpoint = 760;
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final wide = MediaQuery.sizeOf(context).width >= _twoPaneBreakpoint;
+
     return Scaffold(
       backgroundColor: theme.background,
-      appBar: AppBar(
-        backgroundColor: theme.surface,
-        surfaceTintColor: Colors.transparent,
-        title: Text(
-          'Bank UI Kit',
-          style: BankTokens.headlineSmall.copyWith(color: theme.onSurface),
-        ),
-        actions: [
-          _PresetsMenu(
-            preset: widget.preset,
-            onChanged: widget.onPresetChanged,
-          ),
-          IconButton(
-            icon: Icon(
-              widget.darkMode
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
-              color: theme.onSurface,
-            ),
-            onPressed: () => widget.onDarkModeChanged(!widget.darkMode),
-            tooltip: widget.darkMode ? 'Light mode' : 'Dark mode',
-          ),
-          IconButton(
-            icon: Icon(
-              widget.direction == TextDirection.ltr
-                  ? Icons.format_textdirection_r_to_l
-                  : Icons.format_textdirection_l_to_r,
-              color: theme.onSurface,
-            ),
-            onPressed: () => widget.onDirectionChanged(
-              widget.direction == TextDirection.ltr
-                  ? TextDirection.rtl
-                  : TextDirection.ltr,
-            ),
-            tooltip: widget.direction == TextDirection.ltr
-                ? 'Switch to RTL'
-                : 'Switch to LTR',
-          ),
-          const BankPrivacyToggle(),
-          const SizedBox(width: 8),
-        ],
+      appBar: _buildAppBar(theme),
+      body: wide ? _buildTwoPane(theme) : _buildList(theme, selectable: false),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(BankThemeData theme) {
+    return AppBar(
+      backgroundColor: theme.surface,
+      surfaceTintColor: Colors.transparent,
+      title: Text(
+        'Bank UI Kit',
+        style: BankTokens.headlineSmall.copyWith(color: theme.onSurface),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.symmetric(vertical: BankTokens.space4),
-        itemCount: _modules.length,
-        separatorBuilder: (_, __) => Divider(
-          height: 1,
-          color: theme.outline,
-          indent: BankTokens.space4,
-          endIndent: BankTokens.space4,
+      actions: [
+        _PresetsMenu(
+          preset: widget.preset,
+          onChanged: widget.onPresetChanged,
         ),
-        itemBuilder: (context, index) {
-          final module = _modules[index];
-          return ListTile(
-            leading: Icon(module.icon, color: theme.primary),
-            title: Text(
-              module.label,
-              style: BankTokens.bodyLarge.copyWith(color: theme.onSurface),
+        IconButton(
+          icon: Icon(
+            widget.darkMode
+                ? Icons.light_mode_outlined
+                : Icons.dark_mode_outlined,
+            color: theme.onSurface,
+          ),
+          onPressed: () => widget.onDarkModeChanged(!widget.darkMode),
+          tooltip: widget.darkMode ? 'Light mode' : 'Dark mode',
+        ),
+        IconButton(
+          icon: Icon(
+            widget.direction == TextDirection.ltr
+                ? Icons.format_textdirection_r_to_l
+                : Icons.format_textdirection_l_to_r,
+            color: theme.onSurface,
+          ),
+          onPressed: () => widget.onDirectionChanged(
+            widget.direction == TextDirection.ltr
+                ? TextDirection.rtl
+                : TextDirection.ltr,
+          ),
+          tooltip: widget.direction == TextDirection.ltr
+              ? 'Switch to RTL'
+              : 'Switch to LTR',
+        ),
+        const BankPrivacyToggle(),
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
+  // Two-pane tablet / laptop layout: a navigation rail of modules on the
+  // leading side and the selected screen in a centered device frame.
+  Widget _buildTwoPane(BankThemeData theme) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          width: 300,
+          child: _buildList(theme, selectable: true),
+        ),
+        VerticalDivider(width: 1, color: theme.outline),
+        Expanded(
+          child: ColoredBox(
+            color: theme.background,
+            child: _DeviceFrame(
+              // Rebuild the framed screen when the module changes.
+              key: ValueKey<int>(_selected),
+              child: _modules[_selected].screen(),
             ),
-            trailing: Icon(
-              Icons.chevron_right,
-              color: theme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildList(BankThemeData theme, {required bool selectable}) {
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: BankTokens.space4),
+      itemCount: _modules.length,
+      separatorBuilder: (_, __) => Divider(
+        height: 1,
+        color: theme.outline,
+        indent: BankTokens.space4,
+        endIndent: BankTokens.space4,
+      ),
+      itemBuilder: (context, index) {
+        final module = _modules[index];
+        final isSelected = selectable && index == _selected;
+        return ListTile(
+          selected: isSelected,
+          selectedTileColor: theme.primary.withValues(alpha: 0.10),
+          leading: Icon(module.icon, color: theme.primary),
+          title: Text(
+            module.label,
+            style: BankTokens.bodyLarge.copyWith(
+              color: isSelected ? theme.primary : theme.onSurface,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             ),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => module.screen()),
-            ),
-          );
-        },
+          ),
+          trailing: selectable
+              ? null
+              : Icon(Icons.chevron_right, color: theme.onSurfaceVariant),
+          onTap: () {
+            if (selectable) {
+              setState(() => _selected = index);
+            } else {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => _ScreenHost(child: module.screen()),
+                ),
+              );
+            }
+          },
+        );
+      },
+    );
+  }
+}
+
+/// Hosts a pushed screen on single-column layouts. On phones the screen is
+/// shown full-bleed; on wider viewports (large phones, tablets in portrait)
+/// it is centred in a device frame so it keeps its intended proportions.
+class _ScreenHost extends StatelessWidget {
+  const _ScreenHost({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    if (width <= 480) return child;
+    final theme = BankThemeData.of(context);
+    return Scaffold(
+      backgroundColor: theme.background,
+      body: _DeviceFrame(child: child),
+    );
+  }
+}
+
+/// Renders [child] as a phone-sized preview: a rounded, shadowed device frame
+/// with the embedded screen's [MediaQuery] overridden to the frame's size, so
+/// mobile-first screens lay out exactly as they would on a handset.
+class _DeviceFrame extends StatelessWidget {
+  const _DeviceFrame({required this.child, super.key});
+
+  final Widget child;
+
+  static const double _frameWidth = 400;
+  static const double _cornerRadius = 30;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = BankThemeData.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(BankTokens.space6),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width =
+                constraints.maxWidth.clamp(0.0, _frameWidth).toDouble();
+            final height =
+                constraints.maxHeight.isFinite ? constraints.maxHeight : 820.0;
+            final size = Size(width, height);
+            final radius = BorderRadius.circular(_cornerRadius);
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: radius,
+                border: Border.all(color: theme.outline, width: 1),
+                boxShadow: BankTokens.shadowHero,
+              ),
+              child: ClipRRect(
+                borderRadius: radius,
+                child: SizedBox.fromSize(
+                  size: size,
+                  child: MediaQuery(
+                    data: MediaQuery.of(context).copyWith(
+                      size: size,
+                      padding: EdgeInsets.zero,
+                      viewPadding: EdgeInsets.zero,
+                      viewInsets: EdgeInsets.zero,
+                    ),
+                    child: child,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
