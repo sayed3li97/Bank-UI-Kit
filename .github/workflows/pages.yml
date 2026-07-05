@@ -1,0 +1,75 @@
+name: Deploy demo to GitHub Pages
+
+# Builds the interactive component gallery + Meridian flagship app (the
+# example app's default entrypoint, lib/main.dart) as a Flutter web app and
+# publishes it to GitHub Pages on every push to main.
+#
+# One-time setup: in the repository settings, set Pages -> Build and
+# deployment -> Source to "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Allow the workflow to publish to Pages via OIDC; only one deploy at a time.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build web demo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.4'
+          channel: stable
+          cache: true
+
+      - name: Install example dependencies
+        working-directory: example
+        run: flutter pub get
+
+      # base-href must match the project-pages path (the repository name) so
+      # the app's asset URLs resolve under https://<owner>.github.io/<repo>/.
+      # CanvasKit is bundled locally (--no-web-resources-cdn) so the demo is
+      # fully self-contained and does not depend on a third-party CDN.
+      - name: Build web (gallery + flagship)
+        working-directory: example
+        run: >-
+          flutter build web
+          --release
+          --base-href /Bank-UI-Kit/
+          --no-web-resources-cdn
+          --no-tree-shake-icons
+
+      # SPA fallback: copy index.html to 404.html so deep links do not 404.
+      - name: Add SPA 404 fallback
+        working-directory: example
+        run: cp build/web/index.html build/web/404.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: example/build/web
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
