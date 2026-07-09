@@ -213,8 +213,7 @@ class _Intro extends StatelessWidget {
             'formatted for each currency by BankMoneyFormatter. Nothing here '
             'depends on the device locale — decimals, symbol and placement are '
             'driven by the currency code alone.',
-            style:
-                BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
+            style: BankTokens.bodySmall.copyWith(color: theme.onSurfaceVariant),
           ),
         ],
       ),
@@ -424,8 +423,7 @@ class _NumeralToggle extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-              border:
-                  Border.all(color: theme.outline.withValues(alpha: 0.7)),
+              border: Border.all(color: theme.outline.withValues(alpha: 0.7)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
