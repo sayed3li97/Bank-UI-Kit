@@ -58,7 +58,7 @@ void main() {
         numeralStyle: NumeralStyle.easternArabicIndic,
       );
       // No Western digits should remain in the numeric portion.
-      expect(RegExp(r'[0-9]').hasMatch(s), isFalse);
+      expect(RegExp('[0-9]').hasMatch(s), isFalse);
     });
   });
 
