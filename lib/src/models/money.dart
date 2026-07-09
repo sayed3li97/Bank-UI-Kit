@@ -1,15 +1,25 @@
 import 'package:decimal/decimal.dart';
 
+import 'bank_currency.dart';
+
 class Money {
   final Decimal amount;
   final String currencyCode; // ISO 4217 e.g. 'USD', 'GBP', 'AED'
 
   const Money({required this.amount, required this.currencyCode});
 
-  factory Money.fromDouble(double amount, String currencyCode) => Money(
-        amount: Decimal.parse(amount.toStringAsFixed(2)),
-        currencyCode: currencyCode,
-      );
+  /// Creates money from a [double], rounding to the currency's ISO 4217 minor
+  /// units as registered in [BankCurrencies] — 2 for most currencies, 0 for
+  /// JPY/KRW/VND/etc., and 3 for KWD/BHD/OMR/etc. This keeps the stored value
+  /// consistent with how it is displayed. For exact or high-precision values
+  /// (e.g. crypto), use the default constructor with a [Decimal].
+  factory Money.fromDouble(double amount, String currencyCode) {
+    final digits = BankCurrencies.of(currencyCode).decimalDigits;
+    return Money(
+      amount: Decimal.parse(amount.toStringAsFixed(digits)),
+      currencyCode: currencyCode,
+    );
+  }
 
   factory Money.zero(String currencyCode) =>
       Money(amount: Decimal.zero, currencyCode: currencyCode);

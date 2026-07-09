@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 
 import 'demo/flagship/flagship_apply.dart';
 import 'demo/flagship/flagship_catalog.dart';
+import 'demo/flagship/flagship_currencies.dart';
 import 'demo/flagship/flagship_home.dart';
 import 'demo/flagship/flagship_my_cards.dart';
 import 'demo/flagship/flagship_my_products.dart';
@@ -47,6 +48,7 @@ final Map<String, Widget Function()> _screens = {
   'flagship-apply': () => const FlagshipApplyFlow(initialStep: 2),
   'flagship-my-products': FlagshipMyProducts.new,
   'flagship-my-cards': FlagshipMyCards.new,
+  'flagship-currencies': FlagshipCurrencies.new,
   'states': StatesScreen.new,
   'accounts': AccountsScreen.new,
   'transactions': TransactionsScreen.new,

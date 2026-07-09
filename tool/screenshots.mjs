@@ -149,6 +149,7 @@ if (!componentsOnly) {
   const flagshipScreens = [
     'flagship-home', 'flagship-catalog', 'flagship-product',
     'flagship-apply', 'flagship-my-products', 'flagship-my-cards',
+    'flagship-currencies',
   ];
   for (const screen of flagshipScreens) {
     shots.push({ screen, preset: 'studio', dark: false, w: 412, h: 1600 });

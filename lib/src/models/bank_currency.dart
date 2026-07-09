@@ -75,6 +75,23 @@ abstract final class BankCurrencies {
     _custom[currency.code.toUpperCase()] = currency;
   }
 
+  /// Whether [code] is a known (built-in or registered) currency.
+  static bool isKnown(String code) {
+    final upper = code.toUpperCase();
+    return _custom.containsKey(upper) || _builtIn.containsKey(upper);
+  }
+
+  /// All known currencies — built-in plus any registered at runtime — sorted
+  /// by ISO code. Useful for building a currency picker or a formatting demo.
+  static List<BankCurrency> get all {
+    final merged = <String, BankCurrency>{..._builtIn, ..._custom};
+    final codes = merged.keys.toList()..sort();
+    return [for (final c in codes) merged[c]!];
+  }
+
+  /// All known ISO 4217 codes, sorted.
+  static List<String> get codes => [for (final c in all) c.code];
+
   static const Map<String, BankCurrency> _builtIn = {
     // ── Americas ─────────────────────────────────────────────────────
     'USD': BankCurrency(code: 'USD', symbol: r'$', name: 'US Dollar'),

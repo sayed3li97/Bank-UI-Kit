@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../demo/flagship/flagship_apply.dart';
 import '../demo/flagship/flagship_catalog.dart';
+import '../demo/flagship/flagship_currencies.dart';
 import '../demo/flagship/flagship_home.dart';
 import '../demo/flagship/flagship_my_cards.dart';
 import '../demo/flagship/flagship_my_products.dart';
@@ -56,6 +57,11 @@ class _FlagshipSectionState extends State<FlagshipSection> {
       label: 'My products',
       caption: 'Servicing: holdings and a live application tracker.',
       build: FlagshipMyProducts.new,
+    ),
+    (
+      label: 'Currencies',
+      caption: 'One amount rendered in every currency convention, correctly.',
+      build: FlagshipCurrencies.new,
     ),
   ];
 
