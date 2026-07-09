@@ -190,6 +190,9 @@ class BankPaymentCard extends StatelessWidget {
   /// Overrides the computed semantics label.
   final String? semanticLabel;
 
+  // Reference design width for the card face; scaled to the real card size.
+  static const double _refWidth = 380;
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
@@ -217,7 +220,8 @@ class BankPaymentCard extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         base,
-        if (artwork != null) Positioned.fill(child: artwork!),
+        if (artwork != null)
+          Positioned.fill(child: ExcludeSemantics(child: artwork)),
         if (showScrim)
           Positioned.fill(
             child: DecoratedBox(
@@ -234,11 +238,21 @@ class BankPaymentCard extends StatelessWidget {
               ),
             ),
           ),
-        if (overlay != null) Positioned.fill(child: overlay!),
+        if (overlay != null)
+          Positioned.fill(child: ExcludeSemantics(child: overlay)),
+        // The face is laid out on a fixed reference canvas (same aspect as the
+        // card) and scaled to fit, so a fully-populated card never overflows —
+        // including inside a shrunk carousel item.
         Positioned.fill(
-          child: Padding(
-            padding: padding ?? const EdgeInsets.all(BankTokens.space5),
-            child: _face(theme, fg),
+          child: FittedBox(
+            child: SizedBox(
+              width: _refWidth,
+              height: _refWidth / aspectRatio,
+              child: Padding(
+                padding: padding ?? const EdgeInsets.all(BankTokens.space5),
+                child: _face(theme, fg),
+              ),
+            ),
           ),
         ),
       ],
@@ -305,95 +319,114 @@ class BankPaymentCard extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
+        // Top block: label / network, then chip + contactless.
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            if (label != null) _labelPill(fg),
-            const Spacer(),
-            if (network != BankCardNetwork.generic)
-              BankNetworkBadge(network: network, color: fg),
-          ],
-        ),
-        const SizedBox(height: BankTokens.space4),
-        Row(
-          children: [
-            if (showChip) _chip(theme),
-            if (showChip && showContactless)
-              const SizedBox(width: BankTokens.space3),
-            if (showContactless)
-              Icon(
-                contactlessIcon ?? BankIcons.cardContactless,
-                color: fg.withValues(alpha: 0.9),
-                size: 22,
-              ),
-          ],
-        ),
-        const Spacer(),
-        if (balance != null) ...[
-          Text(balanceLabel.toUpperCase(), style: caption),
-          const SizedBox(height: 2),
-          BankBalanceText(
-            money: balance!,
-            size: BankBalanceSize.medium,
-            style: BankTokens.headlineMedium
-                .copyWith(color: fg, fontWeight: FontWeight.w800)
-                .merge(balanceStyle),
-          ),
-          const SizedBox(height: BankTokens.space3),
-        ],
-        if (!numberless && maskedNumber != null) ...[
-          Text(
-            maskedNumber!,
-            textDirection: TextDirection.ltr,
-            style: BankTokens.bodyLarge
-                .copyWith(
-                  color: fg,
-                  letterSpacing: 2.2,
-                  fontWeight: FontWeight.w600,
-                )
-                .merge(numberStyle),
-          ),
-          const SizedBox(height: BankTokens.space3),
-        ],
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            if (holderName != null)
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(holderLabel, style: caption),
-                    const SizedBox(height: 2),
-                    Text(
-                      holderName!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: BankTokens.labelLarge
-                          .copyWith(color: fg, fontWeight: FontWeight.w700)
-                          .merge(holderNameStyle),
-                    ),
-                  ],
-                ),
-              ),
-            if (expiry != null && !numberless)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(expiryLabel, style: caption),
-                  const SizedBox(height: 2),
-                  Text(
-                    expiry!,
-                    textDirection: TextDirection.ltr,
-                    style: BankTokens.labelLarge
-                        .copyWith(color: fg, fontWeight: FontWeight.w700)
-                        .merge(expiryStyle),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (label != null) _labelPill(fg),
+                const Spacer(),
+                if (network != BankCardNetwork.generic)
+                  BankNetworkBadge(
+                    network: network,
+                    // Tint only the typographic marks; Mastercard keeps its
+                    // brand colours rather than adopting the card foreground.
+                    color: network == BankCardNetwork.mastercard ? null : fg,
                   ),
-                ],
+              ],
+            ),
+            const SizedBox(height: BankTokens.space4),
+            Row(
+              children: [
+                if (showChip) _chip(theme),
+                if (showChip && showContactless)
+                  const SizedBox(width: BankTokens.space3),
+                if (showContactless)
+                  Icon(
+                    contactlessIcon ?? BankIcons.cardContactless,
+                    color: fg.withValues(alpha: 0.9),
+                    size: 22,
+                  ),
+              ],
+            ),
+          ],
+        ),
+        // Bottom block: balance, number, holder / expiry.
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (balance != null) ...[
+              Text(balanceLabel.toUpperCase(), style: caption),
+              const SizedBox(height: 2),
+              BankBalanceText(
+                money: balance!,
+                size: BankBalanceSize.medium,
+                style: BankTokens.headlineMedium
+                    .copyWith(color: fg, fontWeight: FontWeight.w800)
+                    .merge(balanceStyle),
               ),
+              const SizedBox(height: BankTokens.space3),
+            ],
+            if (!numberless && maskedNumber != null) ...[
+              Text(
+                maskedNumber!,
+                textDirection: TextDirection.ltr,
+                style: BankTokens.bodyLarge
+                    .copyWith(
+                      color: fg,
+                      letterSpacing: 2.2,
+                      fontWeight: FontWeight.w600,
+                    )
+                    .merge(numberStyle),
+              ),
+              const SizedBox(height: BankTokens.space3),
+            ],
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (holderName != null)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(holderLabel, style: caption),
+                        const SizedBox(height: 2),
+                        Text(
+                          holderName!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: BankTokens.labelLarge
+                              .copyWith(color: fg, fontWeight: FontWeight.w700)
+                              .merge(holderNameStyle),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (expiry != null && !numberless)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(expiryLabel, style: caption),
+                      const SizedBox(height: 2),
+                      Text(
+                        expiry!,
+                        textDirection: TextDirection.ltr,
+                        style: BankTokens.labelLarge
+                            .copyWith(color: fg, fontWeight: FontWeight.w700)
+                            .merge(expiryStyle),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ],
         ),
       ],

@@ -82,7 +82,8 @@ class BankBalanceTile extends StatelessWidget {
   /// Fixed width (used by a scrollable [BankBalanceTileRow]).
   final double? width;
 
-  /// Overrides the computed semantics label.
+  /// The tile's semantics label. Defaults to [label] (the caption) so a
+  /// tappable tile has an accessible name.
   final String? semanticLabel;
 
   @override
@@ -166,7 +167,10 @@ class BankBalanceTile extends StatelessWidget {
     );
 
     final tile = Semantics(
-      label: semanticLabel,
+      // Default to the caption so a tappable tile always has an accessible
+      // name; the amount is announced by the BankBalanceText child (which
+      // masks under privacy mode).
+      label: semanticLabel ?? label,
       button: onTap != null,
       child: onTap == null
           ? content

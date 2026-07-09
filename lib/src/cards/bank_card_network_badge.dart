@@ -44,11 +44,12 @@ class BankNetworkBadge extends StatelessWidget {
   /// Mark height in logical pixels. Wordmarks scale their font from this.
   final double height;
 
-  /// Foreground colour for typographic marks (Visa / Amex) and the first
-  /// Mastercard circle. Defaults to white for wordmarks.
+  /// Ink for the typographic marks (Visa / Amex); defaults to white. For
+  /// Mastercard it also sets the left circle, so pass `null` there to keep
+  /// the brand red (see `BankPaymentCard`, which does this automatically).
   final Color? color;
 
-  /// The second Mastercard circle colour. Defaults to the brand amber.
+  /// The Mastercard right (amber) circle. Defaults to the brand amber.
   final Color? secondaryColor;
 
   /// Merged over the computed wordmark style.
