@@ -1,5 +1,10 @@
 import 'package:flutter/widgets.dart';
 
+/// The ISO 7810 ID-1 card aspect ratio (85.6mm x 53.98mm ≈ 1.586), the real
+/// proportion of a physical bank card. Payment-card widgets default to this so
+/// they read as authentic cards and share one source of truth in a carousel.
+const double kBankCardAspectRatio = 1.586;
+
 /// Design tokens for the Bank UI Kit design system.
 ///
 /// All values are `static const` and organised into semantic groups:

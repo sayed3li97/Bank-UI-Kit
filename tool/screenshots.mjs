@@ -148,7 +148,7 @@ if (!componentsOnly) {
   // screens in Studio light, plus a couple of alternates for the README.
   const flagshipScreens = [
     'flagship-home', 'flagship-catalog', 'flagship-product',
-    'flagship-apply', 'flagship-my-products',
+    'flagship-apply', 'flagship-my-products', 'flagship-my-cards',
   ];
   for (const screen of flagshipScreens) {
     shots.push({ screen, preset: 'studio', dark: false, w: 412, h: 1600 });
@@ -328,6 +328,11 @@ if (!screensOnly) {
     { name: 'BankConnectivityBanner',     fullScreen: true  },
     { name: 'BankServiceStatusList',      fullScreen: true  },
     { name: 'BankUpdatePromptSheet',      fullScreen: true  },
+    // Cards expansion
+    { name: 'BankPaymentCard',            fullScreen: true  },
+    { name: 'BankCardCarousel',           fullScreen: true  },
+    { name: 'BankBalanceTileRow',         fullScreen: true  },
+    { name: 'BankNetworkBadge',           fullScreen: false },
     // Products & applications
     { name: 'BankProductCard',            fullScreen: true  },
     { name: 'BankProductCategoryTile',    fullScreen: true  },

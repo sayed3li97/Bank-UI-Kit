@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../demo/flagship/flagship_apply.dart';
 import '../demo/flagship/flagship_catalog.dart';
 import '../demo/flagship/flagship_home.dart';
+import '../demo/flagship/flagship_my_cards.dart';
 import '../demo/flagship/flagship_my_products.dart';
 import '../demo/flagship/flagship_product_detail.dart';
 import 'device_frame.dart';
@@ -45,6 +46,11 @@ class _FlagshipSectionState extends State<FlagshipSection> {
       label: 'Apply',
       caption: 'The end-to-end lending journey, on the personalised offer.',
       build: () => const FlagshipApplyFlow(initialStep: 2),
+    ),
+    (
+      label: 'My cards',
+      caption: 'A swipeable card wallet with live balance tiles.',
+      build: FlagshipMyCards.new,
     ),
     (
       label: 'My products',
