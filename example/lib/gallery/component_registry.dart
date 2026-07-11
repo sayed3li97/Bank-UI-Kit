@@ -233,6 +233,8 @@ BankDeviceTrustState _trustState(String s) =>
     BankDeviceTrustState.values.firstWhere((e) => e.name == s);
 BankCardSurface _cardSurface(String s) =>
     BankCardSurface.values.firstWhere((e) => e.name == s);
+BankCardNetwork _cardNetwork(String s) =>
+    BankCardNetwork.values.firstWhere((e) => e.name == s);
 
 // ---------------------------------------------------------------------------
 // Registry
@@ -371,6 +373,149 @@ final List<GalleryEntry> kGalleryEntries = [
   ),
 
   // ── CARDS ──────────────────────────────────────────────────────────────────
+
+  GalleryEntry(
+    name: 'BankPaymentCard',
+    description:
+        'Layered payment-card face with a full-bleed artwork slot, network '
+        'badge, chip, label, and optional balance. ISO 1.586 aspect.',
+    category: GalleryCategory.cards,
+    isFullScreen: true,
+    codeExample: '''BankPaymentCard(
+  label: 'Everyday',
+  maskedNumber: '•••• 8695',
+  holderName: 'ALEX MORGAN',
+  expiry: '08/28',
+  network: BankCardNetwork.visa,
+  balance: Money.fromDouble(3565.00, 'GBP'),
+)''',
+    params: [
+      GalleryParam(
+        name: 'network',
+        label: 'Network',
+        type: ParamType.enumType,
+        defaultValue: 'visa',
+        enumValues: BankCardNetwork.values.map(_enumLabel).toList(),
+      ),
+      const GalleryParam(
+        name: 'numberless',
+        label: 'Numberless',
+        type: ParamType.boolType,
+        defaultValue: false,
+      ),
+      const GalleryParam(
+        name: 'showBalance',
+        label: 'Show balance',
+        type: ParamType.boolType,
+        defaultValue: true,
+      ),
+    ],
+    builder: (ctx, p) => BankPaymentCard(
+      label: 'Everyday',
+      maskedNumber: '•••• 8695',
+      holderName: 'ALEX MORGAN',
+      expiry: '08/28',
+      network: _cardNetwork(p['network'] as String),
+      numberless: p['numberless'] as bool,
+      balance:
+          (p['showBalance'] as bool) ? Money.fromDouble(3565.00, 'GBP') : null,
+    ),
+  ),
+
+  GalleryEntry(
+    name: 'BankCardCarousel',
+    description:
+        'Swipeable "My Cards" carousel: peeking neighbours, page dots, and an '
+        'onCardChanged callback to re-bind the screen below.',
+    category: GalleryCategory.cards,
+    isFullScreen: true,
+    codeExample: '''BankCardCarousel(
+  itemCount: cards.length,
+  onCardChanged: (i) => setState(() => selected = i),
+  itemBuilder: (context, i) => BankPaymentCard(/* cards[i] */),
+)''',
+    params: const [],
+    builder: (ctx, p) => SizedBox(
+      height: 240,
+      child: BankCardCarousel(
+        itemCount: 3,
+        itemBuilder: (context, i) => BankPaymentCard(
+          label: ['Everyday', 'Rewards', 'Travel'][i],
+          maskedNumber: ['•••• 8695', '•••• 5567', '•••• 2043'][i],
+          holderName: 'ALEX MORGAN',
+          expiry: '08/28',
+          network: [
+            BankCardNetwork.visa,
+            BankCardNetwork.mastercard,
+            BankCardNetwork.amex,
+          ][i],
+        ),
+      ),
+    ),
+  ),
+
+  GalleryEntry(
+    name: 'BankBalanceTileRow',
+    description:
+        'A row of compact balance tiles (Available / Savings) with optional '
+        'trend chips. Privacy-mask aware; two-up or scrollable.',
+    category: GalleryCategory.cards,
+    isFullScreen: true,
+    codeExample: '''BankBalanceTileRow(
+  tiles: [
+    BankBalanceTile(label: 'Available Balance',
+        amount: Money.fromDouble(3565, 'GBP'),
+        icon: Icons.account_balance_wallet_outlined),
+    BankBalanceTile(label: 'Savings',
+        amount: Money.fromDouble(650, 'GBP'), trend: '+2.4%'),
+  ],
+)''',
+    params: const [],
+    builder: (ctx, p) => BankBalanceTileRow(
+      tiles: [
+        BankBalanceTile(
+          label: 'Available Balance',
+          amount: Money.fromDouble(3565, 'GBP'),
+          icon: Icons.account_balance_wallet_outlined,
+        ),
+        BankBalanceTile(
+          label: 'Savings',
+          amount: Money.fromDouble(650, 'GBP'),
+          icon: Icons.savings_outlined,
+          trend: '+2.4%',
+        ),
+      ],
+    ),
+  ),
+
+  GalleryEntry(
+    name: 'BankNetworkBadge',
+    description:
+        'Procedurally drawn payment-network mark (Visa, Mastercard, Amex) — '
+        'no bundled logo assets.',
+    category: GalleryCategory.cards,
+    codeExample:
+        "const BankNetworkBadge(network: BankCardNetwork.visa, height: 32)",
+    params: [
+      GalleryParam(
+        name: 'network',
+        label: 'Network',
+        type: ParamType.enumType,
+        defaultValue: 'mastercard',
+        enumValues: BankCardNetwork.values.map(_enumLabel).toList(),
+      ),
+    ],
+    builder: (ctx, p) => ColoredBox(
+      color: const Color(0xFF1D2433),
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: BankNetworkBadge(
+          network: _cardNetwork(p['network'] as String),
+          height: 40,
+        ),
+      ),
+    ),
+  ),
 
   GalleryEntry(
     name: 'BankVirtualCardWidget',
