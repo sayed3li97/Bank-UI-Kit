@@ -16,14 +16,26 @@ class BankTokens {
   // Colour roles
   // ---------------------------------------------------------------------------
 
-  /// Green used for positive account balances.
-  static const Color positiveBalance = Color(0xFF00C48C);
+  /// Green for positive balances on **light** surfaces. Tuned to ≥4.5:1 WCAG AA
+  /// contrast on white (emerald-700); dark surfaces use [positiveBalanceDark].
+  static const Color positiveBalance = Color(0xFF047857);
 
-  /// Red used for negative account balances or overdue amounts.
-  static const Color negativeBalance = Color(0xFFFF4D4D);
+  /// Red for negative balances / overdue amounts on **light** surfaces
+  /// (≥4.5:1 on white). Dark surfaces use [negativeBalanceDark].
+  static const Color negativeBalance = Color(0xFFC62828);
 
-  /// Amber used for pending transactions or awaiting-confirmation states.
-  static const Color pending = Color(0xFFF5A623);
+  /// Amber for pending / awaiting-confirmation states on **light** surfaces
+  /// (≥4.5:1 on white; amber-700). Dark surfaces use [pendingDark].
+  static const Color pending = Color(0xFFB45309);
+
+  /// Positive-balance green tuned for **dark** surfaces (emerald-400, ≥4.5:1).
+  static const Color positiveBalanceDark = Color(0xFF34D399);
+
+  /// Negative-balance red tuned for **dark** surfaces (red-400, ≥4.5:1).
+  static const Color negativeBalanceDark = Color(0xFFF87171);
+
+  /// Pending amber tuned for **dark** surfaces (amber-400, ≥4.5:1).
+  static const Color pendingDark = Color(0xFFFBBF24);
 
   /// Grey used for frozen / suspended accounts or cards.
   static const Color frozen = Color(0xFF8E8E93);

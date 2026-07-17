@@ -212,9 +212,17 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
           (isDark ? const Color(0xFFF5F5F5) : const Color(0xFF1C1C1E)),
       outline: outline ??
           (isDark ? const Color(0xFF48484A) : const Color(0xFFE5E5EA)),
-      positiveBalance: positiveBalance ?? BankTokens.positiveBalance,
-      negativeBalance: negativeBalance ?? BankTokens.negativeBalance,
-      pending: pending ?? BankTokens.pending,
+      // Financial colours are brightness-aware so custom brands stay legible
+      // (WCAG AA) in both modes without the caller having to tune them.
+      positiveBalance: positiveBalance ??
+          (isDark
+              ? BankTokens.positiveBalanceDark
+              : BankTokens.positiveBalance),
+      negativeBalance: negativeBalance ??
+          (isDark
+              ? BankTokens.negativeBalanceDark
+              : BankTokens.negativeBalance),
+      pending: pending ?? (isDark ? BankTokens.pendingDark : BankTokens.pending),
       frozen: frozen ?? BankTokens.frozen,
       accentGradient: accentGradient,
       cardRadius: cardRadius ?? const BorderRadius.all(Radius.circular(12)),
