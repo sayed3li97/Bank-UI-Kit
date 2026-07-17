@@ -90,6 +90,7 @@ class BankBalanceText extends StatelessWidget {
       amount: money.amount,
       currencyCode: money.currencyCode,
       numeralStyle: data.numeralStyle,
+      locale: context.bankLocale,
       showSign: showSign,
       compact: compact,
     );

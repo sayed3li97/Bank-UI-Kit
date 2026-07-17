@@ -12,10 +12,19 @@ import 'bank_hijri_date.dart';
 /// (official symbol, ISO 4217 minor units, symbol placement) as
 /// registered in [BankCurrencies].
 abstract final class BankMoneyFormatter {
+  /// Formats [amount] for [currencyCode].
+  ///
+  /// [locale] controls digit grouping and the decimal separator (e.g. German
+  /// `1.234.567,89`, French `1 234 567,89`, Indian `12,34,567.89`). Pass the
+  /// app's locale — `Localizations.localeOf(context).toString()` — so money
+  /// reads correctly per market; when null the ambient `Intl` locale is used.
+  /// [numeralStyle] independently controls the numeral *script* (Western vs
+  /// Arabic-Indic vs Persian vs Devanagari) applied after grouping.
   static String format({
     required Decimal amount,
     required String currencyCode,
     NumeralStyle numeralStyle = NumeralStyle.western,
+    String? locale,
     bool showSign = false,
     bool compact = false,
     bool hideFraction = false,
@@ -25,9 +34,12 @@ abstract final class BankMoneyFormatter {
 
     final String number;
     if (compact) {
-      number = NumberFormat.compact().format(amount.toDouble());
+      number = NumberFormat.compact(locale: locale).format(amount.toDouble());
     } else {
-      final fmt = NumberFormat.decimalPatternDigits(decimalDigits: digits);
+      final fmt = NumberFormat.decimalPatternDigits(
+        locale: locale,
+        decimalDigits: digits,
+      );
       number = fmt.format(amount.toDouble());
     }
 
@@ -44,11 +56,13 @@ abstract final class BankMoneyFormatter {
     required Decimal amount,
     required String currencyCode,
     NumeralStyle numeralStyle = NumeralStyle.western,
+    String? locale,
   }) =>
       format(
         amount: amount,
         currencyCode: currencyCode,
         numeralStyle: numeralStyle,
+        locale: locale,
         showSign: true,
       );
 

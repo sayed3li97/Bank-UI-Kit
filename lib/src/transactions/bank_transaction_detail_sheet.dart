@@ -6,6 +6,7 @@ import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../common/bank_format_context.dart';
 
 /// Full-detail bottom sheet for a single transaction.
 class BankTransactionDetailSheet extends StatelessWidget {
@@ -186,6 +187,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
     final formattedAmount = BankMoneyFormatter.format(
       amount: transaction.amount.amount,
       currencyCode: transaction.amount.currencyCode,
+      locale: context.bankLocale,
       numeralStyle: scope.numeralStyle,
       showSign: isCredit,
     );
@@ -369,6 +371,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                               BankMoneyFormatter.format(
                                 amount: split.amount.amount,
                                 currencyCode: split.amount.currencyCode,
+                                locale: context.bankLocale,
                                 numeralStyle: scope.numeralStyle,
                               ),
                               style: bankTheme.numeralSmall.copyWith(

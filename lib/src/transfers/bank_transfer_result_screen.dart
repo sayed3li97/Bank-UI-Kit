@@ -6,6 +6,7 @@ import '../../src/scope/bank_ui_scope.dart';
 import '../../src/states/bank_success_animation.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../common/bank_format_context.dart';
 
 // ---------------------------------------------------------------------------
 // BankTransferResultScreen
@@ -290,6 +291,7 @@ class _SuccessContent extends StatelessWidget {
         ? BankMoneyFormatter.format(
             amount: amount!.amount,
             currencyCode: amount!.currencyCode,
+            locale: context.bankLocale,
             numeralStyle: scope.numeralStyle,
           )
         : null;

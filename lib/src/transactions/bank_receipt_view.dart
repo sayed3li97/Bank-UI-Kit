@@ -6,6 +6,7 @@ import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../common/bank_format_context.dart';
 
 /// Shareable receipt layout. The package renders the view;
 /// the host app wires up PDF generation or share-sheet logic.
@@ -178,6 +179,7 @@ class BankReceiptView extends StatelessWidget {
     final formattedAmount = BankMoneyFormatter.format(
       amount: transaction.amount.amount,
       currencyCode: transaction.amount.currencyCode,
+      locale: context.bankLocale,
       numeralStyle: scope.numeralStyle,
       showSign: isCredit,
     );

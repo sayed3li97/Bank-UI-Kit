@@ -56,6 +56,7 @@ export 'src/common/bank_app_bar.dart';
 export 'src/common/bank_bottom_nav_bar.dart';
 export 'src/common/bank_country_picker.dart';
 export 'src/common/bank_emblem.dart';
+export 'src/common/bank_format_context.dart';
 export 'src/common/bank_hijri_date.dart';
 export 'src/common/bank_icon_spec.dart';
 export 'src/common/bank_masked_input_field.dart';
