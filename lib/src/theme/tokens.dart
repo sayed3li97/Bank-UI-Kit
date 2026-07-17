@@ -5,6 +5,21 @@ import 'package:flutter/widgets.dart';
 /// they read as authentic cards and share one source of truth in a carousel.
 const double kBankCardAspectRatio = 1.586;
 
+/// Glyph-coverage fallback font families, applied as `fontFamilyFallback` on
+/// every Bank UI Kit text style and preset theme.
+///
+/// The primary brand font (Space Grotesk / Nunito / a host font) covers Latin;
+/// these bundled Noto subsets fill the gaps so currency symbols (₹ ₩ ₫ ₿),
+/// Arabic script (ر.س, د.إ), and Arabic-Indic / Persian / Devanagari numerals
+/// (٠١٢ ۰۱۲ ०१२) render everywhere — offline, on web without a CDN, and on
+/// devices lacking those system fonts. Names are package-qualified so they
+/// resolve to the fonts bundled in this package.
+const List<String> kBankFontFallback = [
+  'packages/bank_ui_kit/NotoSansArabic',
+  'packages/bank_ui_kit/NotoSansDevanagari',
+  'packages/bank_ui_kit/NotoSansCurrency',
+];
+
 /// Design tokens for the Bank UI Kit design system.
 ///
 /// The scalar tokens (colour roles, spacing, radius, motion durations, and the
@@ -120,66 +135,77 @@ class BankTokens {
   // ---------------------------------------------------------------------------
 
   static const TextStyle displayLarge = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 48,
     fontWeight: FontWeight.w700,
     letterSpacing: -1.5,
   );
 
   static const TextStyle displayMedium = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 36,
     fontWeight: FontWeight.w700,
     letterSpacing: -1,
   );
 
   static const TextStyle headlineLarge = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 28,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.5,
   );
 
   static const TextStyle headlineMedium = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 22,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.3,
   );
 
   static const TextStyle headlineSmall = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 18,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
   );
 
   static const TextStyle bodyLarge = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.6,
   );
 
   static const TextStyle bodyMedium = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 1.5,
   );
 
   static const TextStyle bodySmall = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 1.4,
   );
 
   static const TextStyle labelLarge = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 14,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.1,
   );
 
   static const TextStyle labelMedium = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 12,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.1,
   );
 
   static const TextStyle labelSmall = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 11,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.4,
@@ -187,6 +213,7 @@ class BankTokens {
 
   /// Hero monetary numeral: large balance displays.
   static const TextStyle numeralHero = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 44,
     fontWeight: FontWeight.w600,
     letterSpacing: -1.2,
@@ -199,6 +226,7 @@ class BankTokens {
 
   /// Large monetary numeral: card balances and summary rows.
   static const TextStyle numeralLarge = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 24,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.4,
@@ -210,6 +238,7 @@ class BankTokens {
 
   /// Medium monetary numeral: list items and sub-totals.
   static const TextStyle numeralMedium = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 18,
     fontWeight: FontWeight.w500,
     fontFeatures: [
@@ -220,6 +249,7 @@ class BankTokens {
 
   /// Small monetary numeral: dense tables and secondary figures.
   static const TextStyle numeralSmall = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 14,
     fontWeight: FontWeight.w500,
     fontFeatures: [

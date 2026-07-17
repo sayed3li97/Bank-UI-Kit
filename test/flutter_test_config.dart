@@ -32,6 +32,18 @@ Future<void> _loadBundledFonts() async {
       'lib/src/assets/fonts/Fredoka-Medium.ttf',
       'lib/src/assets/fonts/Fredoka-SemiBold.ttf',
     ],
+    // Glyph-coverage fallbacks (currency symbols, Arabic, Devanagari) so
+    // goldens render real glyphs instead of tofu. Registered under the
+    // package-qualified names used by kBankFontFallback.
+    'packages/bank_ui_kit/NotoSansCurrency': [
+      'lib/src/assets/fonts/NotoSansCurrency-Regular.ttf',
+    ],
+    'packages/bank_ui_kit/NotoSansArabic': [
+      'lib/src/assets/fonts/NotoSansArabic-Regular.ttf',
+    ],
+    'packages/bank_ui_kit/NotoSansDevanagari': [
+      'lib/src/assets/fonts/NotoSansDevanagari-Regular.ttf',
+    ],
   };
 
   for (final entry in families.entries) {

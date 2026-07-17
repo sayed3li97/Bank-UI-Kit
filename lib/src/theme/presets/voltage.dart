@@ -132,12 +132,17 @@ class BankVoltageTheme {
     // Wire the preset's brand font into the Material text themes so every
     // descendant Text inherits it (the kit's own styles intentionally omit
     // a family and inherit this default).
-    return bank.fontFamily == null
-        ? themed
-        : themed.copyWith(
-            textTheme: themed.textTheme.apply(fontFamily: bank.fontFamily),
-            primaryTextTheme:
-                themed.primaryTextTheme.apply(fontFamily: bank.fontFamily),
-          );
+    // Always attach the glyph-coverage fallback fonts; also wire the brand
+    // font family when the preset defines one (apply() ignores a null family).
+    return themed.copyWith(
+      textTheme: themed.textTheme.apply(
+        fontFamily: bank.fontFamily,
+        fontFamilyFallback: kBankFontFallback,
+      ),
+      primaryTextTheme: themed.primaryTextTheme.apply(
+        fontFamily: bank.fontFamily,
+        fontFamilyFallback: kBankFontFallback,
+      ),
+    );
   }
 }

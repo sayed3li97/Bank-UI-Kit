@@ -5,6 +5,7 @@ import 'presets/bloom.dart';
 import 'presets/heritage.dart';
 import 'presets/studio.dart';
 import 'presets/voltage.dart';
+import 'tokens.dart';
 
 /// The three first-party design presets shipped with Bank UI Kit.
 ///
@@ -90,12 +91,18 @@ extension BankThemeDataApply on ThemeData {
       cardColor: bankTheme.surface,
       extensions: <ThemeExtension<dynamic>>[bankTheme],
     );
-    return bankTheme.fontFamily == null
-        ? themed
-        : themed.copyWith(
-            textTheme: themed.textTheme.apply(fontFamily: bankTheme.fontFamily),
-            primaryTextTheme:
-                themed.primaryTextTheme.apply(fontFamily: bankTheme.fontFamily),
-          );
+    // Always attach the glyph-coverage fallback fonts so currency symbols,
+    // Arabic script, and non-Latin numerals render; wire the brand font too
+    // when set (apply() ignores a null family).
+    return themed.copyWith(
+      textTheme: themed.textTheme.apply(
+        fontFamily: bankTheme.fontFamily,
+        fontFamilyFallback: kBankFontFallback,
+      ),
+      primaryTextTheme: themed.primaryTextTheme.apply(
+        fontFamily: bankTheme.fontFamily,
+        fontFamilyFallback: kBankFontFallback,
+      ),
+    );
   }
 }

@@ -79,15 +79,10 @@ void main() {
   final rtl = params['dir'] == 'rtl';
 
   final base = dark ? ThemeData.dark() : ThemeData.light();
-  // Arabic glyph fallback: the capture browser cannot download the web
-  // engine's remote Noto fonts, so the bundled subset steps in for
-  // currency symbols and RTL sample text.
-  final themed = preset.apply(base);
-  final theme = themed.copyWith(
-    textTheme: themed.textTheme.apply(
-      fontFamilyFallback: const ['NotoSansArabic'],
-    ),
-  );
+  // The preset already wires the kit's bundled glyph-coverage fallback fonts
+  // (kBankFontFallback: currency symbols, Arabic, Devanagari), so captures
+  // render every script even though the browser can't fetch remote Noto.
+  final theme = preset.apply(base);
 
   // ── Component mode ─────────────────────────────────────────────────────────
   final componentName = params['component'];

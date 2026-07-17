@@ -44,6 +44,7 @@ Widget _cell(
             child: DefaultTextStyle(
               style: TextStyle(
                 fontFamily: 'SpaceGrotesk',
+                fontFamilyFallback: kBankFontFallback,
                 color: bank.onSurface,
                 fontSize: 14,
               ),
@@ -129,26 +130,50 @@ void main() {
     await _matchGrid(tester, _wrap(cells), 'hero_balance_presets');
   });
 
-  testWidgets('balance tile respects RTL', (tester) async {
-    // This golden pins the mirrored *layout* (leading icon flips side, text
-    // right-aligns). It uses Latin content because the package bundles no
-    // Arabic font for the test environment; RTL text shaping itself is
-    // exercised by the widget suite.
-    BankBalanceTile tile() => BankBalanceTile(
+  testWidgets('balance tile respects RTL (with Arabic)', (tester) async {
+    // Pins the mirrored layout (leading icon flips side, text right-aligns)
+    // AND proves the bundled Arabic fallback font renders the label + the SAR
+    // symbol instead of tofu.
+    final cells = [
+      _cell(
+        'LTR',
+        BankStudioTheme.light(),
+        BankBalanceTile(
           label: 'Available Balance',
-          amount: Money.fromDouble(3565, 'GBP'),
+          amount: Money.fromDouble(3565, 'SAR'),
           icon: Icons.account_balance_wallet_outlined,
           trend: '+2.4%',
-        );
-    final cells = [
-      _cell('LTR', BankStudioTheme.light(), tile()),
+        ),
+      ),
       _cell(
         'RTL',
         BankStudioTheme.light(),
         direction: TextDirection.rtl,
-        tile(),
+        BankBalanceTile(
+          label: 'الرصيد المتاح',
+          amount: Money.fromDouble(3565, 'SAR'),
+          icon: Icons.account_balance_wallet_outlined,
+        ),
       ),
     ];
     await _matchGrid(tester, _wrap(cells), 'balance_tile_rtl');
+  });
+
+  testWidgets('currency symbols and scripts render (no tofu)', (tester) async {
+    // Directly guards the tofu bug: these symbols live outside the Latin brand
+    // font and must resolve through the bundled Noto fallbacks.
+    const codes = ['INR', 'KRW', 'VND', 'BTC', 'ETH', 'PLN', 'SAR', 'AED'];
+    final cells = [
+      for (final code in codes)
+        _cell(
+          code,
+          BankStudioTheme.light(),
+          BankBalanceText(
+            money: Money.fromDouble(1234.5, code),
+            size: BankBalanceSize.medium,
+          ),
+        ),
+    ];
+    await _matchGrid(tester, _wrap(cells), 'currency_glyphs');
   });
 }
