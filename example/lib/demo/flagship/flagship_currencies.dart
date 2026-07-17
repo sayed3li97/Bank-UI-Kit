@@ -8,8 +8,9 @@ import 'package:flutter/material.dart';
 /// A single [Decimal] (`1,234,567.891`) is fed to [BankMoneyFormatter] for each
 /// currency; the differences you see (decimal places, symbol glyph, symbol
 /// placement, right-to-left isolation, numeral script) are entirely
-/// currency-driven, not locale-driven. A Western / Arabic-Indic toggle rebuilds
-/// every row so you can see the numeral system swap live.
+/// currency-driven, not locale-driven. A numeral-style toggle (Western,
+/// Arabic-Indic, Persian, Devanagari) rebuilds every row so you can see the
+/// numeral system swap live.
 ///
 /// It relies on the ambient BankUiScope / BankThemeData / Directionality from
 /// the showcase harness — it creates none of its own.
@@ -400,22 +401,32 @@ class _NumeralToggle extends StatelessWidget {
   final NumeralStyle value;
   final ValueChanged<NumeralStyle> onChanged;
 
+  /// Short name shown on the chip for each style.
+  static const Map<NumeralStyle, String> _names = {
+    NumeralStyle.western: 'Western',
+    NumeralStyle.easternArabicIndic: 'Arabic',
+    NumeralStyle.persian: 'Persian',
+    NumeralStyle.devanagari: 'Devanagari',
+  };
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    // Cycle through every supported style so each script is one tap away.
+    const styles = NumeralStyle.values;
+    final next = styles[(value.index + 1) % styles.length];
+    // The chip shows "123" rendered in the CURRENT style, plus its name.
+    final sample = value.convert('123');
+
     return Semantics(
-      label: 'Numeral style',
+      label: 'Numeral style: ${_names[value]}. Tap to change.',
       button: true,
       child: Material(
         color: theme.surface,
         borderRadius: BorderRadius.circular(BankTokens.radiusFull),
         child: InkWell(
           borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          onTap: () => onChanged(
-            value == NumeralStyle.western
-                ? NumeralStyle.easternArabicIndic
-                : NumeralStyle.western,
-          ),
+          onTap: () => onChanged(next),
           child: Container(
             padding: const EdgeInsets.symmetric(
               horizontal: BankTokens.space3,
@@ -431,11 +442,17 @@ class _NumeralToggle extends StatelessWidget {
                 Icon(Icons.translate_rounded, size: 15, color: theme.primary),
                 const SizedBox(width: BankTokens.space1),
                 Text(
-                  value == NumeralStyle.western ? '123' : '١٢٣',
+                  sample,
                   style: BankTokens.labelMedium.copyWith(
                     color: theme.onSurface,
                     fontWeight: FontWeight.w700,
                   ),
+                ),
+                const SizedBox(width: BankTokens.space1),
+                Text(
+                  _names[value] ?? '',
+                  style: BankTokens.labelSmall
+                      .copyWith(color: theme.onSurfaceVariant),
                 ),
               ],
             ),
