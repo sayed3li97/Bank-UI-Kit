@@ -1,6 +1,6 @@
 name: bank_ui_kit
 description: A themeable Flutter UI component library for mobile banking and fintech apps. RTL-aware, privacy-aware, accessible widgets that compose into any host app.
-version: 0.0.3
+version: 0.1.0
 homepage: https://github.com/sayed3li97/bank-ui-kit
 repository: https://github.com/sayed3li97/bank-ui-kit
 issue_tracker: https://github.com/sayed3li97/bank-ui-kit/issues
