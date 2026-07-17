@@ -30,6 +30,11 @@ in CI.
   (89 assertions across every preset × light/dark), tap-target (44 px) and
   accessible-label guideline checks, and Flutter-native golden tests across
   presets × brightness × direction.
+- **Bundled glyph-coverage fallback fonts** (`kBankFontFallback`): OFL Noto
+  subsets for currency symbols (₹ ₩ ₫ ₿ Ξ …), Arabic script, Latin-Extended
+  (ł, č …), and Arabic-Indic / Persian / Devanagari numerals, wired as
+  `fontFamilyFallback` on every text style and theme — so every script the kit
+  advertises renders, even offline / on web without a CDN.
 - `doc/enterprise/design-tokens.md` documenting the token pipeline.
 
 ### Changed

@@ -623,7 +623,10 @@ BankMoneyFormatter.format(amount: a, currencyCode: 'INR', locale: 'en_IN'); // �
 ### Numeral styles
 Four numeral scripts, independent of locale (grouping) — ideal for GCC and
 South-Asian apps: Western, Eastern Arabic-Indic (`٠١٢`), Persian (`۰۱۲`), and
-Devanagari (`०१२`).
+Devanagari (`०१२`). The kit **bundles Noto fallback fonts** (`kBankFontFallback`)
+so currency symbols (₹ ₩ ₫ ₿ Ξ), Arabic script, and these numerals render
+everywhere — offline, on web without a CDN, and on devices lacking those
+system fonts.
 
 ```dart
 BankUiScope(
