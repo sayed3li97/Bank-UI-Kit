@@ -7,64 +7,65 @@ const double kBankCardAspectRatio = 1.586;
 
 /// Design tokens for the Bank UI Kit design system.
 ///
-/// All values are `static const` and organised into semantic groups:
-/// colour roles, spacing, border-radius, motion, typography, and tap targets.
+/// The scalar tokens (colour roles, spacing, radius, motion durations, and the
+/// minimum tap target) are **generated** from the platform-neutral W3C DTCG
+/// source at `tokens/design-tokens.json` — the single source of truth that also
+/// feeds Figma and other platforms. Regenerate with
+/// `dart run tool/generate_tokens.dart`; CI fails if the two drift.
+///
+/// Composite tokens (easing curves, text styles, numeral styles, and elevation
+/// shadows) are hand-authored below the generated region and reference the
+/// generated values. Per-brand theme tokens are serialised separately via
+/// `BankThemeData.toJson` into `tokens/themes/` (see `test/theme_export_test`).
 class BankTokens {
   const BankTokens._();
 
-  // ---------------------------------------------------------------------------
-  // Colour roles
-  // ---------------------------------------------------------------------------
+  // --- GENERATED TOKENS: do not edit by hand (source: tokens/design-tokens.json) ---
 
-  /// Green for positive balances on **light** surfaces. Tuned to ≥4.5:1 WCAG AA
-  /// contrast on white (emerald-700); dark surfaces use [positiveBalanceDark].
+  // Colour roles
+  /// Positive balances on light surfaces (emerald-700, AA).
   static const Color positiveBalance = Color(0xFF047857);
 
-  /// Red for negative balances / overdue amounts on **light** surfaces
-  /// (≥4.5:1 on white). Dark surfaces use [negativeBalanceDark].
+  /// Negative / overdue amounts on light surfaces (AA).
   static const Color negativeBalance = Color(0xFFC62828);
 
-  /// Amber for pending / awaiting-confirmation states on **light** surfaces
-  /// (≥4.5:1 on white; amber-700). Dark surfaces use [pendingDark].
+  /// Pending states on light surfaces (amber-700, AA).
   static const Color pending = Color(0xFFB45309);
 
-  /// Positive-balance green tuned for **dark** surfaces (emerald-400, ≥4.5:1).
+  /// Positive balances on dark surfaces (emerald-400, AA).
   static const Color positiveBalanceDark = Color(0xFF34D399);
 
-  /// Negative-balance red tuned for **dark** surfaces (red-400, ≥4.5:1).
+  /// Negative amounts on dark surfaces (red-400, AA).
   static const Color negativeBalanceDark = Color(0xFFF87171);
 
-  /// Pending amber tuned for **dark** surfaces (amber-400, ≥4.5:1).
+  /// Pending states on dark surfaces (amber-400, AA).
   static const Color pendingDark = Color(0xFFFBBF24);
 
-  /// Grey used for frozen / suspended accounts or cards.
+  /// Frozen / suspended accounts or cards.
   static const Color frozen = Color(0xFF8E8E93);
 
-  /// System-level success feedback colour.
+  /// System-level success feedback.
   static const Color success = Color(0xFF34C759);
 
-  /// System-level warning feedback colour.
+  /// System-level warning feedback.
   static const Color warning = Color(0xFFFF9500);
 
-  /// System-level danger / destructive-action colour.
+  /// System-level danger / destructive-action.
   static const Color danger = Color(0xFFFF3B30);
 
-  /// Green used to represent an investment gain.
+  /// Investment gain.
   static const Color investmentGain = Color(0xFF30D158);
 
-  /// Red used to represent an investment loss.
+  /// Investment loss.
   static const Color investmentLoss = Color(0xFFFF453A);
 
-  /// Green used to show available credit headroom.
+  /// Available credit headroom.
   static const Color creditAvailable = Color(0xFF30D158);
 
-  /// Amber used to show the portion of credit already utilised.
+  /// Credit already utilised.
   static const Color creditUsed = Color(0xFFFF9F0A);
 
-  // ---------------------------------------------------------------------------
-  // Spacing: 4 pt grid
-  // ---------------------------------------------------------------------------
-
+  // Spacing (4 pt grid)
   static const double space1 = 4;
   static const double space2 = 8;
   static const double space3 = 12;
@@ -76,26 +77,26 @@ class BankTokens {
   static const double space12 = 48;
   static const double space16 = 64;
 
-  // ---------------------------------------------------------------------------
   // Border-radius tiers
-  // ---------------------------------------------------------------------------
-
   static const double radiusSmall = 4;
   static const double radiusMedium = 12;
   static const double radiusLarge = 20;
   static const double radiusXLarge = 28;
 
-  /// Use for fully-pill / circular shapes (e.g. chips, FABs).
+  /// Fully-pill / circular shapes (chips, FABs).
   static const double radiusFull = 999;
 
-  // ---------------------------------------------------------------------------
-  // Motion: duration
-  // ---------------------------------------------------------------------------
-
+  // Motion: durations
   static const Duration durationFast = Duration(milliseconds: 150);
   static const Duration durationBase = Duration(milliseconds: 250);
   static const Duration durationSlow = Duration(milliseconds: 400);
   static const Duration durationXSlow = Duration(milliseconds: 600);
+
+  // Accessibility & sizing
+  /// Minimum touch/tap target (WCAG 2.5.5 AAA / iOS HIG).
+  static const double minTapTarget = 44;
+
+  // --- END GENERATED TOKENS ---
 
   // ---------------------------------------------------------------------------
   // Motion: easing curves
@@ -271,11 +272,4 @@ class BankTokens {
       offset: Offset(0, 16),
     ),
   ];
-
-  // ---------------------------------------------------------------------------
-  // Accessibility
-  // ---------------------------------------------------------------------------
-
-  /// Minimum touch/tap target size in logical pixels (WCAG 2.5.5).
-  static const double minTapTarget = 44;
 }
