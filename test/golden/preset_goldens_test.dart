@@ -37,7 +37,18 @@ Widget _cell(
           color: bank.background,
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: SizedBox(width: 300, child: child),
+            // Give descendant text a real, bundled font so goldens render
+            // glyphs (kit text styles omit fontFamily -> system font, which is
+            // a blank box in the test environment). Widgets' explicit sizes /
+            // weights / colours still win; only the family is inherited.
+            child: DefaultTextStyle(
+              style: TextStyle(
+                fontFamily: 'SpaceGrotesk',
+                color: bank.onSurface,
+                fontSize: 14,
+              ),
+              child: SizedBox(width: 300, child: child),
+            ),
           ),
         ),
       ),
@@ -119,25 +130,23 @@ void main() {
   });
 
   testWidgets('balance tile respects RTL', (tester) async {
-    final cells = [
-      _cell(
-        'LTR',
-        BankStudioTheme.light(),
-        BankBalanceTile(
+    // This golden pins the mirrored *layout* (leading icon flips side, text
+    // right-aligns). It uses Latin content because the package bundles no
+    // Arabic font for the test environment; RTL text shaping itself is
+    // exercised by the widget suite.
+    BankBalanceTile tile() => BankBalanceTile(
           label: 'Available Balance',
-          amount: Money.fromDouble(3565, 'SAR'),
+          amount: Money.fromDouble(3565, 'GBP'),
           icon: Icons.account_balance_wallet_outlined,
-        ),
-      ),
+          trend: '+2.4%',
+        );
+    final cells = [
+      _cell('LTR', BankStudioTheme.light(), tile()),
       _cell(
         'RTL',
         BankStudioTheme.light(),
         direction: TextDirection.rtl,
-        BankBalanceTile(
-          label: 'الرصيد المتاح',
-          amount: Money.fromDouble(3565, 'SAR'),
-          icon: Icons.account_balance_wallet_outlined,
-        ),
+        tile(),
       ),
     ];
     await _matchGrid(tester, _wrap(cells), 'balance_tile_rtl');
