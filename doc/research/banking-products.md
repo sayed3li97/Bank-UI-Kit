@@ -158,10 +158,10 @@ as collateral; also covers lease buyouts and auto refinance.
 consolidation, home improvement, major purchase), repaid in equal monthly payments.
 
 **(b) Key terminology & metrics**
-- Loan amount / requested amount (e.g. $5,000–$100,000)
+- Loan amount / requested amount (e.g. $5,000 to $100,000)
 - **APR** and interest rate; fixed rate
-- Term (e.g. 2–7 years)
-- **Origination fee** (0%–7%, often deducted from proceeds) → **net proceeds / amount deposited**
+- Term (e.g. 2 to 7 years)
+- **Origination fee** (0% to 7%, often deducted from proceeds) → **net proceeds / amount deposited**
 - Monthly payment; total interest; total of payments
 - Purpose (consolidation, home improvement, etc.)
 - Autopay discount (commonly 0.25%)
@@ -176,7 +176,7 @@ consolidation, home improvement, major purchase), repaid in equal monthly paymen
 5. Final offer/decision: confirmed APR, term, fee, net amount
 6. Review + Truth-in-Lending disclosures + loan agreement
 7. **E-sign**
-8. Funding to bank account (often 1–3 days, sometimes same-day)
+8. Funding to bank account (often 1 to 3 days, sometimes same-day)
 
 **(d) Servicing / manage views**
 - Balance, original amount, payoff amount
@@ -236,8 +236,8 @@ re-borrow up to a limit during a draw period, then repay over a repayment period
 **(b) Key terminology & metrics**
 - Loan type: federal vs. private vs. refinance
 - Principal / amount borrowed (or cost of attendance minus aid, for in-school)
-- **Fixed vs. variable APR** (e.g. fixed ~3.9%–16.7%, variable indexed)
-- Term (e.g. 5–20 years)
+- **Fixed vs. variable APR** (e.g. fixed ~3.9% to 16.7%, variable indexed)
+- Term (e.g. 5 to 20 years)
 - **Cosigner** (and cosigner-release eligibility)
 - **In-school deferment** and **grace period** (e.g. 6 months after leaving school; deferment
   up to 48 months while enrolled half-time)
@@ -280,8 +280,8 @@ released at the end) and a **secured credit card** (cash deposit sets the credit
 
 **(b) Key terminology & metrics**
 - Product type: credit-builder installment loan vs. secured card
-- For a credit-builder loan: loan amount held in a **locked savings/CD** (e.g. $300–$1,000),
-  monthly payment, term (e.g. 12–24 months), APR, admin/setup fee, and **funds released at
+- For a credit-builder loan: loan amount held in a **locked savings/CD** (e.g. $300 to $1,000),
+  monthly payment, term (e.g. 12 to 24 months), APR, admin/setup fee, and **funds released at
   completion** (minus interest/fees)
 - For a secured card: **security deposit** = credit limit, APR, annual fee, deposit
   refundability, graduation-to-unsecured path
@@ -1057,14 +1057,14 @@ Islamic equivalent: Takaful (cooperative/mutual protection). UI reflects contrib
 
 ## Part 3: Flagship app architecture
 
-Scope: a production-grade, CEO-approvable flagship retail banking app focused on showcasing the
+Scope: a production-grade, CEO-approvable flagship retail banking app built around the
 full PRODUCT SUITE (accounts, cards, loans, mortgages, investments, insurance) and the
 apply / manage journeys. Grounded in how Chase, Bank of America, Wells Fargo, Revolut,
 Emirates NBD, and DBS structure product discovery, application, and servicing.
 
 ---
 
-## 0. How leading banks actually structure this (research synthesis)
+## 0. How leading banks structure this (research synthesis)
 
 - **Chase / BofA / Wells Fargo (US incumbents):** logged-in home is an account tiles list.
   "Explore products" / "Open an account" / "Apply" lives both as a dedicated tab/section and as
@@ -1110,7 +1110,7 @@ from the marketing catalog.
 - **Product detail** (one per product): hero, headline rate (APR/APY/profit rate), key features,
   fees table, eligibility summary, representative example, reviews/ratings, FAQ, sticky "Check
   eligibility" / "Apply" CTA.
-- **Compare screen:** side-by-side of 2–3 products, differences highlighted.
+- **Compare screen:** side-by-side of 2 to 3 products, differences highlighted.
 - **Application wizard** (shared, see §3) launched from product detail.
 
 ### My Products (servicing area): reachable from Home tiles and Profile
@@ -1127,7 +1127,7 @@ from the marketing catalog.
 3. **Products/Explore catalog root**: category tiles + featured + recommended.
 4. **Category landing**: product-card list, filters, compare toggle, pre-qual badges.
 5. **Product detail**: rate hero, features, fees, representative example, eligibility, sticky CTA.
-6. **Compare products**: 2–3 column diff.
+6. **Compare products**: 2 to 3 column diff.
 7. **Eligibility / pre-qualification (soft check)**: short form, "no impact to credit score" badge, instant result.
 8. **Application wizard (multi-step)**: see §3 (customize → offer → KYC → docs → disclosures → e-sign → submitted).
 9. **Application submitted / decision**: status, reference number, next steps.
@@ -1155,14 +1155,14 @@ How to present a shelf of products so it reads as a real bank, not a demo:
   - **Headline rate**, prominent and single: `APR` for borrowing, `APY`/`profit rate` for deposits,
     `%` return band for investments. Always with an **"as of" date** and a `Representative` qualifier
     where the rate is illustrative.
-  - Fee highlight (e.g. "No annual fee", "0% intro 15 mo") and 2–3 key features as chips.
+  - Fee highlight (e.g. "No annual fee", "0% intro 15 mo") and 2 to 3 key features as chips.
   - **Badges:** `Featured`, `Recommended for you`, `Pre-qualified` / `You're likely eligible`
     (soft-check), `New`, `Shariah-compliant`, `Limited time`.
   - Micro-CTA: `Check eligibility` (soft) primary, `Details` secondary. Never lead borrowing cards
     with a raw "Apply" that implies a hard pull.
-- **Featured carousel:** 1–3 hero products (bank's strategic push), larger card with imagery.
+- **Featured carousel:** 1 to 3 hero products (bank's strategic push), larger card with imagery.
 - **"Recommended for you" rail:** personalized from held products + eligibility signals; each item
-  states *why* ("Based on your balance", "You may qualify"). Honesty of reasoning is a trust signal.
+  states *why* ("Based on your balance", "You may qualify"). Stating the reason plainly helps build trust.
 - **Eligibility / pre-qual badges:** the soft-pull front door. Card shows `Won't affect your credit
   score`; tapping runs a short pre-qual form and returns an **instant likelihood** plus the specific
   offer (limit, APR band) *before* the hard-pull application. Pre-qual is explicitly "not a guarantee".

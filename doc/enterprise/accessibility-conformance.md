@@ -1,4 +1,4 @@
-# Accessibility Conformance Statement
+# Accessibility conformance statement
 
 This document states what `bank_ui_kit` v0.1.0 conforms to under WCAG 2.1
 Level AA and EN 301 549, how that conformance is measured, where it falls
@@ -51,7 +51,7 @@ Representative rows; the same construction patterns govern the full set.
 | `BankToastBanner` (`lib/src/states/bank_toast_banner.dart`) | `liveRegion: true` while visible, so toasts are announced without focus | Transient; does not steal focus | Preset text roles | Dismiss action meets 44 px | Inherits scaling |
 | Sheet-based flows (`lib/src/saving/bank_pot_contribution_sheet.dart`, `lib/src/transactions/bank_transaction_filter_sheet.dart`) | Labeled controls; live regions for result states | Top-to-bottom within sheet | Preset text roles | Chips and steppers constrained to `BankTokens.minTapTarget` | Inherits scaling |
 
-Focus order, stated honestly: the kit contains zero `FocusTraversalGroup`
+Focus order: the kit contains zero `FocusTraversalGroup`
 usages. Traversal is Flutter's default reading-order policy, which matches
 the visual order in every shipped layout because the widget tree is built in
 reading order. Explicit traversal groups for composite widgets are gap G4.
@@ -82,9 +82,8 @@ What runs today on every push and pull request
 pump components under all four presets, which catches layout exceptions but
 does not assert accessibility properties.
 
-Stated plainly: `test/` contains no `meetsGuideline` assertions and no
-golden files today. The committed methodology, gated in CI so a regression
-fails the build:
+Today `test/` contains no `meetsGuideline` assertions and no golden files.
+The committed methodology, gated in CI so a regression fails the build:
 
 1. Guideline assertions (v0.2.0): `textContrastGuideline`,
    `androidTapTargetGuideline`, and `labeledTapTargetGuideline` via

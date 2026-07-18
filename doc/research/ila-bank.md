@@ -1,7 +1,7 @@
-# ila Bank: UI Capability Research
+# ila Bank: UI capability research
 
-ila Bank (Bahrain, by Bank ABC) is the Gulf's flagship cloud-native
-digital bank: mobile-only, eKYC onboarding with one ID and a selfie,
+ila Bank (Bahrain, by Bank ABC) is a cloud-native digital bank in the
+Gulf: mobile-only, eKYC onboarding with one ID and a selfie,
 Arabic-first alongside English, and a product set that digitizes
 traditional Khaleeji money culture rather than importing Western
 patterns. Added to the kit's inspiration list as app 21. Compiled
@@ -40,8 +40,8 @@ metallic.
 
 1. BankMoneyCircleCard (social): the Jamiyah circle card: pot per
    cycle, avatar turn tracker, collection date, paid-count strip,
-   admin reminders. The single most requested Khaleeji social-banking
-   surface, absent from every Western kit.
+   admin reminders. A core Khaleeji social-banking surface that Western
+   kits do not cover.
 2. BankPrizeDrawCard (rewards): prize-linked savings with draw
    calendar, entry count, deposit cutoffs, minimum-deposit
    eligibility, and gift-a-chance action.

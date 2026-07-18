@@ -1,4 +1,4 @@
-# Top 20 Mobile Banking Apps: UI Capability Research
+# Top 20 mobile banking apps: UI capability research
 
 Research base for Bank UI Kit component coverage. Compiled July 2026.
 Each app was profiled for its distinctive UI surfaces; the master list

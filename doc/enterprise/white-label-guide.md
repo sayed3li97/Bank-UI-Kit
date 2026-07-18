@@ -1,4 +1,4 @@
-# White-Label and Multi-Brand Operating Model
+# White-label and multi-brand operating model
 
 This document states how a bank ships two or more brands from one
 `bank_ui_kit` codebase: which visual decisions are brand-overridable today,
@@ -20,8 +20,8 @@ visual decision a widget makes is either (a) a `BankThemeData` field
 overridable through `BankThemeData.custom`, `copyWith`, or a preset, or
 (b) a named constant in `lib/src/theme/tokens.dart` scheduled below to move
 into the theme. No supported customization requires forking `lib/`, and any
-branding need that does is treated as a defect in the theming contract, not
-a limitation the adopter absorbs. `test/theme_test.dart` verifies that all
+branding need that does is treated as a defect in the theming contract
+rather than a limitation the adopter has to absorb. `test/theme_test.dart` verifies that all
 four presets (`studio`, `voltage`, `bloom`, `heritage` in
 `lib/src/theme/extensions.dart`) register the extension correctly.
 
@@ -51,7 +51,7 @@ without call-site changes.
 
 ## Dark derivation: replacing the generic grey path
 
-Current position, stated plainly. The four presets hand-author their dark
+Current position. The four presets hand-author their dark
 palettes; `lib/src/theme/presets/heritage.dart` derives its dark surfaces
 from the brand green (surface `0xFF17211C`, background `0xFF0E1613`), which
 is the standard the kit holds itself to. `BankThemeData.custom`, however,
@@ -67,7 +67,7 @@ factory, keeping explicit overrides authoritative:
 1. Surface tonal ladder. Background, surface, and surfaceVariant become
    three steps of one ladder produced by blending 2 to 8 percent of the
    brand hue into near-black, the technique `heritage.dart` applies by
-   hand. One brand color in, a coherent branded dark set out.
+   hand. One brand color produces a coherent branded dark set.
 2. Elevation overlays. In dark mode, raised surfaces read the existing
    `elevationLow`, `elevationMedium`, and `elevationHigh` fields and apply
    a white overlay stepped per level, instead of relying on shadows that

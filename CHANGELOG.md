@@ -33,7 +33,7 @@ in CI.
 - **Bundled glyph-coverage fallback fonts** (`kBankFontFallback`): OFL Noto
   subsets for currency symbols (₹ ₩ ₫ ₿ Ξ …), Arabic script, Latin-Extended
   (ł, č …), and Arabic-Indic / Persian / Devanagari numerals, wired as
-  `fontFamilyFallback` on every text style and theme — so every script the kit
+  `fontFamilyFallback` on every text style and theme, so every script the kit
   advertises renders, even offline / on web without a CDN.
 - `doc/enterprise/design-tokens.md` documenting the token pipeline.
 
@@ -48,7 +48,7 @@ in CI.
 
 ### Removed
 
-- `alchemist` dev dependency — it never compiled against Flutter 3.44 (missing
+- `alchemist` dev dependency, which never compiled against Flutter 3.44 (missing
   `Canvas` methods) and is replaced by Flutter-native golden tests.
 
 ## 0.0.3
@@ -70,7 +70,7 @@ Adds a product-origination surface and a complete reference app.
 - Headless `BankApplicationController`: a seven-step application state
   machine (eligibility, customise, offer, documents, disclosures, sign,
   decision) with validity and completion tracking, exported from `core.dart`.
-- A **flagship reference app** ("Meridian") in the example, composed entirely
+- A **reference app** ("Meridian") in the example, composed entirely
   from kit widgets: product catalogue, product detail with a
   conventional/Shariah toggle, the end-to-end Auto Finance application, and a
   servicing view. Run it with `flutter run -t lib/flagship_main.dart`.

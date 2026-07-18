@@ -1,4 +1,4 @@
-# Enterprise Integration Playbook
+# Enterprise integration playbook
 
 This document specifies how a bank composes `bank_ui_kit` 0.1.0 into a
 production app: where the kit's responsibility ends, where the host shell
@@ -49,9 +49,9 @@ decision stays server-side, per `doc/enterprise/compliance-matrix.md`.
 
 ## Per-widget entitlements gating
 
-Current position, stated plainly: the kit contains no entitlement registry
-and no permission-aware widget; each of the 141 widgets renders whatever
-the host constructs it with. Gating is therefore a composition rule, at the
+Current position: the kit contains no entitlement registry and no
+permission-aware widget. Each of the 141 widgets renders whatever the host
+constructs it with. Gating is therefore a composition rule, at the
 correct layer: the host resolves entitlements server-side and does not
 build the widgets a customer may not use. Every widget is independently
 instantiable through the six entry points (`bank_ui_kit.dart`, `core.dart`,
@@ -119,7 +119,7 @@ because the host owns its lifetime.
 
 ## Image loading and pinned CDN clients
 
-Current position, stated plainly, because it is a supply-chain question:
+Current position, since this is a supply-chain question:
 `BankVirtualCardWidget.backgroundImage` and
 `BankHorizontalAccountCard.backgroundImage` accept any host-supplied
 `ImageProvider`, but most avatar and logo surfaces (`BankEmblem.imageUrl`,
@@ -129,7 +129,7 @@ Current position, stated plainly, because it is a supply-chain question:
 certificate-pinning enforcement point today is `HttpOverrides.global`,
 which Flutter's `NetworkImage` honors, so one pinned `HttpClient` covers
 every kit-initiated fetch. `BankEmblem` degrades to initials or an icon on
-failure, never a broken-image glyph. Committed direction: an injectable
+failure rather than showing a broken-image glyph. Committed direction: an injectable
 resolver on `BankUiScopeData` (URL string in, `ImageProvider` out) so hosts
 route through their pinned CDN client and cache, additive, targeted at
 v0.3.0 (2026-10-31).
@@ -154,7 +154,8 @@ iOS has no screenshot-blocking API. The recipe: present an opaque cover
 view in `sceneWillResignActive`, and observe
 `UIScreen.capturedDidChangeNotification` to gate sensitive screens while
 `UIScreen.main.isCaptured` is true. The kit overlay then covers the
-app-switcher card on both platforms: defense in depth, not the control.
+app-switcher card on both platforms; it adds defense in depth but is not
+the control itself.
 
 ## PIN and OTP handling rules
 
@@ -183,10 +184,10 @@ Budgets the project builds against: 16 ms per frame at 60 Hz (8 ms at
 no dropped frames during `BankFlipCard` and `BankSuccessAnimation` runs,
 and reduced-motion compliance via `MediaQuery.disableAnimationsOf`, which
 `BankOtpInput`'s shake and `BankEmblem`'s fade already honor. Current
-position, stated plainly: at 0.1.0 there is no `integration_test/`
-directory and no device benchmark results have been published; the shipped
-evidence is the six suites under `test/` that CI runs on Flutter 3.27.1
-per `.github/workflows/ci.yml`. Committed methodology: an
+position: at 0.1.0 there is no `integration_test/` directory and no device
+benchmark results have been published. The shipped evidence is the six
+suites under `test/` that CI runs on Flutter 3.27.1 per
+`.github/workflows/ci.yml`. Committed methodology: an
 `integration_test` harness driving the example gallery
 (`example/lib/gallery_main.dart`) with `IntegrationTestWidgetsFlutterBinding`
 frame-timing summaries, reporting average and worst-case build and raster
