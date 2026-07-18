@@ -28,6 +28,9 @@ jobs:
       - name: Analyze package
         run: flutter analyze
 
+      - name: Verify design tokens are in sync
+        run: dart run tool/generate_tokens.dart --check
+
       - name: Run tests
         run: flutter test --coverage
 

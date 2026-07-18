@@ -42,9 +42,9 @@ class BankVoltageTheme {
         background: Color(0xFF1A1A2E),
         onBackground: Color(0xFFF0F0FF),
         outline: Color(0xFF31314E),
-        positiveBalance: BankTokens.positiveBalance,
-        negativeBalance: BankTokens.negativeBalance,
-        pending: BankTokens.pending,
+        positiveBalance: BankTokens.positiveBalanceDark,
+        negativeBalance: BankTokens.negativeBalanceDark,
+        pending: BankTokens.pendingDark,
         frozen: BankTokens.frozen,
         accentGradient: _accentGradient,
         cardRadius: BorderRadius.all(Radius.circular(20)),
@@ -78,9 +78,9 @@ class BankVoltageTheme {
         background: Color(0xFF0F0F1A),
         onBackground: Color(0xFFF0F0FF),
         outline: Color(0xFF31314E),
-        positiveBalance: BankTokens.positiveBalance,
-        negativeBalance: BankTokens.negativeBalance,
-        pending: BankTokens.pending,
+        positiveBalance: BankTokens.positiveBalanceDark,
+        negativeBalance: BankTokens.negativeBalanceDark,
+        pending: BankTokens.pendingDark,
         frozen: BankTokens.frozen,
         accentGradient: _accentGradient,
         cardRadius: BorderRadius.all(Radius.circular(20)),
@@ -132,12 +132,17 @@ class BankVoltageTheme {
     // Wire the preset's brand font into the Material text themes so every
     // descendant Text inherits it (the kit's own styles intentionally omit
     // a family and inherit this default).
-    return bank.fontFamily == null
-        ? themed
-        : themed.copyWith(
-            textTheme: themed.textTheme.apply(fontFamily: bank.fontFamily),
-            primaryTextTheme:
-                themed.primaryTextTheme.apply(fontFamily: bank.fontFamily),
-          );
+    // Always attach the glyph-coverage fallback fonts; also wire the brand
+    // font family when the preset defines one (apply() ignores a null family).
+    return themed.copyWith(
+      textTheme: themed.textTheme.apply(
+        fontFamily: bank.fontFamily,
+        fontFamilyFallback: kBankFontFallback,
+      ),
+      primaryTextTheme: themed.primaryTextTheme.apply(
+        fontFamily: bank.fontFamily,
+        fontFamilyFallback: kBankFontFallback,
+      ),
+    );
   }
 }

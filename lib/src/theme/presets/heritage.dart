@@ -45,7 +45,7 @@ class BankHeritageTheme {
         background: Color(0xFFF8F7F3),
         onBackground: Color(0xFF171E19),
         outline: Color(0xFFECEAE2),
-        positiveBalance: Color(0xFF00875A),
+        positiveBalance: BankTokens.positiveBalance,
         negativeBalance: BankTokens.negativeBalance,
         pending: BankTokens.pending,
         frozen: BankTokens.frozen,
@@ -72,7 +72,7 @@ class BankHeritageTheme {
   static BankThemeData dark() => const BankThemeData(
         primary: Color(0xFF4DA67A),
         primaryVariant: Color(0xFF6DBF94),
-        onPrimary: Color(0xFF003822),
+        onPrimary: Color(0xFF00291A),
         surface: Color(0xFF17211C),
         surfaceVariant: Color(0xFF202C25),
         onSurface: Color(0xFFE8F0E8),
@@ -81,8 +81,8 @@ class BankHeritageTheme {
         onBackground: Color(0xFFE8F0E8),
         outline: Color(0xFF24302A),
         positiveBalance: Color(0xFF4DA67A),
-        negativeBalance: BankTokens.negativeBalance,
-        pending: BankTokens.pending,
+        negativeBalance: BankTokens.negativeBalanceDark,
+        pending: BankTokens.pendingDark,
         frozen: BankTokens.frozen,
         accentGradient: _darkGradient,
         cardRadius: BorderRadius.all(Radius.circular(20)),
@@ -127,12 +127,17 @@ class BankHeritageTheme {
       extensions: <ThemeExtension<dynamic>>[bank],
     );
 
-    return bank.fontFamily == null
-        ? themed
-        : themed.copyWith(
-            textTheme: themed.textTheme.apply(fontFamily: bank.fontFamily),
-            primaryTextTheme:
-                themed.primaryTextTheme.apply(fontFamily: bank.fontFamily),
-          );
+    // Always attach the glyph-coverage fallback fonts; also wire the brand
+    // font family when the preset defines one (apply() ignores a null family).
+    return themed.copyWith(
+      textTheme: themed.textTheme.apply(
+        fontFamily: bank.fontFamily,
+        fontFamilyFallback: kBankFontFallback,
+      ),
+      primaryTextTheme: themed.primaryTextTheme.apply(
+        fontFamily: bank.fontFamily,
+        fontFamilyFallback: kBankFontFallback,
+      ),
+    );
   }
 }

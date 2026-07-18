@@ -1,6 +1,6 @@
 name: bank_ui_kit
 description: A themeable Flutter UI component library for mobile banking and fintech apps. RTL-aware, privacy-aware, accessible widgets that compose into any host app.
-version: 0.0.3
+version: 0.1.0
 homepage: https://github.com/sayed3li97/bank-ui-kit
 repository: https://github.com/sayed3li97/bank-ui-kit
 issue_tracker: https://github.com/sayed3li97/bank-ui-kit/issues
@@ -41,7 +41,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  alchemist: ^0.10.0
 
 flutter:
   uses-material-design: true
@@ -74,3 +73,16 @@ flutter:
           weight: 600
         - asset: lib/src/assets/fonts/Nunito-Bold.ttf
           weight: 700
+    # Glyph-coverage fallback fonts (Noto, OFL) so currency symbols, Arabic
+    # script, and Arabic-Indic / Persian / Devanagari numerals always render —
+    # even offline (no CDN) and without relying on device system fonts. Wired
+    # as fontFamilyFallback via kBankFontFallback.
+    - family: NotoSansCurrency
+      fonts:
+        - asset: lib/src/assets/fonts/NotoSansCurrency-Regular.ttf
+    - family: NotoSansArabic
+      fonts:
+        - asset: lib/src/assets/fonts/NotoSansArabic-Regular.ttf
+    - family: NotoSansDevanagari
+      fonts:
+        - asset: lib/src/assets/fonts/NotoSansDevanagari-Regular.ttf

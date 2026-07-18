@@ -63,9 +63,9 @@ class BankStudioTheme {
         background: Color(0xFF1E1E1C),
         onBackground: Color(0xFFF5F5F3),
         outline: Color(0xFF333331),
-        positiveBalance: BankTokens.positiveBalance,
-        negativeBalance: BankTokens.negativeBalance,
-        pending: BankTokens.pending,
+        positiveBalance: BankTokens.positiveBalanceDark,
+        negativeBalance: BankTokens.negativeBalanceDark,
+        pending: BankTokens.pendingDark,
         frozen: BankTokens.frozen,
         cardRadius: BorderRadius.all(Radius.circular(16)),
         buttonRadius: BorderRadius.all(Radius.circular(12)),
@@ -112,12 +112,17 @@ class BankStudioTheme {
     // Wire the preset's brand font into the Material text themes so every
     // descendant Text inherits it (the kit's own styles intentionally omit
     // a family and inherit this default).
-    return bank.fontFamily == null
-        ? themed
-        : themed.copyWith(
-            textTheme: themed.textTheme.apply(fontFamily: bank.fontFamily),
-            primaryTextTheme:
-                themed.primaryTextTheme.apply(fontFamily: bank.fontFamily),
-          );
+    // Always attach the glyph-coverage fallback fonts; also wire the brand
+    // font family when the preset defines one (apply() ignores a null family).
+    return themed.copyWith(
+      textTheme: themed.textTheme.apply(
+        fontFamily: bank.fontFamily,
+        fontFamilyFallback: kBankFontFallback,
+      ),
+      primaryTextTheme: themed.primaryTextTheme.apply(
+        fontFamily: bank.fontFamily,
+        fontFamilyFallback: kBankFontFallback,
+      ),
+    );
   }
 }

@@ -97,12 +97,15 @@ so fully air-gapped builds need no source changes.
 | | Bank UI Kit | Typical screen-template kits |
 |---|---|---|
 | **Integration model** | Compose into any existing app | Copy-paste whole screens |
+| **Design tokens** | Platform-neutral **W3C DTCG `tokens.json`** generates the Dart tokens (CI-enforced) + `toJson`/`fromJson` for Figma & remote branding | Hard-coded values |
 | **Theming** | 4 presets + fully custom themes, runtime-switchable | Fork the package |
 | **RTL support** | First-class, every widget | Mirror-on-demand or none |
-| **Accessibility** | Built toward WCAG 2.1 AA: 44×44 targets, semantics, documented conformance | Not specified |
+| **Localization** | Locale-aware money (German `1.234,56`, French `1 234,56`, Indian lakh) + 4 numeral scripts + Hijri calendar | English only |
+| **Accessibility** | WCAG 2.1 AA **enforced in CI**: contrast gate across every preset, tap-target & label gates, semantics | Not specified |
+| **Visual regression** | Golden tests pin every preset × light/dark | None |
 | **State management** | Agnostic (pure props + callbacks) | Tied to the template's choice |
 | **Money** | Lossless `Decimal`-backed `Money` type | `double` |
-| **Tests** | Unit + widget tests across presets | None |
+| **Tests** | 339+ unit, widget, golden & a11y tests | None |
 
 ### One token change rebrands every surface
 
@@ -113,6 +116,39 @@ so fully air-gapped builds need no source changes.
 Tokens set color, shape, depth, and numeral typography once. Presets are
 just token sets: swap one and every component follows, light and dark,
 LTR and RTL. Your rebrand is a constructor argument, not a quarter.
+
+### Design tokens: one source, every consumer
+
+The tokens are **not** Dart constants that only Flutter can read. The source
+of truth is a platform-neutral [W3C DTCG](https://tr.designtokens.org/format/)
+file, [`tokens/design-tokens.json`](tokens/design-tokens.json), that **generates**
+the Dart tokens — CI fails if the two drift:
+
+```jsonc
+// tokens/design-tokens.json  →  generates lib/src/theme/tokens.dart
+"color":  { "positiveBalance": { "$type": "color", "$value": "#047857" } },
+"space":  { "4": { "$type": "dimension", "$value": "16px" } },
+"radius": { "full": { "$type": "dimension", "$value": "999px" } }
+```
+
+```bash
+dart run tool/generate_tokens.dart          # regenerate tokens.dart from JSON
+dart run tool/generate_tokens.dart --check   # CI drift guard
+```
+
+And any **brand** round-trips to/from JSON — the same tokens a Figma library or
+an iOS/Android app would consume, or that a server could deliver for remote
+re-branding:
+
+```dart
+final json = BankPreset.heritage.apply(base).extension<BankThemeData>()!.toJson();
+// → { "colors": { "primary": "#006341FF", ... }, "radius": {...}, ... }
+final brand = BankThemeData.fromJson(json);   // lossless round-trip
+```
+
+All four presets are exported to [`tokens/themes/`](tokens/themes/) as
+Figma-Variables-ready token sets. This is what turns a widget library into a
+design system: **one source, many consumers.**
 
 ---
 
@@ -574,8 +610,23 @@ guidelines. Register your own with `BankCurrencies.register`.
 BankBalanceText(money: Money.fromDouble(1250.5, 'OMR')) // ر.ع. 1,250.500
 ```
 
+Grouping and separators are **locale-aware**: kit money widgets read the
+ambient `Localizations` locale, so the same amount reads correctly in every
+market. Calling the formatter yourself? Pass `context.bankLocale`.
+
+```dart
+BankMoneyFormatter.format(amount: a, currencyCode: 'EUR', locale: 'de'); // €1.234.567,89
+BankMoneyFormatter.format(amount: a, currencyCode: 'EUR', locale: 'fr'); // €1 234 567,89
+BankMoneyFormatter.format(amount: a, currencyCode: 'INR', locale: 'en_IN'); // ₹12,34,567.89
+```
+
 ### Numeral styles
-Western or Eastern Arabic-Indic digits, independent of locale: ideal for GCC apps.
+Four numeral scripts, independent of locale (grouping) — ideal for GCC and
+South-Asian apps: Western, Eastern Arabic-Indic (`٠١٢`), Persian (`۰۱۲`), and
+Devanagari (`०१२`). The kit **bundles Noto fallback fonts** (`kBankFontFallback`)
+so currency symbols (₹ ₩ ₫ ₿ Ξ), Arabic script, and these numerals render
+everywhere — offline, on web without a CDN, and on devices lacking those
+system fonts.
 
 ```dart
 BankUiScope(
@@ -592,20 +643,32 @@ BankUiScope(initialData: BankUiScopeData(islamicFinanceMode: true), child: ...)
 ```
 
 ### Localization
-Ships English strings; override any subset via `BankUiStrings`: no `gen-l10n` dependency.
+Locale-aware number formatting (above) plus injectable copy: ships English
+strings and overrides any subset via `BankUiStrings`.
 
 ### RTL
 Every widget is built RTL-first with directional geometry throughout;
-widget-test coverage runs under `TextDirection.rtl` and automated RTL
-golden screenshots are on the release roadmap
-([docs/enterprise/versioning-and-releases.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/versioning-and-releases.md)).
+widget-test coverage runs under `TextDirection.rtl`, and an LTR/RTL **golden
+test** pins the mirrored layout so it can't regress.
+
+### Accessibility, enforced in CI
+Not a promise in a doc — a build gate. Every push runs:
+- a **WCAG contrast** test (89 assertions) covering every text pair and
+  financial colour across all four presets × light/dark;
+- **tap-target** (44 px) and **accessible-label** guideline checks on
+  interactive widgets;
+- **golden** visual-regression across presets × brightness × direction.
+
+Regenerate goldens with `flutter test --update-goldens`.
 
 ---
 
 ## Architecture & principles
 
 - **Tokens, not magic numbers.** Widgets read colours, radii, spacing, elevation, and
-  numeral typography from `BankThemeData` / `BankTokens`: never hard-coded.
+  numeral typography from `BankThemeData` / `BankTokens`: never hard-coded. The scalar
+  tokens are generated from a W3C DTCG `tokens.json` (CI-enforced), and any brand
+  serialises to/from JSON — see [Design tokens: one source, every consumer](#design-tokens-one-source-every-consumer).
 - **State-management agnostic.** Pure widgets: data in via the constructor, events out
   via callbacks. No provider/bloc/riverpod coupling in `lib/`.
 - **Lossless money.** The `Money` type wraps `Decimal`; no `double` ever touches an amount.

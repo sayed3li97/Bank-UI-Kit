@@ -5,54 +5,82 @@ import 'package:flutter/widgets.dart';
 /// they read as authentic cards and share one source of truth in a carousel.
 const double kBankCardAspectRatio = 1.586;
 
+/// Glyph-coverage fallback font families, applied as `fontFamilyFallback` on
+/// every Bank UI Kit text style and preset theme.
+///
+/// The primary brand font (Space Grotesk / Nunito / a host font) covers Latin;
+/// these bundled Noto subsets fill the gaps so currency symbols (₹ ₩ ₫ ₿),
+/// Arabic script (ر.س, د.إ), and Arabic-Indic / Persian / Devanagari numerals
+/// (٠١٢ ۰۱۲ ०१२) render everywhere — offline, on web without a CDN, and on
+/// devices lacking those system fonts. Names are package-qualified so they
+/// resolve to the fonts bundled in this package.
+const List<String> kBankFontFallback = [
+  'packages/bank_ui_kit/NotoSansArabic',
+  'packages/bank_ui_kit/NotoSansDevanagari',
+  'packages/bank_ui_kit/NotoSansCurrency',
+];
+
 /// Design tokens for the Bank UI Kit design system.
 ///
-/// All values are `static const` and organised into semantic groups:
-/// colour roles, spacing, border-radius, motion, typography, and tap targets.
+/// The scalar tokens (colour roles, spacing, radius, motion durations, and the
+/// minimum tap target) are **generated** from the platform-neutral W3C DTCG
+/// source at `tokens/design-tokens.json` — the single source of truth that also
+/// feeds Figma and other platforms. Regenerate with
+/// `dart run tool/generate_tokens.dart`; CI fails if the two drift.
+///
+/// Composite tokens (easing curves, text styles, numeral styles, and elevation
+/// shadows) are hand-authored below the generated region and reference the
+/// generated values. Per-brand theme tokens are serialised separately via
+/// `BankThemeData.toJson` into `tokens/themes/` (see `test/theme_export_test`).
 class BankTokens {
   const BankTokens._();
 
-  // ---------------------------------------------------------------------------
+  // --- GENERATED TOKENS: do not edit by hand (source: tokens/design-tokens.json) ---
+
   // Colour roles
-  // ---------------------------------------------------------------------------
+  /// Positive balances on light surfaces (emerald-700, AA).
+  static const Color positiveBalance = Color(0xFF047857);
 
-  /// Green used for positive account balances.
-  static const Color positiveBalance = Color(0xFF00C48C);
+  /// Negative / overdue amounts on light surfaces (AA).
+  static const Color negativeBalance = Color(0xFFC62828);
 
-  /// Red used for negative account balances or overdue amounts.
-  static const Color negativeBalance = Color(0xFFFF4D4D);
+  /// Pending states on light surfaces (amber-700, AA).
+  static const Color pending = Color(0xFFB45309);
 
-  /// Amber used for pending transactions or awaiting-confirmation states.
-  static const Color pending = Color(0xFFF5A623);
+  /// Positive balances on dark surfaces (emerald-400, AA).
+  static const Color positiveBalanceDark = Color(0xFF34D399);
 
-  /// Grey used for frozen / suspended accounts or cards.
+  /// Negative amounts on dark surfaces (red-400, AA).
+  static const Color negativeBalanceDark = Color(0xFFF87171);
+
+  /// Pending states on dark surfaces (amber-400, AA).
+  static const Color pendingDark = Color(0xFFFBBF24);
+
+  /// Frozen / suspended accounts or cards.
   static const Color frozen = Color(0xFF8E8E93);
 
-  /// System-level success feedback colour.
+  /// System-level success feedback.
   static const Color success = Color(0xFF34C759);
 
-  /// System-level warning feedback colour.
+  /// System-level warning feedback.
   static const Color warning = Color(0xFFFF9500);
 
-  /// System-level danger / destructive-action colour.
+  /// System-level danger / destructive-action.
   static const Color danger = Color(0xFFFF3B30);
 
-  /// Green used to represent an investment gain.
+  /// Investment gain.
   static const Color investmentGain = Color(0xFF30D158);
 
-  /// Red used to represent an investment loss.
+  /// Investment loss.
   static const Color investmentLoss = Color(0xFFFF453A);
 
-  /// Green used to show available credit headroom.
+  /// Available credit headroom.
   static const Color creditAvailable = Color(0xFF30D158);
 
-  /// Amber used to show the portion of credit already utilised.
+  /// Credit already utilised.
   static const Color creditUsed = Color(0xFFFF9F0A);
 
-  // ---------------------------------------------------------------------------
-  // Spacing: 4 pt grid
-  // ---------------------------------------------------------------------------
-
+  // Spacing (4 pt grid)
   static const double space1 = 4;
   static const double space2 = 8;
   static const double space3 = 12;
@@ -64,26 +92,26 @@ class BankTokens {
   static const double space12 = 48;
   static const double space16 = 64;
 
-  // ---------------------------------------------------------------------------
   // Border-radius tiers
-  // ---------------------------------------------------------------------------
-
   static const double radiusSmall = 4;
   static const double radiusMedium = 12;
   static const double radiusLarge = 20;
   static const double radiusXLarge = 28;
 
-  /// Use for fully-pill / circular shapes (e.g. chips, FABs).
+  /// Fully-pill / circular shapes (chips, FABs).
   static const double radiusFull = 999;
 
-  // ---------------------------------------------------------------------------
-  // Motion: duration
-  // ---------------------------------------------------------------------------
-
+  // Motion: durations
   static const Duration durationFast = Duration(milliseconds: 150);
   static const Duration durationBase = Duration(milliseconds: 250);
   static const Duration durationSlow = Duration(milliseconds: 400);
   static const Duration durationXSlow = Duration(milliseconds: 600);
+
+  // Accessibility & sizing
+  /// Minimum touch/tap target (WCAG 2.5.5 AAA / iOS HIG).
+  static const double minTapTarget = 44;
+
+  // --- END GENERATED TOKENS ---
 
   // ---------------------------------------------------------------------------
   // Motion: easing curves
@@ -107,66 +135,77 @@ class BankTokens {
   // ---------------------------------------------------------------------------
 
   static const TextStyle displayLarge = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 48,
     fontWeight: FontWeight.w700,
     letterSpacing: -1.5,
   );
 
   static const TextStyle displayMedium = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 36,
     fontWeight: FontWeight.w700,
     letterSpacing: -1,
   );
 
   static const TextStyle headlineLarge = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 28,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.5,
   );
 
   static const TextStyle headlineMedium = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 22,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.3,
   );
 
   static const TextStyle headlineSmall = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 18,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
   );
 
   static const TextStyle bodyLarge = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.6,
   );
 
   static const TextStyle bodyMedium = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 1.5,
   );
 
   static const TextStyle bodySmall = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 1.4,
   );
 
   static const TextStyle labelLarge = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 14,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.1,
   );
 
   static const TextStyle labelMedium = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 12,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.1,
   );
 
   static const TextStyle labelSmall = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 11,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.4,
@@ -174,6 +213,7 @@ class BankTokens {
 
   /// Hero monetary numeral: large balance displays.
   static const TextStyle numeralHero = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 44,
     fontWeight: FontWeight.w600,
     letterSpacing: -1.2,
@@ -186,6 +226,7 @@ class BankTokens {
 
   /// Large monetary numeral: card balances and summary rows.
   static const TextStyle numeralLarge = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 24,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.4,
@@ -197,6 +238,7 @@ class BankTokens {
 
   /// Medium monetary numeral: list items and sub-totals.
   static const TextStyle numeralMedium = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 18,
     fontWeight: FontWeight.w500,
     fontFeatures: [
@@ -207,6 +249,7 @@ class BankTokens {
 
   /// Small monetary numeral: dense tables and secondary figures.
   static const TextStyle numeralSmall = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
     fontSize: 14,
     fontWeight: FontWeight.w500,
     fontFeatures: [
@@ -259,11 +302,4 @@ class BankTokens {
       offset: Offset(0, 16),
     ),
   ];
-
-  // ---------------------------------------------------------------------------
-  // Accessibility
-  // ---------------------------------------------------------------------------
-
-  /// Minimum touch/tap target size in logical pixels (WCAG 2.5.5).
-  static const double minTapTarget = 44;
 }

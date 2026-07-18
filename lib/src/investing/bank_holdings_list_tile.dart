@@ -5,6 +5,7 @@ import '../../src/models/holding.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../common/bank_format_context.dart';
 
 /// A portfolio position row. Built for [ListView.builder] usage.
 class BankHoldingsListTile extends StatelessWidget {
@@ -65,11 +66,13 @@ class BankHoldingsListTile extends StatelessWidget {
     final valueStr = BankMoneyFormatter.format(
       amount: holding.currentValue.amount,
       currencyCode: holding.currentValue.currencyCode,
+      locale: context.bankLocale,
       numeralStyle: scope.numeralStyle,
     );
     final gainLossStr = BankMoneyFormatter.formatSign(
       amount: holding.gainLoss.amount,
       currencyCode: holding.gainLoss.currencyCode,
+      locale: context.bankLocale,
       numeralStyle: scope.numeralStyle,
     );
     final pctStr = '${holding.gainLossPercent >= 0 ? '+' : ''}'

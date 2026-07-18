@@ -23,7 +23,7 @@ class BankBloomTheme {
   static BankThemeData light() => const BankThemeData(
         primary: Color(0xFFFF6B6B),
         primaryVariant: Color(0xFF1A3557),
-        onPrimary: Color(0xFFFFFFFF),
+        onPrimary: Color(0xFF1A2030),
         surface: Color(0xFFFFFFFF),
         surfaceVariant: Color(0xFFFFF3EE),
         onSurface: Color(0xFF1A2030),
@@ -67,9 +67,9 @@ class BankBloomTheme {
         background: Color(0xFF1C2A3A),
         onBackground: Color(0xFFF5F0EC),
         outline: Color(0xFF283646),
-        positiveBalance: BankTokens.positiveBalance,
-        negativeBalance: BankTokens.negativeBalance,
-        pending: BankTokens.pending,
+        positiveBalance: BankTokens.positiveBalanceDark,
+        negativeBalance: BankTokens.negativeBalanceDark,
+        pending: BankTokens.pendingDark,
         frozen: BankTokens.frozen,
         cardRadius: BorderRadius.all(Radius.circular(20)),
         buttonRadius: BorderRadius.all(Radius.circular(999)),
@@ -116,12 +116,17 @@ class BankBloomTheme {
     // Wire the preset's brand font into the Material text themes so every
     // descendant Text inherits it (the kit's own styles intentionally omit
     // a family and inherit this default).
-    return bank.fontFamily == null
-        ? themed
-        : themed.copyWith(
-            textTheme: themed.textTheme.apply(fontFamily: bank.fontFamily),
-            primaryTextTheme:
-                themed.primaryTextTheme.apply(fontFamily: bank.fontFamily),
-          );
+    // Always attach the glyph-coverage fallback fonts; also wire the brand
+    // font family when the preset defines one (apply() ignores a null family).
+    return themed.copyWith(
+      textTheme: themed.textTheme.apply(
+        fontFamily: bank.fontFamily,
+        fontFamilyFallback: kBankFontFallback,
+      ),
+      primaryTextTheme: themed.primaryTextTheme.apply(
+        fontFamily: bank.fontFamily,
+        fontFamilyFallback: kBankFontFallback,
+      ),
+    );
   }
 }

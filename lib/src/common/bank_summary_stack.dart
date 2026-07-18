@@ -8,6 +8,7 @@ import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
+import 'bank_format_context.dart';
 import 'bank_icon_spec.dart';
 import 'money_formatter.dart';
 
@@ -313,6 +314,7 @@ class _BankSummaryRow extends StatelessWidget {
       formattedMoney = BankMoneyFormatter.format(
         amount: item.money!.amount,
         currencyCode: item.money!.currencyCode,
+        locale: context.bankLocale,
         numeralStyle: scope.numeralStyle,
       );
     }

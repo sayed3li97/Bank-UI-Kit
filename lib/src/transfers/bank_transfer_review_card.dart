@@ -5,6 +5,7 @@ import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../common/bank_format_context.dart';
 
 // ---------------------------------------------------------------------------
 // BankTransferReviewCard
@@ -178,13 +179,15 @@ class BankTransferReviewCard extends StatelessWidget {
 
   /// Formats [m] for display, substituting the scope's masked label when
   /// privacy mode is enabled so no monetary value is rendered or announced.
-  String _formatMoney(Money m, BankUiScopeData scope) => scope.privacyEnabled
-      ? scope.strings.balanceHidden
-      : BankMoneyFormatter.format(
-          amount: m.amount,
-          currencyCode: m.currencyCode,
-          numeralStyle: scope.numeralStyle,
-        );
+  String _formatMoney(BuildContext context, Money m, BankUiScopeData scope) =>
+      scope.privacyEnabled
+          ? scope.strings.balanceHidden
+          : BankMoneyFormatter.format(
+              amount: m.amount,
+              currencyCode: m.currencyCode,
+              locale: context.bankLocale,
+              numeralStyle: scope.numeralStyle,
+            );
 
   String _formatArrival(BankUiScopeData scope) {
     if (isScheduled && scheduledDate != null) {
@@ -256,7 +259,7 @@ class BankTransferReviewCard extends StatelessWidget {
             // ----------------------------------------------------------------
             _ReviewRow(
               label: amountLabel,
-              value: _formatMoney(amount, scope),
+              value: _formatMoney(context, amount, scope),
               bankTheme: bankTheme,
               valueStyle: bankTheme.numeralMedium.copyWith(
                 color: bankTheme.onSurface,
@@ -270,7 +273,7 @@ class BankTransferReviewCard extends StatelessWidget {
             // ----------------------------------------------------------------
             _ReviewRow(
               label: feeLabel,
-              value: _isFree ? freeLabel : _formatMoney(fee!, scope),
+              value: _isFree ? freeLabel : _formatMoney(context, fee!, scope),
               bankTheme: bankTheme,
               valueColor: _isFree
                   ? (freeColor ?? BankTokens.positiveBalance)
@@ -293,7 +296,7 @@ class BankTransferReviewCard extends StatelessWidget {
               const SizedBox(height: BankTokens.space3),
               _ReviewRow(
                 label: youSendLabel,
-                value: _formatMoney(amount, scope),
+                value: _formatMoney(context, amount, scope),
                 bankTheme: bankTheme,
                 labelStyle: labelStyle,
                 valueOverride: valueStyle,
@@ -301,7 +304,7 @@ class BankTransferReviewCard extends StatelessWidget {
               const SizedBox(height: BankTokens.space3),
               _ReviewRow(
                 label: theyReceiveLabel,
-                value: _formatMoney(convertedAmount!, scope),
+                value: _formatMoney(context, convertedAmount!, scope),
                 bankTheme: bankTheme,
                 valueStyle: bankTheme.numeralMedium.copyWith(
                   color: bankTheme.positiveBalance,

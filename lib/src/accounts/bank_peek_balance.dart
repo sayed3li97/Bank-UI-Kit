@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
@@ -346,6 +347,7 @@ class _BankPeekBalanceState extends State<BankPeekBalance>
               : BankMoneyFormatter.format(
                   amount: account.balance.amount,
                   currencyCode: account.balance.currencyCode,
+                  locale: context.bankLocale,
                   numeralStyle: scope.numeralStyle,
                 );
           return '${account.label}: $value';

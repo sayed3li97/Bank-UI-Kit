@@ -6,6 +6,7 @@ import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../common/bank_format_context.dart';
 
 /// Bottom-sheet or inline widget for selecting among multiple bank accounts.
 ///
@@ -262,6 +263,7 @@ class _AccountRow extends StatelessWidget {
         : BankMoneyFormatter.format(
             amount: account.balance.amount,
             currencyCode: account.balance.currencyCode,
+            locale: context.bankLocale,
             numeralStyle: scopeData.numeralStyle,
           );
 

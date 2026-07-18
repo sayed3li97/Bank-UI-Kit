@@ -212,9 +212,18 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
           (isDark ? const Color(0xFFF5F5F5) : const Color(0xFF1C1C1E)),
       outline: outline ??
           (isDark ? const Color(0xFF48484A) : const Color(0xFFE5E5EA)),
-      positiveBalance: positiveBalance ?? BankTokens.positiveBalance,
-      negativeBalance: negativeBalance ?? BankTokens.negativeBalance,
-      pending: pending ?? BankTokens.pending,
+      // Financial colours are brightness-aware so custom brands stay legible
+      // (WCAG AA) in both modes without the caller having to tune them.
+      positiveBalance: positiveBalance ??
+          (isDark
+              ? BankTokens.positiveBalanceDark
+              : BankTokens.positiveBalance),
+      negativeBalance: negativeBalance ??
+          (isDark
+              ? BankTokens.negativeBalanceDark
+              : BankTokens.negativeBalance),
+      pending:
+          pending ?? (isDark ? BankTokens.pendingDark : BankTokens.pending),
       frozen: frozen ?? BankTokens.frozen,
       accentGradient: accentGradient,
       cardRadius: cardRadius ?? const BorderRadius.all(Radius.circular(12)),
@@ -322,6 +331,167 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
   /// the ambient [Theme].
   static BankThemeData of(BuildContext context) =>
       Theme.of(context).extension<BankThemeData>()!;
+
+  // ---------------------------------------------------------------------------
+  // JSON serialisation (data-driven & remote branding)
+  // ---------------------------------------------------------------------------
+
+  /// Serialises the **brand contract** — every colour, shape radius, elevation,
+  /// gradient, and flag — to a plain JSON map. Colours use `#RRGGBBAA` hex so
+  /// the output is a Figma-Variables / Style-Dictionary-friendly token set.
+  ///
+  /// This is the theme half of the design-token story: `tokens.json` is the
+  /// global source of truth (see [BankTokens]); [toJson] exports any *brand*
+  /// (including the built-in presets) so a bank can round-trip a theme to a
+  /// server or design tool. Reconstruct with [BankThemeData.fromJson].
+  ///
+  /// Composite numeral [TextStyle]s are structural typography, not brand knobs,
+  /// so they are not serialised; [BankThemeData.fromJson] restores the
+  /// [BankTokens] defaults.
+  Map<String, dynamic> toJson() => {
+        'version': 1,
+        'colors': {
+          'primary': _hex(primary),
+          'primaryVariant': _hex(primaryVariant),
+          'onPrimary': _hex(onPrimary),
+          'surface': _hex(surface),
+          'surfaceVariant': _hex(surfaceVariant),
+          'onSurface': _hex(onSurface),
+          'onSurfaceVariant': _hex(onSurfaceVariant),
+          'background': _hex(background),
+          'onBackground': _hex(onBackground),
+          'outline': _hex(outline),
+          'positiveBalance': _hex(positiveBalance),
+          'negativeBalance': _hex(negativeBalance),
+          'pending': _hex(pending),
+          'frozen': _hex(frozen),
+          if (glowColor != null) 'glowColor': _hex(glowColor!),
+        },
+        'radius': {
+          'card': cardRadius.topLeft.x,
+          'button': buttonRadius.topLeft.x,
+          'sheet': sheetRadius.topLeft.x,
+          'chip': chipRadius.topLeft.x,
+        },
+        'elevation': {
+          'low': elevationLow,
+          'medium': elevationMedium,
+          'high': elevationHigh,
+        },
+        if (fontFamily != null) 'fontFamily': fontFamily,
+        'useGlow': useGlow,
+        if (accentGradient is LinearGradient)
+          'accentGradient': _gradientToJson(accentGradient! as LinearGradient),
+      };
+
+  /// Rebuilds a [BankThemeData] from the map produced by [toJson].
+  ///
+  /// Unknown / missing keys fall back to neutral defaults, so partial
+  /// (e.g. server-delivered) payloads are safe.
+  factory BankThemeData.fromJson(Map<String, dynamic> json) {
+    final colors =
+        (json['colors'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final radius =
+        (json['radius'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final elev =
+        (json['elevation'] as Map?)?.cast<String, dynamic>() ?? const {};
+
+    Color c(String key, Color fallback) =>
+        colors[key] is String ? _parseHex(colors[key] as String) : fallback;
+    BorderRadius r(String key, BorderRadius fallback) => radius[key] is num
+        ? BorderRadius.all(Radius.circular((radius[key] as num).toDouble()))
+        : fallback;
+    double e(String key, double fallback) =>
+        elev[key] is num ? (elev[key] as num).toDouble() : fallback;
+
+    final sheetR = radius['sheet'] is num
+        ? BorderRadius.vertical(
+            top: Radius.circular((radius['sheet'] as num).toDouble()),
+          )
+        : const BorderRadius.vertical(top: Radius.circular(20));
+
+    return BankThemeData(
+      primary: c('primary', const Color(0xFF000000)),
+      primaryVariant: c('primaryVariant', const Color(0xFF000000)),
+      onPrimary: c('onPrimary', const Color(0xFFFFFFFF)),
+      surface: c('surface', const Color(0xFFFFFFFF)),
+      surfaceVariant: c('surfaceVariant', const Color(0xFFF2F2F7)),
+      onSurface: c('onSurface', const Color(0xFF1C1C1E)),
+      onSurfaceVariant: c('onSurfaceVariant', const Color(0xFF636366)),
+      background: c('background', const Color(0xFFF2F2F7)),
+      onBackground: c('onBackground', const Color(0xFF1C1C1E)),
+      outline: c('outline', const Color(0xFFE5E5EA)),
+      positiveBalance: c('positiveBalance', BankTokens.positiveBalance),
+      negativeBalance: c('negativeBalance', BankTokens.negativeBalance),
+      pending: c('pending', BankTokens.pending),
+      frozen: c('frozen', BankTokens.frozen),
+      accentGradient: json['accentGradient'] is Map
+          ? _gradientFromJson(
+              (json['accentGradient'] as Map).cast<String, dynamic>(),
+            )
+          : null,
+      cardRadius: r('card', const BorderRadius.all(Radius.circular(12))),
+      buttonRadius: r('button', const BorderRadius.all(Radius.circular(12))),
+      sheetRadius: sheetR,
+      chipRadius: r('chip', const BorderRadius.all(Radius.circular(8))),
+      elevationLow: e('low', 1),
+      elevationMedium: e('medium', 4),
+      elevationHigh: e('high', 8),
+      numeralHero: BankTokens.numeralHero,
+      numeralLarge: BankTokens.numeralLarge,
+      numeralMedium: BankTokens.numeralMedium,
+      numeralSmall: BankTokens.numeralSmall,
+      fontFamily: json['fontFamily'] as String?,
+      useGlow: json['useGlow'] as bool? ?? false,
+      glowColor: colors['glowColor'] is String
+          ? _parseHex(colors['glowColor'] as String)
+          : null,
+    );
+  }
+
+  static String _hex(Color c) {
+    final v = c.toARGB32();
+    final a = (v >> 24) & 0xFF;
+    final r = (v >> 16) & 0xFF;
+    final g = (v >> 8) & 0xFF;
+    final b = v & 0xFF;
+    String h(int x) => x.toRadixString(16).padLeft(2, '0');
+    return '#${h(r)}${h(g)}${h(b)}${h(a)}'.toUpperCase();
+  }
+
+  static Color _parseHex(String hex) {
+    var h = hex.replaceFirst('#', '');
+    if (h.length == 6) h = '${h}FF'; // RRGGBB -> opaque RRGGBBAA
+    final r = int.parse(h.substring(0, 2), radix: 16);
+    final g = int.parse(h.substring(2, 4), radix: 16);
+    final b = int.parse(h.substring(4, 6), radix: 16);
+    final a = int.parse(h.substring(6, 8), radix: 16);
+    return Color.fromARGB(a, r, g, b);
+  }
+
+  static Map<String, dynamic> _gradientToJson(LinearGradient g) => {
+        'type': 'linear',
+        'begin': [(g.begin as Alignment).x, (g.begin as Alignment).y],
+        'end': [(g.end as Alignment).x, (g.end as Alignment).y],
+        'colors': [for (final col in g.colors) _hex(col)],
+      };
+
+  static LinearGradient _gradientFromJson(Map<String, dynamic> j) {
+    final begin = (j['begin'] as List?)?.cast<num>();
+    final end = (j['end'] as List?)?.cast<num>();
+    return LinearGradient(
+      begin: begin != null
+          ? Alignment(begin[0].toDouble(), begin[1].toDouble())
+          : Alignment.topLeft,
+      end: end != null
+          ? Alignment(end[0].toDouble(), end[1].toDouble())
+          : Alignment.bottomRight,
+      colors: [
+        for (final c in (j['colors'] as List? ?? const []))
+          _parseHex(c as String),
+      ],
+    );
+  }
 
   // ---------------------------------------------------------------------------
   // ThemeExtension API

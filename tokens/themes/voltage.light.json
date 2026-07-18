@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "colors": {
+    "primary": "#7C3AEDFF",
+    "primaryVariant": "#06B6D4FF",
+    "onPrimary": "#FFFFFFFF",
+    "surface": "#252540FF",
+    "surfaceVariant": "#2E2E50FF",
+    "onSurface": "#F0F0FFFF",
+    "onSurfaceVariant": "#A0A0C0FF",
+    "background": "#1A1A2EFF",
+    "onBackground": "#F0F0FFFF",
+    "outline": "#31314EFF",
+    "positiveBalance": "#34D399FF",
+    "negativeBalance": "#F87171FF",
+    "pending": "#FBBF24FF",
+    "frozen": "#8E8E93FF",
+    "glowColor": "#7C3AED33"
+  },
+  "radius": {
+    "card": 20.0,
+    "button": 999.0,
+    "sheet": 20.0,
+    "chip": 999.0
+  },
+  "elevation": {
+    "low": 0.0,
+    "medium": 0.0,
+    "high": 0.0
+  },
+  "fontFamily": "packages/bank_ui_kit/SpaceGrotesk",
+  "useGlow": true,
+  "accentGradient": {
+    "type": "linear",
+    "begin": [
+      -1.0,
+      -1.0
+    ],
+    "end": [
+      1.0,
+      1.0
+    ],
+    "colors": [
+      "#7C3AEDFF",
+      "#06B6D4FF"
+    ]
+  }
+}

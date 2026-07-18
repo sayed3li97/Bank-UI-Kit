@@ -4,6 +4,53 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/) and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## 0.1.0
+
+Turns the kit from a widget library into a **design system**: tokens become
+platform-neutral data, money formats per locale, and accessibility is enforced
+in CI.
+
+### Added
+
+- **W3C DTCG design-token source of truth** (`tokens/design-tokens.json`): the
+  scalar tokens (colours, spacing, radius, motion, tap target) now generate
+  `lib/src/theme/tokens.dart` via `tool/generate_tokens.dart`, with a CI drift
+  guard (`--check`). Composite tokens (text styles, curves, shadows) stay
+  hand-authored and reference the generated values.
+- **`BankThemeData.toJson()` / `.fromJson()`**: any brand (including the four
+  presets) serialises to/from JSON (`#RRGGBBAA` hex) for Figma Variables,
+  native platforms, and server-driven / remote branding. All presets are
+  exported to `tokens/themes/` (regenerate via `test/theme_export_test.dart`).
+- **Locale-aware money formatting**: `BankMoneyFormatter.format`/`formatSign`
+  accept a `locale` so grouping and separators follow the market (German
+  `1.234.567,89`, French `1 234 567,89`, Indian lakh `12,34,567.89`). Core
+  money widgets resolve it from `Localizations` automatically; the new
+  `BuildContext.bankLocale` extension exposes it for direct formatter calls.
+- **Accessibility & visual-regression gates in CI**: a WCAG contrast test
+  (89 assertions across every preset × light/dark), tap-target (44 px) and
+  accessible-label guideline checks, and Flutter-native golden tests across
+  presets × brightness × direction.
+- **Bundled glyph-coverage fallback fonts** (`kBankFontFallback`): OFL Noto
+  subsets for currency symbols (₹ ₩ ₫ ₿ Ξ …), Arabic script, Latin-Extended
+  (ł, č …), and Arabic-Indic / Persian / Devanagari numerals, wired as
+  `fontFamilyFallback` on every text style and theme — so every script the kit
+  advertises renders, even offline / on web without a CDN.
+- `doc/enterprise/design-tokens.md` documenting the token pipeline.
+
+### Changed
+
+- **Fixed WCAG AA contrast defects** shipping in default presets: Bloom light
+  `onPrimary` (2.78:1 → dark ink), Heritage dark `onPrimary` (4.44:1), and the
+  financial semantic colours (`positiveBalance` 2.26:1, `pending` 2.03:1,
+  `negativeBalance`). Semantic colours are now brightness-aware (AA-compliant
+  emerald/red/amber on light surfaces, lighter variants on dark), applied
+  automatically by `BankThemeData.custom()`.
+
+### Removed
+
+- `alchemist` dev dependency — it never compiled against Flutter 3.44 (missing
+  `Canvas` methods) and is replaced by Flutter-native golden tests.
+
 ## 0.0.3
 
 Adds a product-origination surface and a complete reference app.

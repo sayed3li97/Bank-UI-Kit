@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "colors": {
+    "primary": "#FF6B6BFF",
+    "primaryVariant": "#1A3557FF",
+    "onPrimary": "#1A2030FF",
+    "surface": "#FFFFFFFF",
+    "surfaceVariant": "#FFF3EEFF",
+    "onSurface": "#1A2030FF",
+    "onSurfaceVariant": "#6B7280FF",
+    "background": "#FFF9F5FF",
+    "onBackground": "#1A2030FF",
+    "outline": "#F6EFEAFF",
+    "positiveBalance": "#047857FF",
+    "negativeBalance": "#C62828FF",
+    "pending": "#B45309FF",
+    "frozen": "#8E8E93FF"
+  },
+  "radius": {
+    "card": 20.0,
+    "button": 999.0,
+    "sheet": 28.0,
+    "chip": 999.0
+  },
+  "elevation": {
+    "low": 0.02,
+    "medium": 4.0,
+    "high": 8.0
+  },
+  "fontFamily": "packages/bank_ui_kit/Nunito",
+  "useGlow": false
+}
