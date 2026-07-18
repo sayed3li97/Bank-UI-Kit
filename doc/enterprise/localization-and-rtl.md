@@ -1,4 +1,4 @@
-# Localization, RTL, and Calendar Guide
+# Localization, RTL, and calendar guide
 
 This document states what `bank_ui_kit` v0.1.0 does today for localization,
 right-to-left layout, numerals, currency symbology, and calendars, and the
@@ -13,13 +13,13 @@ milestone from `doc/enterprise/versioning-and-releases.md`.
 The kit contains no baked-in, unreplaceable copy. Every user-facing string
 sits in one of two overridable tiers:
 
-1. **Centralized strings: 55 fields.** `BankUiStrings`
+1. Centralized strings, 55 fields. `BankUiStrings`
    (`lib/src/scope/bank_ui_strings.dart`) carries 55 English-default fields
    covering transaction statuses, account states, session-security dialogs,
    and shared actions. Widgets resolve them through
    `BankUiScope.of(context)` (`lib/src/scope/bank_ui_scope.dart`); a host
    app supplies one translated instance and every consumer updates.
-2. **Constructor defaults: 298 string literals across 62 widget files.**
+2. Constructor defaults, 298 string literals across 62 widget files.
    Measured as `this.<field> = '<literal>'` under `lib/src/` outside
    `scope/`. 297 are user-facing English labels; the remaining one is the
    non-linguistic `digitChar = '#'` mask token in
@@ -34,7 +34,7 @@ discovered: `BankDateFormatter.formatRelative`
 `{n}h ago`, `{n}d ago`, and the `DateFormat` patterns in the same file
 format month and weekday names in the `intl` default locale only.
 
-**Externalization plan.** The 297 constructor defaults migrate into
+The externalization plan moves the 297 constructor defaults into
 `BankUiStrings`, organized by the existing 22 source domains, at v0.2.0
 (2026-08-31). Constructor parameters remain and keep highest precedence, so
 the resolution order becomes: explicit constructor argument, then
@@ -95,7 +95,7 @@ CLDR plural category the other eight locales would miss.
 
 ## Per-script font stacks
 
-Current position, stated precisely. The package bundles three Latin
+Current position: the package bundles three Latin
 families (Space Grotesk, Nunito, Fredoka) under `lib/src/assets/fonts/`.
 The token text styles in `lib/src/theme/tokens.dart` intentionally omit
 `fontFamily`, so any widget outside a preset inherits the platform font,
@@ -140,7 +140,7 @@ and zakat due dates, with dual rendering in the form
 converts formatted output to Eastern Arabic-Indic digits after `intl`
 formatting, preserving structure; it is scope-wide via
 `BankUiScopeData.numeralStyle` and covered by `test/numeral_style_test.dart`
-and `test/money_test.dart`. Honest limit: separators pass through
+and `test/money_test.dart`. Known limit: separators pass through
 unchanged, so output today uses U+002C and U+002E, not the Arabic decimal
 separator U+066B and thousands separator U+066C, because
 `BankMoneyFormatter` (`lib/src/common/money_formatter.dart`) calls
@@ -177,7 +177,7 @@ Six physical-edge sites remain
 twice, `bank_insight_card.dart`); all six convert to directional
 equivalents at v0.2.0.
 
-What verification exists today, stated honestly: RTL review is manual,
+What verification exists today: RTL review is manual,
 through the screenshot harness's `dir=rtl` query parameter
 (`example/lib/screenshot_harness.dart`) with the bundled NotoSansArabic
 fallback. The 6 files under `test/` (41 tests) pump LTR only, the

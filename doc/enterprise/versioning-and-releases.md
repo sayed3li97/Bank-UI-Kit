@@ -1,4 +1,4 @@
-# Versioning, Releases, and Roadmap
+# Versioning, releases, and roadmap
 
 This document states how `bank_ui_kit` is versioned, how releases are cut and
 distributed, which Flutter versions are supported, and what ships over the

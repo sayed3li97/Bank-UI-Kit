@@ -1,11 +1,11 @@
-# Project Governance and Support
+# Project governance and support
 
 This document states how Bank UI Kit is maintained, how changes are reviewed
 and accepted, where the intellectual property comes from, and what an
 enterprise adopter can rely on for support. It is written for procurement and
 architecture review at regulated institutions. Where the project has not yet
 reached a stated target, this document says so and gives the committed
-direction rather than an aspiration dressed as fact.
+direction instead of presenting an aspiration as fact.
 
 Scope: the `bank_ui_kit` Flutter package at version 0.1.0 (see
 `pubspec.yaml` and `CHANGELOG.md`), comprising 141 exported widgets in 185
@@ -146,8 +146,8 @@ Committed policy from 1.0:
   documentation, tests, and build tooling are in this repository under MIT.
   An enterprise adopter can vendor the package, mirror the repository into
   internal git hosting, and own the fork outright from day one, with no
-  binary components and no license fees. This is the strongest form of
-  escrow available and it is already in force.
+  binary components and no license fees. This gives the same protection as
+  source escrow, and it is already in force.
 - Commercial support: paid engagements for integration, custom theming
   beyond the four shipped presets (`BankStudioTheme`, `BankVoltageTheme`,
   `BankBloomTheme`, `BankHeritageTheme` under `lib/src/theme/presets/`),

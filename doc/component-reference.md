@@ -18,7 +18,7 @@ Currency-formatted text that automatically masks the balance when privacy mode i
 
 #### BankAccountCard
 
-Swipeable card that visually represents a single bank account, rendering the balance, type icon, masked account number, account name, and an optional status chip or frozen overlay.
+Swipeable card for a single bank account. It shows the balance, type icon, masked account number, account name, and an optional status chip or frozen overlay.
 
 ![BankAccountCard](screenshots/components/BankAccountCard.png)
 
@@ -50,7 +50,7 @@ Bottom-sheet or inline widget for selecting among multiple bank accounts, respec
 
 #### BankFlipCard
 
-A generic 3-D flip-card container that wraps any front/back widget pair in a smooth perspective-flip animation.
+A generic 3-D flip-card container that wraps any front/back widget pair in a perspective-flip animation.
 
 ![BankFlipCard](screenshots/components/BankFlipCard.png)
 
@@ -98,7 +98,7 @@ A landscape-format bank account card with a built-in 3-D flip animation showing 
 
 #### BankVirtualCardWidget
 
-Realistic virtual card with front/back flip animation, supporting multiple surface treatments and a frozen-state frost overlay.
+Virtual card with front/back flip animation that supports multiple surface treatments and a frozen-state frost overlay.
 
 ![BankVirtualCardWidget](screenshots/components/BankVirtualCardWidget.png)
 
@@ -270,7 +270,7 @@ Large numeric keypad tuned for currency input where the host app owns the amount
 |-----------|------|----------|---------|-------------|
 | amountText | `String` | ✓ |: | Current formatted amount string shown in the display area. |
 | currencyCode | `String` | ✓ |: | ISO 4217 currency code, e.g. `GBP`, `USD`. |
-| onDigit | `ValueChanged<String>` | ✓ |: | Called with `'0'`–`'9'` when the user taps a digit key. |
+| onDigit | `ValueChanged<String>` | ✓ |: | Called with `'0'` to `'9'` when the user taps a digit key. |
 | onDelete | `VoidCallback` | ✓ |: | Called when the user taps the delete/backspace key. |
 | onDecimalPoint | `VoidCallback?` |: |: | When non-null, the decimal-point key is active and this callback is invoked on tap. |
 | numeralStyle | `NumeralStyle` (`western` · `arabic` · `persian`) |: | `NumeralStyle.western` | Numeral script used when displaying the amount. |
@@ -392,7 +392,7 @@ Numeric keypad for PIN entry that exposes `onDigit` and `onDelete` callbacks so 
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| onDigit | `ValueChanged<String>` | ✓ |: | Called when the user taps a digit key; receives the digit as a string (`'0'`–`'9'`). |
+| onDigit | `ValueChanged<String>` | ✓ |: | Called when the user taps a digit key; receives the digit as a string (`'0'` to `'9'`). |
 | onDelete | `VoidCallback` | ✓ |: | Called when the user taps the delete (backspace) key. |
 | onBiometric | `VoidCallback?` |: |: | When non-null, a fingerprint icon button is shown in the bottom-left and this callback is invoked on tap. |
 | enabled | `bool` |: | `true` | When false, all keys are rendered at 40% opacity and do not respond to gestures. |
@@ -649,7 +649,7 @@ Face-guide overlay for liveness detection that stacks a dark overlay with an ova
 | state | `BankLivenessState` (`idle` · `detecting` · `success` · `retry`) | ✓ |: | The current liveness-detection state that drives ring colour and feedback icons. |
 | cameraChild | `Widget` | ✓ |: | The host app's camera widget that sits behind the overlay in a `Stack`. |
 | instruction | `String?` |: |: | Current user instruction text (e.g. "Smile"); auto-generated from state when null. |
-| detectionProgress | `double` |: | `0` | Completion progress of the liveness check in the range 0.0–1.0, animating the progress ring. |
+| detectionProgress | `double` |: | `0` | Completion progress of the liveness check in the range 0.0 to 1.0; drives the progress ring. |
 | onRetry | `VoidCallback?` |: |: | Called when the user taps the retry button; only shown when `state` is `retry` and this is non-null. |
 
 #### BankAsyncVerificationState
@@ -801,7 +801,7 @@ A card showing a shared savings goal with contributor avatars and progress.
 
 #### BankPortfolioPerformanceChart
 
-Time-series chart wrapper sitting on top of `fl_chart` that wraps `fl_chart`'s `LineChart` with a range-selector button row.
+Time-series chart wrapper around `fl_chart`'s `LineChart` with a range-selector button row.
 
 ![BankPortfolioPerformanceChart](screenshots/components/BankPortfolioPerformanceChart.png)
 

@@ -1,12 +1,12 @@
 # Design tokens
 
-Bank UI Kit treats design tokens as **platform-neutral data**, not Dart-only
-constants. This is what lets one source of truth drive Flutter, Figma, native
-apps, and server-delivered branding — the "one source, many consumers" model.
+Bank UI Kit treats design tokens as platform-neutral data rather than Dart-only
+constants. One source of truth drives Flutter, Figma, native apps, and
+server-delivered branding, and each of those reads the same token definitions.
 
 There are two layers.
 
-## 1. Global tokens — `tokens/design-tokens.json`
+## 1. Global tokens: `tokens/design-tokens.json`
 
 The single source of truth for the primitive/semantic scalar tokens (colours,
 spacing, radius, motion durations, tap target). It is authored in the
@@ -38,11 +38,11 @@ dart run tool/generate_tokens.dart --check   # fail if JSON and Dart disagree
 CI runs `--check` on every push, so the JSON and the Dart can never silently
 diverge.
 
-## 2. Brand/theme tokens — `BankThemeData.toJson` / `fromJson`
+## 2. Brand/theme tokens: `BankThemeData.toJson` / `fromJson`
 
-Where the global file defines primitives, a **brand** is a full `BankThemeData`
-(colours, shape radii, elevations, gradient, flags). Any brand — including the
-four built-in presets — serialises to and from JSON:
+Where the global file defines primitives, a brand is a full `BankThemeData`
+(colours, shape radii, elevations, gradient, flags). Any brand, including the
+four built-in presets, serialises to and from JSON:
 
 ```dart
 final json = BankPreset.heritage
@@ -54,18 +54,19 @@ final json = BankPreset.heritage
 final brand = BankThemeData.fromJson(json); // lossless round-trip
 ```
 
-Colours are emitted as `#RRGGBBAA` hex — Figma-Variables / Style-Dictionary
-friendly. This unlocks:
+Colours are emitted as `#RRGGBBAA` hex, which Figma Variables and Style
+Dictionary read directly. A few uses follow from this:
 
-- **Remote / server-driven branding** — deliver a theme as JSON and rebuild it
-  on the client with `fromJson`.
-- **Figma round-trips** — the same token set designers use in Figma Variables.
-- **Multi-tenant white-label** — store one JSON per tenant.
+- Remote or server-driven branding: deliver a theme as JSON and rebuild it on
+  the client with `fromJson`.
+- Figma round-trips, using the same token set designers work with in Figma
+  Variables.
+- Multi-tenant white-label, where you store one JSON per tenant.
 
 Composite numeral `TextStyle`s are structural typography, not brand knobs, so
 they are not serialised; `fromJson` restores the `BankTokens` defaults.
 
-### Exported theme token sets — `tokens/themes/`
+### Exported theme token sets: `tokens/themes/`
 
 All four presets × light/dark are exported to `tokens/themes/<preset>.<mode>.json`
 as ready-to-consume brand token sets. They are generated, never hand-edited:

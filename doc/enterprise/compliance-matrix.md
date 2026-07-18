@@ -1,4 +1,4 @@
-# Compliance Responsibility Matrix
+# Compliance responsibility matrix
 
 This document states, claim by claim, what `bank_ui_kit` provides and what
 the integrating bank must implement, so a due-diligence reviewer can trace
@@ -75,7 +75,7 @@ revocation behind a confirmation dialog wired to
 `Future<bool> Function(String consentId)`, warns inside 14 days of expiry,
 and keeps revoked entries struck-through for audit visibility.
 
-Current position, stated plainly: `onAccept` and `onDecline` on
+Current position: `onAccept` and `onDecline` on
 `BankConsentModal` are `VoidCallback`s; no typed consent event with
 document id, version, and acceptance instant is emitted yet, so
 constructing and retaining the audit receipt is a host duty today.
@@ -129,7 +129,7 @@ including `BankBalanceText` (masks to `BankUiStrings.balanceHidden`,
 default '••••'), `BankAccountNumberText`, `BankAccountSwitcher`,
 `BankSummaryStack`, `BankPeekBalance`, and `BankCashflowChart`.
 
-Scope limits, stated plainly: this is an in-process visual mask, not
+Scope limits: this is an in-process visual mask, not
 encryption and not an access control. `BankTransactionListTile` amounts do
 not mask at 0.1.0, and `BankScaApprovalSheet` never masks because dynamic
 linking requires the customer to see the amount. The host decides when
@@ -143,7 +143,7 @@ lifecycle observer that covers the child with a sigma-12 blur and scrim,
 or a full placeholder, when `AppLifecycleState` becomes inactive or
 paused, and absorbs pointer events while obscured.
 
-Current position, stated plainly: the package sets no platform window
+Current position: the package sets no platform window
 flags. It cannot and does not set Android `FLAG_SECURE`, does not block
 screenshots or screen recording, and does not control the OS snapshot
 beyond what the overlay paints before suspension. Host implements:

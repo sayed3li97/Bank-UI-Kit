@@ -1,9 +1,9 @@
 # Banking Journeys Catalog
 
-The canonical end-to-end user journeys of the world's leading mobile
-banking apps (Revolut, Nubank, Monzo, Chase, Toss, Alipay, Paytm,
-Al Rajhi, Emirates NBD, DBS, N26, Chime, Wise and peers), compiled from
-UX teardowns and product research in July 2026.
+The end-to-end user journeys of the major mobile banking apps (Revolut,
+Nubank, Monzo, Chase, Toss, Alipay, Paytm, Al Rajhi, Emirates NBD, DBS,
+N26, Chime, Wise and peers), compiled from UX teardowns and product
+research in July 2026.
 
 Purpose: this file is the blueprint for future journey-level APIs in
 Bank UI Kit. Each journey lists its trigger, step sequence, variants,
@@ -210,6 +210,6 @@ Steps: 1) Personal details screen 2) Edit address: new address lookup, proof-of-
 Variants: National-ID-linked auto-refresh (Absher/Singpass sync), tax residency change triggering new self-certification (CRS/FATCA re-declaration)
 Error states: Expired ID freezes outbound features until renewed (grace-period warnings), proof rejected, phone number already in use on another account, SIM-swap risk hold (delay + extra verification)
 
-Notes on cross-cutting patterns observed in research: leading apps use one-decision-per-screen (Toss, Revolut), progress indication with skippable non-critical steps, drafts persisted so any journey survives interruption and re-auth, every money movement ends in a shareable receipt feed item, every error state carries a next-best-action CTA, and fraud/scam interstitials are injected at first-payee and unusual-amount moments.
+Notes on cross-cutting patterns observed in research: many of these apps use one-decision-per-screen (Toss, Revolut), progress indication with skippable non-critical steps, drafts persisted so any journey survives interruption and re-auth, every money movement ends in a shareable receipt feed item, every error state carries a next-best-action CTA, and fraud/scam interstitials are injected at first-payee and unusual-amount moments.
 
 Sources: builtformars.com (Revolut progressive onboarding, mastering onboarding), craftinnovations.global (Revolut/Monzo/Nubank onboarding teardowns), monzo.com/blog (simple signup KYC, account closure help), pageflows.com and mobbin.com (recorded onboarding flows), userbrain.com (TransferWise UX teardown), wise.com help + docs.wise.com (send money flow), paytm.com/blog and razorpay.com (UPI QR flow), plaid.com/docs and openbankinguk.github.io (consent/OAuth flow), backbase.com (retail journey framing), help.revolut.com (vaults, round-ups, freeze, subscriptions), help.chime.com and privacy.com (dispute + provisional credit), chase.com (track claims, dispute timelines), support.n26.com (closure, withdrawal right), alrajhibank.com.sa + app store listings (instant financing, murabaha products, installment reschedule).

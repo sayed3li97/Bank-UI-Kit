@@ -1,6 +1,6 @@
 # Contributing to Bank UI Kit
 
-Thanks for your interest in improving Bank UI Kit! This document explains how
+Thanks for your interest in improving Bank UI Kit. This document explains how
 to set up the project, the conventions we follow, and how to get a change
 merged.
 

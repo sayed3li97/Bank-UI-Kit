@@ -1,15 +1,15 @@
-# Security Policy
+# Security policy
 
 Bank UI Kit is a presentation-layer Flutter library. The package under `lib/`
 opens no network connections, performs no disk or keychain persistence, and
 holds no credentials: there is no `dart:io` import, no HTTP client, and no
 storage plugin anywhere in the published library. Every sensitive value a
 widget renders (balance, PIN digit, OTP code, account number) is supplied by
-the host app and returned to the host app through callbacks. That boundary is
-the core of this policy: the kit's job is to render and mask sensitive data
-correctly on screen; custody of that data stays with the integrating bank.
+the host app and returned to the host app through callbacks. That boundary defines
+this policy: the kit renders and masks sensitive data on screen, and custody
+of that data stays with the integrating bank.
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
 Report vulnerabilities through coordinated disclosure. Do not open a public
 issue for a security defect.
@@ -31,9 +31,9 @@ research within this process will not be met with legal action.
 Disclosure window: 90 days from acknowledgment, or the fix release date,
 whichever comes first. We will coordinate the publication date with you.
 
-## Response and Fix SLAs
+## Response and fix SLAs
 
-Severity is scored with CVSS v3.1, adjusted for the fact that this is a UI
+Severity is scored with CVSS v3.1, adjusted because this is a UI
 library: information-exposure defects (masking, privacy overlay, clipboard)
 are treated one band higher than raw CVSS suggests, because on-screen leakage
 of financial data is the primary risk this package owns.
@@ -49,7 +49,7 @@ Every security fix ships with a regression test in `test/` and an entry in
 `CHANGELOG.md` under a `Security` heading, per the Keep a Changelog format
 the project already follows.
 
-## Supported Versions
+## Supported versions
 
 | Version | Status |
 |---------|--------|
@@ -62,7 +62,7 @@ fixes; a fix lands on `main` and ships as the next 0.x patch or minor. From
 severities, and the previous minor line receives Critical and High fixes for
 6 months after it is superseded.
 
-## Dependency Pinning and Audit Policy
+## Dependency pinning and audit policy
 
 The runtime dependency surface is deliberately small: five packages, declared
 in `pubspec.yaml` with caret constraints and resolved in the committed
@@ -97,9 +97,9 @@ bumps, including breaking ones, are absorbed inside those three wrappers.
 `BankPortfolioPerformanceChart` keep their public APIs stable, and a
 `fl_chart` upgrade never forces a code change in a host app.
 
-## Release Provenance and Signing
+## Release provenance and signing
 
-Current state, stated plainly: the package is distributed as source from
+Current state: the package is distributed as source from
 <https://github.com/sayed3li97/bank-ui-kit>. There is no pub.dev release yet,
 no signed git tags, and no generated provenance attestation. Integrators
 today should pin a commit SHA in their `pubspec.yaml` git dependency.
@@ -116,7 +116,7 @@ Committed plan for the first pub.dev release and every release after it:
 4. `pubspec.lock` hash changes are reviewed in pull requests like code; a
    lockfile-only change never lands without a stated reason.
 
-## Scope: Sensitive Components
+## Scope: sensitive components
 
 Defects in the following components are triaged as security reports, not
 functional bugs, because they render or route confidential data.
