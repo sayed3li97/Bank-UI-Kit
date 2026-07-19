@@ -86,3 +86,8 @@ flutter:
     - family: NotoSansDevanagari
       fonts:
         - asset: lib/src/assets/fonts/NotoSansDevanagari-Regular.ttf
+    - family: NotoSerifDisplay
+      fonts:
+        - asset: lib/src/assets/fonts/NotoSerifDisplay-Regular.ttf
+        - asset: lib/src/assets/fonts/NotoSerifDisplay-SemiBold.ttf
+          weight: 600
