@@ -14,7 +14,8 @@
     "positiveBalance": "#4DA67AFF",
     "negativeBalance": "#F87171FF",
     "pending": "#FBBF24FF",
-    "frozen": "#8E8E93FF"
+    "frozen": "#8E8E93FF",
+    "cardPatternColor": "#00291A12"
   },
   "radius": {
     "card": 20.0,
@@ -27,8 +28,17 @@
     "medium": 2.0,
     "high": 4.0
   },
+  "interaction": {
+    "stateLayerHoverOpacity": 0.08,
+    "stateLayerPressedOpacity": 0.12,
+    "stateLayerFocusOpacity": 0.12,
+    "disabledOpacity": 0.38,
+    "pressScale": 0.98
+  },
   "fontFamily": "packages/bank_ui_kit/SpaceGrotesk",
+  "displayFontFamily": "packages/bank_ui_kit/NotoSerifDisplay",
   "useGlow": false,
+  "cardPattern": "lattice",
   "accentGradient": {
     "type": "linear",
     "begin": [
@@ -41,6 +51,22 @@
     ],
     "colors": [
       "#2F8259FF",
+      "#123A28FF"
+    ]
+  },
+  "cardSurfaceGradient": {
+    "type": "linear",
+    "begin": [
+      -1.0,
+      -1.0
+    ],
+    "end": [
+      1.0,
+      1.0
+    ],
+    "colors": [
+      "#2F8259FF",
+      "#1D5A3DFF",
       "#123A28FF"
     ]
   }

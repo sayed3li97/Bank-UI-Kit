@@ -14,7 +14,8 @@
     "positiveBalance": "#047857FF",
     "negativeBalance": "#C62828FF",
     "pending": "#B45309FF",
-    "frozen": "#8E8E93FF"
+    "frozen": "#8E8E93FF",
+    "cardPatternColor": "#1A203014"
   },
   "radius": {
     "card": 20.0,
@@ -27,6 +28,31 @@
     "medium": 4.0,
     "high": 8.0
   },
+  "interaction": {
+    "stateLayerHoverOpacity": 0.08,
+    "stateLayerPressedOpacity": 0.12,
+    "stateLayerFocusOpacity": 0.12,
+    "disabledOpacity": 0.38,
+    "pressScale": 0.98
+  },
   "fontFamily": "packages/bank_ui_kit/Nunito",
-  "useGlow": false
+  "displayFontFamily": "packages/bank_ui_kit/Fredoka",
+  "useGlow": false,
+  "cardPattern": "arcs",
+  "cardSurfaceGradient": {
+    "type": "linear",
+    "begin": [
+      -1.0,
+      -1.0
+    ],
+    "end": [
+      1.0,
+      1.0
+    ],
+    "colors": [
+      "#FF6B5EFF",
+      "#E4574FFF",
+      "#7A3B5EFF"
+    ]
+  }
 }

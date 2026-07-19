@@ -2,6 +2,7 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 
+import 'card_pattern.dart';
 import 'tokens.dart';
 
 /// A [ThemeExtension] that carries every Bank UI Kit design decision:
@@ -106,6 +107,15 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
     this.accentGradient,
     this.fontFamily,
     this.glowColor,
+    this.displayFontFamily,
+    this.cardSurfaceGradient,
+    this.cardPattern = BankCardPattern.none,
+    this.cardPatternColor,
+    this.stateLayerHoverOpacity = BankTokens.stateLayerHoverOpacity,
+    this.stateLayerPressedOpacity = BankTokens.stateLayerPressedOpacity,
+    this.stateLayerFocusOpacity = BankTokens.stateLayerFocusOpacity,
+    this.disabledOpacity = BankTokens.disabledOpacity,
+    this.pressScale = BankTokens.pressScale,
   });
 
   // ---------------------------------------------------------------------------
@@ -178,6 +188,15 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
     String? fontFamily,
     bool useGlow = false,
     Color? glowColor,
+    String? displayFontFamily,
+    Gradient? cardSurfaceGradient,
+    BankCardPattern cardPattern = BankCardPattern.none,
+    Color? cardPatternColor,
+    double stateLayerHoverOpacity = BankTokens.stateLayerHoverOpacity,
+    double stateLayerPressedOpacity = BankTokens.stateLayerPressedOpacity,
+    double stateLayerFocusOpacity = BankTokens.stateLayerFocusOpacity,
+    double disabledOpacity = BankTokens.disabledOpacity,
+    double pressScale = BankTokens.pressScale,
   }) {
     final isDark = brightness == Brightness.dark;
 
@@ -241,6 +260,15 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
       fontFamily: fontFamily,
       useGlow: useGlow,
       glowColor: glowColor,
+      displayFontFamily: displayFontFamily,
+      cardSurfaceGradient: cardSurfaceGradient,
+      cardPattern: cardPattern,
+      cardPatternColor: cardPatternColor,
+      stateLayerHoverOpacity: stateLayerHoverOpacity,
+      stateLayerPressedOpacity: stateLayerPressedOpacity,
+      stateLayerFocusOpacity: stateLayerFocusOpacity,
+      disabledOpacity: disabledOpacity,
+      pressScale: pressScale,
     );
   }
 
@@ -275,6 +303,22 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
   /// Optional accent gradient used across interactive surfaces.
   /// `null` in Studio and Bloom presets.
   final Gradient? accentGradient;
+
+  /// Dedicated card-face surface gradient for payment-card widgets.
+  ///
+  /// Unlike [accentGradient] (which colours buttons, gauges, and other
+  /// accents), this gradient is tuned specifically for the large card face:
+  /// hue-neighbouring stops on a subtle diagonal that never desaturate to
+  /// grey at the midpoint. `null` falls back to [accentGradient] / primary.
+  final Gradient? cardSurfaceGradient;
+
+  /// Generative pattern stamped onto card faces; [BankCardPattern.none]
+  /// leaves the face as the plain gradient / colour.
+  final BankCardPattern cardPattern;
+
+  /// Ink colour for [cardPattern], typically [onPrimary] at 6–10 % alpha.
+  /// `null` lets renderers derive a low-alpha default from [onPrimary].
+  final Color? cardPatternColor;
 
   // ---------------------------------------------------------------------------
   // Shape
@@ -311,6 +355,32 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
   /// Font family name registered in pubspec.yaml, or `null` for system font.
   final String? fontFamily;
 
+  /// Optional brand display / headline face, applied to the display and
+  /// large-headline text-theme slots on top of [fontFamily].
+  ///
+  /// `null` means the brand speaks with a single voice: [fontFamily] is used
+  /// everywhere. See [applyDisplayFontTo] for the exact slots affected.
+  final String? displayFontFamily;
+
+  // ---------------------------------------------------------------------------
+  // Interaction states
+  // ---------------------------------------------------------------------------
+
+  /// State-layer opacity while hovered (over [onSurface] or a custom overlay).
+  final double stateLayerHoverOpacity;
+
+  /// State-layer opacity while pressed.
+  final double stateLayerPressedOpacity;
+
+  /// State-layer opacity while keyboard-focused.
+  final double stateLayerFocusOpacity;
+
+  /// Opacity applied to disabled interactive content.
+  final double disabledOpacity;
+
+  /// Scale applied to pressable surfaces while pressed.
+  final double pressScale;
+
   // ---------------------------------------------------------------------------
   // Glow (Voltage-only)
   // ---------------------------------------------------------------------------
@@ -331,6 +401,25 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
   /// the ambient [Theme].
   static BankThemeData of(BuildContext context) =>
       Theme.of(context).extension<BankThemeData>()!;
+
+  /// Re-applies [displayFontFamily] to the display / large-headline slots of
+  /// [textTheme] (displayLarge/Medium/Small and headlineLarge/Medium).
+  ///
+  /// Presets and `withBankTheme` call this after the body font has been
+  /// wired via `TextTheme.apply(fontFamily: ...)` so brands can pair an
+  /// expressive display face with a workhorse body face. Returns [textTheme]
+  /// unchanged when [displayFontFamily] is `null`.
+  TextTheme applyDisplayFontTo(TextTheme textTheme) {
+    final family = displayFontFamily;
+    if (family == null) return textTheme;
+    return textTheme.copyWith(
+      displayLarge: textTheme.displayLarge?.copyWith(fontFamily: family),
+      displayMedium: textTheme.displayMedium?.copyWith(fontFamily: family),
+      displaySmall: textTheme.displaySmall?.copyWith(fontFamily: family),
+      headlineLarge: textTheme.headlineLarge?.copyWith(fontFamily: family),
+      headlineMedium: textTheme.headlineMedium?.copyWith(fontFamily: family),
+    );
+  }
 
   // ---------------------------------------------------------------------------
   // JSON serialisation (data-driven & remote branding)
@@ -366,6 +455,8 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
           'pending': _hex(pending),
           'frozen': _hex(frozen),
           if (glowColor != null) 'glowColor': _hex(glowColor!),
+          if (cardPatternColor != null)
+            'cardPatternColor': _hex(cardPatternColor!),
         },
         'radius': {
           'card': cardRadius.topLeft.x,
@@ -378,10 +469,23 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
           'medium': elevationMedium,
           'high': elevationHigh,
         },
+        'interaction': {
+          'stateLayerHoverOpacity': stateLayerHoverOpacity,
+          'stateLayerPressedOpacity': stateLayerPressedOpacity,
+          'stateLayerFocusOpacity': stateLayerFocusOpacity,
+          'disabledOpacity': disabledOpacity,
+          'pressScale': pressScale,
+        },
         if (fontFamily != null) 'fontFamily': fontFamily,
+        if (displayFontFamily != null) 'displayFontFamily': displayFontFamily,
         'useGlow': useGlow,
+        if (cardPattern != BankCardPattern.none)
+          'cardPattern': cardPattern.name,
         if (accentGradient is LinearGradient)
           'accentGradient': _gradientToJson(accentGradient! as LinearGradient),
+        if (cardSurfaceGradient is LinearGradient)
+          'cardSurfaceGradient':
+              _gradientToJson(cardSurfaceGradient! as LinearGradient),
       };
 
   /// Rebuilds a [BankThemeData] from the map produced by [toJson].
@@ -395,6 +499,8 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
         (json['radius'] as Map?)?.cast<String, dynamic>() ?? const {};
     final elev =
         (json['elevation'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final interaction =
+        (json['interaction'] as Map?)?.cast<String, dynamic>() ?? const {};
 
     Color c(String key, Color fallback) =>
         colors[key] is String ? _parseHex(colors[key] as String) : fallback;
@@ -403,6 +509,9 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
         : fallback;
     double e(String key, double fallback) =>
         elev[key] is num ? (elev[key] as num).toDouble() : fallback;
+    double i(String key, double fallback) => interaction[key] is num
+        ? (interaction[key] as num).toDouble()
+        : fallback;
 
     final sheetR = radius['sheet'] is num
         ? BorderRadius.vertical(
@@ -446,6 +555,27 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
       glowColor: colors['glowColor'] is String
           ? _parseHex(colors['glowColor'] as String)
           : null,
+      displayFontFamily: json['displayFontFamily'] as String?,
+      cardSurfaceGradient: json['cardSurfaceGradient'] is Map
+          ? _gradientFromJson(
+              (json['cardSurfaceGradient'] as Map).cast<String, dynamic>(),
+            )
+          : null,
+      cardPattern: json['cardPattern'] is String
+          ? BankCardPattern.values.asNameMap()[json['cardPattern']] ??
+              BankCardPattern.none
+          : BankCardPattern.none,
+      cardPatternColor: colors['cardPatternColor'] is String
+          ? _parseHex(colors['cardPatternColor'] as String)
+          : null,
+      stateLayerHoverOpacity:
+          i('stateLayerHoverOpacity', BankTokens.stateLayerHoverOpacity),
+      stateLayerPressedOpacity:
+          i('stateLayerPressedOpacity', BankTokens.stateLayerPressedOpacity),
+      stateLayerFocusOpacity:
+          i('stateLayerFocusOpacity', BankTokens.stateLayerFocusOpacity),
+      disabledOpacity: i('disabledOpacity', BankTokens.disabledOpacity),
+      pressScale: i('pressScale', BankTokens.pressScale),
     );
   }
 
@@ -528,6 +658,15 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
     String? fontFamily,
     bool? useGlow,
     Color? glowColor,
+    String? displayFontFamily,
+    Gradient? cardSurfaceGradient,
+    BankCardPattern? cardPattern,
+    Color? cardPatternColor,
+    double? stateLayerHoverOpacity,
+    double? stateLayerPressedOpacity,
+    double? stateLayerFocusOpacity,
+    double? disabledOpacity,
+    double? pressScale,
   }) {
     return BankThemeData(
       primary: primary ?? this.primary,
@@ -559,6 +698,18 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
       fontFamily: fontFamily ?? this.fontFamily,
       useGlow: useGlow ?? this.useGlow,
       glowColor: glowColor ?? this.glowColor,
+      displayFontFamily: displayFontFamily ?? this.displayFontFamily,
+      cardSurfaceGradient: cardSurfaceGradient ?? this.cardSurfaceGradient,
+      cardPattern: cardPattern ?? this.cardPattern,
+      cardPatternColor: cardPatternColor ?? this.cardPatternColor,
+      stateLayerHoverOpacity:
+          stateLayerHoverOpacity ?? this.stateLayerHoverOpacity,
+      stateLayerPressedOpacity:
+          stateLayerPressedOpacity ?? this.stateLayerPressedOpacity,
+      stateLayerFocusOpacity:
+          stateLayerFocusOpacity ?? this.stateLayerFocusOpacity,
+      disabledOpacity: disabledOpacity ?? this.disabledOpacity,
+      pressScale: pressScale ?? this.pressScale,
     );
   }
 
@@ -597,6 +748,28 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
       fontFamily: t < 0.5 ? fontFamily : other.fontFamily,
       useGlow: t < 0.5 ? useGlow : other.useGlow,
       glowColor: Color.lerp(glowColor, other.glowColor, t),
+      displayFontFamily: t < 0.5 ? displayFontFamily : other.displayFontFamily,
+      cardSurfaceGradient:
+          t < 0.5 ? cardSurfaceGradient : other.cardSurfaceGradient,
+      cardPattern: t < 0.5 ? cardPattern : other.cardPattern,
+      cardPatternColor: Color.lerp(cardPatternColor, other.cardPatternColor, t),
+      stateLayerHoverOpacity: lerpDouble(
+        stateLayerHoverOpacity,
+        other.stateLayerHoverOpacity,
+        t,
+      )!,
+      stateLayerPressedOpacity: lerpDouble(
+        stateLayerPressedOpacity,
+        other.stateLayerPressedOpacity,
+        t,
+      )!,
+      stateLayerFocusOpacity: lerpDouble(
+        stateLayerFocusOpacity,
+        other.stateLayerFocusOpacity,
+        t,
+      )!,
+      disabledOpacity: lerpDouble(disabledOpacity, other.disabledOpacity, t)!,
+      pressScale: lerpDouble(pressScale, other.pressScale, t)!,
     );
   }
 
@@ -636,7 +809,16 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
         other.numeralSmall == numeralSmall &&
         other.fontFamily == fontFamily &&
         other.useGlow == useGlow &&
-        other.glowColor == glowColor;
+        other.glowColor == glowColor &&
+        other.displayFontFamily == displayFontFamily &&
+        other.cardSurfaceGradient == cardSurfaceGradient &&
+        other.cardPattern == cardPattern &&
+        other.cardPatternColor == cardPatternColor &&
+        other.stateLayerHoverOpacity == stateLayerHoverOpacity &&
+        other.stateLayerPressedOpacity == stateLayerPressedOpacity &&
+        other.stateLayerFocusOpacity == stateLayerFocusOpacity &&
+        other.disabledOpacity == disabledOpacity &&
+        other.pressScale == pressScale;
   }
 
   @override
@@ -670,6 +852,15 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
         fontFamily,
         useGlow,
         glowColor,
+        displayFontFamily,
+        cardSurfaceGradient,
+        cardPattern,
+        cardPatternColor,
+        stateLayerHoverOpacity,
+        stateLayerPressedOpacity,
+        stateLayerFocusOpacity,
+        disabledOpacity,
+        pressScale,
       ]);
 
   @override

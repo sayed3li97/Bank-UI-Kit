@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../bank_theme_data.dart';
+import '../card_pattern.dart';
 import '../tokens.dart';
 
 /// The **Voltage** preset: an electric, dark-native fintech aesthetic.
@@ -26,6 +27,10 @@ class BankVoltageTheme {
     // system, which maps to the CSS `135deg` direction.
     colors: [Color(0xFF7C3AED), Color(0xFF06B6D4)],
   );
+
+  /// Card faces reuse the violet → cyan identity, textured with a subtle
+  /// sine-wave mesh in onPrimary at 8 % alpha — the "electric field" motif.
+  static const Color _meshInk = Color(0x14FFFFFF);
 
   // ---------------------------------------------------------------------------
   // Light (still a dark palette: Voltage is always dark)
@@ -61,6 +66,9 @@ class BankVoltageTheme {
         fontFamily: 'packages/bank_ui_kit/SpaceGrotesk',
         useGlow: true,
         glowColor: Color(0x337C3AED),
+        cardSurfaceGradient: _accentGradient,
+        cardPattern: BankCardPattern.mesh,
+        cardPatternColor: _meshInk,
       );
 
   // ---------------------------------------------------------------------------
@@ -97,6 +105,9 @@ class BankVoltageTheme {
         fontFamily: 'packages/bank_ui_kit/SpaceGrotesk',
         useGlow: true,
         glowColor: Color(0x337C3AED),
+        cardSurfaceGradient: _accentGradient,
+        cardPattern: BankCardPattern.mesh,
+        cardPatternColor: _meshInk,
       );
 
   // ---------------------------------------------------------------------------
@@ -134,14 +145,20 @@ class BankVoltageTheme {
     // a family and inherit this default).
     // Always attach the glyph-coverage fallback fonts; also wire the brand
     // font family when the preset defines one (apply() ignores a null family).
+    // The optional display face is layered on afterwards so headlines can
+    // carry a distinct brand voice (no-op when displayFontFamily is null).
     return themed.copyWith(
-      textTheme: themed.textTheme.apply(
-        fontFamily: bank.fontFamily,
-        fontFamilyFallback: kBankFontFallback,
+      textTheme: bank.applyDisplayFontTo(
+        themed.textTheme.apply(
+          fontFamily: bank.fontFamily,
+          fontFamilyFallback: kBankFontFallback,
+        ),
       ),
-      primaryTextTheme: themed.primaryTextTheme.apply(
-        fontFamily: bank.fontFamily,
-        fontFamilyFallback: kBankFontFallback,
+      primaryTextTheme: bank.applyDisplayFontTo(
+        themed.primaryTextTheme.apply(
+          fontFamily: bank.fontFamily,
+          fontFamilyFallback: kBankFontFallback,
+        ),
       ),
     );
   }

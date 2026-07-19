@@ -59,26 +59,58 @@ class BankTokens {
   /// Frozen / suspended accounts or cards.
   static const Color frozen = Color(0xFF8E8E93);
 
-  /// System-level success feedback.
-  static const Color success = Color(0xFF34C759);
+  /// System-level success feedback on light surfaces (emerald-700, AA). Unified
+  /// with positiveBalance so one green family reads as "good" everywhere.
+  static const Color success = Color(0xFF047857);
 
-  /// System-level warning feedback.
-  static const Color warning = Color(0xFFFF9500);
+  /// System-level success feedback on dark surfaces (emerald-400, AA).
+  static const Color successDark = Color(0xFF34D399);
 
-  /// System-level danger / destructive-action.
-  static const Color danger = Color(0xFFFF3B30);
+  /// System-level warning feedback on light surfaces (amber-700, AA). Unified
+  /// with pending.
+  static const Color warning = Color(0xFFB45309);
 
-  /// Investment gain.
-  static const Color investmentGain = Color(0xFF30D158);
+  /// System-level warning feedback on dark surfaces (amber-400, AA).
+  static const Color warningDark = Color(0xFFFBBF24);
 
-  /// Investment loss.
-  static const Color investmentLoss = Color(0xFFFF453A);
+  /// System-level danger / destructive-action on light surfaces (AA). Unified
+  /// with negativeBalance.
+  static const Color danger = Color(0xFFC62828);
 
-  /// Available credit headroom.
-  static const Color creditAvailable = Color(0xFF30D158);
+  /// System-level danger / destructive-action on dark surfaces (red-400, AA).
+  static const Color dangerDark = Color(0xFFF87171);
 
-  /// Credit already utilised.
-  static const Color creditUsed = Color(0xFFFF9F0A);
+  /// Investment gain on light surfaces. Same family as positiveBalance /
+  /// success — one green per screen.
+  static const Color investmentGain = Color(0xFF047857);
+
+  /// Investment gain on dark surfaces (emerald-400, AA).
+  static const Color investmentGainDark = Color(0xFF34D399);
+
+  /// Investment loss on light surfaces. Same family as negativeBalance /
+  /// danger.
+  static const Color investmentLoss = Color(0xFFC62828);
+
+  /// Investment loss on dark surfaces (red-400, AA).
+  static const Color investmentLossDark = Color(0xFFF87171);
+
+  /// Available credit headroom. Same family as positiveBalance / success.
+  static const Color creditAvailable = Color(0xFF047857);
+
+  /// Credit already utilised. Same family as pending / warning.
+  static const Color creditUsed = Color(0xFFB45309);
+
+  /// Mastercard brand mark: red circle.
+  static const Color networkMastercardRed = Color(0xFFEB001B);
+
+  /// Mastercard brand mark: amber circle.
+  static const Color networkMastercardAmber = Color(0xFFF79E1B);
+
+  /// Mastercard brand mark: the overlapping-lens blend colour.
+  static const Color networkMastercardBlend = Color(0xFFFF5F00);
+
+  /// American Express brand blue.
+  static const Color networkAmexBlue = Color(0xFF2E77BC);
 
   // Spacing (4 pt grid)
   static const double space1 = 4;
@@ -110,6 +142,35 @@ class BankTokens {
   // Accessibility & sizing
   /// Minimum touch/tap target (WCAG 2.5.5 AAA / iOS HIG).
   static const double minTapTarget = 44;
+
+  /// Below this available width, metric tiles switch to their compact layout.
+  static const double tileCompactBreakpoint = 168;
+
+  // Interaction states
+  /// Hover state-layer opacity over interactive surfaces (M3-aligned).
+  static const double stateLayerHoverOpacity = 0.08;
+
+  /// Pressed state-layer opacity over interactive surfaces.
+  static const double stateLayerPressedOpacity = 0.12;
+
+  /// Keyboard-focus state-layer opacity over interactive surfaces.
+  static const double stateLayerFocusOpacity = 0.12;
+
+  /// Opacity applied to disabled interactive content (M3-aligned).
+  static const double disabledOpacity = 0.38;
+
+  /// Stroke width of the keyboard-focus ring, in logical px.
+  static const double focusRingWidth = 2;
+
+  /// Opacity of the primary-coloured keyboard-focus ring.
+  static const double focusRingOpacity = 0.4;
+
+  /// Scale applied to a pressable surface while pressed.
+  static const double pressScale = 0.98;
+
+  // Visual effects
+  /// Saturation multiplier for frozen card faces (desaturated, not greyed out).
+  static const double frozenCardSaturation = 0.35;
 
   // --- END GENERATED TOKENS ---
 
@@ -258,6 +319,18 @@ class BankTokens {
     ],
   );
 
+  /// Sentence-case caption for compact metric tiles and dense metadata.
+  ///
+  /// Deliberately tracks at `0`: extra letter-spacing is reserved for
+  /// all-caps micro-labels ([labelSmall]) — positive tracking on sentence-case
+  /// text looks loose, and it breaks cursive joining in Arabic script.
+  static const TextStyle caption = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+  );
+
   // ---------------------------------------------------------------------------
   // Elevation shadows
   //
@@ -302,4 +375,82 @@ class BankTokens {
       offset: Offset(0, 16),
     ),
   ];
+
+  // ---------------------------------------------------------------------------
+  // Elevation shadows: dark-mode variants
+  //
+  // On dark surfaces the blue-grey ink tint disappears into the background,
+  // so dark shadows are pure-black occlusion at higher alpha — depth reads
+  // as blocked light, not as a colour cast.
+  // ---------------------------------------------------------------------------
+
+  /// Dark-surface counterpart of [shadowCard].
+  static const List<BoxShadow> shadowCardDark = [
+    BoxShadow(
+      color: Color(0x33000000),
+      blurRadius: 2,
+      offset: Offset(0, 1),
+    ),
+    BoxShadow(
+      color: Color(0x66000000),
+      blurRadius: 24,
+      offset: Offset(0, 8),
+    ),
+  ];
+
+  /// Dark-surface counterpart of [shadowFloating].
+  static const List<BoxShadow> shadowFloatingDark = [
+    BoxShadow(
+      color: Color(0x40000000),
+      blurRadius: 4,
+      offset: Offset(0, 2),
+    ),
+    BoxShadow(
+      color: Color(0x73000000),
+      blurRadius: 32,
+      offset: Offset(0, 12),
+    ),
+  ];
+
+  /// Dark-surface counterpart of [shadowHero].
+  static const List<BoxShadow> shadowHeroDark = [
+    BoxShadow(
+      color: Color(0x8C000000),
+      blurRadius: 40,
+      offset: Offset(0, 16),
+    ),
+  ];
+
+  /// The resting card shadow appropriate for [b]:
+  /// [shadowCardDark] on dark surfaces, [shadowCard] on light ones.
+  static List<BoxShadow> shadowCardFor(Brightness b) =>
+      b == Brightness.dark ? shadowCardDark : shadowCard;
+
+  /// The floating-element shadow appropriate for [b]:
+  /// [shadowFloatingDark] on dark surfaces, [shadowFloating] on light ones.
+  static List<BoxShadow> shadowFloatingFor(Brightness b) =>
+      b == Brightness.dark ? shadowFloatingDark : shadowFloating;
+
+  /// The hero-surface shadow appropriate for [b]:
+  /// [shadowHeroDark] on dark surfaces, [shadowHero] on light ones.
+  static List<BoxShadow> shadowHeroFor(Brightness b) =>
+      b == Brightness.dark ? shadowHeroDark : shadowHero;
+
+  // ---------------------------------------------------------------------------
+  // Hairlines
+  //
+  // Where a separation is too subtle for a shadow (list dividers, table
+  // rules), use a 1 px hairline derived from the ambient onSurface colour
+  // instead of a fixed grey, so it works on any brand surface.
+  // ---------------------------------------------------------------------------
+
+  /// Width of hairline separators, in logical px.
+  static const double hairlineWidth = 1;
+
+  /// Hairline colour derived from [onSurface] for surfaces of brightness [b].
+  ///
+  /// Dark surfaces need a slightly stronger alpha for the same perceived
+  /// separation (low-luminance contrast compresses).
+  static Color hairlineColor(Color onSurface, Brightness b) =>
+      onSurface.withValues(alpha: b == Brightness.dark ? 0.14 : 0.08);
 }

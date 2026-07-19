@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../bank_theme_data.dart';
+import '../card_pattern.dart';
 import '../tokens.dart';
 
 /// The **Bloom** preset: a warm, consumer-friendly banking aesthetic.
@@ -15,6 +16,31 @@ import '../tokens.dart';
 ///   low opacity value; the host app applies it via [BoxShadow.blurRadius])
 class BankBloomTheme {
   const BankBloomTheme._();
+
+  // ---------------------------------------------------------------------------
+  // Card-face gradients
+  //
+  // A naive coral → navy blend desaturates to grey at the RGB midpoint
+  // (audit #44). These gradients instead walk through neighbouring warm
+  // hues — coral → warm rose → deep plum — so every intermediate colour
+  // stays saturated and the face reads like a sunset, never like sludge.
+  // ---------------------------------------------------------------------------
+
+  static const LinearGradient _lightCardGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFFF6B5E), Color(0xFFE4574F), Color(0xFF7A3B5E)],
+  );
+
+  static const LinearGradient _darkCardGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFFF8585), Color(0xFFD95B58), Color(0xFF6E3556)],
+  );
+
+  /// Concentric corner arcs in the dark navy ink at 8 % alpha: the "bloom"
+  /// motif, echoing petals opening from the card corner.
+  static const Color _arcInk = Color(0x141A2030);
 
   // ---------------------------------------------------------------------------
   // Light
@@ -50,6 +76,10 @@ class BankBloomTheme {
         numeralSmall: BankTokens.numeralSmall,
         fontFamily: 'packages/bank_ui_kit/Nunito',
         useGlow: false,
+        displayFontFamily: 'packages/bank_ui_kit/Fredoka',
+        cardSurfaceGradient: _lightCardGradient,
+        cardPattern: BankCardPattern.arcs,
+        cardPatternColor: _arcInk,
       );
 
   // ---------------------------------------------------------------------------
@@ -84,6 +114,10 @@ class BankBloomTheme {
         numeralSmall: BankTokens.numeralSmall,
         fontFamily: 'packages/bank_ui_kit/Nunito',
         useGlow: false,
+        displayFontFamily: 'packages/bank_ui_kit/Fredoka',
+        cardSurfaceGradient: _darkCardGradient,
+        cardPattern: BankCardPattern.arcs,
+        cardPatternColor: _arcInk,
       );
 
   // ---------------------------------------------------------------------------
@@ -118,14 +152,20 @@ class BankBloomTheme {
     // a family and inherit this default).
     // Always attach the glyph-coverage fallback fonts; also wire the brand
     // font family when the preset defines one (apply() ignores a null family).
+    // The Fredoka display face is layered on afterwards so headlines carry
+    // Bloom's rounded, friendly voice while Nunito does the body work.
     return themed.copyWith(
-      textTheme: themed.textTheme.apply(
-        fontFamily: bank.fontFamily,
-        fontFamilyFallback: kBankFontFallback,
+      textTheme: bank.applyDisplayFontTo(
+        themed.textTheme.apply(
+          fontFamily: bank.fontFamily,
+          fontFamilyFallback: kBankFontFallback,
+        ),
       ),
-      primaryTextTheme: themed.primaryTextTheme.apply(
-        fontFamily: bank.fontFamily,
-        fontFamilyFallback: kBankFontFallback,
+      primaryTextTheme: bank.applyDisplayFontTo(
+        themed.primaryTextTheme.apply(
+          fontFamily: bank.fontFamily,
+          fontFamilyFallback: kBankFontFallback,
+        ),
       ),
     );
   }
