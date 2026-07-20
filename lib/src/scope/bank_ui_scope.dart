@@ -28,6 +28,18 @@ class BankUiScopeData {
   /// builds. When null, widgets fall back to [NetworkImage].
   final ImageProvider Function(String url)? imageResolver;
 
+  /// Builds the country-flag visual for an ISO 3166-1 alpha-2 code.
+  ///
+  /// Lets host apps override how `BankCountryFlag` (and therefore every
+  /// flag-bearing widget: country picker, phone field, address card,
+  /// travel notice) renders flags — e.g. to plug in bundled flag artwork,
+  /// an SVG set, or a CDN-backed image. The returned widget is laid out
+  /// inside a box of exactly [Size], so builders should fill it (e.g. with
+  /// `BoxFit.cover`). When null, `BankCountryFlag` falls back to its
+  /// built-in rendering (a crafted ISO-code chip by default).
+  final Widget Function(BuildContext context, String isoCode, Size size)?
+      flagBuilder;
+
   const BankUiScopeData({
     this.privacyEnabled = false,
     this.preset = BankPreset.studio,
@@ -35,6 +47,7 @@ class BankUiScopeData {
     this.numeralStyle = NumeralStyle.western,
     this.islamicFinanceMode = false,
     this.imageResolver,
+    this.flagBuilder,
   });
 
   BankUiScopeData copyWith({
@@ -44,6 +57,8 @@ class BankUiScopeData {
     NumeralStyle? numeralStyle,
     bool? islamicFinanceMode,
     ImageProvider Function(String url)? imageResolver,
+    Widget Function(BuildContext context, String isoCode, Size size)?
+        flagBuilder,
   }) =>
       BankUiScopeData(
         privacyEnabled: privacyEnabled ?? this.privacyEnabled,
@@ -52,6 +67,7 @@ class BankUiScopeData {
         numeralStyle: numeralStyle ?? this.numeralStyle,
         islamicFinanceMode: islamicFinanceMode ?? this.islamicFinanceMode,
         imageResolver: imageResolver ?? this.imageResolver,
+        flagBuilder: flagBuilder ?? this.flagBuilder,
       );
 
   @override
@@ -63,7 +79,8 @@ class BankUiScopeData {
         other.strings == strings &&
         other.numeralStyle == numeralStyle &&
         other.islamicFinanceMode == islamicFinanceMode &&
-        other.imageResolver == imageResolver;
+        other.imageResolver == imageResolver &&
+        other.flagBuilder == flagBuilder;
   }
 
   @override
@@ -74,6 +91,7 @@ class BankUiScopeData {
         numeralStyle,
         islamicFinanceMode,
         imageResolver,
+        flagBuilder,
       );
 }
 
@@ -154,6 +172,19 @@ class BankUiScope extends StatefulWidget {
         context.dependOnInheritedWidgetOfExactType<_BankUiScopeInherited>();
     final resolver = inherited?.data.imageResolver;
     return resolver != null ? resolver(url) : NetworkImage(url);
+  }
+
+  /// Builds the host-supplied flag widget for [isoCode], if any.
+  ///
+  /// Returns the widget produced by the nearest
+  /// [BankUiScopeData.flagBuilder], or `null` when no builder is set or no
+  /// [BankUiScope] ancestor exists — in which case `BankCountryFlag` falls
+  /// back to its built-in rendering. Registers an inherited dependency, so
+  /// callers rebuild when the scope data (including the builder) changes.
+  static Widget? flagFor(BuildContext context, String isoCode, Size size) {
+    final inherited =
+        context.dependOnInheritedWidgetOfExactType<_BankUiScopeInherited>();
+    return inherited?.data.flagBuilder?.call(context, isoCode, size);
   }
 
   @override

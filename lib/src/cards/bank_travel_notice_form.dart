@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_country_flag.dart';
 import '../common/bank_country_picker.dart';
 import '../common/bank_text_field.dart';
 import '../common/money_formatter.dart';
@@ -326,7 +327,14 @@ class _BankTravelNoticeFormState extends State<BankTravelNoticeForm> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(country.flagEmoji),
+                        // The adjacent Text announces the country name; keep
+                        // the flag presentational to avoid double-speaking.
+                        ExcludeSemantics(
+                          child: BankCountryFlag(
+                            isoCode: country.isoCode,
+                            countryName: country.name,
+                          ),
+                        ),
                         const SizedBox(width: BankTokens.space1),
                         Text(
                           country.name,
