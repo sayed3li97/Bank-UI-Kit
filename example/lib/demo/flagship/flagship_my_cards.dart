@@ -61,10 +61,10 @@ class _FlagshipMyCardsState extends State<FlagshipMyCards> {
     // A small per-card transaction sample so the list changes with selection.
     final base = <List<Transaction>>[
       [
-        _tx('Tesco', -42.10, TransactionCategory.groceries, 3),
-        _tx('Charlie Adam', 650.00, TransactionCategory.transfer, 4,
+        _tx('Tesco', -42.10, TransactionCategory.groceries, 1),
+        _tx('Netflix', -10.99, TransactionCategory.subscription, 1),
+        _tx('Charlie Adam', 650.00, TransactionCategory.transfer, 3,
             credit: true),
-        _tx('Netflix', -10.99, TransactionCategory.subscription, 6),
       ],
       [
         _tx('Amazon', -64.00, TransactionCategory.shopping, 2),
@@ -73,9 +73,9 @@ class _FlagshipMyCardsState extends State<FlagshipMyCards> {
       ],
       [
         _tx('Emirates', -820.00, TransactionCategory.travel, 1),
+        _tx('Uber', -18.30, TransactionCategory.transport, 1),
         _tx('Currency top-up', 500.00, TransactionCategory.transfer, 3,
             credit: true),
-        _tx('Uber', -18.30, TransactionCategory.transport, 4),
       ],
     ];
     return base[_selected];
@@ -178,17 +178,35 @@ class _FlagshipMyCardsState extends State<FlagshipMyCards> {
             ),
           ),
           const SizedBox(height: BankTokens.space2),
-          for (final t in _transactions)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: BankTokens.space4,
-                vertical: 2,
-              ),
-              child: BankTransactionListTile(transaction: t),
-            ),
+          ..._groupedTransactionRows(),
         ],
       ),
     );
+  }
+
+  /// The selected card's transactions with a date header before each day,
+  /// so the list reads like a real statement rather than an undated sample.
+  List<Widget> _groupedTransactionRows() {
+    final rows = <Widget>[];
+    DateTime? currentDay;
+    for (final t in _transactions) {
+      final day =
+          DateTime(t.settledAt.year, t.settledAt.month, t.settledAt.day);
+      if (day != currentDay) {
+        currentDay = day;
+        rows.add(BankTransactionGroupHeader(date: day));
+      }
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: BankTokens.space4,
+            vertical: 2,
+          ),
+          child: BankTransactionListTile(transaction: t),
+        ),
+      );
+    }
+    return rows;
   }
 }
 

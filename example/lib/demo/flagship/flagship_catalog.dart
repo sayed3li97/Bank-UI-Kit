@@ -61,7 +61,11 @@ class FlagshipCatalog extends StatelessWidget {
               leadingIcon: Icons.directions_car_outlined,
               rate: Flagship.autoFinance.rate,
               features: Flagship.autoFinance.features,
-              badges: Flagship.autoFinance.productBadges,
+              // The section header already says Featured, so the matching
+              // badge would read as a duplicate here.
+              badges: Flagship.autoFinance.productBadges
+                  .where((b) => b.label != 'Featured')
+                  .toList(),
               highlighted: true,
               ctaLabel: 'View details',
               onTap: () {},

@@ -364,6 +364,31 @@ if (!screensOnly) {
   console.log(
     `\n── Components (${filtered.length} × ${variants.length} presets) ──────────────`,
   );
+
+  // Consistent breathing room kept around the measured content when cropping.
+  const CROP_PAD = 24;
+  // Never crop below this height: keeps degenerate measurements harmless.
+  const CROP_MIN_HEIGHT = 96;
+
+  // The harness publishes the rendered content's top offset and height
+  // (screenshot_harness.dart, _ContentBoundsReporter; logical px == CSS px at
+  // deviceScaleFactor 1). Returns a clip rect cropping the fixed-height
+  // viewport down to content + padding, or null to keep the full viewport
+  // (auto-opened sheet/dialog entries and full-height screens don't publish
+  // or don't need a crop).
+  async function contentClip(page, width, viewportH) {
+    const m = await page.evaluate(() => ({
+      top: window.__bankShotContentTop,
+      height: window.__bankShotContentHeight,
+    }));
+    if (!Number.isFinite(m.top) || !Number.isFinite(m.height)) return null;
+    const top = Math.max(0, Math.floor(m.top - CROP_PAD));
+    const bottom = Math.min(viewportH, Math.ceil(m.top + m.height + CROP_PAD));
+    const height = Math.max(bottom - top, CROP_MIN_HEIGHT);
+    if (top === 0 && top + height >= viewportH) return null; // full height
+    return { x: 0, y: top, width, height: Math.min(height, viewportH - top) };
+  }
+
   // Reuse a single page; resize viewport per component to save memory.
   const compPage = await browser.newPage({
     viewport: { width: 375, height: 600 },
@@ -380,7 +405,8 @@ if (!screensOnly) {
       try {
         await navigatePage(compPage, url);
         const file = join(v.dir, `${c.name}.png`);
-        await compPage.screenshot({ path: file });
+        const clip = await contentClip(compPage, 375, h);
+        await compPage.screenshot(clip ? { path: file, clip } : { path: file });
         totalOk++;
         console.log(`✓ ${v.preset}/${c.name}.png`);
       } catch (e) {

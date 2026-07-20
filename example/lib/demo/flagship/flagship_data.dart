@@ -158,10 +158,11 @@ abstract final class Flagship {
         'No early-repayment charge',
       ],
       badges: [FlagshipBadge('Popular', BankProductBadgeTone.neutral)],
-      monthlyExampleGbp: 149.20,
+      monthlyExampleGbp: 194.27,
       representativeExample:
-          'Representative 6.2% APR (fixed). Borrowing 10,000 GBP over 60 '
-          'months at 5.9% p.a. (fixed), 60 payments of 192.90 GBP.',
+          'Representative example: borrowing 10,000 GBP over 60 months at '
+          '6.2% APR (fixed), you would pay 60 monthly payments of 194.27 GBP. '
+          'Total amount repayable 11,656.20 GBP.',
     ),
     FlagshipProduct(
       id: 'heloc',
@@ -198,7 +199,9 @@ abstract final class Flagship {
       ],
       badges: [FlagshipBadge('No fee', BankProductBadgeTone.positive)],
       monthlyExampleGbp: 0,
-      representativeExample: '',
+      representativeExample:
+          'Interest is calculated daily and paid monthly. 4.60% AER variable '
+          'on the whole balance; the rate may change with notice.',
     ),
     FlagshipProduct(
       id: 'fixed_saver',

@@ -88,6 +88,7 @@ class GalleryEntry {
     required this.builder,
     this.codeExample,
     this.isFullScreen = false,
+    this.autoOpen = false,
   });
 
   final String name;
@@ -100,7 +101,20 @@ class GalleryEntry {
 
   /// When true the widget fills the container width (list tiles, banners…).
   final bool isFullScreen;
+
+  /// When true the entry's canonical surface is a modal/sheet behind a
+  /// launcher button. Under the screenshot harness (see
+  /// [galleryAutoPresentOverlays]) the overlay is presented automatically on
+  /// the first frame so doc captures show the real surface, not the launcher.
+  final bool autoOpen;
 }
+
+/// Set to true by the screenshot harness entrypoint
+/// (`screenshot_harness.dart`) before `runApp`, so [_SheetOpener] presents
+/// its sheet/dialog on the first frame instead of waiting for a tap.
+/// The interactive gallery (`main.dart` / `gallery_main.dart`) leaves this
+/// false, so normal behavior is unchanged.
+bool galleryAutoPresentOverlays = false;
 
 // ---------------------------------------------------------------------------
 // Sample data helpers
@@ -880,6 +894,7 @@ final List<GalleryEntry> kGalleryEntries = [
     name: 'BankTransactionDetailSheet',
     description: 'Full transaction detail bottom sheet with actions.',
     category: GalleryCategory.transactions,
+    autoOpen: true,
     codeExample: '''BankTransactionDetailSheet.show(
   context,
   transaction: myTx,
@@ -921,6 +936,7 @@ final List<GalleryEntry> kGalleryEntries = [
     name: 'BankTransactionFilterSheet',
     description: 'Filter sheet for date range and category selection.',
     category: GalleryCategory.transactions,
+    autoOpen: true,
     codeExample: '''BankTransactionFilterSheet.show(
   context,
   onApply: (filter) => setState(() => _filter = filter),
@@ -1284,6 +1300,7 @@ final List<GalleryEntry> kGalleryEntries = [
     description:
         'Countdown dialog warning the user of imminent session expiry.',
     category: GalleryCategory.auth,
+    autoOpen: true,
     codeExample: '''BankSessionTimeoutDialog.show(
   context,
   onExtend: () {},
@@ -1721,6 +1738,7 @@ final List<GalleryEntry> kGalleryEntries = [
     name: 'BankConsentModal',
     description: 'Scrollable consent sheet with terms and accept button.',
     category: GalleryCategory.onboarding,
+    autoOpen: true,
     codeExample: '''BankConsentModal.show(
   context,
   title: 'Terms & Conditions',
@@ -1779,6 +1797,7 @@ final List<GalleryEntry> kGalleryEntries = [
     name: 'BankPotContributionSheet',
     description: 'Bottom sheet for adding or withdrawing pot funds.',
     category: GalleryCategory.saving,
+    autoOpen: true,
     codeExample: '''BankPotContributionSheet.show(
   context,
   pot: myPot,
@@ -1829,6 +1848,9 @@ final List<GalleryEntry> kGalleryEntries = [
         spenderId: 'u-2',
         spenderName: 'Alice',
       ),
+      // Show the tile's joint-account features (initiator avatar + by-line).
+      initiatorName: 'Alice',
+      onTap: () {},
     ),
   ),
 
@@ -2146,7 +2168,11 @@ final List<GalleryEntry> kGalleryEntries = [
       padding: const EdgeInsets.all(16),
       child: BankPhoneInputField(
         label: 'Mobile number',
-        initialNumber: '5551234567',
+        // Keep the country, dial code, and national format coherent:
+        // a UK mobile (+44 7911 123456) rather than the list's first
+        // country with a US-style number.
+        initialCountry: BankCountry.all.firstWhere((c) => c.isoCode == 'GB'),
+        initialNumber: '7911123456',
         onChanged: (_, __) {},
       ),
     ),
@@ -3263,7 +3289,8 @@ final List<GalleryEntry> kGalleryEntries = [
     params: const [],
     builder: (ctx, p) => BankPreapprovedLoanCard(
       maxAmount: Money.fromDouble(25000, 'GBP'),
-      annualRate: 8.9,
+      // Fraction, not percent: 0.089 renders as 8.9% APR.
+      annualRate: 0.089,
       maxMonths: 48,
       onContinue: (_) {},
       offerExpires: DateTime(2026, 7, 20),
@@ -4154,16 +4181,33 @@ class _StatefulWrapperState<T> extends State<_StatefulWrapper<T>> {
       widget.builder(_value, (v) => setState(() => _value = v));
 }
 
-class _SheetOpener extends StatelessWidget {
+class _SheetOpener extends StatefulWidget {
   const _SheetOpener({required this.label, required this.onOpen});
 
   final String label;
   final Future<dynamic> Function(BuildContext ctx) onOpen;
 
   @override
+  State<_SheetOpener> createState() => _SheetOpenerState();
+}
+
+class _SheetOpenerState extends State<_SheetOpener> {
+  @override
+  void initState() {
+    super.initState();
+    // Under the screenshot harness, present the sheet/dialog immediately so
+    // the capture shows the real surface instead of the launcher pill.
+    if (galleryAutoPresentOverlays) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onOpen(context);
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) => FilledButton.icon(
         icon: const Icon(Icons.open_in_new, size: 18),
-        label: Text(label),
-        onPressed: () => onOpen(context),
+        label: Text(widget.label),
+        onPressed: () => widget.onOpen(context),
       );
 }
