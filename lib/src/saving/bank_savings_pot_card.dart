@@ -229,7 +229,9 @@ class BankSavingsPotCard extends StatelessWidget {
   final Gradient? gradient;
 
   /// Overrides the card shadow. Defaults to the theme glow when
-  /// enabled, else a soft drop shadow; pass `const []` to flatten.
+  /// enabled, else the resting card shadow for the ambient background
+  /// brightness ([BankTokens.shadowCardFor]); pass `const []` to
+  /// flatten.
   final List<BoxShadow>? shadow;
 
   /// Merged over the computed pot-name style ([BankTokens.labelLarge]
@@ -338,6 +340,10 @@ class BankSavingsPotCard extends StatelessWidget {
     final resolvedRadius = radius ?? bankTheme.cardRadius;
     final resolvedBackground = backgroundColor ?? bankTheme.surface;
     final resolvedRingSize = ringSize ?? _ringDiameter;
+    final surfaceBrightness =
+        ThemeData.estimateBrightnessForColor(resolvedBackground);
+    final backgroundBrightness =
+        ThemeData.estimateBrightnessForColor(bankTheme.background);
     final resolvedShadow = shadow ??
         (bankTheme.useGlow && bankTheme.glowColor != null
             ? [
@@ -347,13 +353,7 @@ class BankSavingsPotCard extends StatelessWidget {
                   spreadRadius: -4,
                 ),
               ]
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ]);
+            : BankTokens.shadowCardFor(backgroundBrightness));
 
     final Widget card = Container(
       constraints: const BoxConstraints(minHeight: 120),
@@ -361,6 +361,19 @@ class BankSavingsPotCard extends StatelessWidget {
         color: resolvedBackground,
         borderRadius: resolvedRadius,
         boxShadow: resolvedShadow,
+        // On dark flat surfaces a hairline separates the card from the
+        // background where the shadow alone cannot; light surfaces
+        // carry an invisible border of the same width so geometry stays
+        // identical across brightness.
+        border: Border.all(
+          color: surfaceBrightness == Brightness.dark
+              ? BankTokens.hairlineColor(bankTheme.onSurface, surfaceBrightness)
+              : bankTheme.onSurface.withValues(alpha: 0),
+          // Matches Border.all's default today; keep the token as the
+          // source of truth for hairline geometry.
+          // ignore: avoid_redundant_argument_values
+          width: BankTokens.hairlineWidth,
+        ),
       ),
       child: Material(
         color: Colors.transparent,
@@ -374,7 +387,9 @@ class BankSavingsPotCard extends StatelessWidget {
             padding: resolvedPadding,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+              // Centred within the card's minHeight so short cards have
+              // no dead band beneath the content.
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // ── Top row: ring + info ──────────────────────────────────
                 Row(
@@ -386,7 +401,14 @@ class BankSavingsPotCard extends StatelessWidget {
                       child: CustomPaint(
                         painter: _ProgressRingPainter(
                           progress: pot.progressFraction,
-                          trackColor: bankTheme.surfaceVariant,
+                          // Visible on-brand track: surfaceVariant on a
+                          // surface card is invisible, so a partial ring
+                          // read as a detached arc.
+                          trackColor: bankTheme.onSurface.withValues(
+                            alpha: surfaceBrightness == Brightness.dark
+                                ? 0.16
+                                : 0.10,
+                          ),
                           progressColor: accent,
                           gradient: gradient ?? bankTheme.accentGradient,
                         ),

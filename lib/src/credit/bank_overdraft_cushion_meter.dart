@@ -10,9 +10,10 @@ import '../theme/tokens.dart';
 /// much cushion remains.
 ///
 /// The card shows a title with a positive [feeFreeLabel] chip, a thick
-/// rounded meter of [used] against [limit] (the fill turns
-/// [BankTokens.warning] above 70 percent and [BankTokens.danger] above
-/// 90 percent), the computed remaining amount, limit labels at the track
+/// rounded meter of the cushion still available — the fill mirrors the
+/// '{remaining} remaining' line beneath it, turning [BankTokens.warning]
+/// once less than 30 percent remains and [BankTokens.danger] below 10
+/// percent — the computed remaining amount, limit labels at the track
 /// ends, an optional increase hint when [nextEligibleIncrease] is set,
 /// and an enable [Switch] when [onChanged] is provided. When [enabled] is
 /// `false` the meter dims and [disabledExplainer] replaces the remaining
@@ -145,21 +146,30 @@ class BankOverdraftCushionMeter extends StatelessWidget {
     this.semanticLabel,
   });
 
-  double get _fraction {
+  double get _usedFraction {
     final total = limit.amount.toDouble();
     if (total <= 0) return 0;
     return (used.amount.toDouble() / total).clamp(0.0, 1.0);
   }
+
+  /// Fraction of the cushion still available. The meter fills with this
+  /// value so the bar visually agrees with the bold
+  /// '{remaining} remaining' line beneath it.
+  double get _remainingFraction => 1 - _usedFraction;
 
   Money get _remaining {
     final diff = limit - used;
     return diff.isNegative ? Money.zero(limit.currencyCode) : diff;
   }
 
-  Color _fillColor(BankThemeData theme) {
-    final fraction = _fraction;
-    if (fraction > 0.9) return BankTokens.danger;
-    if (fraction > 0.7) return BankTokens.warning;
+  Color _fillColor(BankThemeData theme, bool isDark) {
+    final remaining = _remainingFraction;
+    if (remaining < 0.1) {
+      return isDark ? BankTokens.dangerDark : BankTokens.danger;
+    }
+    if (remaining < 0.3) {
+      return isDark ? BankTokens.warningDark : BankTokens.warning;
+    }
     return accentColor ?? theme.primary;
   }
 
@@ -269,6 +279,9 @@ class BankOverdraftCushionMeter extends StatelessWidget {
             child: SizedBox(
               height: BankTokens.minTapTarget,
               child: FittedBox(
+                // scaleDown keeps the switch at its natural size rather
+                // than inflating it to fill the tap target.
+                fit: BoxFit.scaleDown,
                 child: Switch(
                   value: enabled,
                   onChanged: onChanged,
@@ -282,10 +295,12 @@ class BankOverdraftCushionMeter extends StatelessWidget {
   }
 
   Widget _buildMeter(BankThemeData theme, bool disableAnimations) {
-    final percentUsed = (_fraction * 100).round();
+    final isDark =
+        ThemeData.estimateBrightnessForColor(theme.surface) == Brightness.dark;
+    final percentRemaining = (_remainingFraction * 100).round();
     final resolvedLabel = semanticLabel ??
         (enabled
-            ? '$title: $percentUsed percent used'
+            ? '$title: $percentRemaining percent of cushion remaining'
             : '$title is turned off');
 
     return Semantics(
@@ -309,11 +324,11 @@ class BankOverdraftCushionMeter extends StatelessWidget {
                     : animationDuration ?? BankTokens.durationBase,
                 curve: animationCurve ?? BankTokens.curveEmphasized,
                 alignment: AlignmentDirectional.centerStart,
-                widthFactor: _fraction,
+                widthFactor: _remainingFraction,
                 heightFactor: 1,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: _fillColor(theme),
+                    color: _fillColor(theme, isDark),
                     borderRadius: const BorderRadius.all(
                       Radius.circular(BankTokens.radiusFull),
                     ),

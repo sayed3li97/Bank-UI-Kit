@@ -26,8 +26,10 @@ class BankBudgetGaugeWidget extends StatelessWidget {
   /// cardRadius.
   final BorderRadius? radius;
 
-  /// Overrides the computed bar tint (gain, amber, or loss). Defaults
-  /// to the spend-fraction driven colour.
+  /// Overrides the computed bar tint. Defaults to a spend-fraction
+  /// driven colour: [BankTokens.success] below 80%, [BankTokens.warning]
+  /// above 80%, [BankTokens.danger] once over budget (dark variants on
+  /// dark surfaces).
   final Color? accentColor;
 
   /// Overrides the bar track colour. Defaults to the theme outline at
@@ -83,15 +85,22 @@ class BankBudgetGaugeWidget extends StatelessWidget {
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
 
-    final fraction = budget.spentFraction.clamp(0.0, 1.0);
+    // Only the painted fill is clamped; the printed percentage stays
+    // truthful (e.g. '105%' beside the over-budget chip, never a
+    // contradictory '100%').
+    final trueFraction = budget.spentFraction;
+    final fraction = trueFraction.clamp(0.0, 1.0);
     final isOverBudget = budget.isOverBudget;
 
+    final isDark =
+        ThemeData.estimateBrightnessForColor(theme.surface) == Brightness.dark;
     final barColor = accentColor ??
         (isOverBudget
-            ? BankTokens.investmentLoss
+            ? (isDark ? BankTokens.dangerDark : BankTokens.danger)
             : fraction > 0.8
-                ? Colors.amber
-                : BankTokens.investmentGain);
+                ? (isDark ? BankTokens.warningDark : BankTokens.warning)
+                : (isDark ? BankTokens.successDark : BankTokens.success));
+    final overBudgetColor = isDark ? BankTokens.dangerDark : BankTokens.danger;
 
     final spentStr = BankMoneyFormatter.format(
       amount: budget.spent.amount,
@@ -140,14 +149,13 @@ class BankBudgetGaugeWidget extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color:
-                            BankTokens.investmentLoss.withValues(alpha: 0.12),
+                        color: overBudgetColor.withValues(alpha: 0.12),
                         borderRadius: theme.chipRadius,
                       ),
                       child: Text(
                         overBudgetLabel,
                         style: BankTokens.labelSmall
-                            .copyWith(color: BankTokens.investmentLoss),
+                            .copyWith(color: overBudgetColor),
                       ),
                     ),
                 ],
@@ -166,7 +174,7 @@ class BankBudgetGaugeWidget extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${(fraction * 100).toStringAsFixed(0)}%',
+                    '${(trueFraction * 100).toStringAsFixed(0)}%',
                     style: BankTokens.labelSmall
                         .copyWith(color: barColor)
                         .merge(percentStyle),

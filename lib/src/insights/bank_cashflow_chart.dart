@@ -57,6 +57,7 @@ class BankCashflowChart extends StatelessWidget {
     this.tooltipStyle,
     this.tooltipBackgroundColor,
     this.safeToSpendLabelStyle,
+    this.safeToSpendLabelAlignment,
     this.emptyLabelStyle,
     this.semanticLabel,
   });
@@ -116,6 +117,11 @@ class BankCashflowChart extends StatelessWidget {
 
   /// Merged over the safe-to-spend label style (labelSmall, tinted).
   final TextStyle? safeToSpendLabelStyle;
+
+  /// Overrides where the safe-to-spend label anchors along its line.
+  /// Defaults to [Alignment.topLeft], over the history side of the
+  /// plot, clear of the dashed forecast line and the trailing ticks.
+  final Alignment? safeToSpendLabelAlignment;
 
   /// Merged over the empty-state label style (bodyMedium,
   /// onSurfaceVariant).
@@ -220,14 +226,33 @@ class BankCashflowChart extends StatelessWidget {
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 52,
-                    getTitlesWidget: (value, meta) => Padding(
-                      padding: const EdgeInsetsDirectional.only(end: 4),
-                      child: Text(
-                        formatCompact(value),
-                        style: axisStyle,
-                        maxLines: 1,
-                      ),
-                    ),
+                    getTitlesWidget: (value, meta) {
+                      // Suppress the exact min/max edge labels when they
+                      // land within a label-height of a round interval
+                      // tick, so extremes are not double-labelled
+                      // ('£4.32K' crowding '£4K').
+                      final isEdge = value == meta.min || value == meta.max;
+                      if (isEdge) {
+                        final interval = meta.appliedInterval;
+                        if (interval > 0) {
+                          final offGrid =
+                              (value / interval) - (value / interval).round();
+                          final distanceToTick = offGrid.abs() * interval;
+                          if (distanceToTick > 1e-9 &&
+                              distanceToTick < interval * 0.5) {
+                            return const SizedBox.shrink();
+                          }
+                        }
+                      }
+                      return Padding(
+                        padding: const EdgeInsetsDirectional.only(end: 4),
+                        child: Text(
+                          formatCompact(value),
+                          style: axisStyle,
+                          maxLines: 1,
+                        ),
+                      );
+                    },
                   ),
                 ),
                 bottomTitles: AxisTitles(
@@ -271,7 +296,13 @@ class BankCashflowChart extends StatelessWidget {
                       dashArray: [6, 4],
                       label: HorizontalLineLabel(
                         show: true,
-                        alignment: Alignment.topRight,
+                        // Anchored over the history side of the plot:
+                        // the dashed forecast line, today divider, and
+                        // trailing date ticks all live on the right, so
+                        // a start-edge anchor cannot collide with them.
+                        alignment:
+                            safeToSpendLabelAlignment ?? Alignment.topLeft,
+                        padding: const EdgeInsets.only(left: 8, bottom: 2),
                         style: BankTokens.labelSmall
                             .copyWith(color: resolvedSafeColor)
                             .merge(safeToSpendLabelStyle),
