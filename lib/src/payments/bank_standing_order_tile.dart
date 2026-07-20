@@ -576,6 +576,9 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
                 minHeight: BankTokens.minTapTarget,
               ),
               child: Row(
+                // Children centre on one shared alignment grid (the Row
+                // default); the fix for the vertical tear is the
+                // content-sized (`mainAxisSize.min`) inner column below.
                 children: [
                   _fadeIfPaused(
                     widget.leading ??
@@ -602,6 +605,10 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
                   const SizedBox(width: BankTokens.space3),
                   Expanded(
                     child: Column(
+                      // Content-sized: without this the column expands into
+                      // any tall fixed constraint and the title tears away
+                      // from the avatar/amount.
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
