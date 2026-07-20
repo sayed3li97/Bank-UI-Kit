@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../src/common/bank_icon_spec.dart';
+import '../../src/common/bank_pressable.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 
@@ -61,7 +62,7 @@ class BankPinKeypad extends StatelessWidget {
   /// padding is added (the current behavior).
   final EdgeInsetsGeometry? padding;
 
-  /// Fill color of each round digit key. Defaults to the theme
+  /// Fill color of each digit key. Defaults to the theme
   /// `surfaceVariant` when null.
   final Color? backgroundColor;
 
@@ -69,15 +70,15 @@ class BankPinKeypad extends StatelessWidget {
   /// Defaults to the theme `onSurface` when null.
   final Color? foregroundColor;
 
-  /// Accent color used for the key press splash and highlight. Defaults to
-  /// the theme `primary` when null.
+  /// Ink color used for the key press/hover state layer. Defaults to the
+  /// theme `onSurface` at the theme's state-layer opacities when null.
   final Color? accentColor;
 
   /// Text style merged over the computed digit style (headline large in the
   /// resolved foreground color). Null applies no override.
   final TextStyle? digitStyle;
 
-  /// Diameter, in logical pixels, of every key and the empty placeholder.
+  /// Side length, in logical pixels, of every key and the empty placeholder.
   /// Defaults to 64 when null.
   final double? keySize;
 
@@ -255,7 +256,6 @@ class _DigitKey extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final resolvedKeySize = keySize ?? 64;
-    final resolvedAccent = accentColor ?? bankTheme.primary;
     final label = builder != null
         ? builder!(context, digit)
         : Text(
@@ -265,28 +265,24 @@ class _DigitKey extends StatelessWidget {
                 .merge(digitStyle),
           );
 
-    return Semantics(
-      button: true,
-      label: digit,
+    // BankPressable supplies the kit-wide key language shared with
+    // BankAmountKeypad: state layer, pressed scale, keyboard focus ring,
+    // and button semantics.
+    return BankPressable(
+      onTap: onTap,
+      borderRadius: bankTheme.buttonRadius,
+      overlayColor: accentColor,
+      semanticLabel: digit,
       excludeSemantics: true,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          splashColor: resolvedAccent.withValues(alpha: 0.12),
-          highlightColor: resolvedAccent.withValues(alpha: 0.08),
-          child: Container(
-            width: resolvedKeySize,
-            height: resolvedKeySize,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: backgroundColor ?? bankTheme.surfaceVariant,
-            ),
-            child: label,
-          ),
+      child: Container(
+        width: resolvedKeySize,
+        height: resolvedKeySize,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          borderRadius: bankTheme.buttonRadius,
+          color: backgroundColor ?? bankTheme.surfaceVariant,
         ),
+        child: label,
       ),
     );
   }
@@ -318,27 +314,20 @@ class _ActionKey extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final resolvedKeySize = keySize ?? 64;
-    final resolvedAccent = accentColor ?? bankTheme.primary;
-    return Semantics(
-      button: true,
-      label: semanticLabel,
+    return BankPressable(
+      onTap: onTap,
+      borderRadius: bankTheme.buttonRadius,
+      overlayColor: accentColor,
+      semanticLabel: semanticLabel,
       excludeSemantics: true,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          splashColor: resolvedAccent.withValues(alpha: 0.12),
-          highlightColor: resolvedAccent.withValues(alpha: 0.08),
-          child: SizedBox(
-            width: resolvedKeySize,
-            height: resolvedKeySize,
-            child: Icon(
-              icon,
-              size: 24,
-              color: foregroundColor ?? bankTheme.onSurface,
-            ),
-          ),
+      child: Container(
+        width: resolvedKeySize,
+        height: resolvedKeySize,
+        alignment: Alignment.center,
+        child: Icon(
+          icon,
+          size: 24,
+          color: foregroundColor ?? bankTheme.onSurface,
         ),
       ),
     );

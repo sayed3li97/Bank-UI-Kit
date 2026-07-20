@@ -8,6 +8,9 @@ import '../theme/tokens.dart';
 /// A compact metric tile pairing a caption with a formatted [Money] value —
 /// the "Available Balance" / "Savings" tiles that sit under a card carousel.
 ///
+/// The caption renders exactly as given (sentence case is the house style at
+/// this width; callers wanting micro-caps pass an uppercase string plus
+/// [labelStyle]) and wraps up to [labelMaxLines] lines before ellipsizing.
 /// The amount is rendered with [BankBalanceText], so it formats currency,
 /// respects the numeral style, and masks under privacy mode automatically.
 /// Optionally shows a leading [icon] disc and a [trend] chip (e.g. `'+2.4%'`).
@@ -36,11 +39,12 @@ class BankBalanceTile extends StatelessWidget {
     this.padding,
     this.labelStyle,
     this.amountStyle,
+    this.labelMaxLines = 2,
     this.width,
     this.semanticLabel,
   });
 
-  /// Caption above the amount.
+  /// Caption above the amount. Rendered verbatim — no case transformation.
   final String label;
 
   /// The value shown as the hero.
@@ -73,11 +77,17 @@ class BankBalanceTile extends StatelessWidget {
   /// Inner padding. Defaults to [BankTokens.space4].
   final EdgeInsetsGeometry? padding;
 
-  /// Merged over the computed caption style.
+  /// Merged over the computed caption style ([BankTokens.caption] in
+  /// [BankThemeData.onSurfaceVariant]).
   final TextStyle? labelStyle;
 
-  /// Merged over the computed amount style.
+  /// Merged over the amount's numeral style
+  /// ([BankThemeData.numeralMedium] in [BankThemeData.onSurface]).
   final TextStyle? amountStyle;
+
+  /// Maximum caption lines before ellipsizing. Defaults to `2` so long or
+  /// localized captions wrap whole words instead of truncating mid-word.
+  final int labelMaxLines;
 
   /// Fixed width (used by a scrollable [BankBalanceTileRow]).
   final double? width;
@@ -121,15 +131,11 @@ class BankBalanceTile extends StatelessWidget {
               ],
               Expanded(
                 child: Text(
-                  label.toUpperCase(),
-                  maxLines: 1,
+                  label,
+                  maxLines: labelMaxLines,
                   overflow: TextOverflow.ellipsis,
-                  style: BankTokens.labelSmall
-                      .copyWith(
-                        color: theme.onSurfaceVariant,
-                        letterSpacing: 0.6,
-                        fontWeight: FontWeight.w600,
-                      )
+                  style: BankTokens.caption
+                      .copyWith(color: theme.onSurfaceVariant)
                       .merge(labelStyle),
                 ),
               ),
@@ -142,13 +148,11 @@ class BankBalanceTile extends StatelessWidget {
               Flexible(
                 child: BankBalanceText(
                   money: amount,
-                  size: BankBalanceSize.small,
-                  style: BankTokens.headlineSmall
-                      .copyWith(
-                        color: theme.onSurface,
-                        fontWeight: FontWeight.w800,
-                      )
-                      .merge(amountStyle),
+                  // numeralMedium: the 18 sp tabular tier for list items and
+                  // sub-totals — keeps digits column-aligned and on a weight
+                  // the brand fonts actually ship.
+                  size: BankBalanceSize.medium,
+                  style: amountStyle,
                 ),
               ),
               if (trend != null) ...[

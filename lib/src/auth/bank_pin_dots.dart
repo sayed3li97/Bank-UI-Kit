@@ -106,8 +106,13 @@ class _ShakeWidgetState extends State<_ShakeWidget>
 /// [filled] count drives the visual state; the host app is responsible for
 /// tracking the actual PIN digits.
 ///
+/// Unfilled positions render as a light outline ring; entered digits render
+/// as solid primary dots with a subtle scale pop, so progress reads at a
+/// glance.
+///
 /// When [error] flips from `false` to `true`, the dot row plays a short
-/// horizontal shake animation to signal an incorrect PIN.
+/// horizontal shake animation and the dots recolour with the danger role to
+/// signal an incorrect PIN.
 ///
 /// ```dart
 /// BankPinDots(
@@ -128,16 +133,21 @@ class BankPinDots extends StatelessWidget {
   final bool obscure;
 
   /// When flipped to `true`, the dot row plays a horizontal shake animation
-  /// to indicate an incorrect PIN entry.
+  /// and the dots recolour with the theme's danger role
+  /// ([BankThemeData.negativeBalance]) to indicate an incorrect PIN entry.
   final bool error;
 
   /// Override colour for filled dots. Defaults to [BankThemeData.primary].
+  /// The [error] state takes precedence.
   final Color? filledColor;
 
-  /// Override colour for empty dots. Defaults to [BankThemeData.outline].
+  /// Override colour for empty dot rings. Defaults to
+  /// [BankThemeData.outline] at 50 % opacity. The [error] state takes
+  /// precedence.
   final Color? emptyColor;
 
-  /// Diameter of each dot in logical pixels. Defaults to `12`.
+  /// Diameter of each filled dot in logical pixels. Defaults to `12`.
+  /// Unfilled rings render 2 px smaller so entered digits carry more weight.
   final double dotSize;
 
   /// Overrides the gap between dots. Defaults to [BankTokens.space2].
@@ -175,8 +185,13 @@ class BankPinDots extends StatelessWidget {
     final bankTheme = BankThemeData.of(context);
     final clampedFilled = filled.clamp(0, length);
 
-    final resolvedFilled = filledColor ?? bankTheme.primary;
-    final resolvedEmpty = emptyColor ?? bankTheme.outline;
+    // negativeBalance doubles as the theme's danger role (the tokens are
+    // unified — see BankTokens.danger).
+    final danger = bankTheme.negativeBalance;
+    final resolvedFilled = error ? danger : (filledColor ?? bankTheme.primary);
+    final resolvedEmpty = error
+        ? danger.withValues(alpha: 0.5)
+        : (emptyColor ?? bankTheme.outline.withValues(alpha: 0.5));
 
     final Widget dots = Row(
       mainAxisSize: MainAxisSize.min,
@@ -232,23 +247,34 @@ class _PinDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: duration,
-      curve: curve,
+    // Unfilled positions read lighter: a slightly smaller outline ring
+    // (10 px at the default 12 px dot size). Filling scales the dot up to
+    // full size with a gentle overshoot — a subtle "pop" per entered digit.
+    final unfilledScale = (size - 2) / size;
+    return SizedBox(
       width: size,
       height: size,
-      decoration: filled
-          ? BoxDecoration(
-              color: filledColor,
-              shape: BoxShape.circle,
-            )
-          : BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: emptyColor,
-                width: 1.5,
-              ),
-            ),
+      child: AnimatedScale(
+        scale: filled ? 1.0 : unfilledScale,
+        duration: duration,
+        curve: filled ? Curves.easeOutBack : curve,
+        child: AnimatedContainer(
+          duration: duration,
+          curve: curve,
+          decoration: filled
+              ? BoxDecoration(
+                  color: filledColor,
+                  shape: BoxShape.circle,
+                )
+              : BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: emptyColor,
+                    width: 1.75,
+                  ),
+                ),
+        ),
+      ),
     );
   }
 }
