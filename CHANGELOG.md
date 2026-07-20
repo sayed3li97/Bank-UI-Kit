@@ -4,6 +4,66 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/) and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## 0.2.0
+
+A premium-quality overhaul driven by a full visual and code audit against
+Backbase-class design systems: 7 systemic themes, 76 ranked defects, the top
+24 fixed in this release.
+
+### Added
+
+- **Interaction states everywhere**: new `BankPressable` wrapper gives cards,
+  tiles, keypads, and quick actions pressed-scale, hover/focus state layers,
+  a keyboard focus ring, and button semantics; state-layer opacities and
+  press scale are theme tokens.
+- **Dark-mode depth system**: dark shadow variants with `Brightness`
+  resolvers plus hairline edge tokens, adopted across 30+ card surfaces
+  through one internal resolver; Material `Card` elevations migrated to the
+  token language.
+- **Brand voices per preset**: `displayFontFamily` (Heritage gets a bundled
+  Noto Serif Display face, Bloom uses Fredoka), `cardSurfaceGradient`, and
+  generative `BankCardPattern` overlays (mesh, lattice, arcs, grid), all
+  serialised in theme JSON.
+- **Real network marks**: vector Visa wordmark, token-driven Mastercard
+  lens, and Amex tile replace the synthetic italic faux-bold text, with a
+  `markBuilder` escape hatch for licensed artwork; shared metallic
+  `BankCardChip` and a single PAN treatment across all card widgets.
+- **`BankSegmentedControl`**: theme-driven segmented control (no M3
+  checkmark, 44 px minimum, labels never fracture mid-word).
+- **`BankCountryFlag`**: tofu-proof country indicator (crafted ISO chip by
+  default, emoji opt-in, global `flagBuilder` override on `BankUiScope`).
+- **Money presentation API**: `trimZeroCents`, `splitMajorMinor`, deliberate
+  unknown-code fallback; balance count-up animation; amounts scale down
+  instead of ellipsizing.
+- Theme-derived chart palette generation, portfolio-chart axes and themed
+  tooltips, honest gauge/meter readouts, and an animated price ticker.
+
+### Fixed
+
+- Blank CTA labels on state views, banners, sheets, and rewards cards (brand
+  font now survives `ButtonStyle.textStyle`).
+- `BankAccountCard`: dead 70-90 px band removed (content-sized), resting
+  shadow restored in all presets, frozen state desaturates instead of
+  stamping a snowflake over the balance, status chips use the unified
+  semantic ramps.
+- Mid-word wrapping and truncation: onboarding stepper labels, product
+  category tiles, segmented controls, balance-tile captions, and money
+  amounts no longer fracture or ellipsize at the kit's own demo widths.
+- Flip button no longer collides with network marks (reserved directional
+  corner, verified LTR + RTL); premium card surfaces keep their hero shadow.
+- One green/red/amber family kit-wide: semantic status, investment, and
+  credit colours unified onto the AA financial ramps with dark variants
+  (previously a mix of Apple, Tailwind, and Material palettes).
+- Loan APR unit footgun: `annualRate` documented and asserted as a fraction
+  with a formatting helper (no more 890% demo APRs); catalog rates read
+  "From 5.9% APR" in order.
+- Transaction rows: amount carries the row's optical weight, credits are
+  positive-green with an explicit plus, debits stay neutral; joint tiles no
+  longer leak amounts through privacy mode.
+- Example app demo data reads credibly (consistent phone country/number,
+  humanized labels, internally consistent representative examples), overlay
+  components are captured open, and component screenshots crop to content.
+
 ## 0.1.0
 
 Turns the kit from a widget library into a **design system**: tokens become
