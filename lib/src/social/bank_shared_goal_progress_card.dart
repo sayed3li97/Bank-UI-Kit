@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_surface_depth.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/money.dart';
 import '../../src/scope/bank_ui_scope.dart';
@@ -43,8 +44,21 @@ class BankSharedGoalProgressCard extends StatelessWidget {
   /// Defaults to the theme primary colour.
   final Color? accentColor;
 
-  /// Overrides the card elevation. Defaults to the theme elevationLow.
+  /// Legacy depth opt-out. The card renders the kit shadow language
+  /// ([BankTokens.shadowCardFor] of the theme background brightness) instead
+  /// of Material elevation; pass `0` — or use a theme whose `elevationLow`
+  /// is `0`, such as Voltage — to flatten the card to hairline-only depth.
   final double? elevation;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Overrides the card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Merged over the computed goal-name style ([BankTokens.labelLarge]
   /// in onSurface).
@@ -79,6 +93,8 @@ class BankSharedGoalProgressCard extends StatelessWidget {
     this.backgroundColor,
     this.accentColor,
     this.elevation,
+    this.shadow,
+    this.border,
     this.titleStyle,
     this.subtitleStyle,
     this.amountStyle,
@@ -123,97 +139,122 @@ class BankSharedGoalProgressCard extends StatelessWidget {
     final resolvedAccent = accentColor ?? theme.primary;
     final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space4);
 
-    final Widget card = Card(
-      shape: RoundedRectangleBorder(borderRadius: resolvedRadius),
-      color: backgroundColor ?? theme.surface,
-      elevation: elevation ?? theme.elevationLow,
-      child: InkWell(
-        onTap: onTap,
+    // One depth language for every card: token shadows resolved against the
+    // theme background brightness, with the dark-surface hairline. Themes
+    // that declare flat depth (elevationLow == 0, e.g. Voltage) — or an
+    // explicit `elevation: 0` — keep hairline-only separation. The margin
+    // preserves the footprint of the Material [Card] this replaces.
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: backgroundColor,
+      shadow: shadow,
+      border: border,
+      tier: (elevation ?? theme.elevationLow) <= 0
+          ? BankSurfaceDepthTier.flat
+          : BankSurfaceDepthTier.card,
+    );
+
+    final Widget card = Container(
+      margin: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
         borderRadius: resolvedRadius,
-        child: Padding(
-          padding: resolvedPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        color: backgroundColor ?? theme.surface,
+        boxShadow: depth.shadow,
+        border: depth.border,
+      ),
+      child: ClipRRect(
+        borderRadius: resolvedRadius,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: resolvedRadius,
+            child: Padding(
+              padding: resolvedPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (illustration != null) ...[
-                    SizedBox(width: 40, height: 40, child: illustration),
-                    const SizedBox(width: BankTokens.space3),
-                  ],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
+                    children: [
+                      if (illustration != null) ...[
+                        SizedBox(width: 40, height: 40, child: illustration),
+                        const SizedBox(width: BankTokens.space3),
+                      ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              goalName,
+                              style: BankTokens.labelLarge
+                                  .copyWith(color: theme.onSurface)
+                                  .merge(titleStyle),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              progressLine,
+                              style: BankTokens.bodySmall
+                                  .copyWith(color: theme.onSurfaceVariant)
+                                  .merge(subtitleStyle),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        percentStr,
+                        style: BankTokens.numeralSmall
+                            .copyWith(color: resolvedAccent)
+                            .merge(amountStyle),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: BankTokens.space3),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: fraction,
+                      minHeight: 8,
+                      backgroundColor: theme.outline.withValues(alpha: 0.2),
+                      valueColor: AlwaysStoppedAnimation<Color>(resolvedAccent),
+                    ),
+                  ),
+                  if (contributors.isNotEmpty) ...[
+                    const SizedBox(height: BankTokens.space3),
+                    Row(
                       children: [
-                        Text(
-                          goalName,
-                          style: BankTokens.labelLarge
-                              .copyWith(color: theme.onSurface)
-                              .merge(titleStyle),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        _ContributorStack(
+                          contributors: contributors,
+                          theme: theme,
+                          accent: resolvedAccent,
                         ),
+                        const SizedBox(width: BankTokens.space2),
                         Text(
-                          progressLine,
+                          contributorLabel,
                           style: BankTokens.bodySmall
-                              .copyWith(color: theme.onSurfaceVariant)
-                              .merge(subtitleStyle),
+                              .copyWith(color: theme.onSurfaceVariant),
                         ),
+                        const Spacer(),
+                        if (onContribute != null)
+                          TextButton(
+                            onPressed: onContribute,
+                            child: Text(contributeLabel),
+                          ),
                       ],
                     ),
-                  ),
-                  Text(
-                    percentStr,
-                    style: BankTokens.numeralSmall
-                        .copyWith(color: resolvedAccent)
-                        .merge(amountStyle),
-                  ),
-                ],
-              ),
-              const SizedBox(height: BankTokens.space3),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: fraction,
-                  minHeight: 8,
-                  backgroundColor: theme.outline.withValues(alpha: 0.2),
-                  valueColor: AlwaysStoppedAnimation<Color>(resolvedAccent),
-                ),
-              ),
-              if (contributors.isNotEmpty) ...[
-                const SizedBox(height: BankTokens.space3),
-                Row(
-                  children: [
-                    _ContributorStack(
-                      contributors: contributors,
-                      theme: theme,
-                      accent: resolvedAccent,
-                    ),
-                    const SizedBox(width: BankTokens.space2),
-                    Text(
-                      contributorLabel,
-                      style: BankTokens.bodySmall
-                          .copyWith(color: theme.onSurfaceVariant),
-                    ),
-                    const Spacer(),
-                    if (onContribute != null)
-                      TextButton(
+                  ] else if (onContribute != null) ...[
+                    const SizedBox(height: BankTokens.space3),
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: TextButton(
                         onPressed: onContribute,
                         child: Text(contributeLabel),
                       ),
+                    ),
                   ],
-                ),
-              ] else if (onContribute != null) ...[
-                const SizedBox(height: BankTokens.space3),
-                Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: TextButton(
-                    onPressed: onContribute,
-                    child: Text(contributeLabel),
-                  ),
-                ),
-              ],
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ),

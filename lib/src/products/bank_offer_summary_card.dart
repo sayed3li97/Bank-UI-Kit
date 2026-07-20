@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_summary_stack.dart';
+import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
@@ -83,6 +84,7 @@ class BankOfferSummaryCard extends StatelessWidget {
     this.radius,
     this.backgroundColor,
     this.shadow,
+    this.border,
     this.accentColor,
     this.firmIcon,
     this.indicativeIcon,
@@ -198,9 +200,15 @@ class BankOfferSummaryCard extends StatelessWidget {
   /// Overrides the card fill color. Defaults to the theme surface.
   final Color? backgroundColor;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard]; pass
-  /// `const []` to flatten.
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Accent for the firm chip and the primary CTA. Defaults to the theme
   /// primary.
@@ -263,11 +271,19 @@ class BankOfferSummaryCard extends StatelessWidget {
         ),
     ];
 
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: backgroundColor,
+      shadow: shadow,
+      border: border,
+    );
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: backgroundColor ?? theme.surface,
         borderRadius: resolvedRadius,
-        boxShadow: shadow ?? BankTokens.shadowCard,
+        boxShadow: depth.shadow,
+        border: depth.border,
       ),
       child: Padding(
         padding: padding ?? const EdgeInsets.all(BankTokens.space4),

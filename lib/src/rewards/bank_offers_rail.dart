@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../common/bank_emblem.dart';
+import '../common/bank_surface_depth.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -385,11 +386,13 @@ class _BankOfferCardState extends State<_BankOfferCard>
     final offer = widget.offer;
     final daysLeft = _daysLeft;
 
+    final depth = BankSurfaceDepth.resolve(theme);
     Widget card = DecoratedBox(
       decoration: BoxDecoration(
         color: theme.surface,
         borderRadius: theme.cardRadius,
-        boxShadow: BankTokens.shadowCard,
+        boxShadow: depth.shadow,
+        border: depth.border,
       ),
       child: Padding(
         padding: const EdgeInsets.all(BankTokens.space3),

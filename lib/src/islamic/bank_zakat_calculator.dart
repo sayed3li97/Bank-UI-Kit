@@ -6,6 +6,7 @@ import '../common/bank_amount_input_field.dart';
 import '../common/bank_hijri_date.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_summary_stack.dart';
+import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
 import '../models/bank_currency.dart';
 import '../models/money.dart';
@@ -81,6 +82,8 @@ class BankZakatCalculator extends StatefulWidget {
     this.radius,
     this.backgroundColor,
     this.elevation,
+    this.shadow,
+    this.border,
     this.accentColor,
     this.infoIcon,
     this.sectionHeaderStyle,
@@ -186,9 +189,23 @@ class BankZakatCalculator extends StatefulWidget {
   /// theme `surface`.
   final Color? backgroundColor;
 
-  /// Overrides the computation-card elevation. Defaults to the theme
-  /// `elevationLow`; pass `0` to flatten.
+  /// Legacy depth opt-out. The computation card renders the kit shadow
+  /// language ([BankTokens.shadowCardFor] of the theme background
+  /// brightness) instead of Material elevation; pass `0` — or use a theme
+  /// whose `elevationLow` is `0`, such as Voltage — to flatten the card to
+  /// hairline-only depth.
   final double? elevation;
+
+  /// Overrides the computation-card shadow. Defaults to
+  /// [BankTokens.shadowCardFor] of the theme background brightness; pass
+  /// `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Overrides the computation-card outline. Defaults on dark surfaces to
+  /// a [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Overrides the accent used for the pay button, the below-nisab
   /// tint and its info icon. Defaults to the theme `primary`.
@@ -376,11 +393,27 @@ class _BankZakatCalculatorState extends State<BankZakatCalculator> {
     final disableAnimations = MediaQuery.of(context).disableAnimations;
     final numeralStyle = BankUiScope.of(context).numeralStyle;
 
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: theme.cardRadius),
-      color: theme.surface,
-      elevation: theme.elevationLow,
+    // One depth language for every card: token shadows resolved against the
+    // theme background brightness, with the dark-surface hairline. Themes
+    // that declare flat depth (elevationLow == 0, e.g. Voltage) — or an
+    // explicit `elevation: 0` — keep hairline-only separation.
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: widget.backgroundColor,
+      shadow: widget.shadow,
+      border: widget.border,
+      tier: (widget.elevation ?? theme.elevationLow) <= 0
+          ? BankSurfaceDepthTier.flat
+          : BankSurfaceDepthTier.card,
+    );
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: widget.radius ?? theme.cardRadius,
+        color: widget.backgroundColor ?? theme.surface,
+        boxShadow: depth.shadow,
+        border: depth.border,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(BankTokens.space4),
         child: Column(

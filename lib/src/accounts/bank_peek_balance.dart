@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
+import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
@@ -103,15 +104,22 @@ class BankPeekBalance extends StatefulWidget {
   final BorderRadius? radius;
 
   /// Overrides the affordance shadow. Defaults to
-  /// [BankTokens.shadowCard]; pass `const []` to flatten.
+  /// [BankTokens.shadowCardFor] of the theme background brightness; pass
+  /// `const []` to flatten.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the affordance and reveal-card outline. Defaults on dark
+  /// surfaces to a [BankTokens.hairlineWidth] hairline in
+  /// [BankTokens.hairlineColor]; light surfaces keep an invisible border of
+  /// the same width. Pass `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Overrides the reveal-card corner radius. Defaults to the theme
   /// `cardRadius`.
   final BorderRadius? cardRadius;
 
   /// Overrides the reveal-card shadow. Defaults to
-  /// [BankTokens.shadowFloating].
+  /// [BankTokens.shadowFloatingFor] of the theme background brightness.
   final List<BoxShadow>? cardShadow;
 
   /// Overrides the reveal-card content padding. Defaults to
@@ -166,6 +174,7 @@ class BankPeekBalance extends StatefulWidget {
     this.accentColor,
     this.radius,
     this.shadow,
+    this.border,
     this.cardRadius,
     this.cardShadow,
     this.cardPadding,
@@ -197,6 +206,7 @@ class BankPeekBalance extends StatefulWidget {
     this.accentColor,
     this.radius,
     this.shadow,
+    this.border,
     this.cardRadius,
     this.cardShadow,
     this.cardPadding,
@@ -410,7 +420,8 @@ class _BankPeekBalanceState extends State<BankPeekBalance>
                 decoration: BoxDecoration(
                   color: widget.backgroundColor ?? theme.surface,
                   borderRadius: widget.cardRadius ?? theme.cardRadius,
-                  boxShadow: widget.cardShadow ?? BankTokens.shadowFloating,
+                  boxShadow: _depth(theme, floating: true).shadow,
+                  border: _depth(theme, floating: true).border,
                 ),
                 child: Padding(
                   padding: widget.cardPadding ??
@@ -433,6 +444,20 @@ class _BankPeekBalanceState extends State<BankPeekBalance>
   // Affordances
   // ---------------------------------------------------------------------------
 
+  /// Depth treatment for the affordances (resting card tier) and the reveal
+  /// card (floating tier): brightness-resolved shadow plus the dark-surface
+  /// hairline. Caller overrides win.
+  BankSurfaceDepth _depth(BankThemeData theme, {bool floating = false}) =>
+      BankSurfaceDepth.resolve(
+        theme,
+        surfaceColor: widget.backgroundColor,
+        shadow: floating ? widget.cardShadow : widget.shadow,
+        border: widget.border,
+        tier: floating
+            ? BankSurfaceDepthTier.floating
+            : BankSurfaceDepthTier.card,
+      );
+
   Widget _buildPill(BankThemeData theme) {
     final contentColor = _revealed
         ? (widget.accentColor ?? theme.primary)
@@ -442,7 +467,8 @@ class _BankPeekBalanceState extends State<BankPeekBalance>
         color: widget.backgroundColor ?? theme.surface,
         borderRadius:
             widget.radius ?? BorderRadius.circular(BankTokens.radiusFull),
-        boxShadow: widget.shadow ?? BankTokens.shadowCard,
+        boxShadow: _depth(theme).shadow,
+        border: _depth(theme).border,
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: BankTokens.minTapTarget),
@@ -480,7 +506,8 @@ class _BankPeekBalanceState extends State<BankPeekBalance>
             const BorderRadius.vertical(
               bottom: Radius.circular(BankTokens.radiusLarge),
             ),
-        boxShadow: widget.shadow ?? BankTokens.shadowCard,
+        boxShadow: _depth(theme).shadow,
+        border: _depth(theme).border,
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
@@ -533,7 +560,8 @@ class _BankPeekBalanceState extends State<BankPeekBalance>
             color: widget.backgroundColor ?? theme.surface,
             borderRadius:
                 widget.radius ?? BorderRadius.circular(BankTokens.radiusFull),
-            boxShadow: widget.shadow ?? BankTokens.shadowCard,
+            boxShadow: _depth(theme).shadow,
+            border: _depth(theme).border,
           ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(

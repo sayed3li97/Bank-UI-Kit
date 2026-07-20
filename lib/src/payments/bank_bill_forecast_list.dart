@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_emblem.dart';
+import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../theme/bank_theme_data.dart';
@@ -115,6 +116,7 @@ class BankBillForecastList extends StatelessWidget {
     this.radius,
     this.backgroundColor,
     this.shadow,
+    this.border,
     this.accentColor,
     this.titleStyle,
     this.subtitleStyle,
@@ -172,9 +174,15 @@ class BankBillForecastList extends StatelessWidget {
   /// Overrides the card background. Defaults to the theme surface.
   final Color? backgroundColor;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
-  /// pass `const []` to flatten the card.
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten the card.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Tint of the See all header action. Defaults to the theme primary.
   final Color? accentColor;
@@ -210,12 +218,19 @@ class BankBillForecastList extends StatelessWidget {
     };
 
     final cardRadius = radius ?? theme.cardRadius;
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: backgroundColor,
+      shadow: shadow,
+      border: border,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
         color: backgroundColor ?? theme.surface,
         borderRadius: cardRadius,
-        boxShadow: shadow ?? BankTokens.shadowCard,
+        boxShadow: depth.shadow,
+        border: depth.border,
       ),
       child: ClipRRect(
         borderRadius: cardRadius,

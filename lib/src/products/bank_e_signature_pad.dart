@@ -2,6 +2,7 @@ import 'dart:ui' show PointMode;
 
 import 'package:flutter/material.dart';
 
+import '../common/bank_surface_depth.dart';
 import '../common/bank_text_field.dart';
 import '../common/money_formatter.dart';
 import '../theme/bank_theme_data.dart';
@@ -107,6 +108,7 @@ class BankESignaturePad extends StatefulWidget {
     this.guideColor,
     this.borderColor,
     this.shadow,
+    this.border,
     this.titleStyle,
     this.timestampStyle,
     this.padHeight = 160,
@@ -183,9 +185,15 @@ class BankESignaturePad extends StatefulWidget {
   /// [BankThemeData.outline].
   final Color? borderColor;
 
-  /// Overrides the outer card shadow. Defaults to [BankTokens.shadowCard];
-  /// pass `const []` to flatten it.
+  /// Overrides the outer card shadow. Defaults to [BankTokens.shadowCardFor]
+  /// of the theme background brightness; pass `const []` to flatten it.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the outer card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Merged over the computed title style ([BankTokens.headlineSmall]).
   final TextStyle? titleStyle;
@@ -265,7 +273,12 @@ class _BankESignaturePadState extends State<BankESignaturePad> {
     final resolvedPen = widget.foregroundColor ?? theme.onSurface;
     final resolvedGuide = widget.guideColor ?? theme.outline;
     final resolvedBorder = widget.borderColor ?? theme.outline;
-    final resolvedShadow = widget.shadow ?? BankTokens.shadowCard;
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: widget.backgroundColor,
+      shadow: widget.shadow,
+      border: widget.border,
+    );
 
     final clock = widget.now ?? DateTime.now;
     final timestamp = BankDateFormatter.formatLong(clock());
@@ -274,7 +287,8 @@ class _BankESignaturePadState extends State<BankESignaturePad> {
       decoration: BoxDecoration(
         color: resolvedBackground,
         borderRadius: resolvedRadius,
-        boxShadow: resolvedShadow,
+        boxShadow: depth.shadow,
+        border: depth.border,
       ),
       child: Padding(
         padding: resolvedPadding,

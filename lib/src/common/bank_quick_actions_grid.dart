@@ -6,6 +6,8 @@ import '../theme/bank_theme_data.dart';
 import '../theme/extensions.dart';
 import '../theme/tokens.dart';
 import 'bank_icon_spec.dart';
+import 'bank_pressable.dart';
+import 'bank_surface_depth.dart';
 
 /// A single shortcut entry rendered by [BankQuickActionsGrid].
 ///
@@ -112,6 +114,7 @@ class BankQuickActionsGrid extends StatefulWidget {
     this.accentColor,
     this.labelStyle,
     this.shadow,
+    this.border,
     this.ringGradient,
     this.badgeColor,
     this.badgeTextStyle,
@@ -155,16 +158,24 @@ class BankQuickActionsGrid extends StatefulWidget {
   /// Overrides the icon circle fill. Defaults to [BankThemeData.surface].
   final Color? backgroundColor;
 
-  /// Overrides the tile icon colour. Defaults to [BankThemeData.primary].
+  /// Overrides the tile icon colour. Defaults to [BankThemeData.onSurface]
+  /// so the glyph always clears a 3:1 contrast ratio against the disc;
+  /// pass a brand tint explicitly to restore an accent-coloured glyph.
   final Color? accentColor;
 
   /// Merged over the computed tile label style ([BankTokens.labelMedium]
   /// in [BankThemeData.onSurface]).
   final TextStyle? labelStyle;
 
-  /// Overrides the icon circle shadow. Defaults to [BankTokens.shadowCard];
-  /// pass `const []` to flatten it.
+  /// Overrides the icon circle shadow. Defaults to [BankTokens.shadowCardFor]
+  /// of the theme background brightness; pass `const []` to flatten it.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the icon circle outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Overrides [BankThemeData.accentGradient] for the icon ring. When set,
   /// the ring is drawn under every preset, not just Voltage.
@@ -340,7 +351,7 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
       label: action.label,
       badgeText: action.badgeText,
       enabled: action.enabled,
-      onTap: action.enabled ? action.onTap : null,
+      onTap: action.onTap,
     );
 
     if (!widget.editable) return tile;
@@ -397,20 +408,36 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
   ) =>
       Transform.scale(
         scale: _liftScale,
-        child: Material(
-          elevation: theme.elevationHigh,
-          borderRadius: theme.cardRadius,
-          color: theme.surface,
-          shadowColor:
-              theme.useGlow && theme.glowColor != null ? theme.glowColor : null,
-          child: SizedBox(
-            width: tileWidth,
-            height: _resolvedTileExtent,
-            child: _buildTileBody(
-              context,
-              icon: action.icon,
-              label: action.label,
-              badgeText: action.badgeText,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: theme.surface,
+            borderRadius: theme.cardRadius,
+            // Lifted drag ghost: floating tier of the kit depth language —
+            // the theme glow under Voltage, brightness-resolved token
+            // shadow elsewhere.
+            boxShadow: theme.useGlow && theme.glowColor != null
+                ? <BoxShadow>[
+                    BoxShadow(
+                      color: theme.glowColor!,
+                      blurRadius: 24,
+                      spreadRadius: -4,
+                    ),
+                  ]
+                : BankTokens.shadowFloatingFor(
+                    ThemeData.estimateBrightnessForColor(theme.background),
+                  ),
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            child: SizedBox(
+              width: tileWidth,
+              height: _resolvedTileExtent,
+              child: _buildTileBody(
+                context,
+                icon: action.icon,
+                label: action.label,
+                badgeText: action.badgeText,
+              ),
             ),
           ),
         ),
@@ -428,35 +455,35 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
 
     final semanticLabel = badgeText == null ? label : '$label, $badgeText';
 
-    Widget tile = Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: enabled ? onTap : null,
-        borderRadius: theme.cardRadius,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minWidth: BankTokens.minTapTarget,
-            minHeight: BankTokens.minTapTarget,
-          ),
-          child: _buildTileBody(
-            context,
-            icon: icon,
-            label: label,
-            badgeText: badgeText,
-          ),
-        ),
+    Widget body = ConstrainedBox(
+      constraints: const BoxConstraints(
+        minWidth: BankTokens.minTapTarget,
+        minHeight: BankTokens.minTapTarget,
+      ),
+      child: _buildTileBody(
+        context,
+        icon: icon,
+        label: label,
+        badgeText: badgeText,
       ),
     );
 
-    if (!enabled) {
-      tile = Opacity(opacity: 0.4, child: tile);
+    // Tiles with no handler at all (e.g. a "More" tile without [onShowAll])
+    // still read as disabled; tiles with a handler get the disabled dim from
+    // [BankPressable] itself.
+    if (!enabled && onTap == null) {
+      body = Opacity(opacity: theme.disabledOpacity, child: body);
     }
 
-    return Semantics(
-      button: true,
+    // Kit-wide interaction grammar: state layer, pressed scale, and a
+    // keyboard focus ring.
+    return BankPressable(
+      onTap: onTap,
       enabled: enabled,
-      label: semanticLabel,
-      child: ExcludeSemantics(child: tile),
+      borderRadius: theme.cardRadius,
+      semanticLabel: semanticLabel,
+      excludeSemantics: true,
+      child: body,
     );
   }
 
@@ -469,7 +496,9 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
     final theme = BankThemeData.of(context);
 
     return Padding(
-      padding: const EdgeInsetsDirectional.only(top: BankTokens.space1),
+      // Head-room for the badge chip, which now sits fully clear of the
+      // icon disc.
+      padding: const EdgeInsetsDirectional.only(top: BankTokens.space2),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -478,9 +507,12 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
             children: [
               _buildIconCircle(context, theme, icon),
               if (badgeText != null)
+                // Directional positioning (mirrors under RTL), offset clear
+                // of the icon disc so the chip never collides with the glyph
+                // or the Voltage ring.
                 PositionedDirectional(
-                  top: -BankTokens.space1,
-                  end: -BankTokens.space1,
+                  top: -BankTokens.space2,
+                  end: -BankTokens.space2,
                   child: _buildBadge(theme, badgeText),
                 ),
             ],
@@ -510,17 +542,27 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
     final showRing = widget.ringGradient != null ||
         (scope.preset == BankPreset.voltage && gradient != null);
 
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: widget.backgroundColor,
+      shadow: widget.shadow,
+      border: widget.border,
+    );
+
     final core = DecoratedBox(
       decoration: BoxDecoration(
         color: widget.backgroundColor ?? theme.surface,
         shape: BoxShape.circle,
-        boxShadow: widget.shadow ?? BankTokens.shadowCard,
+        boxShadow: depth.shadow,
+        border: showRing ? null : depth.border,
       ),
       child: Center(
         child: Icon(
           icon,
           size: _iconSize,
-          color: widget.accentColor ?? theme.primary,
+          // onSurface ink keeps the glyph at >= 3:1 against the disc on
+          // every preset; washed primary tints do not.
+          color: widget.accentColor ?? theme.onSurface,
         ),
       ),
     );

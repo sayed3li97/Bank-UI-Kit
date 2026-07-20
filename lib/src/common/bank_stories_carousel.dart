@@ -175,8 +175,8 @@ class BankStoriesCarousel extends StatelessWidget {
   /// [BankThemeData.cardRadius].
   final BorderRadius? cardRadius;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard]; pass
-  /// `const []` to flatten it.
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten it.
   final List<BoxShadow>? cardShadow;
 
   /// Merged over the computed card title style ([BankTokens.labelSmall]
@@ -296,7 +296,11 @@ class _StoryCard extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: cardRadius,
-              boxShadow: shadow ?? BankTokens.shadowCard,
+              // Artwork surface: brightness-resolved shadow, no hairline.
+              boxShadow: shadow ??
+                  BankTokens.shadowCardFor(
+                    ThemeData.estimateBrightnessForColor(theme.background),
+                  ),
             ),
             child: ClipRRect(
               borderRadius: cardRadius,
