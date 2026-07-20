@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
 
 import '../../src/common/bank_icon_spec.dart';
+import '../../src/common/bank_pressable.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/numeral_style.dart';
 import '../../src/theme/tokens.dart';
 import '../common/bank_format_context.dart';
 
 /// A single transaction row, designed for use inside [ListView.builder].
-/// Shows category icon (with optional merchant logo), signed amount, and
-/// status.
+///
+/// The amount carries the row's optical weight (tabular numerals at 600
+/// weight); the merchant name sits beside it in [BankTokens.labelLarge];
+/// a secondary line shows `category · time` in the muted
+/// `onSurfaceVariant`, with any non-cleared status appended in its
+/// semantic colour.
+///
+/// **Money semantics:** credits render in the theme's `positiveBalance`
+/// family with an explicit `+` sign; debits stay neutral `onSurface` —
+/// spending is normal, not an error, so red is reserved for genuinely
+/// negative states (declines). Tappable rows get the kit-wide
+/// [BankPressable] hover / press / focus treatment.
 class BankTransactionListTile extends StatelessWidget {
   final Transaction transaction;
   final VoidCallback? onTap;
@@ -43,8 +55,19 @@ class BankTransactionListTile extends StatelessWidget {
   /// Merged over the merchant name style ([BankTokens.labelLarge]).
   final TextStyle? titleStyle;
 
-  /// Merged over the status label style ([BankTokens.bodySmall]).
+  /// Merged over the secondary-line style ([BankTokens.bodySmall] in
+  /// `onSurfaceVariant`; a non-cleared status keeps its semantic colour).
   final TextStyle? subtitleStyle;
+
+  /// Localised display name for the transaction's category, shown on the
+  /// secondary line. Defaults to an English name derived from
+  /// [Transaction.category] (e.g. `'Credit payment'`); supply for
+  /// non-English locales.
+  final String? categoryLabel;
+
+  /// Whether the secondary line shows `category · time`. Defaults to
+  /// `true`; set `false` to restore the status-only secondary line.
+  final bool showCategoryAndTime;
 
   /// Merged over the computed amount style.
   final TextStyle? amountStyle;
@@ -67,6 +90,8 @@ class BankTransactionListTile extends StatelessWidget {
     this.accentColor,
     this.titleStyle,
     this.subtitleStyle,
+    this.categoryLabel,
+    this.showCategoryAndTime = true,
     this.amountStyle,
     this.semanticLabel,
   });
@@ -88,10 +113,20 @@ class BankTransactionListTile extends StatelessWidget {
       switch (status) {
         TransactionStatus.pending => BankTokens.pending,
         TransactionStatus.declined => bankTheme.negativeBalance,
-        TransactionStatus.refunded => BankTokens.positiveBalance,
+        TransactionStatus.refunded => bankTheme.positiveBalance,
         TransactionStatus.scheduled => BankTokens.frozen,
         TransactionStatus.cleared => bankTheme.onSurfaceVariant,
       };
+
+  /// English fallback for the category name: `creditPayment` reads as
+  /// `'Credit payment'`. Override per-locale via [categoryLabel].
+  static String _defaultCategoryLabel(TransactionCategory category) {
+    final spaced = category.name.replaceAllMapped(
+      RegExp('[A-Z]'),
+      (m) => ' ${m[0]!.toLowerCase()}',
+    );
+    return spaced[0].toUpperCase() + spaced.substring(1);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,92 +154,124 @@ class BankTransactionListTile extends StatelessWidget {
     final displayAmount =
         scope.privacyEnabled ? scope.strings.balanceHidden : formattedAmount;
 
+    // Debits stay neutral onSurface — spending is normal, not an error —
+    // while credits take the positive-balance family with their explicit
+    // '+' sign, and declines mute to onSurfaceVariant with a strikethrough.
     final amountColor = isDeclined
         ? bankTheme.onSurfaceVariant
         : isCredit
             ? bankTheme.positiveBalance
             : bankTheme.onSurface;
 
+    // The amount carries the row's optical weight: tabular numerals at
+    // 600, at least as heavy as the labelLarge merchant name.
     final computedAmountStyle = bankTheme.numeralSmall
         .copyWith(
           color: amountColor,
+          fontWeight: FontWeight.w600,
           decoration:
               isDeclined ? TextDecoration.lineThrough : TextDecoration.none,
           decorationColor: bankTheme.onSurfaceVariant,
         )
         .merge(amountStyle);
 
-    final resolvedSemanticLabel = semanticLabel ??
-        '${transaction.merchantName}, $displayAmount, '
-            '${transaction.status.name}';
+    // Secondary line: 'category · time' in the muted onSurfaceVariant,
+    // with any non-cleared status appended in its semantic colour.
+    final String? metaText;
+    if (showCategoryAndTime) {
+      final resolvedCategory =
+          categoryLabel ?? _defaultCategoryLabel(transaction.category);
+      final time = scope.numeralStyle
+          .convert(BankDateFormatter.formatTime(transaction.settledAt));
+      metaText = '$resolvedCategory · $time';
+    } else {
+      metaText = null;
+    }
+    final subtitleBaseStyle = BankTokens.bodySmall
+        .copyWith(color: bankTheme.onSurfaceVariant)
+        .merge(subtitleStyle);
 
-    return Semantics(
-      label: resolvedSemanticLabel,
-      button: onTap != null,
+    final resolvedSemanticLabel = semanticLabel ??
+        [
+          transaction.merchantName,
+          displayAmount,
+          if (metaText != null) metaText,
+          transaction.status.name,
+        ].join(', ');
+
+    return BankPressable(
+      onTap: onTap,
+      borderRadius: radius ?? bankTheme.cardRadius,
+      semanticLabel: resolvedSemanticLabel,
       excludeSemantics: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: radius ?? bankTheme.cardRadius,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: height ?? 72),
-          child: Padding(
-            padding: padding ??
-                const EdgeInsets.symmetric(
-                  horizontal: BankTokens.space4,
-                  vertical: BankTokens.space2,
-                ),
-            child: Row(
-              children: [
-                leading ??
-                    _LeadingAvatar(
-                      transaction: transaction,
-                      bankTheme: bankTheme,
-                      backgroundColor: avatarBackgroundColor,
-                      iconColor: accentColor,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: height ?? 72),
+        child: Padding(
+          padding: padding ??
+              const EdgeInsets.symmetric(
+                horizontal: BankTokens.space4,
+                vertical: BankTokens.space2,
+              ),
+          child: Row(
+            children: [
+              leading ??
+                  _LeadingAvatar(
+                    transaction: transaction,
+                    bankTheme: bankTheme,
+                    backgroundColor: avatarBackgroundColor,
+                    iconColor: accentColor,
+                  ),
+              const SizedBox(width: BankTokens.space3),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      transaction.merchantName,
+                      style: BankTokens.labelLarge
+                          .copyWith(color: bankTheme.onSurface)
+                          .merge(titleStyle),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                const SizedBox(width: BankTokens.space3),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        transaction.merchantName,
-                        style: BankTokens.labelLarge
-                            .copyWith(color: bankTheme.onSurface)
-                            .merge(titleStyle),
+                    if (metaText != null || statusLabel.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            if (metaText != null) TextSpan(text: metaText),
+                            if (metaText != null && statusLabel.isNotEmpty)
+                              const TextSpan(text: ' · '),
+                            if (statusLabel.isNotEmpty)
+                              TextSpan(
+                                text: statusLabel,
+                                style: TextStyle(
+                                  color: _statusColor(
+                                    transaction.status,
+                                    bankTheme,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        style: subtitleBaseStyle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (statusLabel.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          statusLabel,
-                          style: BankTokens.bodySmall
-                              .copyWith(
-                                color: _statusColor(
-                                  transaction.status,
-                                  bankTheme,
-                                ),
-                              )
-                              .merge(subtitleStyle),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
                     ],
-                  ),
+                  ],
                 ),
-                const SizedBox(width: BankTokens.space2),
-                trailing ??
-                    Text(
-                      displayAmount,
-                      style: computedAmountStyle,
-                      textAlign: TextAlign.end,
-                    ),
-              ],
-            ),
+              ),
+              const SizedBox(width: BankTokens.space2),
+              trailing ??
+                  Text(
+                    displayAmount,
+                    style: computedAmountStyle,
+                    textAlign: TextAlign.end,
+                  ),
+            ],
           ),
         ),
       ),

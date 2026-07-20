@@ -8,6 +8,7 @@ import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
+import '../theme/button_text_style.dart';
 import '../theme/numeral_style.dart';
 import '../theme/tokens.dart';
 
@@ -32,7 +33,7 @@ import '../theme/tokens.dart';
 /// ```dart
 /// BankPreapprovedLoanCard(
 ///   maxAmount: Money.fromDouble(250000, 'SAR'),
-///   annualRate: 0.049,
+///   annualRate: 0.049, // a FRACTION: 0.049 renders as 4.9% APR
 ///   maxMonths: 60,
 ///   onContinue: startApplication,
 ///   quickAmount: Money.fromDouble(30000, 'SAR'),
@@ -64,6 +65,7 @@ class BankPreapprovedLoanCard extends StatefulWidget {
     this.radius,
     this.backgroundColor,
     this.shadow,
+    this.border,
     this.gradient,
     this.accentColor,
     this.badgeIcon,
@@ -75,12 +77,19 @@ class BankPreapprovedLoanCard extends StatefulWidget {
     this.animationDuration,
     this.animationCurve,
   })  : assert(maxMonths > 0, 'maxMonths must be positive'),
-        assert(annualRate >= 0, 'annualRate must not be negative');
+        assert(
+          annualRate >= 0 && annualRate < 1.5,
+          'annualRate is a fraction: 0.089 means 8.9% APR',
+        );
 
   /// The maximum pre-approved financing amount.
   final Money maxAmount;
 
-  /// Nominal annual rate as a fraction, e.g. `0.049` for 4.9 %.
+  /// Nominal annual rate as a **fraction of 1, not a percentage**:
+  /// pass `0.089` for 8.9 % APR — passing `8.9` would mean 890 % and is
+  /// rejected by an assert. The same fraction drives both the displayed
+  /// rate (via [formattedApr]) and the amortized monthly-payment
+  /// estimate, so the two can never disagree.
   final double annualRate;
 
   /// The longest available tenor, used for the installment estimate.
@@ -128,9 +137,17 @@ class BankPreapprovedLoanCard extends StatefulWidget {
   /// Overrides the card fill color. Defaults to the theme surface.
   final Color? backgroundColor;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowHero];
+  /// Overrides the card shadow. Defaults to the hero shadow appropriate
+  /// for the theme background brightness ([BankTokens.shadowHeroFor]);
   /// pass `const []` to flatten.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor]
+  /// (a shadow alone cannot separate the card there); light surfaces
+  /// keep an invisible border of the same width so geometry is
+  /// identical across brightness. Pass `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Overrides the header strip gradient. Defaults to the theme
   /// accentGradient (falling back to primary tones).
@@ -166,6 +183,30 @@ class BankPreapprovedLoanCard extends StatefulWidget {
   /// Curve of the monthly figure cross-fade. Defaults to
   /// [BankTokens.curveStandard].
   final Curve? animationCurve;
+
+  /// [annualRate] rendered as display percentage text, e.g. `0.089`
+  /// gives `'8.9%'` (up to two decimals, trailing zeros trimmed).
+  ///
+  /// This is the exact text the card shows in its rate microline, so a
+  /// percent-style input like `8.9` can never silently render as
+  /// `'890.00%'` — it is rejected by the constructor assert instead.
+  String get formattedApr => formatAnnualRate(annualRate);
+
+  /// Formats a fractional annual [rate] (`0.089` means 8.9 %) as
+  /// percentage text with up to two decimals and no trailing zeros,
+  /// converted through [numeralStyle]: `0.089`, `0.0499`, and `0.05`
+  /// give `'8.9%'`, `'4.99%'`, and `'5%'`.
+  static String formatAnnualRate(
+    double rate, {
+    NumeralStyle numeralStyle = NumeralStyle.western,
+  }) {
+    var text = (rate * 100).toStringAsFixed(2);
+    if (text.contains('.')) {
+      text = text.replaceFirst(RegExp(r'0+$'), '');
+      text = text.replaceFirst(RegExp(r'\.$'), '');
+    }
+    return numeralStyle.convert('$text%');
+  }
 
   @override
   State<BankPreapprovedLoanCard> createState() =>
@@ -242,8 +283,10 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
 
     final rateName = widget.rateLabel ??
         (scope.islamicFinanceMode ? widget.profitRateLabel : widget.aprLabel);
-    final ratePercent = scope.numeralStyle
-        .convert('${(widget.annualRate * 100).toStringAsFixed(2)}%');
+    final ratePercent = BankPreapprovedLoanCard.formatAnnualRate(
+      widget.annualRate,
+      numeralStyle: scope.numeralStyle,
+    );
     final tenorText = widget.tenorTemplate
         .replaceAll('{n}', scope.numeralStyle.convert('${widget.maxMonths}'));
     final microline = '$rateName $ratePercent · $tenorText';
@@ -257,11 +300,36 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
     final accent = widget.accentColor ?? theme.primary;
     final resolvedRadius = widget.radius ?? theme.cardRadius;
 
+    // Brightness of the painted surface drives the hairline; brightness
+    // of the theme background drives the resting shadow (matching the
+    // kit-wide BankAccountCard treatment).
+    final resolvedSurface = widget.backgroundColor ?? theme.surface;
+    final surfaceBrightness =
+        ThemeData.estimateBrightnessForColor(resolvedSurface);
+    final backgroundBrightness =
+        ThemeData.estimateBrightnessForColor(theme.background);
+
+    // On dark surfaces a hairline separates the card where the shadow
+    // alone cannot; light surfaces carry an invisible border of the same
+    // width so geometry stays identical across brightness.
+    final resolvedBorder = widget.border ??
+        Border.all(
+          color: surfaceBrightness == Brightness.dark
+              ? BankTokens.hairlineColor(theme.onSurface, surfaceBrightness)
+              : theme.onSurface.withValues(alpha: 0),
+          // Matches Border.all's default today; keep the token as the
+          // source of truth for hairline geometry.
+          // ignore: avoid_redundant_argument_values
+          width: BankTokens.hairlineWidth,
+        );
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: widget.backgroundColor ?? theme.surface,
+        color: resolvedSurface,
         borderRadius: resolvedRadius,
-        boxShadow: widget.shadow ?? BankTokens.shadowHero,
+        border: resolvedBorder,
+        boxShadow:
+            widget.shadow ?? BankTokens.shadowHeroFor(backgroundBrightness),
       ),
       child: ClipRRect(
         borderRadius: resolvedRadius,
@@ -366,14 +434,12 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
                       style: FilledButton.styleFrom(
                         backgroundColor: accent,
                         foregroundColor: theme.onPrimary,
+                        textStyle: bankButtonTextStyle(context),
                         shape: RoundedRectangleBorder(
                           borderRadius: theme.buttonRadius,
                         ),
                       ),
-                      child: Text(
-                        widget.ctaLabel,
-                        style: BankTokens.labelLarge,
-                      ),
+                      child: Text(widget.ctaLabel),
                     ),
                   ),
                 ],
