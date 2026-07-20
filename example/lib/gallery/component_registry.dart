@@ -3065,8 +3065,10 @@ final List<GalleryEntry> kGalleryEntries = [
     category: GalleryCategory.payments,
     params: const [],
     builder: (ctx, p) => BankCardlessCashCode(
+      // A realistic ATM-code window: minutes, not months — the ring shows
+      // a plausible m:ss countdown instead of a six-figure minute count.
+      expiresAt: DateTime.now().add(const Duration(minutes: 14, seconds: 32)),
       code: '482913',
-      expiresAt: DateTime(2026, 12, 31, 23, 59),
       amount: Money.fromDouble(150.00, 'GBP'),
       onCancel: () {},
     ),

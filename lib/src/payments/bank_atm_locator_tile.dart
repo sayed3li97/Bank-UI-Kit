@@ -533,10 +533,21 @@ class _BankCardlessCashCodeState extends State<BankCardlessCashCode> {
     return groups.join(' ');
   }
 
+  /// Formats the remaining window at the precision that fits the ring:
+  /// `m:ss` under an hour, `h:mm` under a day, whole days beyond that.
+  /// Cardless codes live on minute scales, but a pathological input must
+  /// still render as a short, non-overflowing string.
   String _formatRemaining(Duration duration, NumeralStyle numeralStyle) {
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds % 60;
-    final raw = '$minutes:${seconds.toString().padLeft(2, '0')}';
+    final String raw;
+    if (duration.inHours < 1) {
+      final seconds = duration.inSeconds % 60;
+      raw = '${duration.inMinutes}:${seconds.toString().padLeft(2, '0')}';
+    } else if (duration.inDays < 1) {
+      final minutes = duration.inMinutes % 60;
+      raw = '${duration.inHours}:${minutes.toString().padLeft(2, '0')}';
+    } else {
+      raw = '${duration.inDays}d';
+    }
     return numeralStyle.convert(raw);
   }
 
@@ -618,11 +629,21 @@ class _BankCardlessCashCodeState extends State<BankCardlessCashCode> {
                     color: ringColor,
                     trackColor: theme.surfaceVariant,
                   ),
-                  child: Center(
-                    child: Text(
-                      _formatRemaining(_remaining, scope.numeralStyle),
-                      style: theme.numeralSmall.copyWith(
-                        color: expired ? BankTokens.danger : theme.onSurface,
+                  child: Padding(
+                    // Keep the digits inside the ring's inner circle; the
+                    // FittedBox scales any still-longer string down instead
+                    // of letting it wrap over the ring stroke.
+                    padding: const EdgeInsets.all(
+                      _CountdownRingPainter._stroke + BankTokens.space2,
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        _formatRemaining(_remaining, scope.numeralStyle),
+                        maxLines: 1,
+                        style: theme.numeralSmall.copyWith(
+                          color: expired ? BankTokens.danger : theme.onSurface,
+                        ),
                       ),
                     ),
                   ),
