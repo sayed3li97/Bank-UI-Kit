@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/button_text_style.dart';
 import '../../src/theme/tokens.dart';
 
 /// High-priority fraud warning banner.
@@ -11,13 +12,15 @@ import '../../src/theme/tokens.dart';
 /// - The primary action ([onPrimaryAction]) is the prominent call to act.
 ///
 /// Visual treatment:
-/// - A 4 px [BankTokens.danger]-coloured left border on a
-///   `danger.withValues(alpha: 0.08)` background.
-/// - A [Icons.gpp_bad_outlined] fraud icon at the top-left.
+/// - A neutral [BankThemeData.surface] card washed with the danger colour at
+///   10% alpha, wrapped in a [BankTokens.hairlineWidth] hairline border —
+///   never a full-saturation colour slab.
+/// - A [Icons.gpp_bad_outlined] fraud icon at the inline start, tinted with
+///   the brightness-appropriate [BankTokens.danger] / [BankTokens.dangerDark].
 /// - [title] in [BankTokens.labelLarge] (danger colour).
 /// - [body] in [BankTokens.bodySmall] ([BankThemeData.onSurface]).
-/// - Two action buttons side by side: [FilledButton] for [primaryActionLabel],
-///   [TextButton] for [dismissLabel].
+/// - Two action buttons side by side: a danger-filled [FilledButton] for
+///   [primaryActionLabel], [TextButton] for [dismissLabel].
 ///
 /// Accessibility: the entire widget is annotated as `Fraud alert: $title` via
 /// [Semantics].
@@ -60,16 +63,16 @@ class BankFraudAlertBanner extends StatelessWidget {
   /// [BankThemeData.cardRadius].
   final BorderRadius? radius;
 
-  /// Overrides the banner background. Defaults to the accent colour at
-  /// 8% alpha.
+  /// Overrides the banner background. Defaults to [BankThemeData.surface]
+  /// washed with the accent colour at 10% alpha.
   final Color? backgroundColor;
 
   /// Overrides the body text colour. Defaults to
   /// [BankThemeData.onSurface].
   final Color? foregroundColor;
 
-  /// Accent for the left border, icon, title, and primary button.
-  /// Defaults to [BankTokens.danger].
+  /// Accent for the icon, title, and primary button. Defaults to the
+  /// brightness-appropriate [BankTokens.danger] / [BankTokens.dangerDark].
   final Color? accentColor;
 
   /// Overrides the fraud glyph. Defaults to [Icons.gpp_bad_outlined].
@@ -109,8 +112,20 @@ class BankFraudAlertBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final accent = accentColor ?? BankTokens.danger;
-    final background = backgroundColor ?? accent.withValues(alpha: 0.08);
+
+    // Brightness of the painted surface picks the AA-safe danger variant
+    // and the hairline strength.
+    final surfaceBrightness =
+        ThemeData.estimateBrightnessForColor(theme.surface);
+    final accent = accentColor ??
+        (surfaceBrightness == Brightness.dark
+            ? BankTokens.dangerDark
+            : BankTokens.danger);
+
+    // Neutral surface washed with a low-alpha danger tint, never a
+    // full-saturation slab; blended to stay opaque over any backdrop.
+    final background = backgroundColor ??
+        Color.alphaBlend(accent.withValues(alpha: 0.10), theme.surface);
     final bodyColor = foregroundColor ?? theme.onSurface;
     final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space4);
 
@@ -121,10 +136,16 @@ class BankFraudAlertBanner extends StatelessWidget {
         decoration: BoxDecoration(
           color: background,
           borderRadius: radius ?? theme.cardRadius,
-          border: Border(
-            left: BorderSide(
-              color: accent,
-              width: 4,
+          border: Border.fromBorderSide(
+            BorderSide(
+              color: BankTokens.hairlineColor(
+                theme.onSurface,
+                surfaceBrightness,
+              ),
+              // Matches BorderSide's default today; keep the token as the
+              // source of truth for hairline geometry.
+              // ignore: avoid_redundant_argument_values
+              width: BankTokens.hairlineWidth,
             ),
           ),
         ),
@@ -176,7 +197,11 @@ class BankFraudAlertBanner extends StatelessWidget {
                         onPressed: onPrimaryAction,
                         style: FilledButton.styleFrom(
                           backgroundColor: accent,
-                          foregroundColor: const Color(0xFFFFFFFF),
+                          // On light themes the accent is deep (light label);
+                          // on dark themes the accent is a light tint (dark
+                          // label). The theme surface tracks exactly that
+                          // inversion, so it stays legible on both.
+                          foregroundColor: theme.surface,
                           minimumSize: const Size(
                             double.infinity,
                             BankTokens.minTapTarget,
@@ -184,7 +209,7 @@ class BankFraudAlertBanner extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: theme.buttonRadius,
                           ),
-                          textStyle: BankTokens.labelLarge,
+                          textStyle: bankButtonTextStyle(context),
                         ),
                         child: Text(primaryActionLabel),
                       ),
@@ -205,7 +230,10 @@ class BankFraudAlertBanner extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                           horizontal: BankTokens.space3,
                         ),
-                        textStyle: BankTokens.labelMedium,
+                        textStyle: bankButtonTextStyle(
+                          context,
+                          BankTokens.labelMedium,
+                        ),
                       ),
                       child: Text(dismissLabel),
                     ),

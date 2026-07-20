@@ -5,6 +5,7 @@ import '../common/bank_icon_spec.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../theme/bank_theme_data.dart';
+import '../theme/button_text_style.dart';
 import '../theme/tokens.dart';
 
 /// Gamified stepped savings challenge card (26-week or 52-week style).
@@ -391,9 +392,12 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
           onPressed: busy ? null : _handleDeposit,
           style: FilledButton.styleFrom(
             backgroundColor: accent,
+            // Explicit foreground on every state so the label can never
+            // resolve to an invisible colour on a custom accent.
             foregroundColor: theme.onPrimary,
             disabledBackgroundColor: accent.withValues(alpha: 0.6),
-            textStyle: BankTokens.labelLarge,
+            disabledForegroundColor: theme.onPrimary,
+            textStyle: bankButtonTextStyle(context),
             shape: RoundedRectangleBorder(borderRadius: theme.buttonRadius),
           ),
           child: AnimatedSwitcher(

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/money_formatter.dart';
 import '../theme/bank_theme_data.dart';
+import '../theme/button_text_style.dart';
 import '../theme/tokens.dart';
 
 /// The reason a [BankAppGateScreen] is blocking entry to the app.
@@ -1199,7 +1200,7 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
           foregroundColor: theme.onPrimary,
           minimumSize: const Size(double.infinity, BankTokens.minTapTarget),
           shape: RoundedRectangleBorder(borderRadius: theme.buttonRadius),
-          textStyle: BankTokens.labelLarge,
+          textStyle: bankButtonTextStyle(context),
         ),
         child: Text(widget.primaryActionLabel!),
       ),
@@ -1216,7 +1217,7 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
           foregroundColor: theme.onSurfaceVariant,
           minimumSize: const Size(double.infinity, BankTokens.minTapTarget),
           shape: RoundedRectangleBorder(borderRadius: theme.buttonRadius),
-          textStyle: BankTokens.labelLarge,
+          textStyle: bankButtonTextStyle(context),
         ),
         child: Text(widget.secondaryActionLabel!),
       ),
@@ -1262,7 +1263,7 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
             BankTokens.minTapTarget,
             BankTokens.minTapTarget,
           ),
-          textStyle: BankTokens.labelLarge,
+          textStyle: bankButtonTextStyle(context),
         ),
         icon: icon,
         label: Text(label),

@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/button_text_style.dart';
 import '../../src/theme/tokens.dart';
 
 /// Full-viewport empty-state widget.
 ///
-/// Displays an optional illustration, a required [title], an optional
-/// [subtitle], and an optional call-to-action [FilledButton].
+/// Displays an illustration, a required [title], an optional [subtitle],
+/// and an optional call-to-action [FilledButton].
 ///
 /// The layout is a vertically and horizontally centred [Column]. If
 /// [illustration] is non-null it is shown with a maximum height of 180 px and
-/// a [BankTokens.space6] gap below it.
+/// a [BankTokens.space6] gap below it. When [illustration] is null a themed
+/// fallback is drawn instead: a soft circle tinted with the theme primary
+/// colour holding a brand-tinted glyph, so empty moments never render as a
+/// bare wireframe.
 ///
 /// ```dart
 /// BankEmptyStateView(
@@ -25,8 +29,14 @@ class BankEmptyStateView extends StatelessWidget {
   /// Optional illustration widget placed above the title.
   ///
   /// The host app or a preset-specific helper supplies this; Bank UI Kit does
-  /// not bundle illustration assets.
+  /// not bundle illustration assets. When null, a themed fallback is shown:
+  /// a 72 px circle filled with [BankThemeData.primary] at 10% alpha holding
+  /// [emptyIcon] in the primary colour.
   final Widget? illustration;
+
+  /// Glyph of the default illustration fallback shown when [illustration]
+  /// is null. Defaults to [Icons.inbox_outlined].
+  final IconData? emptyIcon;
 
   /// Short descriptive title. Required.
   final String title;
@@ -45,8 +55,8 @@ class BankEmptyStateView extends StatelessWidget {
   /// `EdgeInsets.symmetric(horizontal: BankTokens.space8)`.
   final EdgeInsetsGeometry? padding;
 
-  /// Background of the call-to-action button. Defaults to
-  /// [BankThemeData.primary].
+  /// Background of the call-to-action button and tint of the default
+  /// illustration fallback. Defaults to [BankThemeData.primary].
   final Color? accentColor;
 
   /// Merged over the computed title style ([BankTokens.headlineMedium]
@@ -65,6 +75,7 @@ class BankEmptyStateView extends StatelessWidget {
     required this.title,
     super.key,
     this.illustration,
+    this.emptyIcon,
     this.subtitle,
     this.actionLabel,
     this.onAction,
@@ -88,13 +99,11 @@ class BankEmptyStateView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (illustration != null) ...[
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 180),
-                child: illustration,
-              ),
-              const SizedBox(height: BankTokens.space6),
-            ],
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 180),
+              child: illustration ?? _defaultIllustration(theme),
+            ),
+            const SizedBox(height: BankTokens.space6),
             Text(
               title,
               style: BankTokens.headlineMedium
@@ -126,7 +135,7 @@ class BankEmptyStateView extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: theme.buttonRadius,
                     ),
-                    textStyle: BankTokens.labelLarge,
+                    textStyle: bankButtonTextStyle(context),
                   ),
                   child: Text(actionLabel!),
                 ),
@@ -145,5 +154,26 @@ class BankEmptyStateView extends StatelessWidget {
       );
     }
     return content;
+  }
+
+  /// Themed fallback illustration: a soft primary-tinted circle holding a
+  /// brand-tinted glyph. Excluded from semantics — it is decorative.
+  Widget _defaultIllustration(BankThemeData theme) {
+    final accent = accentColor ?? theme.primary;
+    return ExcludeSemantics(
+      child: Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.10),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          emptyIcon ?? Icons.inbox_outlined,
+          size: 32,
+          color: accent,
+        ),
+      ),
+    );
   }
 }

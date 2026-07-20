@@ -73,8 +73,10 @@ class BankBiometricPromptButton extends StatefulWidget {
   /// [BankBiometricType.fingerprint].
   final BankBiometricType type;
 
-  /// Overrides the idle glyph. Defaults to the [type]-appropriate
-  /// [BankIcons] glyph.
+  /// Overrides the idle glyph. When null, [BankBiometricType.fingerprint]
+  /// uses [BankIcons.biometric] and [BankBiometricType.face] draws a
+  /// built-in Face-ID-style glyph (corner brackets, eyes, and nose)
+  /// stroked in the accent colour.
   final IconData? icon;
 
   /// Overrides the success glyph. Defaults to [BankIcons.success].
@@ -286,14 +288,34 @@ class _BankBiometricPromptButtonState extends State<BankBiometricPromptButton>
               size: resolvedIconSize,
               color: widget.errorColor ?? bankTheme.negativeBalance,
             ),
-          _ButtonState.idle => Icon(
-              widget.icon ?? _iconForType,
-              key: const ValueKey<String>('idle'),
-              size: resolvedIconSize,
-              color: resolvedAccent,
+          _ButtonState.idle => _buildIdleGlyph(
+              resolvedAccent,
+              resolvedIconSize,
             ),
         },
       ),
+    );
+  }
+
+  /// Idle glyph: the caller's [BankBiometricPromptButton.icon] override, the
+  /// fingerprint icon, or (for [BankBiometricType.face]) a vector Face-ID
+  /// glyph drawn in the accent colour so it matches the platform styling
+  /// without shipping raster art.
+  Widget _buildIdleGlyph(Color accent, double size) {
+    if (widget.icon == null && widget.type == BankBiometricType.face) {
+      return ExcludeSemantics(
+        key: const ValueKey<String>('idle'),
+        child: CustomPaint(
+          size: Size.square(size),
+          painter: _FaceIdGlyphPainter(color: accent),
+        ),
+      );
+    }
+    return Icon(
+      widget.icon ?? _iconForType,
+      key: const ValueKey<String>('idle'),
+      size: size,
+      color: accent,
     );
   }
 
@@ -311,4 +333,114 @@ class _BankBiometricPromptButtonState extends State<BankBiometricPromptButton>
         BankBiometricType.fingerprint => BankIcons.biometric,
         BankBiometricType.face => BankIcons.faceId,
       };
+}
+
+// ---------------------------------------------------------------------------
+// _FaceIdGlyphPainter
+// ---------------------------------------------------------------------------
+
+/// Paints a Face-ID-style glyph: four rounded-square corner brackets
+/// framing two eye strokes and a nose stroke.
+///
+/// Purely geometric (no bundled art), stroked in a single [color] so it
+/// follows the button's accent, and symmetric enough to read correctly in
+/// both text directions.
+class _FaceIdGlyphPainter extends CustomPainter {
+  /// Stroke colour of every element of the glyph.
+  final Color color;
+
+  const _FaceIdGlyphPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.shortestSide;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = s * 0.07
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    // Centre the square glyph inside whatever rect we were given.
+    final origin = Offset(
+      (size.width - s) / 2,
+      (size.height - s) / 2,
+    );
+    canvas.save();
+    canvas.translate(origin.dx, origin.dy);
+
+    final inset = s * 0.06; // Keeps round caps inside the canvas.
+    final side = s - inset * 2;
+    final radius = side * 0.28; // Corner radius of the bracket arcs.
+    final arm = side * 0.14; // Straight tail after each arc.
+
+    final left = inset;
+    final top = inset;
+    final right = inset + side;
+    final bottom = inset + side;
+
+    // Four corner brackets: straight arm, 90-degree arc, straight arm.
+    final brackets = Path()
+      // Top-left.
+      ..moveTo(left, top + radius + arm)
+      ..lineTo(left, top + radius)
+      ..arcToPoint(
+        Offset(left + radius, top),
+        radius: Radius.circular(radius),
+      )
+      ..lineTo(left + radius + arm, top)
+      // Top-right.
+      ..moveTo(right - radius - arm, top)
+      ..lineTo(right - radius, top)
+      ..arcToPoint(
+        Offset(right, top + radius),
+        radius: Radius.circular(radius),
+      )
+      ..lineTo(right, top + radius + arm)
+      // Bottom-right.
+      ..moveTo(right, bottom - radius - arm)
+      ..lineTo(right, bottom - radius)
+      ..arcToPoint(
+        Offset(right - radius, bottom),
+        radius: Radius.circular(radius),
+      )
+      ..lineTo(right - radius - arm, bottom)
+      // Bottom-left.
+      ..moveTo(left + radius + arm, bottom)
+      ..lineTo(left + radius, bottom)
+      ..arcToPoint(
+        Offset(left, bottom - radius),
+        radius: Radius.circular(radius),
+      )
+      ..lineTo(left, bottom - radius - arm);
+    canvas.drawPath(brackets, paint);
+
+    // Two eye strokes.
+    final eyeTop = s * 0.36;
+    final eyeBottom = s * 0.46;
+    canvas
+      ..drawLine(
+        Offset(s * 0.34, eyeTop),
+        Offset(s * 0.34, eyeBottom),
+        paint,
+      )
+      ..drawLine(
+        Offset(s * 0.66, eyeTop),
+        Offset(s * 0.66, eyeBottom),
+        paint,
+      );
+
+    // Nose: a vertical stroke that hooks gently at the base.
+    final nose = Path()
+      ..moveTo(s * 0.52, s * 0.38)
+      ..lineTo(s * 0.52, s * 0.56)
+      ..quadraticBezierTo(s * 0.52, s * 0.62, s * 0.45, s * 0.62);
+    canvas.drawPath(nose, paint);
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_FaceIdGlyphPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
