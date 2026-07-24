@@ -12,6 +12,7 @@ Widget _host(Widget child, {bool privacy = false}) => BankUiScope(
 
 void main() {
   testWidgets('BankPaymentCard renders label, number, network', (tester) async {
+    final semantics = tester.ensureSemantics();
     await tester.pumpWidget(
       _host(
         const SizedBox(
@@ -29,8 +30,16 @@ void main() {
     expect(find.text('Everyday'), findsOneWidget);
     expect(find.text('•••• 8695'), findsOneWidget);
     expect(find.text('ALEX MORGAN'), findsOneWidget);
-    expect(find.text('VISA'), findsOneWidget);
+    // The Visa mark is vector-drawn — no counterfeit text wordmark — but it
+    // still announces the network to assistive technologies.
+    expect(find.text('VISA'), findsNothing);
+    expect(find.byType(BankNetworkBadge), findsOneWidget);
+    expect(
+      tester.getSemantics(find.byType(BankNetworkBadge)).label,
+      contains('Visa'),
+    );
     expect(tester.takeException(), isNull);
+    semantics.dispose();
   });
 
   testWidgets('BankPaymentCard shows balance and masks under privacy',
@@ -55,6 +64,105 @@ void main() {
   testWidgets('BankNetworkBadge renders each network', (tester) async {
     for (final n in BankCardNetwork.values) {
       await tester.pumpWidget(_host(BankNetworkBadge(network: n)));
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets('BankNetworkBadge markBuilder overrides the procedural mark',
+      (tester) async {
+    await tester.pumpWidget(
+      _host(
+        BankNetworkBadge(
+          network: BankCardNetwork.visa,
+          markBuilder: (context, network, height) =>
+              SizedBox(key: const Key('custom-mark'), height: height),
+        ),
+      ),
+    );
+    expect(find.byKey(const Key('custom-mark')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      'virtual card built-in flip button clears the network mark (LTR + RTL)',
+      (tester) async {
+    final account = BankAccount(
+      id: 'a1',
+      name: 'Everyday',
+      maskedNumber: '•••• 4291',
+      balance: Money.fromDouble(1200, 'GBP'),
+      status: BankAccountStatus.active,
+      type: BankAccountType.current,
+      currencyCode: 'GBP',
+    );
+
+    for (final direction in [TextDirection.ltr, TextDirection.rtl]) {
+      await tester.pumpWidget(
+        _host(
+          Directionality(
+            textDirection: direction,
+            child: BankVirtualCardWidget(
+              account: account,
+              network: BankCardNetwork.visa,
+              flipTrigger: BankFlipTrigger.builtInButton,
+              width: 340,
+            ),
+          ),
+        ),
+      );
+      final markRect = tester.getRect(find.byType(BankNetworkBadge));
+      final buttonRect = tester.getRect(find.byIcon(Icons.flip_outlined));
+      expect(
+        markRect.overlaps(buttonRect),
+        isFalse,
+        reason: 'network mark must not collide with the flip button '
+            '($direction)',
+      );
+      final cardRect = tester.getRect(find.byType(BankVirtualCardWidget));
+      if (direction == TextDirection.rtl) {
+        // The button tracks the top-end corner: physical LEFT half in RTL.
+        expect(buttonRect.center.dx, lessThan(cardRect.center.dx));
+      } else {
+        expect(buttonRect.center.dx, greaterThan(cardRect.center.dx));
+      }
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets(
+      'horizontal card built-in flip button clears the badge (LTR + RTL)',
+      (tester) async {
+    final account = BankAccount(
+      id: 'a2',
+      name: 'Everyday',
+      maskedNumber: '•••• 4291',
+      balance: Money.fromDouble(1200, 'GBP'),
+      status: BankAccountStatus.active,
+      type: BankAccountType.current,
+      currencyCode: 'GBP',
+    );
+
+    for (final direction in [TextDirection.ltr, TextDirection.rtl]) {
+      await tester.pumpWidget(
+        _host(
+          Directionality(
+            textDirection: direction,
+            child: BankHorizontalAccountCard(
+              account: account,
+              trigger: BankFlipTrigger.builtInButton,
+              width: 340,
+            ),
+          ),
+        ),
+      );
+      final badgeRect = tester.getRect(find.text('CURRENT'));
+      final buttonRect = tester.getRect(find.byIcon(Icons.flip_outlined));
+      expect(
+        badgeRect.overlaps(buttonRect),
+        isFalse,
+        reason: 'account-type badge must not collide with the flip button '
+            '($direction)',
+      );
       expect(tester.takeException(), isNull);
     }
   });
@@ -104,8 +212,8 @@ void main() {
         ),
       ),
     );
-    expect(find.text('AVAILABLE BALANCE'), findsOneWidget);
-    expect(find.text('SAVINGS'), findsOneWidget);
+    expect(find.text('Available Balance'), findsOneWidget);
+    expect(find.text('Savings'), findsOneWidget);
     expect(find.text('+2.4%'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../common/bank_country_flag.dart';
 import '../common/bank_country_picker.dart';
 import '../common/bank_text_field.dart';
 import '../theme/bank_theme_data.dart';
@@ -540,9 +541,14 @@ class BankAddressPreview extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              address.country.flagEmoji,
-              style: const TextStyle(fontSize: 20),
+            // Nudge the 16 px chip to sit optically centred against the
+            // ~20 px first line of bodyMedium address text.
+            Padding(
+              padding: const EdgeInsetsDirectional.only(top: 2),
+              child: BankCountryFlag(
+                isoCode: address.country.isoCode,
+                countryName: address.country.name,
+              ),
             ),
             const SizedBox(width: BankTokens.space3),
             Expanded(

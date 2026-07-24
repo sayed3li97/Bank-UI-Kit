@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_icon_spec.dart';
+import '../common/bank_pressable.dart';
 import '../models/models.dart';
 import '../theme/bank_theme_data.dart';
+import '../theme/card_pattern.dart';
 import '../theme/tokens.dart';
 import 'bank_card_network_badge.dart';
 
@@ -109,14 +111,16 @@ class BankPaymentCard extends StatelessWidget {
   /// touching the card UI. Receives the base surface as its child.
   final Widget Function(BuildContext context, Widget child)? surfaceBuilder;
 
-  /// Base gradient. Defaults to [BankThemeData.accentGradient] (or a primary
-  /// gradient) when both this and [backgroundColor] are null.
+  /// Base gradient. Defaults to [BankThemeData.cardSurfaceGradient], then
+  /// [BankThemeData.accentGradient] (or a primary gradient) when both this
+  /// and [backgroundColor] are null.
   final Gradient? gradient;
 
   /// Flat base colour, used when [gradient] is null.
   final Color? backgroundColor;
 
-  /// Foreground colour for all card text/marks. Defaults to white.
+  /// Foreground colour for all card text/marks. Defaults to
+  /// [BankThemeData.onPrimary].
   final Color? foregroundColor;
 
   /// Whether to draw the EMV chip.
@@ -143,8 +147,8 @@ class BankPaymentCard extends StatelessWidget {
   /// Inner padding. Defaults to [BankTokens.space5].
   final EdgeInsetsGeometry? padding;
 
-  /// Card shadow. Defaults to [BankTokens.shadowFloating]; pass `const []` to
-  /// flatten.
+  /// Card shadow. Defaults to [BankTokens.shadowFloatingFor] of the theme
+  /// background brightness; pass `const []` to flatten.
   final List<BoxShadow>? shadow;
 
   /// Aspect ratio (width / height). Defaults to [kBankCardAspectRatio] (1.586).
@@ -196,7 +200,7 @@ class BankPaymentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final fg = foregroundColor ?? Colors.white;
+    final fg = foregroundColor ?? theme.onPrimary;
     final cardRadius = radius ?? theme.cardRadius;
     final showScrim = scrim ?? (artwork != null);
 
@@ -204,7 +208,8 @@ class BankPaymentCard extends StatelessWidget {
       color: gradient == null ? (backgroundColor ?? theme.primary) : null,
       gradient: gradient ??
           (backgroundColor == null
-              ? (theme.accentGradient ??
+              ? (theme.cardSurfaceGradient ??
+                  theme.accentGradient ??
                   LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -220,6 +225,19 @@ class BankPaymentCard extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         base,
+        // Brand-owned generative texture; artwork replaces it when present.
+        if (theme.cardPattern != BankCardPattern.none && artwork == null)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: BankCardPatternPainter(
+                  pattern: theme.cardPattern,
+                  color: theme.cardPatternColor ??
+                      theme.onPrimary.withValues(alpha: 0.08),
+                ),
+              ),
+            ),
+          ),
         if (artwork != null)
           Positioned.fill(child: ExcludeSemantics(child: artwork)),
         if (showScrim)
@@ -261,18 +279,27 @@ class BankPaymentCard extends StatelessWidget {
     final decorated = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: cardRadius,
-        boxShadow: shadow ?? BankTokens.shadowFloating,
+        boxShadow: shadow ??
+            BankTokens.shadowFloatingFor(
+              ThemeData.estimateBrightnessForColor(theme.background),
+            ),
       ),
       child: ClipRRect(borderRadius: cardRadius, child: stack),
     );
 
     final sized = _sized(decorated);
+    final resolvedSemanticLabel = semanticLabel ?? _semantics();
 
-    return Semantics(
-      label: semanticLabel ?? _semantics(),
-      button: onTap != null,
-      child:
-          onTap == null ? sized : GestureDetector(onTap: onTap, child: sized),
+    if (onTap == null) {
+      return Semantics(label: resolvedSemanticLabel, child: sized);
+    }
+    // Kit-wide pressed-scale / hover / focus treatment for tappable cards.
+    return BankPressable(
+      onTap: onTap,
+      borderRadius: cardRadius,
+      overlayColor: fg,
+      semanticLabel: resolvedSemanticLabel,
+      child: sized,
     );
   }
 
@@ -309,11 +336,12 @@ class BankPaymentCard extends StatelessWidget {
   }
 
   Widget _face(BankThemeData theme, Color fg) {
-    final caption = BankTokens.labelSmall
+    // Shared card-family micro-label treatment: tracked all-caps caption at
+    // ~70% foreground alpha.
+    final caption = BankTokens.caption
         .copyWith(
-          color: fg.withValues(alpha: 0.78),
-          letterSpacing: 0.8,
-          fontWeight: FontWeight.w600,
+          color: fg.withValues(alpha: 0.70),
+          letterSpacing: 1.2,
         )
         .merge(captionStyle);
 
@@ -334,9 +362,10 @@ class BankPaymentCard extends StatelessWidget {
                 if (network != BankCardNetwork.generic)
                   BankNetworkBadge(
                     network: network,
-                    // Tint only the typographic marks; Mastercard keeps its
-                    // brand colours rather than adopting the card foreground.
-                    color: network == BankCardNetwork.mastercard ? null : fg,
+                    // Tint only the monochrome Visa wordmark; Mastercard and
+                    // Amex keep their brand colours rather than adopting the
+                    // card foreground.
+                    color: network == BankCardNetwork.visa ? fg : null,
                   ),
               ],
             ),
@@ -364,26 +393,32 @@ class BankPaymentCard extends StatelessWidget {
             if (balance != null) ...[
               Text(balanceLabel.toUpperCase(), style: caption),
               const SizedBox(height: 2),
+              // The numeral base (tier size/weight, tabular figures) comes
+              // from the balance-text size ramp; the caller style merges
+              // over it.
               BankBalanceText(
                 money: balance!,
-                size: BankBalanceSize.medium,
-                style: BankTokens.headlineMedium
-                    .copyWith(color: fg, fontWeight: FontWeight.w800)
-                    .merge(balanceStyle),
+                // Explicit against future default changes.
+                // ignore: avoid_redundant_argument_values
+                size: BankBalanceSize.large,
+                style: TextStyle(color: fg).merge(balanceStyle),
               ),
               const SizedBox(height: BankTokens.space3),
             ],
             if (!numberless && maskedNumber != null) ...[
-              Text(
-                maskedNumber!,
+              // Shared card-family PAN treatment (see `bankMaskedPanSpan`).
+              Text.rich(
+                bankMaskedPanSpan(
+                  maskedNumber!,
+                  BankTokens.numeralMedium
+                      .copyWith(
+                        color: fg,
+                        letterSpacing: 2.4,
+                        height: 1,
+                      )
+                      .merge(numberStyle),
+                ),
                 textDirection: TextDirection.ltr,
-                style: BankTokens.bodyLarge
-                    .copyWith(
-                      color: fg,
-                      letterSpacing: 2.2,
-                      fontWeight: FontWeight.w600,
-                    )
-                    .merge(numberStyle),
               ),
               const SizedBox(height: BankTokens.space3),
             ],
@@ -419,9 +454,15 @@ class BankPaymentCard extends StatelessWidget {
                       Text(
                         expiry!,
                         textDirection: TextDirection.ltr,
-                        style: BankTokens.labelLarge
-                            .copyWith(color: fg, fontWeight: FontWeight.w700)
-                            .merge(expiryStyle),
+                        style: BankTokens.labelLarge.copyWith(
+                          color: fg,
+                          fontWeight: FontWeight.w700,
+                          // Tabular so the expiry block's edge is stable
+                          // across carousel cards.
+                          fontFeatures: const [
+                            FontFeature.tabularFigures(),
+                          ],
+                        ).merge(expiryStyle),
                       ),
                     ],
                   ),
@@ -452,32 +493,6 @@ class BankPaymentCard extends StatelessWidget {
     );
   }
 
-  Widget _chip(BankThemeData theme) {
-    final gold = chipColor ?? const Color(0xFFE7C976);
-    return Container(
-      width: 44,
-      height: 32,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [gold, gold.withValues(alpha: 0.8)],
-        ),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Center(
-        child: Container(
-          width: 26,
-          height: 18,
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.black.withValues(alpha: 0.28),
-              width: 0.8,
-            ),
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _chip(BankThemeData theme) =>
+      BankCardChip(width: 44, height: 32, color: chipColor);
 }

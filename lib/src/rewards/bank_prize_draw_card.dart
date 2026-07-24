@@ -7,6 +7,7 @@ import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
+import '../theme/button_text_style.dart';
 import '../theme/numeral_style.dart';
 import '../theme/tokens.dart';
 
@@ -266,7 +267,21 @@ class BankPrizeDrawCard extends StatelessWidget {
     this.header,
     this.footer,
     this.semanticLabel,
-  });
+  })  : assert(
+          addMoneyLabel != '',
+          'addMoneyLabel must not be empty: a blank CTA renders as a bare '
+          'pill. Hide the action by leaving onAddMoney null instead.',
+        ),
+        assert(
+          sendGiftLabel != '',
+          'sendGiftLabel must not be empty: a blank CTA renders as a bare '
+          'pill. Hide the action by leaving onSendGift null instead.',
+        ),
+        assert(
+          winnersLabel != '',
+          'winnersLabel must not be empty: a blank CTA renders as a bare '
+          'pill. Hide the action by leaving onViewWinners null instead.',
+        );
 
   List<BankPrizeDraw> get _sortedDraws {
     final sorted = List<BankPrizeDraw>.of(draws)
@@ -407,7 +422,7 @@ class BankPrizeDrawCard extends StatelessWidget {
                 ],
               ],
               const SizedBox(height: BankTokens.space4),
-              _buildActions(theme, accent),
+              _buildActions(context, theme, accent),
               if (footer != null) ...[
                 const SizedBox(height: BankTokens.space3),
                 footer!,
@@ -439,62 +454,83 @@ class BankPrizeDrawCard extends StatelessWidget {
     return buffer.toString();
   }
 
-  Widget _buildActions(BankThemeData theme, Color accent) {
+  Widget _buildActions(
+    BuildContext context,
+    BankThemeData theme,
+    Color accent,
+  ) {
     final buttonShape = RoundedRectangleBorder(
       borderRadius: radius == null ? theme.buttonRadius : radius!,
     );
+
+    // Debug builds assert against empty labels in the constructor; release
+    // builds skip the affected button instead of rendering a blank pill.
+    final showAddMoney = addMoneyLabel.isNotEmpty;
+    final showSendGift = sendGiftLabel.isNotEmpty;
+    final showWinners = winnersLabel.isNotEmpty;
+    if (!showAddMoney && !showSendGift && !showWinners) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: SizedBox(
-                height: BankTokens.minTapTarget,
-                child: FilledButton(
-                  onPressed: onAddMoney,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: accent,
-                    foregroundColor: theme.onPrimary,
-                    shape: buttonShape,
-                    textStyle: BankTokens.labelLarge,
+        if (showAddMoney || showSendGift)
+          Row(
+            children: [
+              if (showAddMoney)
+                Expanded(
+                  child: SizedBox(
+                    height: BankTokens.minTapTarget,
+                    child: FilledButton(
+                      onPressed: onAddMoney,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: accent,
+                        foregroundColor: theme.onPrimary,
+                        shape: buttonShape,
+                        textStyle: bankButtonTextStyle(context),
+                      ),
+                      child: Text(addMoneyLabel),
+                    ),
                   ),
-                  child: Text(addMoneyLabel),
                 ),
-              ),
-            ),
-            const SizedBox(width: BankTokens.space3),
-            Expanded(
-              child: SizedBox(
-                height: BankTokens.minTapTarget,
-                child: OutlinedButton(
-                  onPressed: onSendGift,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: accent,
-                    side: BorderSide(color: theme.outline),
-                    shape: buttonShape,
-                    textStyle: BankTokens.labelLarge,
+              if (showAddMoney && showSendGift)
+                const SizedBox(width: BankTokens.space3),
+              if (showSendGift)
+                Expanded(
+                  child: SizedBox(
+                    height: BankTokens.minTapTarget,
+                    child: OutlinedButton(
+                      onPressed: onSendGift,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: accent,
+                        side: BorderSide(color: theme.outline),
+                        shape: buttonShape,
+                        textStyle: bankButtonTextStyle(context),
+                      ),
+                      child: Text(sendGiftLabel),
+                    ),
                   ),
-                  child: Text(sendGiftLabel),
                 ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: BankTokens.space1),
-        SizedBox(
-          height: BankTokens.minTapTarget,
-          child: TextButton(
-            onPressed: onViewWinners,
-            style: TextButton.styleFrom(
-              foregroundColor: accent,
-              shape: buttonShape,
-              textStyle: BankTokens.labelLarge,
-            ),
-            child: Text(winnersLabel),
+            ],
           ),
-        ),
+        if (showWinners) ...[
+          if (showAddMoney || showSendGift)
+            const SizedBox(height: BankTokens.space1),
+          SizedBox(
+            height: BankTokens.minTapTarget,
+            child: TextButton(
+              onPressed: onViewWinners,
+              style: TextButton.styleFrom(
+                foregroundColor: accent,
+                shape: buttonShape,
+                textStyle: bankButtonTextStyle(context),
+              ),
+              child: Text(winnersLabel),
+            ),
+          ),
+        ],
       ],
     );
   }

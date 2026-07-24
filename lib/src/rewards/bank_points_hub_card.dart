@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../common/bank_icon_spec.dart';
+import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
@@ -154,6 +155,7 @@ class BankPointsHubCard extends StatelessWidget {
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
     final hidden = scope.privacyEnabled;
+    final depth = BankSurfaceDepth.resolve(theme);
 
     final formattedBalance = _formatPoints(pointsBalance, scope.numeralStyle);
     final displayBalance =
@@ -168,7 +170,8 @@ class BankPointsHubCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.surface,
           borderRadius: theme.cardRadius,
-          boxShadow: BankTokens.shadowCard,
+          boxShadow: depth.shadow,
+          border: depth.border,
         ),
         child: Padding(
           padding: const EdgeInsets.all(BankTokens.space5),

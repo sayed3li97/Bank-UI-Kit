@@ -89,27 +89,27 @@ class _CardsScreenState extends State<CardsScreen> {
             ),
           ),
           const SizedBox(height: BankTokens.space3),
-          SegmentedButton<BankCardSurface>(
+          BankSegmentedControl<BankCardSurface>(
             segments: const [
-              ButtonSegment(
+              BankSegmentItem(
                 value: BankCardSurface.flatColor,
-                label: Text('Flat'),
+                label: 'Flat',
               ),
-              ButtonSegment(
+              BankSegmentItem(
                 value: BankCardSurface.gradient,
-                label: Text('Gradient'),
+                label: 'Gradient',
               ),
-              ButtonSegment(
+              BankSegmentItem(
                 value: BankCardSurface.metallicSweep,
-                label: Text('Metal'),
+                label: 'Metal',
               ),
-              ButtonSegment(
+              BankSegmentItem(
                 value: BankCardSurface.animatedMesh,
-                label: Text('Mesh'),
+                label: 'Mesh',
               ),
             ],
-            selected: {_surface},
-            onSelectionChanged: (s) => setState(() => _surface = s.first),
+            selected: _surface,
+            onChanged: (v) => setState(() => _surface = v),
           ),
           const SizedBox(height: BankTokens.space4),
 
@@ -622,8 +622,10 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return BankPressable(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(BankTokens.radiusFull),
+      semanticLabel: label,
       child: AnimatedContainer(
         duration: BankTokens.durationFast,
         padding: const EdgeInsets.symmetric(

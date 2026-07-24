@@ -27,6 +27,29 @@
     "medium": 4.0,
     "high": 8.0
   },
+  "interaction": {
+    "stateLayerHoverOpacity": 0.08,
+    "stateLayerPressedOpacity": 0.12,
+    "stateLayerFocusOpacity": 0.12,
+    "disabledOpacity": 0.38,
+    "pressScale": 0.98
+  },
   "fontFamily": "packages/bank_ui_kit/SpaceGrotesk",
-  "useGlow": false
+  "useGlow": false,
+  "cardSurfaceGradient": {
+    "type": "linear",
+    "begin": [
+      -1.0,
+      -1.0
+    ],
+    "end": [
+      1.0,
+      1.0
+    ],
+    "colors": [
+      "#4A7C80FF",
+      "#3E7074FF",
+      "#326669FF"
+    ]
+  }
 }

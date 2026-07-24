@@ -11,6 +11,15 @@ class StatesScreen extends StatefulWidget {
 class _StatesScreenState extends State<StatesScreen> {
   bool _showSuccess = false;
 
+  /// Product copy per toast variant, instead of generated
+  /// `enumName toast message` strings.
+  static String _toastMessage(BankToastVariant variant) => switch (variant) {
+        BankToastVariant.success => 'Transfer of £250.00 sent to Alice',
+        BankToastVariant.error => 'Payment failed. Check your details.',
+        BankToastVariant.info => 'Planned maintenance Sunday 02:00–04:00',
+        BankToastVariant.warning => 'Your session expires in 2 minutes',
+      };
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
@@ -93,8 +102,7 @@ class _StatesScreenState extends State<StatesScreen> {
             (v) => Padding(
               padding: const EdgeInsets.only(bottom: BankTokens.space2),
               child: BankToastBanner(
-                message:
-                    '${v.name.replaceFirst(v.name[0], v.name[0].toUpperCase())} toast message',
+                message: _toastMessage(v),
                 variant: v,
                 isVisible: true,
                 onDismiss: () {},

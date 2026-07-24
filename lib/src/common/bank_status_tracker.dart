@@ -462,15 +462,28 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
   // Connectors
   // ---------------------------------------------------------------------
 
+  /// Vertical distance between the indicator box edge and the circle edge:
+  /// the amount each connector must extend beyond its layout slot (above
+  /// into this row's indicator box, below into the next row's) so the line
+  /// meets both circles' edges exactly.
+  static const double _connectorOvershoot =
+      (_indicatorExtent - _circleSize) / 2;
+
   Widget _buildConnector(BankThemeData theme, int index) {
-    // Connector below stage `index` links it to stage `index + 1`.
+    // Connector below stage `index` links it to stage `index + 1`. Its
+    // layout slot spans from this indicator box's bottom edge to the next
+    // one's top edge; the painter overshoots by the box-to-circle gap on
+    // both ends so the segment joins the two circle edges with no float.
     if (widget.failed && index >= widget.currentIndex) {
       return Center(
         child: SizedBox(
           width: _connectorWidth,
           height: double.infinity,
           child: CustomPaint(
-            painter: _DashedConnectorPainter(color: _inactive(theme)),
+            painter: _DashedConnectorPainter(
+              color: _inactive(theme),
+              overshoot: _connectorOvershoot,
+            ),
           ),
         ),
       );
@@ -482,7 +495,12 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
       child: SizedBox(
         width: _connectorWidth,
         height: double.infinity,
-        child: ColoredBox(color: color),
+        child: CustomPaint(
+          painter: _SolidConnectorPainter(
+            color: color,
+            overshoot: _connectorOvershoot,
+          ),
+        ),
       ),
     );
   }
@@ -561,13 +579,44 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
 }
 
 // ---------------------------------------------------------------------------
-// Dashed connector painter
+// Connector painters
+//
+// Both painters deliberately draw beyond their layout slot by `overshoot`
+// on each end (their ancestors do not clip), so every segment runs from
+// the bottom edge of one step circle to the top edge of the next.
 // ---------------------------------------------------------------------------
 
-class _DashedConnectorPainter extends CustomPainter {
-  const _DashedConnectorPainter({required this.color});
+class _SolidConnectorPainter extends CustomPainter {
+  const _SolidConnectorPainter({
+    required this.color,
+    this.overshoot = 0,
+  });
 
   final Color color;
+  final double overshoot;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    canvas.drawRect(
+      Rect.fromLTRB(0, -overshoot, size.width, size.height + overshoot),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_SolidConnectorPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.overshoot != overshoot;
+}
+
+class _DashedConnectorPainter extends CustomPainter {
+  const _DashedConnectorPainter({
+    required this.color,
+    this.overshoot = 0,
+  });
+
+  final Color color;
+  final double overshoot;
 
   static const double _dashLength = 4;
   static const double _gapLength = 4;
@@ -579,11 +628,12 @@ class _DashedConnectorPainter extends CustomPainter {
       ..strokeWidth = size.width
       ..strokeCap = StrokeCap.round;
     final x = size.width / 2;
-    var y = 0.0;
-    while (y < size.height) {
+    final endY = size.height + overshoot;
+    var y = -overshoot;
+    while (y < endY) {
       canvas.drawLine(
         Offset(x, y),
-        Offset(x, math.min(y + _dashLength, size.height)),
+        Offset(x, math.min(y + _dashLength, endY)),
         paint,
       );
       y += _dashLength + _gapLength;
@@ -592,5 +642,5 @@ class _DashedConnectorPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_DashedConnectorPainter oldDelegate) =>
-      oldDelegate.color != color;
+      oldDelegate.color != color || oldDelegate.overshoot != overshoot;
 }

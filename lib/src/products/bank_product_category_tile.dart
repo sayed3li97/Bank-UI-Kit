@@ -5,6 +5,25 @@ import '../theme/bank_theme_data.dart';
 import '../theme/numeral_style.dart';
 import '../theme/tokens.dart';
 
+/// How a [BankProductCategoryTile] arranges its disc, text, and trailing
+/// affordance.
+enum BankProductCategoryTileLayout {
+  /// Measure the available width and pick [horizontal] or [vertical]
+  /// automatically (vertical below the compact breakpoint).
+  ///
+  /// Uses a [LayoutBuilder] internally, so it cannot answer
+  /// intrinsic-dimension queries; hosts that rely on [IntrinsicHeight] /
+  /// [IntrinsicWidth] must pass an explicit layout instead.
+  auto,
+
+  /// The classic single-row anatomy: disc, text column, trailing badge.
+  horizontal,
+
+  /// Stacked compact anatomy: disc and badge on a header row, then the
+  /// title and subtitle at full tile width.
+  vertical,
+}
+
 /// A tappable category tile for a product-catalog root grid.
 ///
 /// Renders a semantic [icon] on a tinted disc, a [title] (e.g. `'Loans'`),
@@ -65,6 +84,10 @@ class BankProductCategoryTile extends StatelessWidget {
     this.discDiameter,
     this.iconSize,
     this.minHeight,
+    this.layout = BankProductCategoryTileLayout.auto,
+    this.compactBreakpoint,
+    this.titleMaxLines,
+    this.subtitleMaxLines,
     this.semanticLabel,
   });
 
@@ -146,6 +169,25 @@ class BankProductCategoryTile extends StatelessWidget {
   /// Overrides the tile's 44 px minimum height.
   final double? minHeight;
 
+  /// How the tile arranges its anatomy. Defaults to
+  /// [BankProductCategoryTileLayout.auto], which stacks the tile below
+  /// [compactBreakpoint] so titles keep their full width instead of
+  /// ellipsizing next to the disc.
+  final BankProductCategoryTileLayout layout;
+
+  /// Width below which [BankProductCategoryTileLayout.auto] switches to
+  /// the stacked vertical anatomy. Defaults to
+  /// [BankTokens.tileCompactBreakpoint].
+  final double? compactBreakpoint;
+
+  /// Maximum title lines. Defaults to 1 in the horizontal anatomy and 2
+  /// in the vertical anatomy.
+  final int? titleMaxLines;
+
+  /// Maximum subtitle lines. Defaults to 1 in the horizontal anatomy and
+  /// 2 in the vertical anatomy.
+  final int? subtitleMaxLines;
+
   /// Overrides the computed semantics label (title, subtitle, and count).
   final String? semanticLabel;
 
@@ -165,6 +207,27 @@ class BankProductCategoryTile extends StatelessWidget {
           if (subtitle != null) subtitle!,
           if (countText != null) countText,
         ].join(', ');
+
+    // Explicit layouts build their anatomy directly (no LayoutBuilder), so
+    // they keep intrinsic-dimension support for IntrinsicHeight hosts;
+    // `auto` measures the available width and picks per tile.
+    final content = switch (layout) {
+      BankProductCategoryTileLayout.horizontal =>
+        _buildHorizontal(theme, accent, countText),
+      BankProductCategoryTileLayout.vertical =>
+        _buildVertical(theme, accent, countText),
+      BankProductCategoryTileLayout.auto => LayoutBuilder(
+          builder: (context, constraints) {
+            final breakpoint =
+                compactBreakpoint ?? BankTokens.tileCompactBreakpoint;
+            final compact = constraints.maxWidth.isFinite &&
+                constraints.maxWidth < breakpoint;
+            return compact
+                ? _buildVertical(theme, accent, countText)
+                : _buildHorizontal(theme, accent, countText);
+          },
+        ),
+    };
 
     return Semantics(
       button: true,
@@ -191,41 +254,7 @@ class BankProductCategoryTile extends StatelessWidget {
                         horizontal: BankTokens.space4,
                         vertical: BankTokens.space3,
                       ),
-                  child: Row(
-                    children: [
-                      leading ?? _buildDisc(theme, accent),
-                      const SizedBox(width: BankTokens.space3),
-                      Expanded(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: BankTokens.labelLarge
-                                  .copyWith(color: theme.onSurface)
-                                  .merge(titleStyle),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (subtitle != null) ...[
-                              const SizedBox(height: 2),
-                              Text(
-                                subtitle!,
-                                style: BankTokens.bodySmall
-                                    .copyWith(color: theme.onSurfaceVariant)
-                                    .merge(subtitleStyle),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: BankTokens.space2),
-                      _buildTrailing(theme, accent, countText),
-                    ],
-                  ),
+                  child: content,
                 ),
               ),
             ),
@@ -235,8 +264,105 @@ class BankProductCategoryTile extends StatelessWidget {
     );
   }
 
-  Widget _buildDisc(BankThemeData theme, Color accent) {
-    final diameter = discDiameter ?? 48;
+  /// The classic single-row anatomy: disc, text column, trailing badge.
+  Widget _buildHorizontal(
+    BankThemeData theme,
+    Color accent,
+    String? countText,
+  ) {
+    return Row(
+      children: [
+        leading ??
+            _buildDisc(
+              theme,
+              accent,
+              fallbackDiameter: 48,
+              fallbackIconSize: 24,
+            ),
+        const SizedBox(width: BankTokens.space3),
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTitle(theme, maxLines: titleMaxLines ?? 1),
+              if (subtitle != null) ...[
+                const SizedBox(height: 2),
+                _buildSubtitle(theme, maxLines: subtitleMaxLines ?? 1),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(width: BankTokens.space2),
+        _buildTrailing(theme, accent, countText),
+      ],
+    );
+  }
+
+  /// Stacked compact anatomy: disc and badge on a header row, then title
+  /// and subtitle at full tile width.
+  Widget _buildVertical(
+    BankThemeData theme,
+    Color accent,
+    String? countText,
+  ) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            leading ??
+                _buildDisc(
+                  theme,
+                  accent,
+                  fallbackDiameter: 40,
+                  fallbackIconSize: 20,
+                ),
+            const Spacer(),
+            _buildTrailing(theme, accent, countText),
+          ],
+        ),
+        const SizedBox(height: BankTokens.space3),
+        _buildTitle(theme, maxLines: titleMaxLines ?? 2),
+        if (subtitle != null) ...[
+          const SizedBox(height: 2),
+          _buildSubtitle(theme, maxLines: subtitleMaxLines ?? 2),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildTitle(BankThemeData theme, {required int maxLines}) {
+    return Text(
+      title,
+      style: BankTokens.labelLarge.copyWith(color: theme.onSurface).merge(
+            titleStyle,
+          ),
+      maxLines: maxLines,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _buildSubtitle(BankThemeData theme, {required int maxLines}) {
+    return Text(
+      subtitle!,
+      style: BankTokens.bodySmall
+          .copyWith(color: theme.onSurfaceVariant)
+          .merge(subtitleStyle),
+      maxLines: maxLines,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _buildDisc(
+    BankThemeData theme,
+    Color accent, {
+    required double fallbackDiameter,
+    required double fallbackIconSize,
+  }) {
+    final diameter = discDiameter ?? fallbackDiameter;
     return SizedBox.square(
       dimension: diameter,
       child: DecoratedBox(
@@ -248,7 +374,7 @@ class BankProductCategoryTile extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         child: Center(
-          child: Icon(icon, size: iconSize ?? 24, color: accent),
+          child: Icon(icon, size: iconSize ?? fallbackIconSize, color: accent),
         ),
       ),
     );

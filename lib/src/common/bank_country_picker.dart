@@ -5,16 +5,20 @@ import 'package:flutter/material.dart';
 
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
+import 'bank_country_flag.dart';
 import 'bank_icon_spec.dart';
 import 'bank_text_field.dart';
 
 /// An immutable country descriptor used by [BankCountryPicker].
 ///
-/// Flags are rendered as emoji (regional-indicator pairs) so the kit ships
-/// no image assets. A bundled list of the world's countries and major
-/// territories is available via [BankCountry.all]; hosts that need
-/// localised display names can supply their own list through
-/// `countriesOverride` on [BankCountryPicker].
+/// Flag data is stored as emoji (regional-indicator pairs) so the kit ships
+/// no image assets, but kit widgets render country indicators through
+/// [BankCountryFlag] — a crafted ISO-code chip by default, since emoji flag
+/// coverage is unreliable across platforms. Hosts can override flag
+/// rendering globally via `BankUiScopeData.flagBuilder`. A bundled list of
+/// the world's countries and major territories is available via
+/// [BankCountry.all]; hosts that need localised display names can supply
+/// their own list through `countriesOverride` on [BankCountryPicker].
 @immutable
 class BankCountry {
   /// Creates a country descriptor.
@@ -42,6 +46,9 @@ class BankCountry {
   final String name;
 
   /// Flag emoji built from regional-indicator symbols (e.g. 🇦🇪).
+  ///
+  /// Kept for API compatibility and host use; kit widgets render flags via
+  /// [BankCountryFlag] rather than drawing this string directly.
   final String flagEmoji;
 
   /// International dialling prefix including the `+` (e.g. `+971`).
@@ -578,9 +585,9 @@ class BankCountryPicker extends StatelessWidget {
                     children: [
                       if (hasValue) ...[
                         ExcludeSemantics(
-                          child: Text(
-                            country.flagEmoji,
-                            style: BankTokens.headlineSmall,
+                          child: BankCountryFlag(
+                            isoCode: country.isoCode,
+                            countryName: country.name,
                           ),
                         ),
                         const SizedBox(width: BankTokens.space3),
@@ -924,9 +931,10 @@ class _CountryRow extends StatelessWidget {
             child: Row(
               children: [
                 ExcludeSemantics(
-                  child: Text(
-                    country.flagEmoji,
-                    style: BankTokens.headlineSmall,
+                  child: BankCountryFlag(
+                    isoCode: country.isoCode,
+                    countryName: country.name,
+                    size: const Size(28, 20),
                   ),
                 ),
                 const SizedBox(width: BankTokens.space3),

@@ -15,7 +15,8 @@
     "negativeBalance": "#F87171FF",
     "pending": "#FBBF24FF",
     "frozen": "#8E8E93FF",
-    "glowColor": "#7C3AED33"
+    "glowColor": "#7C3AED33",
+    "cardPatternColor": "#FFFFFF14"
   },
   "radius": {
     "card": 20.0,
@@ -28,9 +29,32 @@
     "medium": 0.0,
     "high": 0.0
   },
+  "interaction": {
+    "stateLayerHoverOpacity": 0.08,
+    "stateLayerPressedOpacity": 0.12,
+    "stateLayerFocusOpacity": 0.12,
+    "disabledOpacity": 0.38,
+    "pressScale": 0.98
+  },
   "fontFamily": "packages/bank_ui_kit/SpaceGrotesk",
   "useGlow": true,
+  "cardPattern": "mesh",
   "accentGradient": {
+    "type": "linear",
+    "begin": [
+      -1.0,
+      -1.0
+    ],
+    "end": [
+      1.0,
+      1.0
+    ],
+    "colors": [
+      "#7C3AEDFF",
+      "#06B6D4FF"
+    ]
+  },
+  "cardSurfaceGradient": {
     "type": "linear",
     "begin": [
       -1.0,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/money_formatter.dart';
 import '../theme/bank_theme_data.dart';
+import '../theme/button_text_style.dart';
 import '../theme/tokens.dart';
 
 /// Health level of a single banking service rail.
@@ -366,7 +367,7 @@ class BankServiceStatusList extends StatelessWidget {
     );
   }
 
-  Widget _buildFooter(BankThemeData theme) {
+  Widget _buildFooter(BuildContext context, BankThemeData theme) {
     return Padding(
       padding: const EdgeInsets.only(top: BankTokens.space1),
       child: Align(
@@ -385,7 +386,7 @@ class BankServiceStatusList extends StatelessWidget {
               padding: const EdgeInsets.symmetric(
                 horizontal: BankTokens.space2,
               ),
-              textStyle: BankTokens.labelLarge,
+              textStyle: bankButtonTextStyle(context),
             ),
             child: Text(statusPageLabel),
           ),
@@ -444,7 +445,7 @@ class BankServiceStatusList extends StatelessWidget {
               if (footer != null)
                 footer!
               else if (onViewStatusPage != null)
-                _buildFooter(theme),
+                _buildFooter(context, theme),
             ],
           ),
         ),

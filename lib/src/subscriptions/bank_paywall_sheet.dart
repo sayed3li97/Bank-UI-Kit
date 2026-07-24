@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_surface_depth.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
@@ -33,8 +34,8 @@ class BankPaywallSheet extends StatelessWidget {
   /// Defaults to the theme primary.
   final Color? accentColor;
 
-  /// Overrides the plan-card shadow. Defaults to a soft black drop
-  /// shadow; pass `const []` to flatten.
+  /// Overrides the plan-card shadow. Defaults to [BankTokens.shadowCardFor]
+  /// of the theme background brightness; pass `const []` to flatten.
   final List<BoxShadow>? cardShadow;
 
   /// Glyph inside the circular header badge. Defaults to
@@ -369,24 +370,24 @@ class _SinglePlanCard extends StatelessWidget {
       hideFraction: true,
     );
 
+    // Raised card in the kit depth language: token shadow resolved against
+    // the theme background brightness. The accent outline is a semantic
+    // upgrade highlight; the current plan keeps only the dark-surface
+    // hairline (invisible on light) so outline and shadow never double up.
+    final depth = BankSurfaceDepth.resolve(
+      bankTheme,
+      shadow: shadow,
+      border: isCurrent ? null : Border.all(color: accent, width: 2),
+    );
+
     return Container(
       width: 180,
       padding: const EdgeInsets.all(BankTokens.space4),
       decoration: BoxDecoration(
         color: bankTheme.surface,
         borderRadius: bankTheme.cardRadius,
-        border: Border.all(
-          color: isCurrent ? bankTheme.outline.withValues(alpha: 0.5) : accent,
-          width: isCurrent ? 1 : 2,
-        ),
-        boxShadow: shadow ??
-            [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+        border: depth.border,
+        boxShadow: depth.shadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -5,6 +5,7 @@ import '../accounts/bank_balance_text.dart';
 import '../common/bank_amount_input_field.dart';
 import '../common/bank_emblem.dart';
 import '../common/bank_icon_spec.dart';
+import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
@@ -112,6 +113,8 @@ class BankDonationHubCard extends StatefulWidget {
     this.radius,
     this.backgroundColor,
     this.elevation,
+    this.shadow,
+    this.border,
     this.accentColor,
     this.titleStyle,
     this.roundUpIcon,
@@ -170,9 +173,21 @@ class BankDonationHubCard extends StatefulWidget {
   /// `surface`.
   final Color? backgroundColor;
 
-  /// Overrides the card elevation. Defaults to the theme
-  /// `elevationLow`; pass `0` to flatten.
+  /// Legacy depth opt-out. The card renders the kit shadow language
+  /// ([BankTokens.shadowCardFor] of the theme background brightness) instead
+  /// of Material elevation; pass `0` — or use a theme whose `elevationLow`
+  /// is `0`, such as Voltage — to flatten the card to hairline-only depth.
   final double? elevation;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Overrides the card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Overrides the accent used for the selection ring, donate button,
   /// round-up icon and switch. Defaults to the theme `primary` (muted
@@ -284,134 +299,155 @@ class _BankDonationHubCardState extends State<BankDonationHubCard> {
     final canDonate =
         _selectedCharityId != null && amount != null && amount > Decimal.zero;
 
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: widget.radius ?? theme.cardRadius,
-      ),
-      color: widget.backgroundColor ?? theme.surface,
-      elevation: widget.elevation ?? theme.elevationLow,
+    // One depth language for every card: token shadows resolved against the
+    // theme background brightness, with the dark-surface hairline. Themes
+    // that declare flat depth (elevationLow == 0, e.g. Voltage) — or an
+    // explicit `elevation: 0` — keep hairline-only separation.
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: widget.backgroundColor,
+      shadow: widget.shadow,
+      border: widget.border,
+      tier: (widget.elevation ?? theme.elevationLow) <= 0
+          ? BankSurfaceDepthTier.flat
+          : BankSurfaceDepthTier.card,
+    );
+
+    return Container(
       margin: widget.margin ?? EdgeInsets.zero,
-      child: Padding(
-        padding: widget.padding ?? const EdgeInsets.all(BankTokens.space4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              widget.title,
-              style: BankTokens.headlineSmall
-                  .copyWith(color: theme.onSurface)
-                  .merge(widget.titleStyle),
-            ),
-            const SizedBox(height: BankTokens.space3),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (final charity in widget.charities) ...[
-                    _CharityChip(
-                      charity: charity,
-                      selected: charity.id == _selectedCharityId,
-                      ringColor: ringColor,
-                      verifiedLabel: widget.verifiedLabel,
-                      onTap: () => _selectCharity(charity.id),
-                      verifiedIcon: widget.verifiedIcon,
-                    ),
-                    if (charity != widget.charities.last)
-                      const SizedBox(width: BankTokens.space2),
-                  ],
-                ],
+      decoration: BoxDecoration(
+        borderRadius: widget.radius ?? theme.cardRadius,
+        color: widget.backgroundColor ?? theme.surface,
+        boxShadow: depth.shadow,
+        border: depth.border,
+      ),
+      // The transparent Material keeps ink-based descendants (text fields,
+      // switches) working now the Material [Card] is gone.
+      child: Material(
+        type: MaterialType.transparency,
+        child: Padding(
+          padding: widget.padding ?? const EdgeInsets.all(BankTokens.space4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.title,
+                style: BankTokens.headlineSmall
+                    .copyWith(color: theme.onSurface)
+                    .merge(widget.titleStyle),
               ),
-            ),
-            const SizedBox(height: BankTokens.space4),
-            Wrap(
-              spacing: BankTokens.space2,
-              runSpacing: BankTokens.space2,
-              children: [
-                for (final value in widget.quickAmounts)
-                  _AmountChip(
-                    label: _quickLabel(value, scope),
-                    selected: !_customRevealed && value == _selectedQuickAmount,
-                    onTap: () => _selectQuickAmount(value),
-                  ),
-                _AmountChip(
-                  label: widget.customAmountLabel,
-                  selected: _customRevealed,
-                  onTap: _revealCustomAmount,
-                ),
-              ],
-            ),
-            AnimatedSize(
-              duration: disableAnimations
-                  ? Duration.zero
-                  : widget.animationDuration ?? BankTokens.durationBase,
-              curve: widget.animationCurve ?? BankTokens.curveEmphasized,
-              alignment: AlignmentDirectional.topStart,
-              child: _customRevealed
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: BankTokens.space3),
-                      child: BankAmountInputField(
-                        currencyCode: widget.currencyCode,
-                        onChanged: (value) =>
-                            setState(() => _customAmount = value),
-                        initialAmount: _customAmount,
-                        autofocus: true,
-                        displaySize: BankBalanceSize.medium,
-                      ),
-                    )
-                  : const SizedBox(width: double.infinity),
-            ),
-            const SizedBox(height: BankTokens.space4),
-            SizedBox(
-              width: double.infinity,
-              height: BankTokens.space12,
-              child: FilledButton(
-                onPressed: canDonate ? _handleDonate : null,
-                style: FilledButton.styleFrom(
-                  backgroundColor: accent,
-                  foregroundColor: theme.onPrimary,
-                  disabledBackgroundColor: theme.surfaceVariant,
-                  disabledForegroundColor: theme.onSurfaceVariant,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: theme.buttonRadius,
-                  ),
-                  textStyle: BankTokens.labelLarge,
-                ),
-                child: Text(widget.donateLabel),
-              ),
-            ),
-            if (widget.onRoundUpChanged != null) ...[
-              const SizedBox(height: BankTokens.space2),
-              MergeSemantics(
+              const SizedBox(height: BankTokens.space3),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    Icon(
-                      widget.roundUpIcon ?? BankIcons.roundUp,
-                      size: BankTokens.space5,
-                      color: accent,
-                    ),
-                    const SizedBox(width: BankTokens.space3),
-                    Expanded(
-                      child: Text(
-                        widget.roundUpLabel,
-                        style: BankTokens.bodyMedium.copyWith(
-                          color: theme.onSurface,
-                        ),
+                    for (final charity in widget.charities) ...[
+                      _CharityChip(
+                        charity: charity,
+                        selected: charity.id == _selectedCharityId,
+                        ringColor: ringColor,
+                        verifiedLabel: widget.verifiedLabel,
+                        onTap: () => _selectCharity(charity.id),
+                        verifiedIcon: widget.verifiedIcon,
                       ),
-                    ),
-                    const SizedBox(width: BankTokens.space2),
-                    Switch(
-                      value: widget.roundUpEnabled,
-                      onChanged: widget.onRoundUpChanged,
-                      activeTrackColor: accent,
-                      thumbColor:
-                          WidgetStatePropertyAll<Color>(theme.onPrimary),
-                    ),
+                      if (charity != widget.charities.last)
+                        const SizedBox(width: BankTokens.space2),
+                    ],
                   ],
                 ),
               ),
+              const SizedBox(height: BankTokens.space4),
+              Wrap(
+                spacing: BankTokens.space2,
+                runSpacing: BankTokens.space2,
+                children: [
+                  for (final value in widget.quickAmounts)
+                    _AmountChip(
+                      label: _quickLabel(value, scope),
+                      selected:
+                          !_customRevealed && value == _selectedQuickAmount,
+                      onTap: () => _selectQuickAmount(value),
+                    ),
+                  _AmountChip(
+                    label: widget.customAmountLabel,
+                    selected: _customRevealed,
+                    onTap: _revealCustomAmount,
+                  ),
+                ],
+              ),
+              AnimatedSize(
+                duration: disableAnimations
+                    ? Duration.zero
+                    : widget.animationDuration ?? BankTokens.durationBase,
+                curve: widget.animationCurve ?? BankTokens.curveEmphasized,
+                alignment: AlignmentDirectional.topStart,
+                child: _customRevealed
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: BankTokens.space3),
+                        child: BankAmountInputField(
+                          currencyCode: widget.currencyCode,
+                          onChanged: (value) =>
+                              setState(() => _customAmount = value),
+                          initialAmount: _customAmount,
+                          autofocus: true,
+                          displaySize: BankBalanceSize.medium,
+                        ),
+                      )
+                    : const SizedBox(width: double.infinity),
+              ),
+              const SizedBox(height: BankTokens.space4),
+              SizedBox(
+                width: double.infinity,
+                height: BankTokens.space12,
+                child: FilledButton(
+                  onPressed: canDonate ? _handleDonate : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: accent,
+                    foregroundColor: theme.onPrimary,
+                    disabledBackgroundColor: theme.surfaceVariant,
+                    disabledForegroundColor: theme.onSurfaceVariant,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: theme.buttonRadius,
+                    ),
+                    textStyle: BankTokens.labelLarge,
+                  ),
+                  child: Text(widget.donateLabel),
+                ),
+              ),
+              if (widget.onRoundUpChanged != null) ...[
+                const SizedBox(height: BankTokens.space2),
+                MergeSemantics(
+                  child: Row(
+                    children: [
+                      Icon(
+                        widget.roundUpIcon ?? BankIcons.roundUp,
+                        size: BankTokens.space5,
+                        color: accent,
+                      ),
+                      const SizedBox(width: BankTokens.space3),
+                      Expanded(
+                        child: Text(
+                          widget.roundUpLabel,
+                          style: BankTokens.bodyMedium.copyWith(
+                            color: theme.onSurface,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: BankTokens.space2),
+                      Switch(
+                        value: widget.roundUpEnabled,
+                        onChanged: widget.onRoundUpChanged,
+                        activeTrackColor: accent,
+                        thumbColor:
+                            WidgetStatePropertyAll<Color>(theme.onPrimary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

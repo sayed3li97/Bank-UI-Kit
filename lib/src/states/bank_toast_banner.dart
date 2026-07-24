@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/button_text_style.dart';
 import '../../src/theme/tokens.dart';
 
 /// Describes the severity and colour of a [BankToastBanner].
@@ -13,11 +14,15 @@ enum BankToastVariant { success, error, info, warning }
 /// `true` the banner animates in and, after [autoHideDuration], calls
 /// [onDismiss] so the host can set [isVisible] back to `false`.
 ///
-/// Colours:
-/// - [BankToastVariant.success]  `#34C759` (white text)
-/// - [BankToastVariant.error]    `#FF3B30` (white text)
-/// - [BankToastVariant.info]     `BankThemeData.primary` (white text)
-/// - [BankToastVariant.warning]  `#FF9500` (white text)
+/// Colours: the banner is a neutral [BankThemeData.surface] card washed with
+/// a 10%-alpha semantic tint, wrapped in a [BankTokens.hairlineWidth]
+/// hairline, with [BankThemeData.onSurface] message text — never a
+/// full-saturation colour slab. The leading icon (and action label) carry
+/// the semantic colour, brightness-aware:
+/// - [BankToastVariant.success]  [BankTokens.success] / [BankTokens.successDark]
+/// - [BankToastVariant.error]    [BankTokens.danger] / [BankTokens.dangerDark]
+/// - [BankToastVariant.info]     [BankThemeData.primary]
+/// - [BankToastVariant.warning]  [BankTokens.warning] / [BankTokens.warningDark]
 ///
 /// Accessibility: the widget is marked as a `liveRegion` so screen readers
 /// announce the [message] as soon as it appears.
@@ -63,13 +68,17 @@ class BankToastBanner extends StatefulWidget {
   final EdgeInsetsGeometry? padding;
 
   /// Overrides the banner corner radius. Defaults to
-  /// [BankTokens.radiusMedium].
+  /// [BankThemeData.cardRadius].
   final BorderRadius? radius;
 
-  /// Overrides the per-variant background colour.
+  /// Overrides the banner background. Defaults to [BankThemeData.surface]
+  /// washed with the variant's semantic colour at 10% alpha.
   final Color? backgroundColor;
 
-  /// Overrides the icon, text, and button colour. Defaults to white.
+  /// Overrides the icon, text, and button colour in one go. When null the
+  /// message and close button use [BankThemeData.onSurface] /
+  /// [BankThemeData.onSurfaceVariant] while the leading icon and action
+  /// label carry the variant's semantic colour.
   final Color? foregroundColor;
 
   /// Overrides the banner elevation. Defaults to `4`; pass `0` to
@@ -217,12 +226,19 @@ class _BankToastBannerState extends State<BankToastBanner>
     super.dispose();
   }
 
-  Color _backgroundColor(BankThemeData theme) => switch (widget.variant) {
-        BankToastVariant.success => const Color(0xFF34C759),
-        BankToastVariant.error => const Color(0xFFFF3B30),
-        BankToastVariant.info => theme.primary,
-        BankToastVariant.warning => const Color(0xFFFF9500),
-      };
+  /// Brightness-aware semantic accent of the current variant.
+  Color _semanticColor(BankThemeData theme, Brightness surfaceBrightness) {
+    final dark = surfaceBrightness == Brightness.dark;
+    return switch (widget.variant) {
+      BankToastVariant.success =>
+        dark ? BankTokens.successDark : BankTokens.success,
+      BankToastVariant.error =>
+        dark ? BankTokens.dangerDark : BankTokens.danger,
+      BankToastVariant.info => theme.primary,
+      BankToastVariant.warning =>
+        dark ? BankTokens.warningDark : BankTokens.warning,
+    };
+  }
 
   IconData _leadingIcon() => switch (widget.variant) {
         BankToastVariant.success => Icons.check_circle_outline,
@@ -234,8 +250,20 @@ class _BankToastBannerState extends State<BankToastBanner>
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final bg = widget.backgroundColor ?? _backgroundColor(theme);
-    final fg = widget.foregroundColor ?? const Color(0xFFFFFFFF);
+
+    // Brightness of the painted surface picks the AA-safe semantic variant
+    // and the hairline strength.
+    final surfaceBrightness =
+        ThemeData.estimateBrightnessForColor(theme.surface);
+    final semantic = _semanticColor(theme, surfaceBrightness);
+
+    // Neutral surface washed with a low-alpha semantic tint; blended so the
+    // banner stays opaque over whatever it slides across.
+    final bg = widget.backgroundColor ??
+        Color.alphaBlend(semantic.withValues(alpha: 0.10), theme.surface);
+    final iconColor = widget.foregroundColor ?? semantic;
+    final messageColor = widget.foregroundColor ?? theme.onSurface;
+    final dismissColor = widget.foregroundColor ?? theme.onSurfaceVariant;
     final showAction = widget.actionLabel != null && widget.onAction != null;
     final liveLabel =
         widget.semanticLabel ?? '${_variantLabel()}: ${widget.message}';
@@ -260,8 +288,19 @@ class _BankToastBannerState extends State<BankToastBanner>
         child: RepaintBoundary(
           child: Material(
             color: bg,
-            borderRadius:
-                widget.radius ?? BorderRadius.circular(BankTokens.radiusMedium),
+            shape: RoundedRectangleBorder(
+              borderRadius: widget.radius ?? theme.cardRadius,
+              side: BorderSide(
+                color: BankTokens.hairlineColor(
+                  theme.onSurface,
+                  surfaceBrightness,
+                ),
+                // Matches BorderSide's default today; keep the token as the
+                // source of truth for hairline geometry.
+                // ignore: avoid_redundant_argument_values
+                width: BankTokens.hairlineWidth,
+              ),
+            ),
             elevation: widget.elevation ?? 4,
             child: Padding(
               padding: widget.padding ??
@@ -271,13 +310,17 @@ class _BankToastBannerState extends State<BankToastBanner>
                   ),
               child: Row(
                 children: [
-                  Icon(widget.icon ?? _leadingIcon(), color: fg, size: 20),
+                  Icon(
+                    widget.icon ?? _leadingIcon(),
+                    color: iconColor,
+                    size: 20,
+                  ),
                   const SizedBox(width: BankTokens.space3),
                   Expanded(
                     child: Text(
                       widget.message,
                       style: BankTokens.bodyMedium
-                          .copyWith(color: fg)
+                          .copyWith(color: messageColor)
                           .merge(widget.messageStyle),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -291,7 +334,7 @@ class _BankToastBannerState extends State<BankToastBanner>
                       child: TextButton(
                         onPressed: widget.onAction,
                         style: TextButton.styleFrom(
-                          foregroundColor: fg,
+                          foregroundColor: iconColor,
                           minimumSize: const Size(
                             BankTokens.minTapTarget,
                             BankTokens.minTapTarget,
@@ -299,7 +342,10 @@ class _BankToastBannerState extends State<BankToastBanner>
                           padding: const EdgeInsets.symmetric(
                             horizontal: BankTokens.space2,
                           ),
-                          textStyle: BankTokens.labelMedium,
+                          textStyle: bankButtonTextStyle(
+                            context,
+                            BankTokens.labelMedium,
+                          ),
                         ),
                         child: Text(widget.actionLabel!),
                       ),
@@ -310,7 +356,7 @@ class _BankToastBannerState extends State<BankToastBanner>
                     label: widget.dismissLabel,
                     child: IconButton(
                       icon: const Icon(Icons.close, size: 18),
-                      color: fg,
+                      color: dismissColor,
                       onPressed: widget.onDismiss,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_pressable.dart';
+import '../../src/common/bank_surface_depth.dart';
 import '../../src/models/bank_insight.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
@@ -22,8 +24,21 @@ class BankInsightCard extends StatelessWidget {
   /// Overrides the card fill colour. Defaults to the theme surface.
   final Color? backgroundColor;
 
-  /// Overrides the card elevation. Defaults to the theme elevationLow.
+  /// Legacy depth opt-out. The card renders the kit shadow language
+  /// ([BankTokens.shadowCardFor] of the theme background brightness) instead
+  /// of Material elevation; pass `0` — or use a theme whose `elevationLow`
+  /// is `0`, such as Voltage — to flatten the card to hairline-only depth.
   final double? elevation;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Overrides the card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Overrides the confidence-driven tint (icon, dots, badge circle).
   final Color? accentColor;
@@ -58,6 +73,8 @@ class BankInsightCard extends StatelessWidget {
     this.radius,
     this.backgroundColor,
     this.elevation,
+    this.shadow,
+    this.border,
     this.accentColor,
     this.icon,
     this.titleStyle,
@@ -89,109 +106,119 @@ class BankInsightCard extends StatelessWidget {
     final theme = BankThemeData.of(context);
     final color = accentColor ?? _confidenceColor(insight.confidence, theme);
     final resolvedRadius = radius ?? theme.cardRadius;
+    // One depth language for every card: token shadows resolved against the
+    // theme background brightness, with the dark-surface hairline. Themes
+    // that declare flat depth (elevationLow == 0, e.g. Voltage) — or an
+    // explicit `elevation: 0` — keep hairline-only separation.
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: backgroundColor,
+      shadow: shadow,
+      border: border,
+      tier: (elevation ?? theme.elevationLow) <= 0
+          ? BankSurfaceDepthTier.flat
+          : BankSurfaceDepthTier.card,
+    );
 
-    return Semantics(
-      label: semanticLabel ?? '${insight.title}. ${insight.body}',
-      button: onTap != null,
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: resolvedRadius),
-        color: backgroundColor ?? theme.surface,
-        elevation: elevation ?? theme.elevationLow,
-        child: InkWell(
-          onTap: onTap,
+    return BankPressable(
+      onTap: onTap,
+      borderRadius: resolvedRadius,
+      semanticLabel: semanticLabel ?? '${insight.title}. ${insight.body}',
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: backgroundColor ?? theme.surface,
           borderRadius: resolvedRadius,
-          child: Padding(
-            padding: padding ?? const EdgeInsets.all(BankTokens.space4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: color.withValues(alpha: 0.12),
-                      ),
-                      child: Icon(
-                        icon ?? _iconFor(insight.confidence),
-                        size: 20,
-                        color: color,
-                      ),
+          boxShadow: depth.shadow,
+          border: depth.border,
+        ),
+        child: Padding(
+          padding: padding ?? const EdgeInsets.all(BankTokens.space4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color.withValues(alpha: 0.12),
                     ),
-                    const SizedBox(width: BankTokens.space3),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            insight.title,
-                            style: BankTokens.labelLarge
-                                .copyWith(color: theme.onSurface)
-                                .merge(titleStyle),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            insight.body,
-                            style: BankTokens.bodySmall
-                                .copyWith(color: theme.onSurfaceVariant)
-                                .merge(bodyStyle),
-                          ),
-                        ],
-                      ),
+                    child: Icon(
+                      icon ?? _iconFor(insight.confidence),
+                      size: 20,
+                      color: color,
                     ),
-                    if (onDismiss != null)
-                      Semantics(
-                        button: true,
-                        label: dismissLabel,
-                        child: InkWell(
-                          onTap: onDismiss,
-                          borderRadius: BorderRadius.circular(20),
-                          child: Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: Icon(
-                              dismissIcon ?? Icons.close,
-                              size: 16,
-                              color: theme.onSurfaceVariant,
-                            ),
-                          ),
+                  ),
+                  const SizedBox(width: BankTokens.space3),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          insight.title,
+                          style: BankTokens.labelLarge
+                              .copyWith(color: theme.onSurface)
+                              .merge(titleStyle),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          insight.body,
+                          style: BankTokens.bodySmall
+                              .copyWith(color: theme.onSurfaceVariant)
+                              .merge(bodyStyle),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (onDismiss != null)
+                    BankPressable(
+                      onTap: onDismiss,
+                      borderRadius: BorderRadius.circular(20),
+                      semanticLabel: dismissLabel,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          dismissIcon ?? Icons.close,
+                          size: 16,
+                          color: theme.onSurfaceVariant,
                         ),
                       ),
+                    ),
+                ],
+              ),
+              if (onAction != null) ...[
+                const SizedBox(height: BankTokens.space3),
+                Row(
+                  children: [
+                    _ConfidenceDots(
+                      confidence: insight.confidence,
+                      color: color,
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: onAction,
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(0, 32),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: BankTokens.space3,
+                        ),
+                        foregroundColor: theme.primary,
+                      ),
+                      child: Text(actionLabel ?? 'View details'),
+                    ),
                   ],
                 ),
-                if (onAction != null) ...[
-                  const SizedBox(height: BankTokens.space3),
-                  Row(
-                    children: [
-                      _ConfidenceDots(
-                        confidence: insight.confidence,
-                        color: color,
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: onAction,
-                        style: TextButton.styleFrom(
-                          minimumSize: const Size(0, 32),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: BankTokens.space3,
-                          ),
-                          foregroundColor: theme.primary,
-                        ),
-                        child: Text(actionLabel ?? 'View details'),
-                      ),
-                    ],
-                  ),
-                ] else ...[
-                  const SizedBox(height: BankTokens.space2),
-                  _ConfidenceDots(
-                    confidence: insight.confidence,
-                    color: color,
-                  ),
-                ],
+              ] else ...[
+                const SizedBox(height: BankTokens.space2),
+                _ConfidenceDots(
+                  confidence: insight.confidence,
+                  color: color,
+                ),
               ],
-            ),
+            ],
           ),
         ),
       ),

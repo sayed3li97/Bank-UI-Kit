@@ -47,6 +47,37 @@ void main() {
       expect(t.primary, const Color(0xFF123456));
       expect(t.positiveBalance, BankTokens.positiveBalance); // default
     });
+
+    test('premium brand fields survive the round-trip', () {
+      final voltage = BankVoltageTheme.dark();
+      final restoredVoltage = BankThemeData.fromJson(voltage.toJson());
+      expect(restoredVoltage.cardPattern, BankCardPattern.mesh);
+      expect(restoredVoltage.cardPatternColor, voltage.cardPatternColor);
+      expect(restoredVoltage.cardSurfaceGradient, voltage.cardSurfaceGradient);
+
+      final heritage = BankHeritageTheme.light();
+      final restoredHeritage = BankThemeData.fromJson(heritage.toJson());
+      expect(
+        restoredHeritage.displayFontFamily,
+        'packages/bank_ui_kit/NotoSerifDisplay',
+      );
+      expect(restoredHeritage.cardPattern, BankCardPattern.lattice);
+    });
+
+    test('old payloads without the new keys parse to defaults', () {
+      final t = BankThemeData.fromJson(const {
+        'colors': {'primary': '#123456'},
+      });
+      expect(t.displayFontFamily, isNull);
+      expect(t.cardSurfaceGradient, isNull);
+      expect(t.cardPattern, BankCardPattern.none);
+      expect(t.cardPatternColor, isNull);
+      expect(t.stateLayerHoverOpacity, BankTokens.stateLayerHoverOpacity);
+      expect(t.stateLayerPressedOpacity, BankTokens.stateLayerPressedOpacity);
+      expect(t.stateLayerFocusOpacity, BankTokens.stateLayerFocusOpacity);
+      expect(t.disabledOpacity, BankTokens.disabledOpacity);
+      expect(t.pressScale, BankTokens.pressScale);
+    });
   });
 
   group('Generated tokens stay in sync with tokens/design-tokens.json', () {
@@ -74,12 +105,65 @@ void main() {
       expect(BankTokens.pending, hex('pending'));
       expect(BankTokens.positiveBalanceDark, hex('positiveBalanceDark'));
       expect(BankTokens.frozen, hex('frozen'));
+      expect(BankTokens.success, hex('success'));
+      expect(BankTokens.successDark, hex('successDark'));
+      expect(BankTokens.warning, hex('warning'));
+      expect(BankTokens.warningDark, hex('warningDark'));
+      expect(BankTokens.danger, hex('danger'));
+      expect(BankTokens.dangerDark, hex('dangerDark'));
+      expect(BankTokens.networkMastercardRed, hex('networkMastercardRed'));
+      expect(BankTokens.networkMastercardBlend, hex('networkMastercardBlend'));
+      expect(BankTokens.networkAmexBlue, hex('networkAmexBlue'));
+    });
+
+    test('system feedback colours are unified: one family per hue', () {
+      // Success / gain / available headroom share the positiveBalance green.
+      expect(BankTokens.success, BankTokens.positiveBalance);
+      expect(BankTokens.investmentGain, BankTokens.positiveBalance);
+      expect(BankTokens.creditAvailable, BankTokens.positiveBalance);
+      expect(BankTokens.successDark, BankTokens.positiveBalanceDark);
+      expect(BankTokens.investmentGainDark, BankTokens.positiveBalanceDark);
+      // Danger / loss share the negativeBalance red.
+      expect(BankTokens.danger, BankTokens.negativeBalance);
+      expect(BankTokens.investmentLoss, BankTokens.negativeBalance);
+      expect(BankTokens.dangerDark, BankTokens.negativeBalanceDark);
+      expect(BankTokens.investmentLossDark, BankTokens.negativeBalanceDark);
+      // Warning / utilised credit share the pending amber.
+      expect(BankTokens.warning, BankTokens.pending);
+      expect(BankTokens.creditUsed, BankTokens.pending);
+      expect(BankTokens.warningDark, BankTokens.pendingDark);
     });
 
     test('spacing + radius scalars match the DTCG source', () {
       expect(BankTokens.space4, 16);
       expect(BankTokens.radiusFull, 999);
       expect(BankTokens.minTapTarget, 44);
+      expect(BankTokens.tileCompactBreakpoint, 168);
+    });
+
+    test('interaction + effect scalars match the DTCG source', () {
+      double n(String group, String key) =>
+          (((src[group] as Map)[key] as Map)[r'$value'] as num).toDouble();
+      expect(
+        BankTokens.stateLayerHoverOpacity,
+        n('interaction', 'stateLayerHoverOpacity'),
+      );
+      expect(
+        BankTokens.stateLayerPressedOpacity,
+        n('interaction', 'stateLayerPressedOpacity'),
+      );
+      expect(
+        BankTokens.stateLayerFocusOpacity,
+        n('interaction', 'stateLayerFocusOpacity'),
+      );
+      expect(BankTokens.disabledOpacity, n('interaction', 'disabledOpacity'));
+      expect(BankTokens.focusRingWidth, n('interaction', 'focusRingWidth'));
+      expect(BankTokens.focusRingOpacity, n('interaction', 'focusRingOpacity'));
+      expect(BankTokens.pressScale, n('interaction', 'pressScale'));
+      expect(
+        BankTokens.frozenCardSaturation,
+        n('effect', 'frozenCardSaturation'),
+      );
     });
   });
 }

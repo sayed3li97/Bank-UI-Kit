@@ -157,7 +157,8 @@ class BankCashbackCategoryPicker extends StatefulWidget {
   final Color? backgroundColor;
 
   /// Overrides the category-card shadow. Defaults to
-  /// [BankTokens.shadowCard]; pass `const []` to flatten the cards.
+  /// [BankTokens.shadowCardFor] of the theme background brightness; pass
+  /// `const []` to flatten the cards.
   final List<BoxShadow>? shadow;
 
   /// Tint of selected cards, icon discs, and the confirm button.
@@ -389,10 +390,23 @@ class _CategoryCard extends StatelessWidget {
     final theme = BankThemeData.of(context);
     final cardRadius = radius ?? theme.cardRadius;
 
+    // Raised card: shadow-only depth. The selected accent outline is a
+    // semantic state, not a depth cue; unselected cards keep only the
+    // dark-surface hairline (invisible on light) so the outline and the
+    // shadow are never doubled.
+    final surfaceBrightness = ThemeData.estimateBrightnessForColor(
+      backgroundColor ?? theme.surface,
+    );
+    final hairlineColor = surfaceBrightness == Brightness.dark
+        ? BankTokens.hairlineColor(theme.onSurface, surfaceBrightness)
+        : theme.onSurface.withValues(alpha: 0);
+    final backgroundBrightness =
+        ThemeData.estimateBrightnessForColor(theme.background);
+
     final card = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: cardRadius,
-        boxShadow: shadow ?? BankTokens.shadowCard,
+        boxShadow: shadow ?? BankTokens.shadowCardFor(backgroundBrightness),
       ),
       child: Material(
         color: selected
@@ -402,7 +416,13 @@ class _CategoryCard extends StatelessWidget {
           borderRadius: cardRadius,
           side: selected
               ? BorderSide(color: accent, width: 2)
-              : BorderSide(color: theme.outline),
+              : BorderSide(
+                  color: hairlineColor,
+                  // Matches BorderSide's default today; keep the token as
+                  // the source of truth for hairline geometry.
+                  // ignore: avoid_redundant_argument_values
+                  width: BankTokens.hairlineWidth,
+                ),
         ),
         child: InkWell(
           onTap: onTap,

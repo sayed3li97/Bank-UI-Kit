@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_icon_spec.dart';
+import '../common/bank_surface_depth.dart';
 import '../models/money.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
@@ -163,8 +164,15 @@ class BankFoundMoneyList extends StatefulWidget {
   final Color? backgroundColor;
 
   /// Overrides the header and list shadow. Defaults to
-  /// [BankTokens.shadowCard]; pass `const []` to flatten.
+  /// [BankTokens.shadowCardFor] of the theme background brightness; pass
+  /// `const []` to flatten.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the list card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width so geometry
+  /// is identical across brightness. Pass `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Overrides the row divider colour. Defaults to the theme outline.
   final Color? dividerColor;
@@ -196,6 +204,7 @@ class BankFoundMoneyList extends StatefulWidget {
     this.radius,
     this.backgroundColor,
     this.shadow,
+    this.border,
     this.dividerColor,
     this.accentColor,
     this.titleStyle,
@@ -251,6 +260,12 @@ class _BankFoundMoneyListState extends State<BankFoundMoneyList> {
   Widget build(BuildContext context) {
     if (widget.items.isEmpty) return const SizedBox.shrink();
     final theme = BankThemeData.of(context);
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: widget.backgroundColor,
+      shadow: widget.shadow,
+      border: widget.border,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -269,7 +284,8 @@ class _BankFoundMoneyListState extends State<BankFoundMoneyList> {
           decoration: BoxDecoration(
             color: widget.backgroundColor ?? theme.surface,
             borderRadius: widget.radius ?? theme.cardRadius,
-            boxShadow: widget.shadow ?? BankTokens.shadowCard,
+            boxShadow: depth.shadow,
+            border: depth.border,
           ),
           child: Column(
             children: [
@@ -347,7 +363,11 @@ class _BankFoundMoneyHeader extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: resolvedGradient,
         borderRadius: radius ?? theme.cardRadius,
-        boxShadow: shadow ?? BankTokens.shadowCard,
+        // Gradient surface: brightness-resolved shadow, no hairline.
+        boxShadow: shadow ??
+            BankTokens.shadowCardFor(
+              ThemeData.estimateBrightnessForColor(theme.background),
+            ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(BankTokens.space5),

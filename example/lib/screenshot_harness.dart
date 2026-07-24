@@ -11,8 +11,12 @@
 //   index.html?component=BankBalanceText&preset=studio&dark=0
 //
 // This is NOT the app users run: see main.dart for the interactive gallery.
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
+
 import 'package:bank_ui_kit/core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import 'demo/flagship/flagship_apply.dart';
 import 'demo/flagship/flagship_catalog.dart';
@@ -95,6 +99,10 @@ void main() {
       for (final p in entry.params) p.name: p.defaultValue
     };
 
+    // Auto-present modal/sheet entries (GalleryEntry.autoOpen) on the first
+    // frame so captures show the real surface instead of the launcher pill.
+    galleryAutoPresentOverlays = true;
+
     runApp(
       BankUiScope(
         initialData: BankUiScopeData(preset: preset),
@@ -160,6 +168,14 @@ class _ComponentShotPage extends StatelessWidget {
       );
     }
 
+    // Report the content's on-screen bounds so the capture driver can crop
+    // the fixed-height viewport down to the rendered widget. Auto-opened
+    // overlay entries are excluded: there the surface worth capturing is the
+    // sheet/dialog route, not the launcher, so the full viewport is kept.
+    if (!entry.autoOpen) {
+      child = _ContentBoundsReporter(child: child);
+    }
+
     if (entry.isFullScreen) {
       return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -179,4 +195,56 @@ class _ComponentShotPage extends StatelessWidget {
       ),
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Content bounds reporting (component mode)
+// ---------------------------------------------------------------------------
+
+/// Publishes the wrapped child's global top offset and height (logical px ==
+/// CSS px at deviceScaleFactor 1) on `window.__bankShotContentTop` /
+/// `window.__bankShotContentHeight` after layout, re-measuring for a short
+/// window so late reflows (font loading) are picked up before the driver
+/// reads the values and crops the screenshot (tool/screenshots.mjs).
+class _ContentBoundsReporter extends StatefulWidget {
+  const _ContentBoundsReporter({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_ContentBoundsReporter> createState() => _ContentBoundsReporterState();
+}
+
+class _ContentBoundsReporterState extends State<_ContentBoundsReporter> {
+  static const _remeasureTicks = 8;
+  int _ticks = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleMeasure();
+  }
+
+  void _scheduleMeasure() {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _publish();
+      if (++_ticks < _remeasureTicks) {
+        Future<void>.delayed(const Duration(milliseconds: 250), () {
+          if (mounted) _scheduleMeasure();
+        });
+      }
+    });
+  }
+
+  void _publish() {
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return;
+    final top = box.localToGlobal(Offset.zero).dy;
+    globalContext['__bankShotContentTop'] = top.toJS;
+    globalContext['__bankShotContentHeight'] = box.size.height.toJS;
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

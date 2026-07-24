@@ -5,6 +5,7 @@ import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/numeral_style.dart';
 import '../theme/tokens.dart';
+import 'bank_country_flag.dart';
 import 'bank_country_picker.dart';
 import 'bank_text_field.dart';
 
@@ -207,9 +208,13 @@ class _CountryAffordance extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                country.flagEmoji,
-                style: const TextStyle(fontSize: 18),
+              // The enclosing Semantics label already announces the country;
+              // the flag itself is presentational here.
+              ExcludeSemantics(
+                child: BankCountryFlag(
+                  isoCode: country.isoCode,
+                  countryName: country.name,
+                ),
               ),
               const SizedBox(width: BankTokens.space1),
               Text(

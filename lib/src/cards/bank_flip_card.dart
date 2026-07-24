@@ -13,9 +13,11 @@ enum BankFlipTrigger {
   /// Tapping anywhere on the card toggles the flip.
   tapToFlip,
 
-  /// A small icon button is rendered in the card corner. The rest of the card
-  /// is not tappable. Supply [BankFlipCard.flipButtonBuilder] to replace the
-  /// default button with a custom widget.
+  /// A small icon button is rendered in the card's **top-end corner**. The
+  /// rest of the card is not tappable. Supply
+  /// [BankFlipCard.flipButtonBuilder] to replace the default button with a
+  /// custom widget. Faces should keep [BankFlipCard.builtInButtonClearance]
+  /// free of content at that corner so the button never occludes them.
   builtInButton,
 
   /// No built-in trigger. The host app drives the flip entirely via
@@ -81,11 +83,34 @@ enum BankFlipAxis {
 class BankFlipCard extends StatefulWidget {
   /// Builds the front face. Receives the [BuildContext] and whether the card
   /// is currently showing the back ([isFlipped] = true during animation).
+  ///
+  /// When [trigger] is [BankFlipTrigger.builtInButton] the button overlays
+  /// the top-end corner: keep [builtInButtonClearance] logical pixels free of
+  /// content from the card's end edge in that corner.
   final Widget Function(BuildContext context, bool isFlipped) frontBuilder;
 
   /// Builds the back face. Receives the [BuildContext] and whether the card
   /// is currently showing the back.
+  ///
+  /// The built-in flip button also overlays this face's top-end corner; see
+  /// [builtInButtonClearance].
   final Widget Function(BuildContext context, bool isFlipped) backBuilder;
+
+  // ── Built-in button geometry (contract for face builders) ────────────────
+
+  /// Inset of the built-in flip button from the card's top and end edges.
+  static const double builtInButtonInset = BankTokens.space2;
+
+  /// Footprint (width and height) of the default built-in flip button:
+  /// an 18 px icon plus [BankTokens.space2] padding on each side.
+  static const double builtInButtonExtent = 34;
+
+  /// Horizontal extent a face must keep free of content from the card's
+  /// **end** edge at the top corner when [trigger] is
+  /// [BankFlipTrigger.builtInButton]: button inset + button footprint + a
+  /// [BankTokens.space2] gap.
+  static const double builtInButtonClearance =
+      builtInButtonInset + builtInButtonExtent + BankTokens.space2;
 
   // ── External control ──────────────────────────────────────────────────────
 
@@ -126,18 +151,15 @@ class BankFlipCard extends StatefulWidget {
   /// [maxWidth] is provided.
   static const double _defaultWidth = 340;
 
-  /// Default card height, paired with [_defaultWidth] to derive the card's
-  /// aspect ratio when sizing responsively.
-  static const double _defaultHeight = 200;
-
   /// Fixed card width. When null (the default) the card fills the available
   /// width up to [maxWidth] (340 when [maxWidth] is also null), so it renders
   /// at 340 in unconstrained contexts, exactly as older versions did.
   final double? width;
 
-  /// Fixed card height. When null (the default) the height is 200 if [width]
-  /// is set, otherwise it scales with the resolved width to preserve the
-  /// default 340 x 200 aspect ratio.
+  /// Fixed card height. When null (the default) the height is derived from
+  /// the resolved width using the ISO 7810 ID-1 card ratio
+  /// ([kBankCardAspectRatio], 1.586) so flip cards match the rest of the
+  /// card family.
   final double? height;
 
   /// Upper bound on the card width when [width] is null. Defaults to 340,
@@ -257,14 +279,10 @@ class _BankFlipCardState extends State<BankFlipCard>
   }
 
   /// Resolves the rendered height: an explicit [BankFlipCard.height] wins;
-  /// with a fixed width the legacy 200 default applies; otherwise the height
-  /// preserves the default 340 x 200 aspect ratio.
-  double _resolveHeight(double cardWidth) {
-    final fixedHeight = widget.height;
-    if (fixedHeight != null) return fixedHeight;
-    if (widget.width != null) return BankFlipCard._defaultHeight;
-    return cardWidth * BankFlipCard._defaultHeight / BankFlipCard._defaultWidth;
-  }
+  /// otherwise the height preserves the ISO 7810 ID-1 card ratio
+  /// ([kBankCardAspectRatio]).
+  double _resolveHeight(double cardWidth) =>
+      widget.height ?? cardWidth / kBankCardAspectRatio;
 
   // ── Build ─────────────────────────────────────────────────────────────────
 
@@ -338,9 +356,10 @@ class _BankFlipCardState extends State<BankFlipCard>
           clipBehavior: Clip.none,
           children: [
             card,
-            Positioned(
-              top: BankTokens.space2,
-              right: BankTokens.space2,
+            // Directional so the button tracks the top-END corner in RTL.
+            PositionedDirectional(
+              top: BankFlipCard.builtInButtonInset,
+              end: BankFlipCard.builtInButtonInset,
               child: widget.flipButtonBuilder != null
                   ? widget.flipButtonBuilder!(context, _handleFlip)
                   : _DefaultFlipButton(

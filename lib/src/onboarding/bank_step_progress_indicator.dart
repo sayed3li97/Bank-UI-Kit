@@ -5,6 +5,12 @@ import '../../src/theme/tokens.dart';
 
 /// Numbered step progress indicator. RTL-aware: steps flow right-to-left
 /// when [Directionality] is RTL.
+///
+/// Geometry follows the standard enterprise-stepper anatomy: every step
+/// gets one equal-flex cell containing its bubble and (optionally) its
+/// label, and each connector is drawn as two half-lines inside the
+/// neighbouring cells, so labels get the full cell width instead of the
+/// bubble width and never break mid-word for realistic label lengths.
 class BankStepProgressIndicator extends StatelessWidget {
   final int totalSteps;
   final int currentStep; // 1-indexed
@@ -50,6 +56,15 @@ class BankStepProgressIndicator extends StatelessWidget {
   /// [BankTokens.curveStandard].
   final Curve? animationCurve;
 
+  /// Maximum number of lines a step label may occupy before it
+  /// ellipsizes. Defaults to 2.
+  final int labelMaxLines;
+
+  /// Optional cap on each label's width. By default a label may use its
+  /// whole step cell; set this to keep labels compact on very wide
+  /// layouts.
+  final double? labelMaxWidth;
+
   /// Overrides the semantics label. Defaults to 'Step X of Y'.
   final String? semanticLabel;
 
@@ -70,12 +85,15 @@ class BankStepProgressIndicator extends StatelessWidget {
     this.bubbleSize,
     this.animationDuration,
     this.animationCurve,
+    this.labelMaxLines = 2,
+    this.labelMaxWidth,
     this.semanticLabel,
   })  : assert(totalSteps > 0, 'totalSteps must be positive'),
         assert(
           currentStep >= 1 && currentStep <= totalSteps,
           'currentStep must be between 1 and totalSteps (inclusive)',
-        );
+        ),
+        assert(labelMaxLines > 0, 'labelMaxLines must be positive');
 
   @override
   Widget build(BuildContext context) {
@@ -99,34 +117,60 @@ class BankStepProgressIndicator extends StatelessWidget {
     final indices = List<int>.generate(totalSteps, (i) => i + 1);
     final displayIndices = isRtl ? indices.reversed.toList() : indices;
 
+    // A connector between two steps is completed once the later of the two
+    // steps has been reached; computing it order-independently keeps LTR
+    // and RTL in the same state.
+    bool connectorCompleted(int stepA, int stepB) {
+      final hi = stepA > stepB ? stepA : stepB;
+      return currentStep >= hi;
+    }
+
     return Semantics(
       label: semanticLabel ?? 'Step $currentStep of $totalSteps',
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _StepRow(
-            displayIndices: displayIndices,
-            currentStep: currentStep,
-            activeColor: resolvedActive,
-            inactiveColor: resolvedInactive,
-            foregroundColor: resolvedForeground,
-            inactiveForegroundColor: resolvedInactiveForeground,
-            lineColor: resolvedLineColor,
-            completedIcon: completedIcon ?? Icons.check,
-            stepNumberStyle: stepNumberStyle,
-            bubbleSize: resolvedBubbleSize,
-            duration: resolvedDuration,
-            curve: resolvedCurve,
-          ),
-          if (showLabels && labels != null) ...[
-            const SizedBox(height: BankTokens.space2),
-            _LabelsRow(
-              displayIndices: displayIndices,
-              labels: labels!,
-              labelStyle: resolvedLabelStyle,
-              bubbleSize: resolvedBubbleSize,
+          for (var i = 0; i < displayIndices.length; i++)
+            Expanded(
+              child: _StepCell(
+                stepIndex: displayIndices[i],
+                currentStep: currentStep,
+                // Half-connector toward the previous display neighbour;
+                // null at the leading edge.
+                leadingConnectorCompleted: i == 0
+                    ? null
+                    : connectorCompleted(
+                        displayIndices[i - 1],
+                        displayIndices[i],
+                      ),
+                // Half-connector toward the next display neighbour;
+                // null at the trailing edge.
+                trailingConnectorCompleted: i == displayIndices.length - 1
+                    ? null
+                    : connectorCompleted(
+                        displayIndices[i],
+                        displayIndices[i + 1],
+                      ),
+                label: (showLabels && labels != null)
+                    ? ((displayIndices[i] - 1) < labels!.length
+                        ? labels![displayIndices[i] - 1]
+                        : '')
+                    : null,
+                labelStyle: resolvedLabelStyle,
+                labelMaxLines: labelMaxLines,
+                labelMaxWidth: labelMaxWidth,
+                activeColor: resolvedActive,
+                inactiveColor: resolvedInactive,
+                foregroundColor: resolvedForeground,
+                inactiveForegroundColor: resolvedInactiveForeground,
+                lineColor: resolvedLineColor,
+                completedIcon: completedIcon ?? Icons.check,
+                stepNumberStyle: stepNumberStyle,
+                bubbleSize: resolvedBubbleSize,
+                duration: resolvedDuration,
+                curve: resolvedCurve,
+              ),
             ),
-          ],
         ],
       ),
     );
@@ -134,13 +178,22 @@ class BankStepProgressIndicator extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Step row
+// Step cell
 // ---------------------------------------------------------------------------
 
-class _StepRow extends StatelessWidget {
-  const _StepRow({
-    required this.displayIndices,
+/// One equal-flex stepper cell: the bubble flanked by its two connector
+/// halves, with the (optional) label centred underneath on the full cell
+/// width.
+class _StepCell extends StatelessWidget {
+  const _StepCell({
+    required this.stepIndex,
     required this.currentStep,
+    required this.leadingConnectorCompleted,
+    required this.trailingConnectorCompleted,
+    required this.label,
+    required this.labelStyle,
+    required this.labelMaxLines,
+    required this.labelMaxWidth,
     required this.activeColor,
     required this.inactiveColor,
     required this.foregroundColor,
@@ -153,8 +206,23 @@ class _StepRow extends StatelessWidget {
     required this.curve,
   });
 
-  final List<int> displayIndices;
+  final int stepIndex;
   final int currentStep;
+
+  /// Completed state of the connector half toward the previous display
+  /// neighbour, or `null` at the leading edge of the stepper.
+  final bool? leadingConnectorCompleted;
+
+  /// Completed state of the connector half toward the next display
+  /// neighbour, or `null` at the trailing edge of the stepper.
+  final bool? trailingConnectorCompleted;
+
+  /// Label text, or `null` when labels are hidden.
+  final String? label;
+  final TextStyle labelStyle;
+  final int labelMaxLines;
+  final double? labelMaxWidth;
+
   final Color activeColor;
   final Color inactiveColor;
   final Color foregroundColor;
@@ -166,106 +234,76 @@ class _StepRow extends StatelessWidget {
   final Duration duration;
   final Curve curve;
 
+  Widget _connectorHalf(bool? completed) {
+    if (completed == null) {
+      // Edge cell: an empty spacer keeps the bubble centred in its cell.
+      return const Expanded(child: SizedBox.shrink());
+    }
+    return Expanded(
+      child: _ConnectingLine(
+        completed: completed,
+        activeColor: activeColor,
+        lineColor: lineColor,
+        duration: duration,
+        curve: curve,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final children = <Widget>[];
-
-    for (var i = 0; i < displayIndices.length; i++) {
-      final stepIndex = displayIndices[i];
-
-      // Connecting line before this bubble (skip for first item).
-      if (i > 0) {
-        // Determine the logical left neighbour in display order.
-        // A line is "completed" when both adjacent steps are completed.
-        final leftStepIndex = displayIndices[i - 1];
-        final isCompleted =
-            leftStepIndex < currentStep && stepIndex <= currentStep;
-        children.add(
-          Expanded(
-            child: _ConnectingLine(
-              completed: isCompleted,
-              activeColor: activeColor,
-              lineColor: lineColor,
-              duration: duration,
-              curve: curve,
-            ),
+    Widget? labelWidget;
+    if (label != null) {
+      labelWidget = Padding(
+        padding: const EdgeInsets.symmetric(horizontal: BankTokens.space1),
+        child: Text(
+          label!,
+          style: labelStyle,
+          textAlign: TextAlign.center,
+          maxLines: labelMaxLines,
+          overflow: TextOverflow.ellipsis,
+        ),
+      );
+      if (labelMaxWidth != null) {
+        labelWidget = Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: labelMaxWidth!),
+            child: labelWidget,
           ),
         );
       }
-
-      children.add(
-        _StepBubble(
-          stepNumber: stepIndex,
-          currentStep: currentStep,
-          activeColor: activeColor,
-          inactiveColor: inactiveColor,
-          foregroundColor: foregroundColor,
-          inactiveForegroundColor: inactiveForegroundColor,
-          completedIcon: completedIcon,
-          stepNumberStyle: stepNumberStyle,
-          bubbleSize: bubbleSize,
-          duration: duration,
-          curve: curve,
-        ),
-      );
     }
 
-    return Row(
-      children: children,
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Labels row
-// ---------------------------------------------------------------------------
-
-class _LabelsRow extends StatelessWidget {
-  const _LabelsRow({
-    required this.displayIndices,
-    required this.labels,
-    required this.labelStyle,
-    required this.bubbleSize,
-  });
-
-  final List<int> displayIndices;
-  final List<String> labels;
-  final TextStyle labelStyle;
-  final double bubbleSize;
-
-  @override
-  Widget build(BuildContext context) {
-    final children = <Widget>[];
-
-    for (var i = 0; i < displayIndices.length; i++) {
-      final stepIndex = displayIndices[i];
-
-      if (i > 0) {
-        // Spacer that aligns with the connecting line.
-        children.add(const Expanded(child: SizedBox.shrink()));
-      }
-
-      // Each label is centred below its bubble.
-      final labelText =
-          (stepIndex - 1) < labels.length ? labels[stepIndex - 1] : '';
-
-      children.add(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
         SizedBox(
-          width: bubbleSize,
-          child: Text(
-            labelText,
-            style: labelStyle,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          height: bubbleSize,
+          child: Row(
+            children: [
+              _connectorHalf(leadingConnectorCompleted),
+              _StepBubble(
+                stepNumber: stepIndex,
+                currentStep: currentStep,
+                activeColor: activeColor,
+                inactiveColor: inactiveColor,
+                foregroundColor: foregroundColor,
+                inactiveForegroundColor: inactiveForegroundColor,
+                completedIcon: completedIcon,
+                stepNumberStyle: stepNumberStyle,
+                bubbleSize: bubbleSize,
+                duration: duration,
+                curve: curve,
+              ),
+              _connectorHalf(trailingConnectorCompleted),
+            ],
           ),
         ),
-      );
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: children,
+        if (labelWidget != null) ...[
+          const SizedBox(height: BankTokens.space2),
+          labelWidget,
+        ],
+      ],
     );
   }
 }

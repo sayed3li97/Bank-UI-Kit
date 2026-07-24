@@ -58,11 +58,12 @@ class BankHealthFactor {
 /// Renders a 270 degree segmented arc gauge (red, amber, green bands)
 /// with the overall [score] centered in hero numerals and the [title]
 /// beneath it. When [previousScore] is provided the sweep animates from
-/// the old position and a delta chip appears under the gauge. Below the
-/// gauge, each [BankHealthFactor] renders as a row with its icon, label,
-/// a thin progress bar tinted by its score (danger below 0.4, warning
-/// below 0.7, positive otherwise), an optional tip line, and a chevron
-/// when [onFactorTap] is set.
+/// the old position and a delta chip docks beside the score numeral.
+/// Below the gauge, each [BankHealthFactor] renders as a row with its
+/// icon, label, trailing percentage, a thin tracked progress bar tinted
+/// by its score (danger below 0.4, warning below 0.7, positive
+/// otherwise), an optional tip line, and a chevron when [onFactorTap]
+/// is set.
 ///
 /// Score digits respect the ambient [NumeralStyle]. The sweep animation
 /// jumps straight to the final position under
@@ -306,6 +307,9 @@ class _BankFinancialHealthScoreState extends State<BankFinancialHealthScore>
                       builder: (context, _) {
                         final fraction = startFraction +
                             (endFraction - startFraction) * _sweep.value;
+                        final deltaColor = delta > 0
+                            ? widget.positiveColor ?? theme.positiveBalance
+                            : widget.dangerColor ?? BankTokens.danger;
                         return CustomPaint(
                           painter: _HealthGaugePainter(
                             segments: segments,
@@ -317,15 +321,49 @@ class _BankFinancialHealthScoreState extends State<BankFinancialHealthScore>
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  numeralStyle.convert('${widget.score}'),
-                                  style: BankTokens.numeralHero
-                                      .copyWith(
-                                        color: theme.onSurface,
-                                        fontFamily: theme.fontFamily,
-                                        fontSize: widget.gaugeSize * 0.24,
-                                      )
-                                      .merge(widget.scoreStyle),
+                                // Delta chip docked beside the score
+                                // numeral, inside the gauge, instead of
+                                // floating in the band below it.
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      numeralStyle.convert('${widget.score}'),
+                                      style: BankTokens.numeralHero
+                                          .copyWith(
+                                            color: theme.onSurface,
+                                            fontFamily: theme.fontFamily,
+                                            fontSize: widget.gaugeSize * 0.24,
+                                          )
+                                          .merge(widget.scoreStyle),
+                                    ),
+                                    if (delta != 0) ...[
+                                      const SizedBox(width: BankTokens.space1),
+                                      DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          color: deltaColor.withValues(
+                                            alpha: 0.12,
+                                          ),
+                                          borderRadius: theme.chipRadius,
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: BankTokens.space1,
+                                            vertical: 1,
+                                          ),
+                                          child: Text(
+                                            numeralStyle.convert(
+                                              delta > 0
+                                                  ? '+$delta'
+                                                  : '-${delta.abs()}',
+                                            ),
+                                            style: BankTokens.labelSmall
+                                                .copyWith(color: deltaColor),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                                 Text(
                                   widget.title,
@@ -341,34 +379,6 @@ class _BankFinancialHealthScoreState extends State<BankFinancialHealthScore>
                       },
                     ),
                   ),
-                  if (delta != 0) ...[
-                    const SizedBox(height: BankTokens.space2),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: (delta > 0
-                                ? widget.positiveColor ?? theme.positiveBalance
-                                : widget.dangerColor ?? BankTokens.danger)
-                            .withValues(alpha: 0.12),
-                        borderRadius: theme.chipRadius,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: BankTokens.space2,
-                          vertical: 2,
-                        ),
-                        child: Text(
-                          numeralStyle.convert(
-                            delta > 0 ? '+$delta' : '-${delta.abs()}',
-                          ),
-                          style: BankTokens.labelSmall.copyWith(
-                            color: delta > 0
-                                ? widget.positiveColor ?? theme.positiveBalance
-                                : widget.dangerColor ?? BankTokens.danger,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
@@ -417,6 +427,8 @@ class _FactorRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final isDarkSurface =
+        ThemeData.estimateBrightnessForColor(theme.surface) == Brightness.dark;
     final isRtl = Directionality.of(context) == TextDirection.rtl;
     final percent = (factor.score.clamp(0.0, 1.0) * 100).round();
 
@@ -446,13 +458,27 @@ class _FactorRow extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        factor.label,
-                        style: BankTokens.bodyMedium
-                            .copyWith(color: theme.onSurface)
-                            .merge(labelStyle),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      // Consistent row anatomy: label and trailing
+                      // value share one line, the bar spans beneath.
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              factor.label,
+                              style: BankTokens.bodyMedium
+                                  .copyWith(color: theme.onSurface)
+                                  .merge(labelStyle),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: BankTokens.space2),
+                          Text(
+                            '$percent%',
+                            style: BankTokens.labelSmall.copyWith(color: tint),
+                            maxLines: 1,
+                          ),
+                        ],
                       ),
                       const SizedBox(height: BankTokens.space1),
                       ClipRRect(
@@ -461,7 +487,11 @@ class _FactorRow extends StatelessWidget {
                         child: SizedBox(
                           height: 4,
                           child: ColoredBox(
-                            color: theme.surfaceVariant,
+                            // Full-width visible track so partial fills
+                            // read as part-to-whole on any surface.
+                            color: theme.onSurface.withValues(
+                              alpha: isDarkSurface ? 0.16 : 0.10,
+                            ),
                             child: FractionallySizedBox(
                               alignment: AlignmentDirectional.centerStart,
                               widthFactor: factor.score.clamp(0.0, 1.0),

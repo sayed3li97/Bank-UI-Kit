@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/money_formatter.dart';
 import '../theme/bank_theme_data.dart';
+import '../theme/button_text_style.dart';
 import '../theme/tokens.dart';
 
 /// Soft, dismissible "an update is available" bottom sheet: the skippable
@@ -323,7 +324,7 @@ class BankUpdatePromptSheet extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: theme.buttonRadius,
                 ),
-                textStyle: BankTokens.labelLarge,
+                textStyle: bankButtonTextStyle(context),
               ),
               child: Text(updateLabel),
             ),
@@ -344,7 +345,7 @@ class BankUpdatePromptSheet extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: theme.buttonRadius,
                   ),
-                  textStyle: BankTokens.labelLarge,
+                  textStyle: bankButtonTextStyle(context),
                 ),
                 child: Text(notNowLabel),
               ),

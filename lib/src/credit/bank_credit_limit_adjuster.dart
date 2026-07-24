@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_icon_spec.dart';
+import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
@@ -55,6 +56,7 @@ class BankCreditLimitAdjuster extends StatefulWidget {
     this.radius,
     this.backgroundColor,
     this.shadow,
+    this.border,
     this.accentColor,
     this.titleStyle,
     this.subtitleStyle,
@@ -104,9 +106,15 @@ class BankCreditLimitAdjuster extends StatefulWidget {
   /// Overrides the card fill color. Defaults to the theme surface.
   final Color? backgroundColor;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
-  /// pass `const []` to flatten.
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Overrides the accent used by the progress fill, slider, spinner,
   /// and commit button. Defaults to the theme primary.
@@ -272,11 +280,19 @@ class _BankCreditLimitAdjusterState extends State<BankCreditLimitAdjuster> {
     final changed = _selected != _committed;
     final showButton = changed || _busy || _showSuccess;
 
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: widget.backgroundColor,
+      shadow: widget.shadow,
+      border: widget.border,
+    );
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: widget.backgroundColor ?? theme.surface,
         borderRadius: widget.radius ?? theme.cardRadius,
-        boxShadow: widget.shadow ?? BankTokens.shadowCard,
+        boxShadow: depth.shadow,
+        border: depth.border,
       ),
       child: Padding(
         padding: widget.padding ?? const EdgeInsets.all(BankTokens.space4),

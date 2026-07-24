@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../common/bank_surface_depth.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -102,6 +103,7 @@ class BankAssistantPanel extends StatefulWidget {
     this.accentColor,
     this.gradient,
     this.shadow,
+    this.border,
     this.chipBackgroundColor,
     this.inputBackgroundColor,
     this.greetingStyle,
@@ -207,9 +209,15 @@ class BankAssistantPanel extends StatefulWidget {
   /// filled with the accent colour.
   final Gradient? gradient;
 
-  /// Overrides the panel shadow. Defaults to [BankTokens.shadowCard];
-  /// pass `const []` to flatten.
+  /// Overrides the panel shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the panel outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Overrides the suggestion-chip fill. Defaults to
   /// [BankThemeData.surfaceVariant].
@@ -490,7 +498,12 @@ class _BankAssistantPanelState extends State<BankAssistantPanel>
     final resolvedPadding =
         widget.padding ?? const EdgeInsetsDirectional.all(BankTokens.space4);
     final resolvedRadius = widget.radius ?? theme.cardRadius;
-    final resolvedShadow = widget.shadow ?? BankTokens.shadowCard;
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: widget.backgroundColor,
+      shadow: widget.shadow,
+      border: widget.border,
+    );
     final greeting =
         widget.greetingTemplate.replaceAll('{name}', widget.assistantName);
     final greetingTextStyle = BankTokens.headlineSmall
@@ -504,7 +517,8 @@ class _BankAssistantPanelState extends State<BankAssistantPanel>
         decoration: BoxDecoration(
           color: widget.backgroundColor ?? theme.surface,
           borderRadius: resolvedRadius,
-          boxShadow: resolvedShadow,
+          boxShadow: depth.shadow,
+          border: depth.border,
         ),
         child: Padding(
           padding: resolvedPadding,

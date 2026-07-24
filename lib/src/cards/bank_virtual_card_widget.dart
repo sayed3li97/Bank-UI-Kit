@@ -3,9 +3,11 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
+import '../../src/cards/bank_card_network_badge.dart';
 import '../../src/cards/bank_flip_card.dart';
 import '../../src/models/bank_account.dart';
 import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/card_pattern.dart';
 import '../../src/theme/tokens.dart';
 
 // ---------------------------------------------------------------------------
@@ -41,11 +43,14 @@ enum BankCardState { normal, frozen }
 ///
 /// - **[flipTrigger]**: choose how the flip is triggered:
 ///   - [BankFlipTrigger.tapToFlip] (default): tap anywhere on the card.
-///   - [BankFlipTrigger.builtInButton]: overlaid icon button in the card
-///     corner; provide [flipButtonBuilder] to customise it.
+///   - [BankFlipTrigger.builtInButton]: overlaid icon button in the card's
+///     top-end corner; provide [flipButtonBuilder] to customise it. The
+///     front face automatically keeps that corner clear (see
+///     [BankFlipCard.builtInButtonClearance]).
 ///   - [BankFlipTrigger.external]: host app drives the flip entirely.
 ///
-/// Card corner radius is fixed at 16 px per the card-material specification.
+/// Card corner radius defaults to [BankThemeData.cardRadius]; override with
+/// [radius].
 class BankVirtualCardWidget extends StatefulWidget {
   final BankAccount account;
   final BankCardSurface surface;
@@ -72,8 +77,21 @@ class BankVirtualCardWidget extends StatefulWidget {
 
   /// Asset path for the card-network logo (e.g. `'assets/visa.png'`).
   /// Rendered as an [Image.asset]: must be registered in the host-app
-  /// pubspec.yaml.
+  /// pubspec.yaml. Takes precedence over [network] and [networkLabel].
   final String? networkLogoAsset;
+
+  /// The payment network whose vector mark is rendered top-end via
+  /// [BankNetworkBadge]. [BankCardNetwork.generic] renders no mark. When
+  /// null, the legacy [networkLabel] string is parsed instead.
+  final BankCardNetwork? network;
+
+  /// Passed through to [BankNetworkBadge.markBuilder] so integrators can
+  /// inject licensed brand artwork.
+  final Widget Function(
+    BuildContext context,
+    BankCardNetwork network,
+    double height,
+  )? markBuilder;
 
   /// Asset path for the bank logo on the back face.
   final String? bankLogoAsset;
@@ -106,9 +124,10 @@ class BankVirtualCardWidget extends StatefulWidget {
   /// at 340 in unconstrained contexts, exactly as older versions did.
   final double? width;
 
-  /// Fixed card height. When null (the default) the height is 200 if [width]
-  /// is set, otherwise it scales with the resolved width to preserve the
-  /// default 340 x 200 aspect ratio.
+  /// Fixed card height. When null (the default) the height is derived from
+  /// the resolved width using the ISO 7810 ID-1 card ratio
+  /// ([kBankCardAspectRatio], 1.586) so this card matches `BankPaymentCard`
+  /// proportions.
   final double? height;
 
   /// Upper bound on the card width when [width] is null. Defaults to 340,
@@ -120,23 +139,27 @@ class BankVirtualCardWidget extends StatefulWidget {
   final EdgeInsetsGeometry? padding;
 
   /// Overrides the card corner radius.
-  /// Defaults to `BorderRadius.circular(16)` per the card-material spec.
+  /// Defaults to [BankThemeData.cardRadius].
   final BorderRadius? radius;
 
   /// Overrides the text and icon colour on both faces.
-  /// Defaults to [Colors.white].
+  /// Defaults to [BankThemeData.onPrimary].
   final Color? foregroundColor;
 
   /// Overrides the gradient painted for [BankCardSurface.gradient].
-  /// Defaults to the theme accentGradient or a primary/secondary blend.
+  /// Defaults to [BankThemeData.cardSurfaceGradient], then
+  /// [BankThemeData.accentGradient], then a primary/secondary blend.
   final Gradient? gradient;
 
-  /// Overrides the shadow behind flat and gradient surfaces.
-  /// Defaults to [BankTokens.shadowHero]; an empty list removes it.
+  /// Overrides the hero shadow behind the card — **all** surface modes keep
+  /// it, including [BankCardSurface.animatedMesh],
+  /// [BankCardSurface.metallicSweep], and image backgrounds. Defaults to
+  /// [BankTokens.shadowHeroFor] of the theme background brightness; an empty
+  /// list removes it.
   final List<BoxShadow>? shadow;
 
-  /// Merged over the fallback network label style
-  /// (italic [BankTokens.labelLarge]).
+  /// Merged over the custom (non-network) [networkLabel] text style
+  /// (upright, tracked [BankTokens.labelLarge]).
   final TextStyle? networkLabelStyle;
 
   /// Merged over the card number style
@@ -144,13 +167,14 @@ class BankVirtualCardWidget extends StatefulWidget {
   final TextStyle? cardNumberStyle;
 
   /// Merged over the [cardholderLabel] caption style
-  /// ([BankTokens.labelSmall]).
+  /// (tracked [BankTokens.caption]).
   final TextStyle? cardholderLabelStyle;
 
   /// Merged over the cardholder name style ([BankTokens.labelLarge]).
   final TextStyle? cardholderNameStyle;
 
-  /// Merged over the [expiryLabel] caption style ([BankTokens.labelSmall]).
+  /// Merged over the [expiryLabel] caption style
+  /// (tracked [BankTokens.caption]).
   final TextStyle? expiryLabelStyle;
 
   /// Merged over the expiry value style ([BankTokens.labelLarge]).
@@ -178,8 +202,12 @@ class BankVirtualCardWidget extends StatefulWidget {
   /// Defaults to [Icons.flip_outlined].
   final IconData? flipIcon;
 
-  /// Fallback network label shown when [networkLogoAsset] is null.
-  /// Defaults to 'VISA'.
+  /// Escape-hatch label for domestic / unlisted schemes, shown when neither
+  /// [networkLogoAsset] nor [network] resolves a mark. The values `'visa'`,
+  /// `'mastercard'`, `'amex'` / `'american express'` (case-insensitive) are
+  /// upgraded to the matching [BankNetworkBadge]; any other non-empty string
+  /// renders as upright tracked text. Defaults to `''` (no network claimed —
+  /// unconfigured cards no longer show a counterfeit Visa mark).
   final String networkLabel;
 
   /// Caption above the cardholder name. Defaults to 'CARD HOLDER'.
@@ -224,6 +252,8 @@ class BankVirtualCardWidget extends StatefulWidget {
     this.backgroundImageFit = BoxFit.cover,
     this.backgroundImageOverlay,
     this.networkLogoAsset,
+    this.network,
+    this.markBuilder,
     this.bankLogoAsset,
     this.cardholderName,
     this.expiryDate,
@@ -251,7 +281,7 @@ class BankVirtualCardWidget extends StatefulWidget {
     this.bankNameStyle,
     this.frozenIcon,
     this.flipIcon,
-    this.networkLabel = 'VISA',
+    this.networkLabel = '',
     this.cardholderLabel = 'CARD HOLDER',
     this.expiryLabel = 'EXPIRES',
     this.cvvLabel = 'CVV',
@@ -272,16 +302,11 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   late final AnimationController _flipController;
   late final Animation<double> _flipAnimation;
 
-  static const double _cardRadius = 16;
   static const Duration _flipDuration = Duration(milliseconds: 500);
 
   /// Default card width, used as the upper bound when neither `width` nor
   /// `maxWidth` is provided.
   static const double _defaultWidth = 340;
-
-  /// Default card height, paired with [_defaultWidth] to derive the card's
-  /// aspect ratio when sizing responsively.
-  static const double _defaultHeight = 200;
 
   @override
   void initState() {
@@ -326,22 +351,29 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   // Surface decoration
   // ---------------------------------------------------------------------------
 
-  /// Card corner radius, honouring the `radius` override.
-  BorderRadius get _resolvedRadius =>
-      widget.radius ?? BorderRadius.circular(_cardRadius);
+  /// Card corner radius, honouring the `radius` override; the default comes
+  /// from the theme so the whole card family shares one shape.
+  BorderRadius _resolvedRadius(BankThemeData bankTheme) =>
+      widget.radius ?? bankTheme.cardRadius;
 
-  /// Surface shadow, honouring the `shadow` override.
-  List<BoxShadow> get _resolvedShadow => widget.shadow ?? BankTokens.shadowHero;
+  /// The hero shadow, honouring the `shadow` override and the theme
+  /// background brightness. Applied uniformly to **every** surface mode so
+  /// mesh / metallic / image cards never float as flat cutouts.
+  List<BoxShadow> _resolvedShadow(BankThemeData bankTheme) =>
+      widget.shadow ??
+      BankTokens.shadowHeroFor(
+        ThemeData.estimateBrightnessForColor(bankTheme.background),
+      );
 
   BoxDecoration _buildFlatColorDecoration(BankThemeData bankTheme) =>
       BoxDecoration(
         color: widget.primaryColor ?? bankTheme.primary,
-        borderRadius: _resolvedRadius,
-        boxShadow: _resolvedShadow,
+        borderRadius: _resolvedRadius(bankTheme),
       );
 
   BoxDecoration _buildGradientDecoration(BankThemeData bankTheme) {
     final resolvedGradient = widget.gradient ??
+        bankTheme.cardSurfaceGradient ??
         bankTheme.accentGradient ??
         LinearGradient(
           begin: Alignment.topLeft,
@@ -353,8 +385,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
         );
     return BoxDecoration(
       gradient: resolvedGradient,
-      borderRadius: _resolvedRadius,
-      boxShadow: _resolvedShadow,
+      borderRadius: _resolvedRadius(bankTheme),
     );
   }
 
@@ -364,7 +395,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
 
   BoxDecoration _buildImageDecoration(BankThemeData bankTheme) => BoxDecoration(
         color: widget.primaryColor ?? bankTheme.primary,
-        borderRadius: _resolvedRadius,
+        borderRadius: _resolvedRadius(bankTheme),
         image: DecorationImage(
           image: widget.backgroundImage!,
           fit: widget.backgroundImageFit,
@@ -380,80 +411,119 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
         ),
       );
 
+  /// Layers the theme's generative card pattern beneath [child] so every
+  /// preset stamps its own texture on the face. Skipped for image
+  /// backgrounds, which carry their own artwork.
+  Widget _withPattern(Widget child, BankThemeData bankTheme) {
+    final pattern = bankTheme.cardPattern;
+    if (pattern == BankCardPattern.none || widget.backgroundImage != null) {
+      return child;
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        IgnorePointer(
+          child: CustomPaint(
+            painter: BankCardPatternPainter(
+              pattern: pattern,
+              color: bankTheme.cardPatternColor ??
+                  bankTheme.onPrimary.withValues(alpha: 0.08),
+            ),
+          ),
+        ),
+        child,
+      ],
+    );
+  }
+
   Widget _wrapSurface({
     required Widget child,
     required BankThemeData bankTheme,
     required double cardWidth,
     required double cardHeight,
   }) {
-    final borderRadius = _resolvedRadius;
+    final borderRadius = _resolvedRadius(bankTheme);
+    final content = _withPattern(child, bankTheme);
 
-    // Image background overrides the surface enum.
+    Widget surface;
     if (widget.backgroundImage != null) {
-      return Container(
+      // Image background overrides the surface enum.
+      surface = Container(
         width: cardWidth,
         height: cardHeight,
         decoration: _buildImageDecoration(bankTheme),
         clipBehavior: Clip.antiAlias,
-        child: child,
+        child: content,
       );
-    }
-
-    switch (widget.surface) {
-      case BankCardSurface.flatColor:
-        return Container(
-          width: cardWidth,
-          height: cardHeight,
-          decoration: _buildFlatColorDecoration(bankTheme),
-          clipBehavior: Clip.antiAlias,
-          child: child,
-        );
-
-      case BankCardSurface.gradient:
-        return Container(
-          width: cardWidth,
-          height: cardHeight,
-          decoration: _buildGradientDecoration(bankTheme),
-          clipBehavior: Clip.antiAlias,
-          child: child,
-        );
-
-      case BankCardSurface.animatedMesh:
-        return RepaintBoundary(
-          child: _AnimatedMeshCard(
+    } else {
+      switch (widget.surface) {
+        case BankCardSurface.flatColor:
+          surface = Container(
             width: cardWidth,
             height: cardHeight,
-            primaryColor: widget.primaryColor ?? bankTheme.primary,
-            secondaryColor: widget.secondaryColor ?? bankTheme.primaryVariant,
-            borderRadius: borderRadius,
-            child: child,
-          ),
-        );
+            decoration: _buildFlatColorDecoration(bankTheme),
+            clipBehavior: Clip.antiAlias,
+            child: content,
+          );
 
-      case BankCardSurface.metallicSweep:
-        return RepaintBoundary(
-          child: _MetallicSweepCard(
+        case BankCardSurface.gradient:
+          surface = Container(
             width: cardWidth,
             height: cardHeight,
-            primaryColor: widget.primaryColor ?? bankTheme.primary,
-            secondaryColor: widget.secondaryColor ?? bankTheme.primaryVariant,
-            borderRadius: borderRadius,
-            child: child,
-          ),
-        );
+            decoration: _buildGradientDecoration(bankTheme),
+            clipBehavior: Clip.antiAlias,
+            child: content,
+          );
+
+        case BankCardSurface.animatedMesh:
+          surface = RepaintBoundary(
+            child: _AnimatedMeshCard(
+              width: cardWidth,
+              height: cardHeight,
+              primaryColor: widget.primaryColor ?? bankTheme.primary,
+              secondaryColor: widget.secondaryColor ?? bankTheme.primaryVariant,
+              borderRadius: borderRadius,
+              child: content,
+            ),
+          );
+
+        case BankCardSurface.metallicSweep:
+          surface = RepaintBoundary(
+            child: _MetallicSweepCard(
+              width: cardWidth,
+              height: cardHeight,
+              primaryColor: widget.primaryColor ?? bankTheme.primary,
+              secondaryColor: widget.secondaryColor ?? bankTheme.primaryVariant,
+              borderRadius: borderRadius,
+              child: content,
+            ),
+          );
+      }
     }
+
+    // The hero shadow is hoisted out of the per-surface decorations so every
+    // mode — including mesh, metallic, and image — keeps its depth grounding.
+    final shadow = _resolvedShadow(bankTheme);
+    if (shadow.isEmpty) return surface;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        boxShadow: shadow,
+      ),
+      child: surface,
+    );
   }
 
   // ---------------------------------------------------------------------------
   // Frozen overlay
   // ---------------------------------------------------------------------------
 
-  Widget _buildFrozenOverlay() {
+  Widget _buildFrozenOverlay(BankThemeData bankTheme) {
     final resolvedFrozenIcon = widget.frozenIcon ?? Icons.ac_unit_outlined;
-    final resolvedForeground = widget.foregroundColor ?? Colors.white;
+    final resolvedForeground = widget.foregroundColor ?? bankTheme.onPrimary;
     return Positioned.fill(
       child: ClipRRect(
-        borderRadius: _resolvedRadius,
+        borderRadius: _resolvedRadius(bankTheme),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
           child: ColoredBox(
@@ -476,15 +546,74 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   // Front face
   // ---------------------------------------------------------------------------
 
+  /// Resolves the network mark for the front face:
+  /// asset > [BankVirtualCardWidget.network] > parsed legacy label > custom
+  /// label text > nothing.
+  Widget? _networkMark(Color textPrimary) {
+    if (widget.networkLogoAsset != null) {
+      return Image.asset(
+        widget.networkLogoAsset!,
+        height: 28,
+        fit: BoxFit.contain,
+      );
+    }
+    final network = widget.network ?? _parseNetworkLabel(widget.networkLabel);
+    if (network != null) {
+      if (network == BankCardNetwork.generic) return null;
+      return BankNetworkBadge(
+        network: network,
+        // Tint only the monochrome Visa wordmark; Mastercard and Amex keep
+        // their brand colours.
+        color: network == BankCardNetwork.visa ? textPrimary : null,
+        markBuilder: widget.markBuilder,
+      );
+    }
+    if (widget.networkLabel.isEmpty) return null;
+    // Documented escape hatch for domestic schemes: upright, tracked — never
+    // synthetic italic.
+    return Text(
+      widget.networkLabel,
+      style: BankTokens.labelLarge
+          .copyWith(color: textPrimary, letterSpacing: 1)
+          .merge(widget.networkLabelStyle),
+    );
+  }
+
+  static BankCardNetwork? _parseNetworkLabel(String label) =>
+      switch (label.trim().toLowerCase()) {
+        'visa' => BankCardNetwork.visa,
+        'mastercard' => BankCardNetwork.mastercard,
+        'amex' || 'american express' => BankCardNetwork.amex,
+        _ => null,
+      };
+
+  /// Horizontal space the front face reserves at the top-end corner so face
+  /// content never collides with the built-in flip button overlay.
+  double _cornerClearance(EdgeInsetsGeometry resolvedPadding) {
+    if (widget.flipTrigger != BankFlipTrigger.builtInButton) return 0;
+    final dir = Directionality.of(context);
+    final pad = resolvedPadding.resolve(dir);
+    final endPad = dir == TextDirection.rtl ? pad.left : pad.right;
+    final clearance = BankFlipCard.builtInButtonClearance - endPad;
+    return clearance > 0 ? clearance : 0;
+  }
+
   Widget _buildFrontFace(
     BankThemeData bankTheme,
     double cardWidth,
     double cardHeight,
   ) {
-    final textPrimary = widget.foregroundColor ?? Colors.white;
-    final textSecondary = textPrimary.withValues(alpha: 0.75);
+    final textPrimary = widget.foregroundColor ?? bankTheme.onPrimary;
+    final labelInk = textPrimary.withValues(alpha: 0.70);
     final resolvedPadding =
         widget.padding ?? const EdgeInsets.all(BankTokens.space5);
+    final cornerClearance = _cornerClearance(resolvedPadding);
+    final mark = _networkMark(textPrimary);
+
+    final captionStyle = BankTokens.caption.copyWith(
+      color: labelInk,
+      letterSpacing: 1.2,
+    );
 
     return _wrapSurface(
       bankTheme: bankTheme,
@@ -495,68 +624,39 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Top row: chip icon + network logo ──────────────────────────
+            // ── Top row: chip + network mark ───────────────────────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // EMV chip placeholder
-                Container(
-                  width: 38,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFFE8CE8C),
-                        Color(0xFFC9A85C),
-                        Color(0xFFB08F45),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: const Color(0x33FFFFFF),
-                      width: 0.8,
-                    ),
-                  ),
-                  child: CustomPaint(painter: _ChipContactPainter()),
-                ),
-                if (widget.networkLogoAsset != null)
-                  Image.asset(
-                    widget.networkLogoAsset!,
-                    height: 28,
-                    fit: BoxFit.contain,
-                  )
-                else
-                  Text(
-                    widget.networkLabel,
-                    style: BankTokens.labelLarge
-                        .copyWith(
-                          color: textPrimary,
-                          fontStyle: FontStyle.italic,
-                          fontSize: 18,
-                        )
-                        .merge(widget.networkLabelStyle),
+                const BankCardChip(width: 38, height: 28),
+                if (mark != null)
+                  Padding(
+                    // Reflow start-ward when the built-in flip button
+                    // occupies the top-end corner.
+                    padding: EdgeInsetsDirectional.only(end: cornerClearance),
+                    child: mark,
                   ),
               ],
             ),
 
             const Spacer(),
 
-            // ── Card number (masked) ───────────────────────────────────────
-            Text(
-              _formatMaskedNumber(widget.account.maskedNumber),
-              style: BankTokens.numeralMedium
-                  .copyWith(
-                    color: textPrimary,
-                    letterSpacing: 3,
-                    fontSize: 18,
-                  )
-                  .merge(widget.cardNumberStyle),
+            // ── Card number (masked), at the optical centre ───────────────
+            Text.rich(
+              bankMaskedPanSpan(
+                _formatMaskedNumber(widget.account.maskedNumber),
+                BankTokens.numeralMedium
+                    .copyWith(
+                      color: textPrimary,
+                      letterSpacing: 2.4,
+                      height: 1,
+                    )
+                    .merge(widget.cardNumberStyle),
+              ),
               textDirection: TextDirection.ltr,
             ),
 
-            const SizedBox(height: BankTokens.space4),
+            const Spacer(),
 
             // ── Bottom row: cardholder + expiry ────────────────────────────
             Row(
@@ -570,12 +670,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
                     children: [
                       Text(
                         widget.cardholderLabel,
-                        style: BankTokens.labelSmall
-                            .copyWith(
-                              color: textSecondary,
-                              letterSpacing: 1,
-                            )
-                            .merge(widget.cardholderLabelStyle),
+                        style: captionStyle.merge(widget.cardholderLabelStyle),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -597,19 +692,17 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
                     children: [
                       Text(
                         widget.expiryLabel,
-                        style: BankTokens.labelSmall
-                            .copyWith(
-                              color: textSecondary,
-                              letterSpacing: 1,
-                            )
-                            .merge(widget.expiryLabelStyle),
+                        style: captionStyle.merge(widget.expiryLabelStyle),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         widget.expiryDate!,
-                        style: BankTokens.labelLarge
-                            .copyWith(color: textPrimary)
-                            .merge(widget.expiryDateStyle),
+                        style: BankTokens.labelLarge.copyWith(
+                          color: textPrimary,
+                          fontFeatures: const [
+                            FontFeature.tabularFigures(),
+                          ],
+                        ).merge(widget.expiryDateStyle),
                         textDirection: TextDirection.ltr,
                       ),
                     ],
@@ -632,7 +725,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
     double cardWidth,
     double cardHeight,
   ) {
-    final textPrimary = widget.foregroundColor ?? Colors.white;
+    final textPrimary = widget.foregroundColor ?? bankTheme.onPrimary;
     final textSecondary = textPrimary.withValues(alpha: 0.75);
 
     return _wrapSurface(
@@ -789,15 +882,11 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
         : maxWidth;
   }
 
-  /// Resolves the rendered height: an explicit `height` wins; with a fixed
-  /// width the legacy 200 default applies; otherwise the height preserves
-  /// the default 340 x 200 aspect ratio.
-  double _resolveHeight(double cardWidth) {
-    final fixedHeight = widget.height;
-    if (fixedHeight != null) return fixedHeight;
-    if (widget.width != null) return _defaultHeight;
-    return cardWidth * _defaultHeight / _defaultWidth;
-  }
+  /// Resolves the rendered height: an explicit `height` wins; otherwise the
+  /// height preserves the ISO 7810 ID-1 card ratio ([kBankCardAspectRatio])
+  /// so this card matches `BankPaymentCard` proportions.
+  double _resolveHeight(double cardWidth) =>
+      widget.height ?? cardWidth / kBankCardAspectRatio;
 
   // ---------------------------------------------------------------------------
   // Build
@@ -889,9 +978,11 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
           clipBehavior: Clip.none,
           children: [
             animated,
-            Positioned(
-              top: BankTokens.space2,
-              right: BankTokens.space2,
+            // Directional so the button tracks the top-END corner in RTL;
+            // the front face reserves this corner via [_cornerClearance].
+            PositionedDirectional(
+              top: BankFlipCard.builtInButtonInset,
+              end: BankFlipCard.builtInButtonInset,
               child: widget.flipButtonBuilder != null
                   ? widget.flipButtonBuilder!(context, widget.onFlip ?? () {})
                   : _VirtualCardFlipButton(
@@ -931,7 +1022,7 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
       return Stack(
         children: [
           face,
-          _buildFrozenOverlay(),
+          _buildFrozenOverlay(bankTheme),
         ],
       );
     }
@@ -1209,32 +1300,4 @@ class _MetallicSweepCardState extends State<_MetallicSweepCard>
       child: widget.child,
     );
   }
-}
-
-/// Faint EMV contact lines that make the chip read as metal, not paint.
-class _ChipContactPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0x2E6B5320)
-      ..strokeWidth = 0.9;
-    final thirdW = size.width / 3;
-    final thirdH = size.height / 3;
-    canvas
-      ..drawLine(Offset(thirdW, 0), Offset(thirdW, size.height), paint)
-      ..drawLine(
-        Offset(thirdW * 2, 0),
-        Offset(thirdW * 2, size.height),
-        paint,
-      )
-      ..drawLine(Offset(0, thirdH), Offset(size.width, thirdH), paint)
-      ..drawLine(
-        Offset(0, thirdH * 2),
-        Offset(size.width, thirdH * 2),
-        paint,
-      );
-  }
-
-  @override
-  bool shouldRepaint(_ChipContactPainter oldDelegate) => false;
 }

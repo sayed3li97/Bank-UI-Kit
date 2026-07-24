@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_icon_spec.dart';
+import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
@@ -382,6 +383,7 @@ class BankCardlessCashCode extends StatefulWidget {
     this.radius,
     this.backgroundColor,
     this.shadow,
+    this.border,
     this.accentColor,
     this.ringSize,
     this.codeStyle,
@@ -430,9 +432,15 @@ class BankCardlessCashCode extends StatefulWidget {
   /// Overrides the card background. Defaults to the theme surface.
   final Color? backgroundColor;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
-  /// pass `const []` to flatten the card.
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten the card.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Colour of the countdown ring while active. Defaults to the theme
   /// primary; the expired state keeps [BankTokens.danger].
@@ -525,10 +533,21 @@ class _BankCardlessCashCodeState extends State<BankCardlessCashCode> {
     return groups.join(' ');
   }
 
+  /// Formats the remaining window at the precision that fits the ring:
+  /// `m:ss` under an hour, `h:mm` under a day, whole days beyond that.
+  /// Cardless codes live on minute scales, but a pathological input must
+  /// still render as a short, non-overflowing string.
   String _formatRemaining(Duration duration, NumeralStyle numeralStyle) {
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds % 60;
-    final raw = '$minutes:${seconds.toString().padLeft(2, '0')}';
+    final String raw;
+    if (duration.inHours < 1) {
+      final seconds = duration.inSeconds % 60;
+      raw = '${duration.inMinutes}:${seconds.toString().padLeft(2, '0')}';
+    } else if (duration.inDays < 1) {
+      final minutes = duration.inMinutes % 60;
+      raw = '${duration.inHours}:${minutes.toString().padLeft(2, '0')}';
+    } else {
+      raw = '${duration.inDays}d';
+    }
     return numeralStyle.convert(raw);
   }
 
@@ -547,11 +566,19 @@ class _BankCardlessCashCodeState extends State<BankCardlessCashCode> {
         expired ? BankTokens.danger : widget.accentColor ?? theme.primary;
     final ringSize = widget.ringSize ?? _ringSize;
 
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: widget.backgroundColor,
+      shadow: widget.shadow,
+      border: widget.border,
+    );
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: widget.backgroundColor ?? theme.surface,
         borderRadius: widget.radius ?? theme.cardRadius,
-        boxShadow: widget.shadow ?? BankTokens.shadowCard,
+        boxShadow: depth.shadow,
+        border: depth.border,
       ),
       child: Padding(
         padding: widget.padding ?? const EdgeInsets.all(BankTokens.space5),
@@ -602,11 +629,21 @@ class _BankCardlessCashCodeState extends State<BankCardlessCashCode> {
                     color: ringColor,
                     trackColor: theme.surfaceVariant,
                   ),
-                  child: Center(
-                    child: Text(
-                      _formatRemaining(_remaining, scope.numeralStyle),
-                      style: theme.numeralSmall.copyWith(
-                        color: expired ? BankTokens.danger : theme.onSurface,
+                  child: Padding(
+                    // Keep the digits inside the ring's inner circle; the
+                    // FittedBox scales any still-longer string down instead
+                    // of letting it wrap over the ring stroke.
+                    padding: const EdgeInsets.all(
+                      _CountdownRingPainter._stroke + BankTokens.space2,
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        _formatRemaining(_remaining, scope.numeralStyle),
+                        maxLines: 1,
+                        style: theme.numeralSmall.copyWith(
+                          color: expired ? BankTokens.danger : theme.onSurface,
+                        ),
                       ),
                     ),
                   ),

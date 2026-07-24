@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../src/cards/bank_card_network_badge.dart';
 import '../../src/cards/bank_flip_card.dart';
 import '../../src/common/bank_icon_spec.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/card_pattern.dart';
 import '../../src/theme/tokens.dart';
 import '../accounts/bank_balance_text.dart';
 
@@ -150,9 +152,10 @@ class BankHorizontalAccountCard extends StatelessWidget {
   /// at 340 in unconstrained contexts, exactly as older versions did.
   final double? width;
 
-  /// Fixed card height. When null (the default) the height is 200 if [width]
-  /// is set, otherwise it scales with the resolved width to preserve the
-  /// default 340 x 200 aspect ratio.
+  /// Fixed card height. When null (the default) the height is derived from
+  /// the resolved width using the ISO 7810 ID-1 card ratio
+  /// ([kBankCardAspectRatio], 1.586) so this card matches the rest of the
+  /// card family.
   final double? height;
 
   /// Upper bound on the card width when [width] is null. Defaults to 340,
@@ -165,7 +168,7 @@ class BankHorizontalAccountCard extends StatelessWidget {
   /// `EdgeInsets.all(BankTokens.space5)`.
   final EdgeInsetsGeometry? padding;
 
-  /// Corner radius of the card. Defaults to `BorderRadius.circular(16)`.
+  /// Corner radius of the card. Defaults to [BankThemeData.cardRadius].
   final BorderRadius? radius;
 
   /// Overrides the gradient painted in
@@ -175,7 +178,7 @@ class BankHorizontalAccountCard extends StatelessWidget {
   final Gradient? gradient;
 
   /// Base colour of all text and icons on the card. Defaults to
-  /// [Colors.white]; secondary elements use it at 72% alpha.
+  /// [BankThemeData.onPrimary]; secondary elements use it at 72% alpha.
   final Color? foregroundColor;
 
   /// Merged over the account-name style ([BankTokens.labelLarge]).
@@ -184,7 +187,8 @@ class BankHorizontalAccountCard extends StatelessWidget {
   /// Merged over the balance style ([BankThemeData.numeralLarge]).
   final TextStyle? amountStyle;
 
-  /// Merged over the masked-number style ([BankTokens.bodySmall]).
+  /// Merged over the masked-number style (the shared card-family PAN
+  /// treatment: letter-spaced [BankTokens.numeralMedium]).
   final TextStyle? maskedNumberStyle;
 
   /// Merged over the fallback network-badge text style
@@ -229,8 +233,6 @@ class BankHorizontalAccountCard extends StatelessWidget {
   /// Overrides the card semantics label. Defaults to
   /// `Account card: <account name>, balance <balance>`.
   final String? semanticLabel;
-
-  static const double _cardRadius = 16;
 
   const BankHorizontalAccountCard({
     required this.account,
@@ -279,12 +281,13 @@ class BankHorizontalAccountCard extends StatelessWidget {
   // ── Decoration helpers ────────────────────────────────────────────────────
 
   BoxDecoration _buildDecoration(BankThemeData bankTheme) {
-    final baseRadius = radius ?? BorderRadius.circular(_cardRadius);
+    final baseRadius = radius ?? bankTheme.cardRadius;
 
     switch (background) {
       case BankHorizontalCardBackground.themeGradient:
         return BoxDecoration(
           gradient: gradient ??
+              bankTheme.cardSurfaceGradient ??
               bankTheme.accentGradient ??
               LinearGradient(
                 begin: Alignment.topLeft,
@@ -336,20 +339,62 @@ class BankHorizontalAccountCard extends StatelessWidget {
         BankAccountType.current || BankAccountType.isa => BankIcons.account,
       };
 
+  // ── Face helpers ──────────────────────────────────────────────────────────
+
+  /// Horizontal space a face reserves at the top-end corner so content never
+  /// collides with [BankFlipCard]'s built-in flip-button overlay.
+  double _cornerClearance(
+    BuildContext context,
+    EdgeInsetsGeometry resolvedPadding,
+  ) {
+    if (trigger != BankFlipTrigger.builtInButton) return 0;
+    final dir = Directionality.of(context);
+    final pad = resolvedPadding.resolve(dir);
+    final endPad = dir == TextDirection.rtl ? pad.left : pad.right;
+    final clearance = BankFlipCard.builtInButtonClearance - endPad;
+    return clearance > 0 ? clearance : 0;
+  }
+
+  /// Layers the theme's generative card pattern beneath [content]; image
+  /// backgrounds carry their own artwork and skip it.
+  Widget _withPattern(Widget content, BankThemeData bankTheme) {
+    final pattern = bankTheme.cardPattern;
+    if (pattern == BankCardPattern.none ||
+        background == BankHorizontalCardBackground.image) {
+      return content;
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        IgnorePointer(
+          child: CustomPaint(
+            painter: BankCardPatternPainter(
+              pattern: pattern,
+              color: bankTheme.cardPatternColor ??
+                  bankTheme.onPrimary.withValues(alpha: 0.08),
+            ),
+          ),
+        ),
+        content,
+      ],
+    );
+  }
+
   // ── Front face ────────────────────────────────────────────────────────────
 
   Widget _buildFront(BuildContext context, BankThemeData bankTheme) {
-    final primary = foregroundColor ?? Colors.white;
+    final primary = foregroundColor ?? bankTheme.onPrimary;
     final secondary = primary.withValues(alpha: 0.72);
     final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space5);
     final dec = _buildDecoration(bankTheme);
+    final cornerClearance = _cornerClearance(context, resolvedPadding);
 
     final typeIconWidget = Icon(
       typeIcon ?? _iconForType(account.type),
       color: secondary,
       size: 22,
     );
-    final networkBadge = networkLogoAsset != null
+    var networkBadge = networkLogoAsset != null
         ? Image.asset(networkLogoAsset!, height: 26, fit: BoxFit.contain)
         : Text(
             account.type.name.toUpperCase(),
@@ -360,17 +405,30 @@ class BankHorizontalAccountCard extends StatelessWidget {
                 )
                 .merge(networkLabelStyle),
           );
+    if (cornerClearance > 0) {
+      // All three layouts place the badge at the top-end corner; shift it
+      // start-ward so the built-in flip button never occludes it.
+      networkBadge = Padding(
+        padding: EdgeInsetsDirectional.only(end: cornerClearance),
+        child: networkBadge,
+      );
+    }
     final balanceWidget = BankBalanceText(
       money: account.balance,
       style: bankTheme.numeralLarge.copyWith(color: primary).merge(amountStyle),
     );
-    final maskedNumber = Text(
-      account.maskedNumber,
-      style: BankTokens.bodySmall.copyWith(
-        color: secondary,
-        letterSpacing: 2,
-        fontFeatures: const [FontFeature.tabularFigures()],
-      ).merge(maskedNumberStyle),
+    // Shared card-family PAN treatment (see `bankMaskedPanSpan`).
+    final maskedNumber = Text.rich(
+      bankMaskedPanSpan(
+        account.maskedNumber,
+        BankTokens.numeralMedium
+            .copyWith(
+              color: secondary,
+              letterSpacing: 2.4,
+              height: 1,
+            )
+            .merge(maskedNumberStyle),
+      ),
       textDirection: TextDirection.ltr,
     );
     final accountName = Text(
@@ -471,20 +529,21 @@ class BankHorizontalAccountCard extends StatelessWidget {
       height: height,
       decoration: dec,
       clipBehavior: Clip.antiAlias,
-      child: content,
+      child: _withPattern(content, bankTheme),
     );
   }
 
   // ── Back face ─────────────────────────────────────────────────────────────
 
   Widget _buildBack(BuildContext context, BankThemeData bankTheme) {
-    final primary = foregroundColor ?? Colors.white;
+    final primary = foregroundColor ?? bankTheme.onPrimary;
     final secondary = primary.withValues(alpha: 0.72);
     final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space5);
     final resolvedCopyIcon = copyIcon ?? Icons.copy_outlined;
     final resolvedCopyAction = copyActionLabel ?? 'Copy';
     final dec = _buildDecoration(bankTheme);
     final holder = cardholderName ?? account.name;
+    final cornerClearance = _cornerClearance(context, resolvedPadding);
 
     Widget detailRow({
       required String label,
@@ -538,64 +597,72 @@ class BankHorizontalAccountCard extends StatelessWidget {
       height: height,
       decoration: dec,
       clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: resolvedPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              holder,
-              style: BankTokens.labelLarge
-                  .copyWith(color: primary)
-                  .merge(titleStyle),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
-            const Spacer(),
-            if (account.ibanOrAccountNumber != null) ...[
-              detailRow(
-                label: ibanLabel ?? 'IBAN / Account',
-                value: account.ibanOrAccountNumber!,
-                copyable: true,
-              ),
-              const SizedBox(height: BankTokens.space3),
-            ],
-            if (account.sortCodeOrBic != null) ...[
-              detailRow(
-                label: sortCodeLabel ?? 'Sort Code / BIC',
-                value: account.sortCodeOrBic!,
-                copyable: true,
-              ),
-              const SizedBox(height: BankTokens.space3),
-            ],
-            detailRow(
-              label: currencyLabel ?? 'Currency',
-              value: account.currencyCode,
-            ),
-            const Spacer(),
-            // Tap-to-copy hint
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Icon(
-                  copyHintIcon ?? Icons.touch_app_outlined,
-                  size: 12,
-                  color: secondary,
+      child: _withPattern(
+        Padding(
+          padding: resolvedPadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                // Keep a long cardholder name clear of the built-in flip
+                // button at the top-end corner.
+                padding: EdgeInsetsDirectional.only(end: cornerClearance),
+                child: Text(
+                  holder,
+                  style: BankTokens.labelLarge
+                      .copyWith(color: primary)
+                      .merge(titleStyle),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
-                const SizedBox(width: BankTokens.space1),
-                Text(
-                  copyHintLabel ?? 'Tap values to copy',
-                  style: BankTokens.labelSmall
-                      .copyWith(
-                        color: secondary,
-                        fontSize: 10,
-                      )
-                      .merge(copyHintStyle),
+              ),
+              const Spacer(),
+              if (account.ibanOrAccountNumber != null) ...[
+                detailRow(
+                  label: ibanLabel ?? 'IBAN / Account',
+                  value: account.ibanOrAccountNumber!,
+                  copyable: true,
                 ),
+                const SizedBox(height: BankTokens.space3),
               ],
-            ),
-          ],
+              if (account.sortCodeOrBic != null) ...[
+                detailRow(
+                  label: sortCodeLabel ?? 'Sort Code / BIC',
+                  value: account.sortCodeOrBic!,
+                  copyable: true,
+                ),
+                const SizedBox(height: BankTokens.space3),
+              ],
+              detailRow(
+                label: currencyLabel ?? 'Currency',
+                value: account.currencyCode,
+              ),
+              const Spacer(),
+              // Tap-to-copy hint
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(
+                    copyHintIcon ?? Icons.touch_app_outlined,
+                    size: 12,
+                    color: secondary,
+                  ),
+                  const SizedBox(width: BankTokens.space1),
+                  Text(
+                    copyHintLabel ?? 'Tap values to copy',
+                    style: BankTokens.labelSmall
+                        .copyWith(
+                          color: secondary,
+                          fontSize: 10,
+                        )
+                        .merge(copyHintStyle),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
+        bankTheme,
       ),
     );
   }

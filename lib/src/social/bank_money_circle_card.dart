@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_emblem.dart';
 import '../common/bank_icon_spec.dart';
+import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
@@ -141,6 +142,7 @@ class BankMoneyCircleCard extends StatelessWidget {
     this.backgroundColor,
     this.accentColor,
     this.shadow,
+    this.border,
     this.titleStyle,
     this.subtitleStyle,
     this.amountStyle,
@@ -243,9 +245,15 @@ class BankMoneyCircleCard extends StatelessWidget {
   /// [BankThemeData.primary].
   final Color? accentColor;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
-  /// pass `const []` to flatten the card.
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten the card.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Merged over the computed circle-name style
   /// ([BankTokens.headlineSmall] in onSurface).
@@ -308,7 +316,12 @@ class BankMoneyCircleCard extends StatelessWidget {
     final resolvedRadius = radius ?? theme.cardRadius;
     final resolvedBackground = backgroundColor ?? theme.surface;
     final resolvedAccent = accentColor ?? theme.primary;
-    final resolvedShadow = shadow ?? BankTokens.shadowCard;
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: backgroundColor,
+      shadow: shadow,
+      border: border,
+    );
 
     final resolvedTitleStyle = BankTokens.headlineSmall
         .copyWith(color: theme.onSurface)
@@ -521,7 +534,8 @@ class BankMoneyCircleCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: resolvedBackground,
         borderRadius: resolvedRadius,
-        boxShadow: resolvedShadow,
+        boxShadow: depth.shadow,
+        border: depth.border,
       ),
       child: Padding(
         padding: resolvedPadding,

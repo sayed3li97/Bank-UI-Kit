@@ -160,7 +160,7 @@ class _Greeting extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Good morning, Alex',
+          'Good morning',
           style: BankTokens.bodyMedium.copyWith(color: theme.onSurfaceVariant),
         ),
         const SizedBox(height: 2),

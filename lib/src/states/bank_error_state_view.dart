@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/button_text_style.dart';
 import '../../src/theme/tokens.dart';
 
 /// Error state with a specific reason.
@@ -10,9 +11,12 @@ import '../../src/theme/tokens.dart';
 /// [onRetry] and [onContactSupport] callback are shown as action buttons when
 /// non-null.
 ///
-/// Layout: a vertically centred [Column] with a 48 px icon, [title] in
-/// [BankTokens.headlineSmall], [message] in [BankTokens.bodyMedium] with
-/// [BankThemeData.onSurfaceVariant] colour, then action buttons.
+/// Layout: a vertically centred [Column] with an illustration slot, [title]
+/// in [BankTokens.headlineSmall], [message] in [BankTokens.bodyMedium] with
+/// [BankThemeData.onSurfaceVariant] colour, then action buttons. When
+/// [illustration] is null the slot renders the error glyph inside a soft
+/// danger-tinted 72 px circle (brightness-aware), so the error moment never
+/// reads as a bare wireframe.
 ///
 /// ```dart
 /// BankErrorStateView(
@@ -42,9 +46,17 @@ class BankErrorStateView extends StatelessWidget {
   /// Callback for the contact-support button. Button is omitted when `null`.
   final VoidCallback? onContactSupport;
 
-  /// Custom icon widget. Defaults to [Icons.error_outline] in
-  /// [BankTokens.danger] colour at 48 px.
+  /// Custom icon widget rendered inside the default illustration circle.
+  /// Defaults to [Icons.error_outline] in the brightness-appropriate
+  /// [BankTokens.danger] / [BankTokens.dangerDark] colour at 32 px.
+  ///
+  /// Ignored when [illustration] is provided.
   final Widget? icon;
+
+  /// Replaces the whole illustration slot above the title (icon and tinted
+  /// circle included). Bank UI Kit bundles no illustration assets; supply
+  /// brand artwork here.
+  final Widget? illustration;
 
   /// Overrides the content padding. Defaults to
   /// `EdgeInsets.symmetric(horizontal: BankTokens.space8)`.
@@ -75,6 +87,7 @@ class BankErrorStateView extends StatelessWidget {
     this.onRetry,
     this.onContactSupport,
     this.icon,
+    this.illustration,
     this.padding,
     this.accentColor,
     this.titleStyle,
@@ -86,11 +99,31 @@ class BankErrorStateView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
 
-    final resolvedIcon = icon ??
-        const Icon(
-          Icons.error_outline,
-          size: 48,
-          color: BankTokens.danger,
+    // Brightness of the painted surface picks the AA-safe danger variant.
+    final surfaceBrightness =
+        ThemeData.estimateBrightnessForColor(theme.surface);
+    final danger = surfaceBrightness == Brightness.dark
+        ? BankTokens.dangerDark
+        : BankTokens.danger;
+
+    final resolvedIllustration = illustration ??
+        ExcludeSemantics(
+          child: Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: danger.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: icon ??
+                  Icon(
+                    Icons.error_outline,
+                    size: 32,
+                    color: danger,
+                  ),
+            ),
+          ),
         );
 
     final resolvedPadding =
@@ -102,7 +135,7 @@ class BankErrorStateView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            resolvedIcon,
+            resolvedIllustration,
             const SizedBox(height: BankTokens.space4),
             Text(
               title,
@@ -133,7 +166,7 @@ class BankErrorStateView extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: theme.buttonRadius,
                     ),
-                    textStyle: BankTokens.labelLarge,
+                    textStyle: bankButtonTextStyle(context),
                   ),
                   child: Text(retryLabel),
                 ),
@@ -152,7 +185,7 @@ class BankErrorStateView extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: theme.buttonRadius,
                     ),
-                    textStyle: BankTokens.labelLarge,
+                    textStyle: bankButtonTextStyle(context),
                   ),
                   child: Text(supportLabel ?? 'Contact Support'),
                 ),

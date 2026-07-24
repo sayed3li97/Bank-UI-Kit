@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_surface_depth.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
@@ -57,9 +58,15 @@ class BankPerksMarketplaceCard extends StatefulWidget {
   /// activate button. Defaults to the theme primary.
   final Color? accentColor;
 
-  /// Overrides the card shadow. Defaults to a soft black drop shadow;
-  /// pass `const []` to flatten.
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Merged over the perk title style (BankTokens.labelLarge in
   /// onSurface).
@@ -121,6 +128,7 @@ class BankPerksMarketplaceCard extends StatefulWidget {
     this.backgroundColor,
     this.accentColor,
     this.shadow,
+    this.border,
     this.titleStyle,
     this.partnerStyle,
     this.descriptionStyle,
@@ -214,6 +222,13 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
             '${expiryText.isNotEmpty ? '$expiryText. ' : ''}'
             '${perk.isActivated ? 'Activated.' : 'Not activated.'}';
 
+    final depth = BankSurfaceDepth.resolve(
+      bankTheme,
+      surfaceColor: widget.backgroundColor,
+      shadow: widget.shadow,
+      border: widget.border,
+    );
+
     return Semantics(
       label: semanticLabel,
       button: widget.onTap != null,
@@ -221,14 +236,8 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
         decoration: BoxDecoration(
           color: widget.backgroundColor ?? bankTheme.surface,
           borderRadius: cardRadius,
-          boxShadow: widget.shadow ??
-              [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+          boxShadow: depth.shadow,
+          border: depth.border,
         ),
         child: Material(
           color: Colors.transparent,

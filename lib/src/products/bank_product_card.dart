@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/bank_theme_data.dart';
+import '../theme/button_text_style.dart';
 import '../theme/tokens.dart';
 
 // ---------------------------------------------------------------------------
@@ -9,20 +10,31 @@ import '../theme/tokens.dart';
 
 /// A rate figure shown as the hero of a [BankProductCard].
 ///
-/// The [label] is fully caller-supplied so the card stays Shariah-safe: a
-/// conventional product can pass `'APR'` or `'from APR'`, while an Islamic
-/// product can pass `'Profit rate'`. Never assume a specific label.
+/// The labels are fully caller-supplied so the card stays Shariah-safe: a
+/// conventional product can pass `'APR'`, while an Islamic product can pass
+/// `'Profit rate'`. Never assume a specific label.
+///
+/// The rate line renders **in reading order**: [prefixLabel], then [value],
+/// then [label]. A qualifier such as *from* belongs in [prefixLabel] so the
+/// line reads `'From 5.9% APR'` — putting `'from APR'` in [label] would
+/// compose backwards as `'5.9% from APR'`.
 ///
 /// The optional [caption] carries compliance microcopy such as
-/// `'Representative'` or `'as of 4 Jul 2026'`.
+/// `'Representative'` or `'as of 4 Jul 2026'`. State the representative
+/// qualifier **once** — in [caption] *or* in a label — never in both.
 @immutable
 class BankProductRate {
   /// The formatted rate value, e.g. `'5.9%'`. Passed pre-formatted so the
   /// card does not impose a locale or numeral system on it.
   final String value;
 
-  /// The rate label, e.g. `'APR'`, `'from APR'` or `'Profit rate'`.
+  /// The rate label rendered *after* [value], e.g. `'APR'` or
+  /// `'Profit rate'`.
   final String label;
+
+  /// Optional qualifier rendered *before* [value], e.g. `'From'`, so
+  /// compliance copy reads naturally in order: `'From 5.9% APR'`.
+  final String? prefixLabel;
 
   /// Optional microcopy under the value, e.g. `'Representative'` or
   /// `'as of 4 Jul 2026'`.
@@ -32,6 +44,7 @@ class BankProductRate {
   const BankProductRate({
     required this.value,
     required this.label,
+    this.prefixLabel,
     this.caption,
   });
 
@@ -41,10 +54,11 @@ class BankProductRate {
       other is BankProductRate &&
           other.value == value &&
           other.label == label &&
+          other.prefixLabel == prefixLabel &&
           other.caption == caption;
 
   @override
-  int get hashCode => Object.hash(value, label, caption);
+  int get hashCode => Object.hash(value, label, prefixLabel, caption);
 }
 
 /// The visual tone of a [BankProductBadge] chip.
@@ -112,8 +126,9 @@ class BankProductBadge {
 ///   subtitle: 'Borrow from 1,000 to 50,000',
 ///   leadingIcon: Icons.request_quote_outlined,
 ///   rate: const BankProductRate(
+///     prefixLabel: 'From',
 ///     value: '5.9%',
-///     label: 'from APR',
+///     label: 'APR',
 ///     caption: 'Representative',
 ///   ),
 ///   features: const [
@@ -199,10 +214,19 @@ class BankProductCard extends StatelessWidget {
   /// derived from the accent color.
   final Gradient? gradient;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowFloating]
-  /// when [highlighted], otherwise [BankTokens.shadowCard]. Pass `const []`
-  /// to flatten.
+  /// Overrides the card shadow. Defaults to the floating shadow when
+  /// [highlighted], otherwise the resting card shadow, each resolved for
+  /// the theme background brightness ([BankTokens.shadowFloatingFor] /
+  /// [BankTokens.shadowCardFor]). Pass `const []` to flatten.
   final List<BoxShadow>? shadow;
+
+  /// Overrides the card outline. Non-highlighted cards default on dark
+  /// surfaces to a [BankTokens.hairlineWidth] hairline in
+  /// [BankTokens.hairlineColor] (a shadow alone cannot separate the card
+  /// there) and on light surfaces to an invisible border of the same
+  /// width, so geometry is identical across brightness. Highlighted
+  /// cards keep their accent border. Pass `const Border()` to remove.
+  final BoxBorder? border;
 
   /// Merged over the title style (`BankTokens.headlineSmall`).
   final TextStyle? titleStyle;
@@ -214,6 +238,8 @@ class BankProductCard extends StatelessWidget {
   final TextStyle? rateValueStyle;
 
   /// Merged over the rate label style (`BankTokens.labelMedium`).
+  /// Applies to both [BankProductRate.prefixLabel] and
+  /// [BankProductRate.label].
   final TextStyle? rateLabelStyle;
 
   /// Merged over the rate caption style (`BankTokens.bodySmall`).
@@ -253,6 +279,7 @@ class BankProductCard extends StatelessWidget {
     this.accentColor,
     this.gradient,
     this.shadow,
+    this.border,
     this.titleStyle,
     this.subtitleStyle,
     this.rateValueStyle,
@@ -286,9 +313,40 @@ class BankProductCard extends StatelessWidget {
     final accent = accentColor ?? theme.primary;
     final cardRadius = radius ?? theme.cardRadius;
     final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space4);
-    final resolvedShadow = shadow ??
-        (highlighted ? BankTokens.shadowFloating : BankTokens.shadowCard);
+    // Brightness of the painted surface drives the hairline; brightness
+    // of the theme background drives the resting shadow (matching the
+    // kit-wide BankAccountCard treatment).
     final resolvedBackground = backgroundColor ?? theme.surface;
+    final surfaceBrightness =
+        ThemeData.estimateBrightnessForColor(resolvedBackground);
+    final backgroundBrightness =
+        ThemeData.estimateBrightnessForColor(theme.background);
+    final resolvedShadow = shadow ??
+        (highlighted
+            ? BankTokens.shadowFloatingFor(backgroundBrightness)
+            : BankTokens.shadowCardFor(backgroundBrightness));
+
+    // Highlighted cards keep the accent border; plain cards get a dark
+    // hairline (or an invisible border of the same width on light
+    // surfaces, so geometry stays identical across brightness).
+    final resolvedBorder = border ??
+        (highlighted
+            ? Border.all(
+                color: accent.withValues(alpha: 0.5),
+                width: 1.5,
+              )
+            : Border.all(
+                color: surfaceBrightness == Brightness.dark
+                    ? BankTokens.hairlineColor(
+                        theme.onSurface,
+                        surfaceBrightness,
+                      )
+                    : theme.onSurface.withValues(alpha: 0),
+                // Matches Border.all's default today; keep the token as
+                // the source of truth for hairline geometry.
+                // ignore: avoid_redundant_argument_values
+                width: BankTokens.hairlineWidth,
+              ));
 
     final semantics = semanticLabel ?? _defaultSemanticLabel();
 
@@ -382,12 +440,7 @@ class BankProductCard extends StatelessWidget {
           color: resolvedBackground,
           borderRadius: cardRadius,
           boxShadow: resolvedShadow,
-          border: highlighted
-              ? Border.all(
-                  color: accent.withValues(alpha: 0.5),
-                  width: 1.5,
-                )
-              : null,
+          border: resolvedBorder,
         ),
         child: ClipRRect(
           borderRadius: cardRadius,
@@ -429,7 +482,13 @@ class BankProductCard extends StatelessWidget {
       buffer.write('. $subtitle');
     }
     if (rate != null) {
-      buffer.write('. ${rate!.value} ${rate!.label}');
+      final prefix = rate!.prefixLabel;
+      final rateText = [
+        if (prefix != null && prefix.isNotEmpty) prefix,
+        rate!.value,
+        rate!.label,
+      ].join(' ');
+      buffer.write('. $rateText');
       if (rate!.caption != null && rate!.caption!.isNotEmpty) {
         buffer.write(', ${rate!.caption}');
       }
@@ -564,6 +623,22 @@ class _RateHero extends StatelessWidget {
           textBaseline: TextBaseline.alphabetic,
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Reading order: prefix qualifier, value, label — so a rate
+            // composed as (prefixLabel: 'From', value: '5.9%',
+            // label: 'APR') renders 'From 5.9% APR', never backwards.
+            if (rate.prefixLabel != null && rate.prefixLabel!.isNotEmpty) ...[
+              Flexible(
+                child: Text(
+                  rate.prefixLabel!,
+                  style: BankTokens.labelMedium
+                      .copyWith(color: theme.onSurfaceVariant)
+                      .merge(labelStyle),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: BankTokens.space2),
+            ],
             Flexible(
               child: Text(
                 rate.value,
@@ -730,14 +805,12 @@ class _Actions extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: accent,
               foregroundColor: theme.onPrimary,
+              textStyle: bankButtonTextStyle(context),
               shape: RoundedRectangleBorder(
                 borderRadius: theme.buttonRadius,
               ),
             ),
-            child: Text(
-              ctaLabel,
-              style: BankTokens.labelLarge.copyWith(color: theme.onPrimary),
-            ),
+            child: Text(ctaLabel),
           ),
         ),
         if (hasSecondary) ...[
@@ -749,15 +822,13 @@ class _Actions extends StatelessWidget {
               onPressed: onSecondary,
               style: OutlinedButton.styleFrom(
                 foregroundColor: accent,
+                textStyle: bankButtonTextStyle(context),
                 side: BorderSide(color: accent.withValues(alpha: 0.5)),
                 shape: RoundedRectangleBorder(
                   borderRadius: theme.buttonRadius,
                 ),
               ),
-              child: Text(
-                secondaryLabel!,
-                style: BankTokens.labelLarge.copyWith(color: accent),
-              ),
+              child: Text(secondaryLabel!),
             ),
           ),
         ],

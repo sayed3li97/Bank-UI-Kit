@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../src/common/bank_pressable.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/numeral_style.dart';
@@ -185,9 +186,7 @@ class BankAmountKeypad extends StatelessWidget {
                 .map(
                   (d) => _DigitKey(
                     digit: d,
-                    bankTheme: bankTheme,
                     dimmed: _atMax,
-                    enabled: enabled,
                     onTap: enabled && !_atMax ? () => _handleDigit(d) : null,
                     radius: resolvedKeyRadius,
                     color: resolvedKeyColor,
@@ -204,8 +203,7 @@ class BankAmountKeypad extends StatelessWidget {
         _KeyRow(
           keys: [
             _DecimalKey(
-              bankTheme: bankTheme,
-              enabled: enabled && onDecimalPoint != null,
+              visible: onDecimalPoint != null,
               onTap: enabled && onDecimalPoint != null ? onDecimalPoint : null,
               radius: resolvedKeyRadius,
               color: resolvedKeyColor,
@@ -216,9 +214,7 @@ class BankAmountKeypad extends StatelessWidget {
             ),
             _DigitKey(
               digit: '0',
-              bankTheme: bankTheme,
               dimmed: _atMax,
-              enabled: enabled,
               onTap: enabled && !_atMax ? () => _handleDigit('0') : null,
               radius: resolvedKeyRadius,
               color: resolvedKeyColor,
@@ -227,8 +223,6 @@ class BankAmountKeypad extends StatelessWidget {
               height: resolvedKeyHeight,
             ),
             _DeleteKey(
-              bankTheme: bankTheme,
-              enabled: enabled,
               onTap: enabled ? onDelete : null,
               radius: resolvedKeyRadius,
               color: resolvedKeyColor,
@@ -289,30 +283,33 @@ class _AmountDisplay extends StatelessWidget {
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: BankTokens.space4),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(
-              currencyCode,
-              style: BankTokens.headlineMedium
-                  .copyWith(color: bankTheme.onSurfaceVariant)
-                  .merge(currencyStyle),
-            ),
-            const SizedBox(width: BankTokens.space2),
-            Flexible(
-              child: Text(
+        // Scale the whole currency + amount row down (never up) when the
+        // typed amount outgrows the available width — long amounts shrink
+        // instead of truncating to an ellipsis. Scaling both texts together
+        // preserves their baseline relationship at every scale.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                currencyCode,
+                style: BankTokens.headlineMedium
+                    .copyWith(color: bankTheme.onSurfaceVariant)
+                    .merge(currencyStyle),
+              ),
+              const SizedBox(width: BankTokens.space2),
+              Text(
                 converted,
                 style: bankTheme.numeralHero
                     .copyWith(color: bankTheme.onSurface)
                     .merge(amountStyle),
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -349,9 +346,7 @@ class _KeyRow extends StatelessWidget {
 class _DigitKey extends StatelessWidget {
   const _DigitKey({
     required this.digit,
-    required this.bankTheme,
     required this.dimmed,
-    required this.enabled,
     required this.onTap,
     required this.radius,
     required this.color,
@@ -361,9 +356,7 @@ class _DigitKey extends StatelessWidget {
   });
 
   final String digit;
-  final BankThemeData bankTheme;
   final bool dimmed;
-  final bool enabled;
   final VoidCallback? onTap;
   final BorderRadius radius;
   final Color color;
@@ -373,33 +366,26 @@ class _DigitKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: digit,
+    // BankPressable supplies the shared key language: onSurface state layer,
+    // pressed scale, keyboard focus ring, and button semantics.
+    final Widget key = BankPressable(
+      onTap: onTap,
+      borderRadius: radius,
+      semanticLabel: digit,
       excludeSemantics: true,
-      child: Opacity(
-        opacity: dimmed ? 0.35 : 1.0,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: radius,
-            splashColor: bankTheme.primary.withValues(alpha: 0.12),
-            highlightColor: bankTheme.primary.withValues(alpha: 0.08),
-            child: Container(
-              width: width,
-              height: height,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: radius,
-                color: color,
-              ),
-              child: Text(digit, style: textStyle),
-            ),
-          ),
+      child: Container(
+        width: width,
+        height: height,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          color: color,
         ),
+        child: Text(digit, style: textStyle),
       ),
     );
+    if (!dimmed) return key;
+    return Opacity(opacity: BankTokens.disabledOpacity, child: key);
   }
 }
 
@@ -409,8 +395,7 @@ class _DigitKey extends StatelessWidget {
 
 class _DecimalKey extends StatelessWidget {
   const _DecimalKey({
-    required this.bankTheme,
-    required this.enabled,
+    required this.visible,
     required this.onTap,
     required this.radius,
     required this.color,
@@ -420,8 +405,10 @@ class _DecimalKey extends StatelessWidget {
     required this.semanticLabel,
   });
 
-  final BankThemeData bankTheme;
-  final bool enabled;
+  /// Whether the host supports decimal input at all. When `false`, the cell
+  /// is an empty grid spacer (keeps `0` centred) with no visuals and no
+  /// semantics, rather than a dead-looking blank key.
+  final bool visible;
   final VoidCallback? onTap;
   final BorderRadius radius;
   final Color color;
@@ -432,35 +419,31 @@ class _DecimalKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!enabled) {
-      return SizedBox(width: width, height: height);
+    if (!visible) {
+      return ExcludeSemantics(
+        child: SizedBox(width: width, height: height),
+      );
     }
 
-    return Semantics(
-      button: true,
-      label: semanticLabel,
+    return BankPressable(
+      onTap: onTap == null
+          ? null
+          : () {
+              HapticFeedback.selectionClick();
+              onTap!();
+            },
+      borderRadius: radius,
+      semanticLabel: semanticLabel,
       excludeSemantics: true,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            onTap?.call();
-          },
+      child: Container(
+        width: width,
+        height: height,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
           borderRadius: radius,
-          splashColor: bankTheme.primary.withValues(alpha: 0.12),
-          highlightColor: bankTheme.primary.withValues(alpha: 0.08),
-          child: Container(
-            width: width,
-            height: height,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              color: color,
-            ),
-            child: Text('.', style: textStyle),
-          ),
+          color: color,
         ),
+        child: Text('.', style: textStyle),
       ),
     );
   }
@@ -472,8 +455,6 @@ class _DecimalKey extends StatelessWidget {
 
 class _DeleteKey extends StatelessWidget {
   const _DeleteKey({
-    required this.bankTheme,
-    required this.enabled,
     required this.onTap,
     required this.radius,
     required this.color,
@@ -484,8 +465,6 @@ class _DeleteKey extends StatelessWidget {
     required this.semanticLabel,
   });
 
-  final BankThemeData bankTheme;
-  final bool enabled;
   final VoidCallback? onTap;
   final BorderRadius radius;
   final Color color;
@@ -497,36 +476,28 @@ class _DeleteKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: semanticLabel,
-      excludeSemantics: true,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            if (onTap != null) {
+    return BankPressable(
+      onTap: onTap == null
+          ? null
+          : () {
               HapticFeedback.selectionClick();
               onTap!();
-            }
-          },
+            },
+      borderRadius: radius,
+      semanticLabel: semanticLabel,
+      excludeSemantics: true,
+      child: Container(
+        width: width,
+        height: height,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
           borderRadius: radius,
-          splashColor: bankTheme.primary.withValues(alpha: 0.12),
-          highlightColor: bankTheme.primary.withValues(alpha: 0.08),
-          child: Container(
-            width: width,
-            height: height,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              color: color,
-            ),
-            child: Icon(
-              icon,
-              size: 22,
-              color: iconColor,
-            ),
-          ),
+          color: color,
+        ),
+        child: Icon(
+          icon,
+          size: 22,
+          color: iconColor,
         ),
       ),
     );

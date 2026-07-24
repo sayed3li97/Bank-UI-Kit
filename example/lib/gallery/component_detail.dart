@@ -557,18 +557,22 @@ class _ParamControl extends StatelessWidget {
                 runSpacing: 4,
                 children: options.map((opt) {
                   final isSelected = (value as String?) == opt;
-                  return FilterChip(
-                    label: Text(
-                      opt,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.normal,
+                  return Tooltip(
+                    // Keep the raw API value discoverable for developers.
+                    message: opt,
+                    child: FilterChip(
+                      label: Text(
+                        _humanizeEnumValue(opt),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.normal,
+                        ),
                       ),
+                      selected: isSelected,
+                      onSelected: (_) => onChanged(opt),
+                      showCheckmark: false,
+                      visualDensity: VisualDensity.compact,
                     ),
-                    selected: isSelected,
-                    onSelected: (_) => onChanged(opt),
-                    showCheckmark: false,
-                    visualDensity: VisualDensity.compact,
                   );
                 }).toList(),
               ),
@@ -829,6 +833,30 @@ class _DebouncedTextFieldState extends State<_DebouncedTextField> {
       onChanged: _onChanged,
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Enum label helpers
+// ---------------------------------------------------------------------------
+
+/// Turns a camelCase enum value into readable copy for chip labels:
+/// 'balanceLeft' → 'Balance left', 'tapToFlip' → 'Tap to flip'.
+String _humanizeEnumValue(String name) {
+  final buffer = StringBuffer();
+  for (var i = 0; i < name.length; i++) {
+    final ch = name[i];
+    final isUpper = ch.toUpperCase() == ch && ch.toLowerCase() != ch;
+    if (i == 0) {
+      buffer.write(ch.toUpperCase());
+    } else if (isUpper) {
+      buffer
+        ..write(' ')
+        ..write(ch.toLowerCase());
+    } else {
+      buffer.write(ch);
+    }
+  }
+  return buffer.toString();
 }
 
 // ---------------------------------------------------------------------------

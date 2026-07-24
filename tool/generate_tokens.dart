@@ -88,7 +88,11 @@ String _renderRegion(Map<String, dynamic> data) {
     map.forEach((key, value) {
       final token = value as Map<String, dynamic>;
       final desc = token[r'$description'] as String?;
-      if (desc != null) b.writeln('  /// $desc');
+      if (desc != null) {
+        for (final line in _wrapDoc(desc)) {
+          b.writeln(line);
+        }
+      }
       b.writeln(one(key, token));
     });
     b.writeln();
@@ -115,9 +119,38 @@ String _renderRegion(Map<String, dynamic> data) {
     final v = _dimension(t[r'$value'] as String);
     return '  static const double $key = $v;';
   });
+  group('interaction', 'Interaction states', (key, t) {
+    final v = _number(t[r'$value'] as num);
+    return '  static const double $key = $v;';
+  });
+  group('effect', 'Visual effects', (key, t) {
+    final v = _number(t[r'$value'] as num);
+    return '  static const double $key = $v;';
+  });
 
   b.write(_end);
   return b.toString();
+}
+
+/// Wraps [text] into `  /// ...` doc-comment lines that respect the
+/// 80-column limit enforced by the `lines_longer_than_80_chars` lint.
+List<String> _wrapDoc(String text) {
+  const prefix = '  /// ';
+  const width = 80 - prefix.length;
+  final lines = <String>[];
+  var current = StringBuffer();
+  for (final word in text.split(RegExp(r'\s+'))) {
+    if (current.isEmpty) {
+      current.write(word);
+    } else if (current.length + 1 + word.length <= width) {
+      current.write(' $word');
+    } else {
+      lines.add('$prefix$current');
+      current = StringBuffer(word);
+    }
+  }
+  if (current.isNotEmpty) lines.add('$prefix$current');
+  return lines;
 }
 
 /// `#RRGGBB` or `#RRGGBBAA` -> `Color(0xAARRGGBB)`.
@@ -137,6 +170,12 @@ String _colorLiteral(String hex) {
 /// `"16px"` -> `16` (trim a trailing `.0`).
 String _dimension(String value) {
   final n = double.parse(value.replaceAll('px', '').trim());
+  return n == n.roundToDouble() ? n.toInt().toString() : n.toString();
+}
+
+/// DTCG `number` (`0.12`, `2`) -> Dart double literal (`0.12`, `2`).
+String _number(num value) {
+  final n = value.toDouble();
   return n == n.roundToDouble() ? n.toInt().toString() : n.toString();
 }
 

@@ -25,12 +25,12 @@ final _accounts = [
   ),
   BankAccount(
     id: '3',
-    name: 'Frozen Account',
+    name: 'Holiday Fund',
     maskedNumber: '•••• 1111',
     currencyCode: 'GBP',
     type: BankAccountType.savings,
     status: BankAccountStatus.frozen,
-    balance: Money(amount: Decimal.parse('500.00'), currencyCode: 'GBP'),
+    balance: Money(amount: Decimal.parse('512.40'), currencyCode: 'GBP'),
   ),
 ];
 
@@ -57,11 +57,14 @@ class _AccountsScreenState extends State<AccountsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(BankTokens.space4),
         children: [
-          Text('Balance Text',
+          Text('Total balance',
               style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           BankBalanceText(
-            money: Money(amount: Decimal.parse('4250.00'), currencyCode: 'GBP'),
+            money: Money(
+              amount: Decimal.parse('17562.90'),
+              currencyCode: 'GBP',
+            ),
             size: BankBalanceSize.hero,
           ),
           const SizedBox(height: BankTokens.space2),
@@ -70,7 +73,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
             size: BankBalanceSize.large,
           ),
           const SizedBox(height: BankTokens.space4),
-          Text('Account Cards',
+          Text('Your accounts',
               style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           ..._accounts.map(
@@ -80,7 +83,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
             ),
           ),
           const SizedBox(height: BankTokens.space4),
-          Text('Account Switcher',
+          Text('Switch account',
               style: BankTokens.labelLarge.copyWith(color: theme.onSurface)),
           const SizedBox(height: BankTokens.space3),
           FilledButton(

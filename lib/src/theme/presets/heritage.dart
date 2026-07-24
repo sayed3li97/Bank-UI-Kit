@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../bank_theme_data.dart';
+import '../card_pattern.dart';
 import '../tokens.dart';
 
 /// The **Heritage** preset: an institutional Islamic banking aesthetic.
@@ -29,6 +30,32 @@ class BankHeritageTheme {
     end: Alignment.bottomRight,
     colors: [Color(0xFF2F8259), Color(0xFF123A28)],
   );
+
+  // ---------------------------------------------------------------------------
+  // Card-face gradients
+  //
+  // Institutional card faces: deep green sliding to a darker green within a
+  // deliberately small hue range — authority, not fireworks. Overlaid with
+  // an eight-point-star lattice in onPrimary at 7 % alpha.
+  // ---------------------------------------------------------------------------
+
+  static const LinearGradient _lightCardGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF0A6B47), Color(0xFF064F34), Color(0xFF03402A)],
+  );
+
+  static const LinearGradient _darkCardGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF2F8259), Color(0xFF1D5A3D), Color(0xFF123A28)],
+  );
+
+  /// Lattice ink: onPrimary (white) at 7 % alpha.
+  static const Color _lightLatticeInk = Color(0x12FFFFFF);
+
+  /// Lattice ink for the dark variant: its onPrimary at 7 % alpha.
+  static const Color _darkLatticeInk = Color(0x1200291A);
 
   // ---------------------------------------------------------------------------
   // Light
@@ -63,6 +90,10 @@ class BankHeritageTheme {
         numeralSmall: BankTokens.numeralSmall,
         fontFamily: 'packages/bank_ui_kit/SpaceGrotesk',
         useGlow: false,
+        displayFontFamily: 'packages/bank_ui_kit/NotoSerifDisplay',
+        cardSurfaceGradient: _lightCardGradient,
+        cardPattern: BankCardPattern.lattice,
+        cardPatternColor: _lightLatticeInk,
       );
 
   // ---------------------------------------------------------------------------
@@ -98,6 +129,10 @@ class BankHeritageTheme {
         numeralSmall: BankTokens.numeralSmall,
         fontFamily: 'packages/bank_ui_kit/SpaceGrotesk',
         useGlow: false,
+        displayFontFamily: 'packages/bank_ui_kit/NotoSerifDisplay',
+        cardSurfaceGradient: _darkCardGradient,
+        cardPattern: BankCardPattern.lattice,
+        cardPatternColor: _darkLatticeInk,
       );
 
   // ---------------------------------------------------------------------------
@@ -129,14 +164,20 @@ class BankHeritageTheme {
 
     // Always attach the glyph-coverage fallback fonts; also wire the brand
     // font family when the preset defines one (apply() ignores a null family).
+    // The NotoSerifDisplay display face is layered on afterwards: serif
+    // headlines over Space Grotesk body — the institutional voice.
     return themed.copyWith(
-      textTheme: themed.textTheme.apply(
-        fontFamily: bank.fontFamily,
-        fontFamilyFallback: kBankFontFallback,
+      textTheme: bank.applyDisplayFontTo(
+        themed.textTheme.apply(
+          fontFamily: bank.fontFamily,
+          fontFamilyFallback: kBankFontFallback,
+        ),
       ),
-      primaryTextTheme: themed.primaryTextTheme.apply(
-        fontFamily: bank.fontFamily,
-        fontFamilyFallback: kBankFontFallback,
+      primaryTextTheme: bank.applyDisplayFontTo(
+        themed.primaryTextTheme.apply(
+          fontFamily: bank.fontFamily,
+          fontFamilyFallback: kBankFontFallback,
+        ),
       ),
     );
   }

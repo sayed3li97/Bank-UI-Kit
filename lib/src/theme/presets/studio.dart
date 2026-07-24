@@ -15,6 +15,27 @@ class BankStudioTheme {
   const BankStudioTheme._();
 
   // ---------------------------------------------------------------------------
+  // Card-face gradients
+  //
+  // A refinement of the primary -> primaryVariant pair the cards previously
+  // fell back to: same petrol hues, three stops on a subtle diagonal so the
+  // face reads as brushed material rather than a flat fill. Studio keeps
+  // its editorial restraint: no pattern, no display face.
+  // ---------------------------------------------------------------------------
+
+  static const LinearGradient _lightCardGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF4A7C80), Color(0xFF3E7074), Color(0xFF326669)],
+  );
+
+  static const LinearGradient _darkCardGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF5E9EA3), Color(0xFF528D92), Color(0xFF457D82)],
+  );
+
+  // ---------------------------------------------------------------------------
   // Light
   // ---------------------------------------------------------------------------
 
@@ -46,6 +67,7 @@ class BankStudioTheme {
         numeralSmall: BankTokens.numeralSmall,
         fontFamily: 'packages/bank_ui_kit/SpaceGrotesk',
         useGlow: false,
+        cardSurfaceGradient: _lightCardGradient,
       );
 
   // ---------------------------------------------------------------------------
@@ -80,6 +102,7 @@ class BankStudioTheme {
         numeralSmall: BankTokens.numeralSmall,
         fontFamily: 'packages/bank_ui_kit/SpaceGrotesk',
         useGlow: false,
+        cardSurfaceGradient: _darkCardGradient,
       );
 
   // ---------------------------------------------------------------------------
@@ -114,14 +137,20 @@ class BankStudioTheme {
     // a family and inherit this default).
     // Always attach the glyph-coverage fallback fonts; also wire the brand
     // font family when the preset defines one (apply() ignores a null family).
+    // The optional display face is layered on afterwards so headlines can
+    // carry a distinct brand voice (no-op when displayFontFamily is null).
     return themed.copyWith(
-      textTheme: themed.textTheme.apply(
-        fontFamily: bank.fontFamily,
-        fontFamilyFallback: kBankFontFallback,
+      textTheme: bank.applyDisplayFontTo(
+        themed.textTheme.apply(
+          fontFamily: bank.fontFamily,
+          fontFamilyFallback: kBankFontFallback,
+        ),
       ),
-      primaryTextTheme: themed.primaryTextTheme.apply(
-        fontFamily: bank.fontFamily,
-        fontFamilyFallback: kBankFontFallback,
+      primaryTextTheme: bank.applyDisplayFontTo(
+        themed.primaryTextTheme.apply(
+          fontFamily: bank.fontFamily,
+          fontFamilyFallback: kBankFontFallback,
+        ),
       ),
     );
   }

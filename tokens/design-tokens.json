@@ -9,13 +9,34 @@
     "negativeBalanceDark": { "$type": "color", "$value": "#F87171", "$description": "Negative amounts on dark surfaces (red-400, AA)." },
     "pendingDark": { "$type": "color", "$value": "#FBBF24", "$description": "Pending states on dark surfaces (amber-400, AA)." },
     "frozen": { "$type": "color", "$value": "#8E8E93", "$description": "Frozen / suspended accounts or cards." },
-    "success": { "$type": "color", "$value": "#34C759", "$description": "System-level success feedback." },
-    "warning": { "$type": "color", "$value": "#FF9500", "$description": "System-level warning feedback." },
-    "danger": { "$type": "color", "$value": "#FF3B30", "$description": "System-level danger / destructive-action." },
-    "investmentGain": { "$type": "color", "$value": "#30D158", "$description": "Investment gain." },
-    "investmentLoss": { "$type": "color", "$value": "#FF453A", "$description": "Investment loss." },
-    "creditAvailable": { "$type": "color", "$value": "#30D158", "$description": "Available credit headroom." },
-    "creditUsed": { "$type": "color", "$value": "#FF9F0A", "$description": "Credit already utilised." }
+    "success": { "$type": "color", "$value": "#047857", "$description": "System-level success feedback on light surfaces (emerald-700, AA). Unified with positiveBalance so one green family reads as \"good\" everywhere." },
+    "successDark": { "$type": "color", "$value": "#34D399", "$description": "System-level success feedback on dark surfaces (emerald-400, AA)." },
+    "warning": { "$type": "color", "$value": "#B45309", "$description": "System-level warning feedback on light surfaces (amber-700, AA). Unified with pending." },
+    "warningDark": { "$type": "color", "$value": "#FBBF24", "$description": "System-level warning feedback on dark surfaces (amber-400, AA)." },
+    "danger": { "$type": "color", "$value": "#C62828", "$description": "System-level danger / destructive-action on light surfaces (AA). Unified with negativeBalance." },
+    "dangerDark": { "$type": "color", "$value": "#F87171", "$description": "System-level danger / destructive-action on dark surfaces (red-400, AA)." },
+    "investmentGain": { "$type": "color", "$value": "#047857", "$description": "Investment gain on light surfaces. Same family as positiveBalance / success — one green per screen." },
+    "investmentGainDark": { "$type": "color", "$value": "#34D399", "$description": "Investment gain on dark surfaces (emerald-400, AA)." },
+    "investmentLoss": { "$type": "color", "$value": "#C62828", "$description": "Investment loss on light surfaces. Same family as negativeBalance / danger." },
+    "investmentLossDark": { "$type": "color", "$value": "#F87171", "$description": "Investment loss on dark surfaces (red-400, AA)." },
+    "creditAvailable": { "$type": "color", "$value": "#047857", "$description": "Available credit headroom. Same family as positiveBalance / success." },
+    "creditUsed": { "$type": "color", "$value": "#B45309", "$description": "Credit already utilised. Same family as pending / warning." },
+    "networkMastercardRed": { "$type": "color", "$value": "#EB001B", "$description": "Mastercard brand mark: red circle." },
+    "networkMastercardAmber": { "$type": "color", "$value": "#F79E1B", "$description": "Mastercard brand mark: amber circle." },
+    "networkMastercardBlend": { "$type": "color", "$value": "#FF5F00", "$description": "Mastercard brand mark: the overlapping-lens blend colour." },
+    "networkAmexBlue": { "$type": "color", "$value": "#2E77BC", "$description": "American Express brand blue." }
+  },
+  "interaction": {
+    "stateLayerHoverOpacity": { "$type": "number", "$value": 0.08, "$description": "Hover state-layer opacity over interactive surfaces (M3-aligned)." },
+    "stateLayerPressedOpacity": { "$type": "number", "$value": 0.12, "$description": "Pressed state-layer opacity over interactive surfaces." },
+    "stateLayerFocusOpacity": { "$type": "number", "$value": 0.12, "$description": "Keyboard-focus state-layer opacity over interactive surfaces." },
+    "disabledOpacity": { "$type": "number", "$value": 0.38, "$description": "Opacity applied to disabled interactive content (M3-aligned)." },
+    "focusRingWidth": { "$type": "number", "$value": 2, "$description": "Stroke width of the keyboard-focus ring, in logical px." },
+    "focusRingOpacity": { "$type": "number", "$value": 0.4, "$description": "Opacity of the primary-coloured keyboard-focus ring." },
+    "pressScale": { "$type": "number", "$value": 0.98, "$description": "Scale applied to a pressable surface while pressed." }
+  },
+  "effect": {
+    "frozenCardSaturation": { "$type": "number", "$value": 0.35, "$description": "Saturation multiplier for frozen card faces (desaturated, not greyed out)." }
   },
   "space": {
     "1": { "$type": "dimension", "$value": "4px" },
@@ -43,6 +64,7 @@
     "xSlow": { "$type": "duration", "$value": "600ms" }
   },
   "size": {
-    "minTapTarget": { "$type": "dimension", "$value": "44px", "$description": "Minimum touch/tap target (WCAG 2.5.5 AAA / iOS HIG)." }
+    "minTapTarget": { "$type": "dimension", "$value": "44px", "$description": "Minimum touch/tap target (WCAG 2.5.5 AAA / iOS HIG)." },
+    "tileCompactBreakpoint": { "$type": "dimension", "$value": "168px", "$description": "Below this available width, metric tiles switch to their compact layout." }
   }
 }

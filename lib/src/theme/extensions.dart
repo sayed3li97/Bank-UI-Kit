@@ -93,15 +93,20 @@ extension BankThemeDataApply on ThemeData {
     );
     // Always attach the glyph-coverage fallback fonts so currency symbols,
     // Arabic script, and non-Latin numerals render; wire the brand font too
-    // when set (apply() ignores a null family).
+    // when set (apply() ignores a null family). The optional display face is
+    // layered on afterwards (no-op when displayFontFamily is null).
     return themed.copyWith(
-      textTheme: themed.textTheme.apply(
-        fontFamily: bankTheme.fontFamily,
-        fontFamilyFallback: kBankFontFallback,
+      textTheme: bankTheme.applyDisplayFontTo(
+        themed.textTheme.apply(
+          fontFamily: bankTheme.fontFamily,
+          fontFamilyFallback: kBankFontFallback,
+        ),
       ),
-      primaryTextTheme: themed.primaryTextTheme.apply(
-        fontFamily: bankTheme.fontFamily,
-        fontFamilyFallback: kBankFontFallback,
+      primaryTextTheme: bankTheme.applyDisplayFontTo(
+        themed.primaryTextTheme.apply(
+          fontFamily: bankTheme.fontFamily,
+          fontFamilyFallback: kBankFontFallback,
+        ),
       ),
     );
   }

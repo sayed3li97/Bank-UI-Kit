@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_surface_depth.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
@@ -65,8 +66,21 @@ class BankTransferReviewCard extends StatelessWidget {
   /// Overrides the card background color. Defaults to the theme surface.
   final Color? backgroundColor;
 
-  /// Overrides the card elevation. Defaults to the theme elevationLow.
+  /// Legacy depth opt-out. The card renders the kit shadow language
+  /// ([BankTokens.shadowCardFor] of the theme background brightness) instead
+  /// of Material elevation; pass `0` — or use a theme whose `elevationLow`
+  /// is `0`, such as Voltage — to flatten the card to hairline-only depth.
   final double? elevation;
+
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten.
+  final List<BoxShadow>? shadow;
+
+  /// Overrides the card outline. Defaults on dark surfaces to a
+  /// [BankTokens.hairlineWidth] hairline in [BankTokens.hairlineColor];
+  /// light surfaces keep an invisible border of the same width. Pass
+  /// `const Border()` to remove it.
+  final BoxBorder? border;
 
   /// Replaces the beneficiary header row. Defaults to the built-in
   /// avatar-name-account header.
@@ -150,6 +164,8 @@ class BankTransferReviewCard extends StatelessWidget {
     this.radius,
     this.backgroundColor,
     this.elevation,
+    this.shadow,
+    this.border,
     this.header,
     this.titleStyle,
     this.subtitleStyle,
@@ -226,11 +242,28 @@ class BankTransferReviewCard extends StatelessWidget {
         hasExchangeRate ? exchangeRate!.convert(amount) : null;
     final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space4);
 
-    final card = Card(
-      elevation: elevation ?? bankTheme.elevationLow,
-      color: backgroundColor ?? bankTheme.surface,
-      shape: RoundedRectangleBorder(
+    // One depth language for every card: token shadows resolved against the
+    // theme background brightness, with the dark-surface hairline. Themes
+    // that declare flat depth (elevationLow == 0, e.g. Voltage) — or an
+    // explicit `elevation: 0` — keep hairline-only separation. The margin
+    // preserves the footprint of the Material [Card] this replaces.
+    final depth = BankSurfaceDepth.resolve(
+      bankTheme,
+      surfaceColor: backgroundColor,
+      shadow: shadow,
+      border: border,
+      tier: (elevation ?? bankTheme.elevationLow) <= 0
+          ? BankSurfaceDepthTier.flat
+          : BankSurfaceDepthTier.card,
+    );
+
+    final card = Container(
+      margin: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: backgroundColor ?? bankTheme.surface,
         borderRadius: radius ?? bankTheme.cardRadius,
+        boxShadow: depth.shadow,
+        border: depth.border,
       ),
       child: Padding(
         padding: resolvedPadding,

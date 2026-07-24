@@ -3,6 +3,7 @@ import 'package:qr/qr.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_icon_spec.dart';
+import '../common/bank_surface_depth.dart';
 import '../models/money.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
@@ -404,11 +405,15 @@ class BankMyQrCard extends StatelessWidget {
   /// Overrides the card background. Defaults to the theme surface.
   final Color? backgroundColor;
 
-  /// Overrides the card border colour. Defaults to the theme outline.
+  /// Overrides the card border colour. By default the raised card carries
+  /// **no visible border on light surfaces** (depth comes from the shadow);
+  /// dark surfaces get a [BankTokens.hairlineWidth] hairline in
+  /// [BankTokens.hairlineColor] where a shadow alone cannot separate the
+  /// card from the background.
   final Color? borderColor;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
-  /// pass `const []` to flatten the card.
+  /// Overrides the card shadow. Defaults to [BankTokens.shadowCardFor] of
+  /// the theme background brightness; pass `const []` to flatten the card.
   final List<BoxShadow>? shadow;
 
   /// Tint of the amount chip and action buttons. Defaults to the
@@ -448,12 +453,22 @@ class BankMyQrCard extends StatelessWidget {
             .copyWith(color: theme.onSurface)
             .merge(amountStyle);
 
+    // Raised card: shadow-only depth — no doubled outline+shadow. The
+    // resolver adds the dark-surface hairline (invisible on light) unless
+    // the caller supplies an explicit borderColor.
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: backgroundColor,
+      shadow: shadow,
+      border: borderColor == null ? null : Border.all(color: borderColor!),
+    );
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: backgroundColor ?? theme.surface,
         borderRadius: radius ?? theme.cardRadius,
-        border: Border.all(color: borderColor ?? theme.outline),
-        boxShadow: shadow ?? BankTokens.shadowCard,
+        border: depth.border,
+        boxShadow: depth.shadow,
       ),
       child: Padding(
         padding: padding ?? const EdgeInsets.all(BankTokens.space5),

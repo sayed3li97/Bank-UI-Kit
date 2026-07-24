@@ -239,6 +239,9 @@ class BankRecurringMerchantTile extends StatelessWidget {
                   vertical: BankTokens.space2,
                 ),
             child: Row(
+              // Children centre on one shared alignment grid (the Row
+              // default); the fix for the vertical tear is the
+              // content-sized (`mainAxisSize.min`) inner columns below.
               children: [
                 leading ??
                     BankEmblem(
@@ -248,6 +251,10 @@ class BankRecurringMerchantTile extends StatelessWidget {
                 const SizedBox(width: BankTokens.space3),
                 Expanded(
                   child: Column(
+                    // Content-sized: without this the column expands into
+                    // any tall fixed constraint and the title tears away
+                    // from the emblem/amount.
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
@@ -300,6 +307,7 @@ class BankRecurringMerchantTile extends StatelessWidget {
                 ),
                 const SizedBox(width: BankTokens.space2),
                 Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     BankBalanceText(
