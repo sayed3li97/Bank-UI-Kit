@@ -1,0 +1,189 @@
+# Builds the package's Software Bill of Materials.
+#
+# Called by ci.yml on every push and pull request, and by release.yml for each
+# tagged release, so the inventory a bank reviews is produced by the same job
+# on every commit rather than assembled by hand at release time.
+#
+# Two formats are emitted from one resolution, because enterprise intake
+# tooling is split between them: SPDX 2.3 is the ISO/IEC 5962:2021 standard
+# and the format most OSPO and procurement pipelines ingest, while CycloneDX
+# 1.6 is what OWASP Dependency-Track and most vulnerability-correlation tools
+# consume natively. Emitting both avoids forcing the reviewer to convert.
+#
+# Determinism: the generator derives the SPDX `created` timestamp and the
+# CycloneDX serial number from the commit rather than from wall-clock time or
+# a random UUID, and sorts every collection. Re-running this workflow on the
+# same commit with the same resolved `pubspec.lock` produces byte-identical
+# documents, so a reviewer can reproduce the artifact instead of trusting it.
+# `pubspec.lock` ships inside the artifact for exactly that reason: it is the
+# other half of the input, and without it "reproducible" is unverifiable.
+#
+# The optional `audit` input scans the document that was just generated
+# against OSV.dev. Scanning the SBOM rather than the lockfile is deliberate:
+# it makes the reviewed inventory and the scanned inventory the same list by
+# construction, so neither can drift from the other.
+name: SBOM and dependency audit
+
+on:
+  workflow_call:
+    inputs:
+      flutter-version:
+        description: Flutter SDK version used to resolve the dependency closure.
+        type: string
+        required: false
+        default: '3.44.4'
+      artifact-name:
+        description: Name of the uploaded build artifact.
+        type: string
+        required: false
+        default: sbom
+      retention-days:
+        description: How long the build artifact is retained, in days.
+        type: string
+        required: false
+        default: '90'
+      audit:
+        description: Also scan the generated SBOM against the OSV vulnerability database.
+        type: boolean
+        required: false
+        default: false
+      audit-fail-on:
+        description: >-
+          Which OSV findings fail the job: `runtime` (default) fails only on
+          components that ship inside a host app, `any` also fails on
+          development-only ones, `never` records the result without gating.
+        type: string
+        required: false
+        default: runtime
+    outputs:
+      artifact-name:
+        description: Name of the uploaded artifact, for a later job to download.
+        value: ${{ jobs.sbom.outputs.artifact-name }}
+      version:
+        description: Package version the SBOM describes.
+        value: ${{ jobs.sbom.outputs.version }}
+  workflow_dispatch:
+    inputs:
+      flutter-version:
+        description: Flutter SDK version used to resolve the dependency closure.
+        type: string
+        required: false
+        default: '3.44.4'
+      audit:
+        description: Also scan the generated SBOM against the OSV vulnerability database.
+        type: boolean
+        required: false
+        default: true
+
+  # The scheduled entry is the one that catches advisories published against
+  # code that has not changed. A commit-triggered scan can only ever report
+  # the database as it stood when the commit landed, and weekly is the floor
+  # the DORA ICT risk management RTS (CDR (EU) 2024/1774, Article 10) sets for
+  # automated vulnerability scanning of assets supporting critical functions.
+  schedule:
+    # Weekly, Monday 05:17 UTC. Off the hour because scheduled runs queued on
+    # the hour are the ones GitHub delays or drops under load.
+    - cron: '17 5 * * 1'
+
+jobs:
+  sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      artifact-name: ${{ steps.meta.outputs.artifact-name }}
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      # Actions are pinned by commit SHA, not by tag, so a compromised or
+      # retagged release cannot silently enter this build (OpenSSF Scorecard,
+      # Pinned-Dependencies). The trailing comment records the tag the SHA
+      # belongs to; update both together.
+      - name: Check out the repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ inputs.flutter-version || '3.44.4' }}
+          channel: stable
+          cache: true
+
+      # `pubspec.lock` is not committed (correct for a published library), so
+      # the exact closure only exists after a resolve. This step is what makes
+      # the SBOM describe a real resolution rather than the caret constraints.
+      - name: Resolve the dependency closure
+        run: flutter pub get
+
+      - name: Export the dependency graph
+        run: flutter pub deps --json > "${RUNNER_TEMP}/deps.json"
+
+      - name: Collect build metadata
+        id: meta
+        env:
+          ARTIFACT_NAME: ${{ inputs.artifact-name || 'sbom' }}
+        run: |
+          version="$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | tr -d '[:space:]')"
+          # The commit's committer date, normalised to UTC, is the SBOM's
+          # creation timestamp: it is a property of the input, so two runs of
+          # the same commit agree.
+          created="$(date -u -d "$(git log -1 --format=%cI "${GITHUB_SHA}")" +%Y-%m-%dT%H:%M:%SZ)"
+          {
+            echo "version=${version}"
+            echo "created=${created}"
+            echo "artifact-name=${ARTIFACT_NAME}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Generate SPDX 2.3 and CycloneDX 1.6 documents
+        env:
+          CREATED: ${{ steps.meta.outputs.created }}
+        run: |
+          node .github/workflows/scripts/generate-sbom.mjs \
+            --deps "${RUNNER_TEMP}/deps.json" \
+            --lock pubspec.lock \
+            --pubspec pubspec.yaml \
+            --out sbom \
+            --repo-url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+            --commit "${GITHUB_SHA}" \
+            --created "${CREATED}" \
+            --license MIT | tee -a "${GITHUB_STEP_SUMMARY}"
+
+      # Shipped alongside the two documents so a reviewer holds both halves of
+      # the input and can re-run the generator to confirm the byte-identical
+      # claim above, rather than taking it on trust.
+      - name: Include the resolution the documents describe
+        run: cp pubspec.lock sbom/pubspec.lock
+
+      # `inputs.audit` is unset on the scheduled and dispatched entries, so the
+      # scan is opted into there by event rather than by input. release.yml
+      # passes `never` — a newly published advisory is worth recording against
+      # a release, but it must not stop the release's artifacts from being
+      # signed and attached.
+      - name: Scan the SBOM against OSV
+        if: ${{ inputs.audit || github.event_name == 'schedule' }}
+        continue-on-error: ${{ inputs.audit-fail-on == 'never' }}
+        env:
+          FAIL_ON: ${{ inputs.audit-fail-on || 'runtime' }}
+        run: |
+          # The generator writes exactly one CycloneDX document, named for the
+          # package and version. Assert that rather than globbing blindly, so a
+          # rename shows up as a failed scan instead of a skipped one.
+          set -- sbom/*.cdx.json
+          if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
+            echo "::error::expected exactly one sbom/*.cdx.json, found $#"
+            exit 1
+          fi
+          node .github/workflows/scripts/osv-scan.mjs \
+            --sbom "$1" \
+            --out sbom/osv-report.json \
+            --fail-on "${FAIL_ON}" | tee -a "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload the SBOM
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ steps.meta.outputs.artifact-name }}
+          path: sbom/
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days || '90' }}

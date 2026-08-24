@@ -9,6 +9,15 @@
 # The dart-lang/setup-dart reusable workflow installs both the Dart and
 # Flutter SDKs, runs the publish dry-run, performs the OIDC handshake, and
 # publishes. `id-token: write` is required for OIDC.
+#
+# Deliberately minimal, and deliberately not the place for supply-chain
+# extras. The job's permission set is exactly what pub.dev's trusted
+# publishing needs, and the OIDC token pub.dev accepts is bound to this
+# workflow file and the tag ref it runs on — adding steps, permissions, or a
+# workflow-level `permissions` block here risks that binding for no gain.
+# The SBOM and the SLSA build provenance attestation are produced in
+# release.yml instead, and doc/enterprise/supply-chain.md explains how the
+# two halves relate for a reviewer.
 name: Publish to pub.dev
 
 on:

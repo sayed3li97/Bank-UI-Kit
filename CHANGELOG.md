@@ -4,6 +4,112 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/) and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## 0.3.0
+
+Four themes: the trust artifacts an enterprise intake process asks for, the
+token architecture finished end to end, a branded motion system, and the
+remaining audit backlog cleared.
+
+### Added
+
+- **Accessibility Conformance Report** (`doc/enterprise/acr/ACR.md`): a
+  per-component WCAG 2.1 A and AA plus EN 301 549 V3.2.1 report, with a
+  machine-readable OpenACR source of truth beside it
+  (`doc/enterprise/acr/openacr.yaml`, GSA catalog
+  `2.4-edition-wcag-2.1-508-eu-en`). It is a self-assessment, states so on its
+  first page, and names the areas where evidence does not exist.
+- **Stability and support policy**
+  (`doc/enterprise/stability-and-support.md`): the dependency contract. What
+  counts as a breaking change for a UI kit, including the case that actually
+  bites here: a default colour, size, elevation, font, or motion value
+  moving without an analyzer warning. The deprecation window with a 90-day
+  wall-clock floor, a procedure for retiring a visual default, pinning
+  guidance, the supported-version policy, the 1.0 gate as an 11-point
+  checklist with the current status of each criterion, and the continuity
+  story for a single-maintainer project.
+- **Supply-chain artifacts**: an SBOM built on every commit and every release
+  in SPDX 2.3 and CycloneDX 1.6 from one resolution, scanned against OSV and
+  reproducible byte for byte from the commit plus the lockfile shipped inside
+  it (`.github/workflows/sbom.yml`); pub.dev publication over OIDC with no
+  stored credential, bound to a tag ref (`.github/workflows/publish.yml`);
+  Sigstore-backed SLSA build provenance attached to release artifacts
+  (`.github/workflows/release.yml`); and a weekly OpenSSF Scorecard run
+  (`.github/workflows/scorecard.yml`). Every third-party GitHub Action is
+  pinned by commit SHA. Documented in `doc/enterprise/supply-chain.md`.
+
+### Changed
+
+- **README restructured for two readers.** The top third now answers what a
+  bank or agency evaluator asks at intake, as a question-and-evidence table
+  covering the ACR, the CI-enforced accessibility gates, the compliance
+  split, the SBOM and provenance chain, the published Scorecard, and the
+  stability contract, each linked to the document that carries the proof. The
+  component catalogue, screenshots, and quick start are unchanged in
+  substance. Counts corrected to 164 exported widget classes and 433 tests,
+  and the badges row gains Scorecard and pub.dev.
+- `doc/enterprise/versioning-and-releases.md` now describes the release
+  pipeline as implemented rather than as planned, and corrects the Flutter
+  floor to 3.44.0 with CI on 3.44.4. Cross-links the new stability policy
+  rather than restating it. The 0.2.0 roadmap milestone is re-dated: the
+  controller work moves to 0.3.0, and the release that shipped is recorded
+  for what it contained.
+- Documentation corrected where it lagged the code: injectable image
+  resolution through `BankUiScopeData.imageResolver` ships, so the README no
+  longer lists air-gapped image loading as a roadmap item.
+
+- **Design-token architecture completed**: the DTCG source now carries a
+  12-rung neutral ramp, surface and ink tiers, border roles, a six-rung
+  icon-size ladder, an opacity ladder, and an elevation-tier enumeration.
+  `BankThemeData.custom` and `fromJson` read their greys from these tokens
+  instead of hard-coding them, with no behaviour change. Typography gains a
+  line-height ladder on every text style and caps-tracking tokens.
+- **Branded sheet presentation** (`BankSheet`, `BankDialog`): all 27 modal
+  surfaces in the kit now present with the theme's radius, a brand-derived
+  scrim, a grab handle with semantics, an optional shared header,
+  keyboard-aware insets, and token motion that collapses under reduced
+  motion. No stock `showModalBottomSheet` or `showDialog` call remains in
+  `lib/`.
+- **`BankAsyncContent`** plus skeleton shapes built from the kit's real
+  anatomy, so loading, error, empty, and content are one switch rather than
+  a host-assembled pile of grey rectangles.
+- **`BankSliverAppBar`** and app-bar title modes (`standard`, `large`,
+  `collapsing`), and an opt-in per-step help affordance on
+  `BankStepProgressIndicator` for regulated journeys.
+- **Identity system**: `BankEmblem` gains a size ladder, theme-derived tints
+  that measure their own contrast to clear AA on any hue, an inset ring
+  slot, and `BankEmblemStack` with +N overflow.
+
+### Fixed
+
+- **Accessibility**: every interactive target now reaches the kit's 44 px
+  minimum without inflating its glyph (insight-card dismiss, IBAN copy,
+  address-form edit); the IBAN copy affordance confirms visually and
+  announces to assistive technology; OTP cells encode focus with one signal
+  instead of swapping both fill and border; picker values are
+  typographically distinct from placeholders; the insight card's confidence
+  dots are labelled instead of reading as broken pagination.
+- **Skeleton shimmer** travelled a darker band over flat slabs, in phase
+  across every tile, and never entered the placeholder shapes. It now sweeps
+  a lighter band through the shapes with per-tile phase offsets, and stops
+  entirely under reduced motion.
+- **Brand contracts honoured**: Bloom's warm shadow tint reaches kit
+  surfaces rather than dying on a `Card.elevation` sentinel, Studio dark's
+  primary CTA no longer reads as disabled, and Voltage's accent gradient
+  concentrates on hero surfaces instead of being painted at full strength
+  across ten component families.
+- **Chrome**: the app bar's 18 px title and grey 12 px subtitle become a
+  real hierarchy; the connectivity banner adopts the toast treatment with a
+  single left edge.
+- **Component cluster**: receipt ink is legible on themed paper in every
+  preset, the plan comparison table scrolls with a closed emphasis border,
+  bill-pay rows share a trailing column, value-diff rows follow one grammar
+  and colour by meaning, the period selector is content-sized with real
+  chevron targets, transfer review gives the amount the hierarchy it needs,
+  the SCA sheet drops to one accent, statement rows no longer leak a
+  midnight timestamp, stock Material controls are themed, CTA copy is
+  consistently sentence case, and non-Latin currency glyphs get correct
+  spacing and bidi isolation.
+
 ## 0.2.0
 
 A premium-quality overhaul driven by a full visual and code audit against

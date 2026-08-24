@@ -12,12 +12,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Allow the workflow to publish to Pages via OIDC; only one deploy at a time.
+# Least privilege by default: the build job only reads, and the Pages write
+# and OIDC grants live on the deploy job that actually needs them.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
+# Only one deploy at a time.
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -26,10 +26,18 @@ jobs:
   build:
     name: Build web demo
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      # Actions are pinned by commit SHA, not by tag, so a compromised or
+      # retagged release cannot silently enter this build (OpenSSF Scorecard,
+      # Pinned-Dependencies). The trailing comment records the tag the SHA
+      # belongs to; update both together.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: '3.44.4'
           channel: stable
@@ -58,7 +66,7 @@ jobs:
         run: cp build/web/index.html build/web/404.html
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: example/build/web
 
@@ -66,10 +74,13 @@ jobs:
     name: Deploy to Pages
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write # publish the built site
+      id-token: write # OIDC token the Pages deployment is verified with
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
