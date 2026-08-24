@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../src/common/bank_icon_spec.dart';
+import '../../src/common/bank_segmented_control.dart';
+import '../../src/common/bank_sheet.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
@@ -123,13 +125,13 @@ class BankContactPaymentSheet extends StatefulWidget {
   /// Shown when no contacts match. Defaults to `'No contacts found'`.
   final String emptyContactsLabel;
 
-  /// Title of the contact picker step. Defaults to `'Select Contact'`.
+  /// Title of the contact picker step. Defaults to `'Select contact'`.
   final String selectContactTitle;
 
-  /// Title of the amount step in send mode. Defaults to `'Send Money'`.
+  /// Title of the amount step in send mode. Defaults to `'Send money'`.
   final String sendMoneyTitle;
 
-  /// Title of the amount step in request mode. Defaults to `'Request Money'`.
+  /// Title of the amount step in request mode. Defaults to `'Request money'`.
   final String requestMoneyTitle;
 
   /// Title shown while processing. Defaults to `'Processing…'`.
@@ -157,10 +159,10 @@ class BankContactPaymentSheet extends StatefulWidget {
   /// `'Request money'`.
   final String requestSemanticLabel;
 
-  /// Success headline in send mode. Defaults to `'Money Sent!'`.
+  /// Success headline in send mode. Defaults to `'Money sent!'`.
   final String sendSuccessTitle;
 
-  /// Success headline in request mode. Defaults to `'Request Sent!'`.
+  /// Success headline in request mode. Defaults to `'Request sent!'`.
   final String requestSuccessTitle;
 
   /// Preposition before the recipient name in send mode. Defaults to `'to'`.
@@ -202,9 +204,9 @@ class BankContactPaymentSheet extends StatefulWidget {
     this.closeTooltip = 'Close',
     this.searchHint = 'Search contacts',
     this.emptyContactsLabel = 'No contacts found',
-    this.selectContactTitle = 'Select Contact',
-    this.sendMoneyTitle = 'Send Money',
-    this.requestMoneyTitle = 'Request Money',
+    this.selectContactTitle = 'Select contact',
+    this.sendMoneyTitle = 'Send money',
+    this.requestMoneyTitle = 'Request money',
     this.processingTitle = 'Processing…',
     this.doneTitle = 'Done',
     this.errorTitle = 'Something went wrong',
@@ -213,8 +215,8 @@ class BankContactPaymentSheet extends StatefulWidget {
     this.noteHint = 'Add a note (optional)',
     this.sendSemanticLabel = 'Send money',
     this.requestSemanticLabel = 'Request money',
-    this.sendSuccessTitle = 'Money Sent!',
-    this.requestSuccessTitle = 'Request Sent!',
+    this.sendSuccessTitle = 'Money sent!',
+    this.requestSuccessTitle = 'Request sent!',
     this.sentToLabel = 'to',
     this.requestedFromLabel = 'from',
     this.doneButtonLabel = 'Done',
@@ -231,10 +233,11 @@ class BankContactPaymentSheet extends StatefulWidget {
     Future<void> Function(String, Money, String?)? onSend,
     Future<void> Function(String, Money, String?)? onRequest,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and drag handle.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankContactPaymentSheet(
           contacts: contacts,
           onSend: onSend,
@@ -838,41 +841,22 @@ class _AmountStep extends StatelessWidget {
           const SizedBox(height: BankTokens.space4),
           // Send / Request toggle (only show if both callbacks available)
           if (hasSend && hasRequest) ...[
-            SegmentedButton<_PaymentMode>(
+            BankSegmentedControl<_PaymentMode>(
               segments: [
-                ButtonSegment(
+                BankSegmentItem<_PaymentMode>(
                   value: _PaymentMode.send,
-                  label: Text(sendLabel),
-                  icon: Icon(sendIcon, size: 16),
+                  label: sendLabel,
+                  icon: sendIcon,
                 ),
-                ButtonSegment(
+                BankSegmentItem<_PaymentMode>(
                   value: _PaymentMode.request,
-                  label: Text(requestLabel),
-                  icon: Icon(requestIcon, size: 16),
+                  label: requestLabel,
+                  icon: requestIcon,
                 ),
               ],
-              selected: {mode},
-              onSelectionChanged: (s) {
-                if (s.isNotEmpty) onModeChanged(s.first);
-              },
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.resolveWith(
-                  (states) => states.contains(WidgetState.selected)
-                      ? accentColor
-                      : bankTheme.surface,
-                ),
-                foregroundColor: WidgetStateProperty.resolveWith(
-                  (states) => states.contains(WidgetState.selected)
-                      ? bankTheme.onPrimary
-                      : bankTheme.onSurface,
-                ),
-                side: WidgetStateProperty.all(
-                  BorderSide(color: bankTheme.outline.withValues(alpha: 0.5)),
-                ),
-                minimumSize: WidgetStateProperty.all(
-                  const Size(0, BankTokens.minTapTarget),
-                ),
-              ),
+              selected: mode,
+              onChanged: onModeChanged,
+              selectedColor: accentColor,
             ),
             const SizedBox(height: BankTokens.space4),
           ],

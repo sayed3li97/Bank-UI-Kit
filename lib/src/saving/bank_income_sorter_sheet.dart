@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../src/common/bank_control_theme.dart';
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/controllers/bank_income_sorter_controller.dart';
 import '../../src/models/savings_pot.dart';
@@ -14,7 +16,7 @@ class BankIncomeSorterSheet extends StatefulWidget {
   final BankIncomeSorterController controller;
   final VoidCallback? onDismiss;
 
-  /// Heading of the sheet. Defaults to 'Income Received'.
+  /// Heading of the sheet. Defaults to 'Income received'.
   final String title;
 
   /// Label of the remaining row. Defaults to 'Remaining'.
@@ -66,7 +68,7 @@ class BankIncomeSorterSheet extends StatefulWidget {
     required this.controller,
     super.key,
     this.onDismiss,
-    this.title = 'Income Received',
+    this.title = 'Income received',
     this.remainingLabel = 'Remaining',
     this.addPotLabel = 'Add pot',
     this.repeatLabel = 'Repeat this split automatically next time',
@@ -86,10 +88,11 @@ class BankIncomeSorterSheet extends StatefulWidget {
     BuildContext context, {
     required BankIncomeSorterController controller,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankIncomeSorterSheet(controller: controller),
       );
 
@@ -239,16 +242,18 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
                     ),
                   ],
                   const SizedBox(height: BankTokens.space3),
-                  SwitchListTile(
-                    value: ctrl.saveForNext,
-                    onChanged: widget.controller.setSaveForNext,
-                    title: Text(
-                      widget.repeatLabel,
-                      style: BankTokens.bodyMedium
-                          .copyWith(color: theme.onSurface),
+                  SwitchTheme(
+                    data: BankControlTheme.switchTheme(theme, accent: accent),
+                    child: SwitchListTile(
+                      value: ctrl.saveForNext,
+                      onChanged: widget.controller.setSaveForNext,
+                      title: Text(
+                        widget.repeatLabel,
+                        style: BankTokens.bodyMedium
+                            .copyWith(color: theme.onSurface),
+                      ),
+                      contentPadding: EdgeInsets.zero,
                     ),
-                    activeThumbColor: accent,
-                    contentPadding: EdgeInsets.zero,
                   ),
                   const SizedBox(height: BankTokens.space4),
                   SizedBox(
@@ -277,8 +282,11 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
     BuildContext context,
     List<SavingsPot> pots,
   ) async {
-    final picked = await showModalBottomSheet<SavingsPot>(
-      context: context,
+    final picked = await BankSheet.show<SavingsPot>(
+      context,
+      // A short, fixed list: keep Material's height clamp rather than growing
+      // the sheet to fit.
+      isScrollControlled: false,
       builder: (_) => ListView(
         shrinkWrap: true,
         children: pots

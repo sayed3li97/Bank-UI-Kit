@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
@@ -64,7 +65,7 @@ class BankTransactionCostSplitSheet extends StatefulWidget {
   /// Overrides the close button glyph. Defaults to [Icons.close].
   final IconData? closeIcon;
 
-  /// Overrides the sheet title. Defaults to 'Split Cost'.
+  /// Overrides the sheet title. Defaults to 'Split cost'.
   final String title;
 
   /// Overrides the total prefix. Defaults to 'Total: '.
@@ -94,7 +95,7 @@ class BankTransactionCostSplitSheet extends StatefulWidget {
     this.titleStyle,
     this.maxHeightFraction,
     this.closeIcon,
-    this.title = 'Split Cost',
+    this.title = 'Split cost',
     this.totalLabel = 'Total: ',
     this.allocatedLabel = 'Allocated',
     this.animationDuration,
@@ -108,10 +109,11 @@ class BankTransactionCostSplitSheet extends StatefulWidget {
     required List<BankSplitParticipant> participants,
     required ValueChanged<Map<String, Money>> onConfirm,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankTransactionCostSplitSheet(
           transaction: transaction,
           participants: participants,

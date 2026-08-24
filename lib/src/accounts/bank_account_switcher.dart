@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../src/common/bank_icon_spec.dart';
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
@@ -121,10 +122,12 @@ class BankAccountSwitcher extends StatelessWidget {
     required List<BankAccount> accounts,
     String? selectedAccountId,
   }) =>
-      showModalBottomSheet<BankAccount>(
-        context: context,
+      BankSheet.show<BankAccount>(
+        context,
+        // The switcher paints its own rounded ground and drag handle, so the
+        // branded surface only contributes the scrim, motion, and insets.
         backgroundColor: Colors.transparent,
-        isScrollControlled: true,
+        showHandle: false,
         builder: (_) => BankAccountSwitcher(
           accounts: accounts,
           selectedAccountId: selectedAccountId,

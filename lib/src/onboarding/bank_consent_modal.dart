@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_control_theme.dart';
+import '../../src/common/bank_sheet.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 
@@ -105,8 +107,8 @@ class BankConsentModal extends StatefulWidget {
     required VoidCallback onDecline,
     Widget? richContent,
   }) =>
-      showDialog<bool>(
-        context: context,
+      BankDialog.show<bool>(
+        context,
         builder: (_) => Dialog(
           child: BankConsentModal(
             title: title,
@@ -395,12 +397,17 @@ class _CheckboxRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Checkbox(
-                value: checked,
-                onChanged: enabled ? onChanged : null,
-                activeColor: accentColor ?? bankTheme.primary,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
+              CheckboxTheme(
+                data: BankControlTheme.checkboxTheme(
+                  bankTheme,
+                  accent: accentColor,
+                ),
+                child: Checkbox(
+                  value: checked,
+                  onChanged: enabled ? onChanged : null,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
               ),
               const SizedBox(width: BankTokens.space3),
               Expanded(

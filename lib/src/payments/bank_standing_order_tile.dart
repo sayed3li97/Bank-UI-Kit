@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
@@ -402,18 +403,15 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
   // ---------------------------------------------------------------------
 
   Future<void> _openActionSheet() async {
-    final bankTheme = BankThemeData.of(context);
-
-    final action = await showModalBottomSheet<_TileAction>(
-      context: context,
-      backgroundColor: bankTheme.surface,
-      shape: RoundedRectangleBorder(borderRadius: bankTheme.sheetRadius),
+    final action = await BankSheet.show<_TileAction>(
+      context,
+      // A short, fixed action menu: keep Material's height clamp.
+      isScrollControlled: false,
       builder: (sheetContext) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _SheetHandleBar(),
             const SizedBox(height: BankTokens.space2),
             if (_pauseAvailable)
               _SheetActionRow(
@@ -492,8 +490,8 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
   }) {
     final bankTheme = BankThemeData.of(context);
 
-    return showDialog<bool>(
-      context: context,
+    return BankDialog.show<bool>(
+      context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: bankTheme.surface,
         shape: RoundedRectangleBorder(borderRadius: bankTheme.cardRadius),
@@ -735,28 +733,6 @@ class _StatusChip extends StatelessWidget {
         child: Text(
           label,
           style: BankTokens.labelSmall.copyWith(color: color),
-        ),
-      ),
-    );
-  }
-}
-
-class _SheetHandleBar extends StatelessWidget {
-  const _SheetHandleBar();
-
-  @override
-  Widget build(BuildContext context) {
-    final bankTheme = BankThemeData.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(top: BankTokens.space2),
-      child: Center(
-        child: Container(
-          width: 40,
-          height: 4,
-          decoration: BoxDecoration(
-            color: bankTheme.outline,
-            borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          ),
         ),
       ),
     );

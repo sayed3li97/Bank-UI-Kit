@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_sheet.dart';
 import '../common/bank_status_tracker.dart';
 import '../common/bank_summary_stack.dart';
 import '../common/bank_text_field.dart';
@@ -263,24 +264,19 @@ class BankDisputeWizardSheet extends StatefulWidget {
     required BankDisputeFlowController controller,
     List<BankDisputeReason> reasons = BankDisputeReason.defaults,
     VoidCallback? onAddEvidence,
-  }) {
-    final theme = BankThemeData.of(context);
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: theme.surface,
-      shape: RoundedRectangleBorder(borderRadius: theme.sheetRadius),
-      builder: (_) => FractionallySizedBox(
-        heightFactor: 0.92,
-        child: BankDisputeWizardSheet(
-          transaction: transaction,
-          controller: controller,
-          reasons: reasons,
-          onAddEvidence: onAddEvidence,
+  }) =>
+      BankSheet.show<void>(
+        context,
+        builder: (_) => FractionallySizedBox(
+          heightFactor: 0.92,
+          child: BankDisputeWizardSheet(
+            transaction: transaction,
+            controller: controller,
+            reasons: reasons,
+            onAddEvidence: onAddEvidence,
+          ),
         ),
-      ),
-    );
-  }
+      );
 
   @override
   State<BankDisputeWizardSheet> createState() => _BankDisputeWizardSheetState();

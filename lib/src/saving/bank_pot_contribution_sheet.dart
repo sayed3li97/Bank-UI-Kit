@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
@@ -252,7 +253,7 @@ class BankPotContributionSheet extends StatefulWidget {
   final String goalSavedTemplate;
 
   /// Caption of the confirm button in contribution mode. Defaults to
-  /// 'Add Money'.
+  /// 'Add money'.
   final String addButtonLabel;
 
   /// Caption of the confirm button in withdrawal mode. Defaults to
@@ -326,7 +327,7 @@ class BankPotContributionSheet extends StatefulWidget {
     this.maxAvailableTemplate = 'Cannot exceed available balance of {amount}',
     this.availableTemplate = 'Available: {amount}',
     this.goalSavedTemplate = 'Goal: {target} · Saved: {saved}',
-    this.addButtonLabel = 'Add Money',
+    this.addButtonLabel = 'Add money',
     this.withdrawButtonLabel = 'Withdraw',
     this.confirmContributionSemanticLabel = 'Confirm contribution',
     this.confirmWithdrawalSemanticLabel = 'Confirm withdrawal',
@@ -353,10 +354,11 @@ class BankPotContributionSheet extends StatefulWidget {
     Money? availableBalance,
     VoidCallback? onCancel,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankPotContributionSheet(
           pot: pot,
           isWithdrawal: isWithdrawal,

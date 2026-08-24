@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_control_theme.dart';
 import '../common/bank_icon_spec.dart';
+import '../common/bank_sheet.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -298,10 +300,12 @@ class BankDisclosureConsentSheet extends StatefulWidget {
     Widget? footer,
     String? footerText,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle
+        // (BankDisclosureConsentSheet.showHandle).
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankDisclosureConsentSheet(
           disclosures: disclosures,
           consents: consents,
@@ -753,12 +757,14 @@ class _ConsentRow extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Checkbox(
-                  value: ticked,
-                  onChanged: onChanged,
-                  activeColor: accent,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
+                CheckboxTheme(
+                  data: BankControlTheme.checkboxTheme(theme, accent: accent),
+                  child: Checkbox(
+                    value: ticked,
+                    onChanged: onChanged,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: VisualDensity.compact,
+                  ),
                 ),
                 const SizedBox(width: BankTokens.space3),
                 Expanded(

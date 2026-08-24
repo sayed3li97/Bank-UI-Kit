@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_emblem.dart';
+import '../common/bank_sheet.dart';
 import '../common/bank_text_field.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
@@ -163,19 +164,12 @@ class _BankApprovalRequestTileState extends State<BankApprovalRequestTile> {
   Future<void> _reject() async {
     final theme = BankThemeData.of(context);
     final controller = TextEditingController();
-    final reason = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: theme.surface,
-      shape: RoundedRectangleBorder(borderRadius: theme.sheetRadius),
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          left: BankTokens.space4,
-          right: BankTokens.space4,
-          top: BankTokens.space4,
-          bottom:
-              MediaQuery.viewInsetsOf(sheetContext).bottom + BankTokens.space4,
-        ),
+    final reason = await BankSheet.show<String>(
+      context,
+      // The branded surface lifts the sheet clear of the keyboard, so the
+      // form only needs its own resting padding.
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(BankTokens.space4),
         child: _RejectReasonForm(
           controller: controller,
           title: widget.rejectReasonTitle,

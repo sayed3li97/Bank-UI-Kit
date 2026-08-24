@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 
+import '../common/bank_control_theme.dart';
 import '../common/bank_icon_spec.dart';
+import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
@@ -327,8 +329,8 @@ class _BankMerchantBlockListState extends State<BankMerchantBlockList> {
     final hours = '${block.unblockCoolOff!.inHours}';
     final resolvedAccentColor = widget.accentColor ?? theme.primary;
 
-    return showDialog<bool>(
-      context: context,
+    return BankDialog.show<bool>(
+      context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: theme.surface,
         shape: RoundedRectangleBorder(borderRadius: theme.cardRadius),
@@ -621,14 +623,17 @@ class _BlockRow extends StatelessWidget {
                                 color: accentColor,
                               ),
                             )
-                          : Switch(
-                              value: block.blocked,
-                              activeThumbColor: theme.onPrimary,
-                              activeTrackColor:
-                                  coolingOff ? pendingColor : accentColor,
-                              onChanged: interactive
-                                  ? (value) => onToggle(block, value)
-                                  : null,
+                          : SwitchTheme(
+                              data: BankControlTheme.switchTheme(
+                                theme,
+                                accent: coolingOff ? pendingColor : accentColor,
+                              ),
+                              child: Switch(
+                                value: block.blocked,
+                                onChanged: interactive
+                                    ? (value) => onToggle(block, value)
+                                    : null,
+                              ),
                             ),
                     ),
                   ),

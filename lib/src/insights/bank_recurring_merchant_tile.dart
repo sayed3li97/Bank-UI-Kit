@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_emblem.dart';
+import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../models/transaction.dart';
@@ -140,10 +141,10 @@ class BankRecurringMerchantTile extends StatelessWidget {
 
   Future<void> _showActions(BuildContext context) async {
     final theme = BankThemeData.of(context);
-    await showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: theme.surface,
-      shape: RoundedRectangleBorder(borderRadius: theme.sheetRadius),
+    await BankSheet.show<void>(
+      context,
+      // A short, fixed action menu: keep Material's height clamp.
+      isScrollControlled: false,
       builder: (sheetContext) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -176,8 +177,8 @@ class BankRecurringMerchantTile extends StatelessWidget {
                 ),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
-                  final confirmed = await showDialog<bool>(
-                    context: context,
+                  final confirmed = await BankDialog.show<bool>(
+                    context,
                     builder: (dialogContext) => AlertDialog(
                       backgroundColor: theme.surface,
                       title: Text(

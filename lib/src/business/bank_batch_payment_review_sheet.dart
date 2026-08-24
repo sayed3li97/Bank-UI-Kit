@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_control_theme.dart';
+import '../common/bank_sheet.dart';
 import '../models/money.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
@@ -122,31 +124,26 @@ class BankBatchPaymentReviewSheet extends StatefulWidget {
     IconData closeIcon = Icons.close_rounded,
     TextStyle? titleStyle,
     TextStyle? submitStyle,
-  }) {
-    final theme = BankThemeData.of(context);
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: theme.surface,
-      shape: RoundedRectangleBorder(borderRadius: theme.sheetRadius),
-      builder: (_) => FractionallySizedBox(
-        heightFactor: 0.92,
-        child: BankBatchPaymentReviewSheet(
-          batchName: batchName,
-          entries: entries,
-          onSubmit: onSubmit,
-          onCancel: onCancel,
-          onEntryTap: onEntryTap,
-          previewCount: previewCount,
-          padding: padding,
-          accentColor: accentColor,
-          closeIcon: closeIcon,
-          titleStyle: titleStyle,
-          submitStyle: submitStyle,
+  }) =>
+      BankSheet.show<void>(
+        context,
+        builder: (_) => FractionallySizedBox(
+          heightFactor: 0.92,
+          child: BankBatchPaymentReviewSheet(
+            batchName: batchName,
+            entries: entries,
+            onSubmit: onSubmit,
+            onCancel: onCancel,
+            onEntryTap: onEntryTap,
+            previewCount: previewCount,
+            padding: padding,
+            accentColor: accentColor,
+            closeIcon: closeIcon,
+            titleStyle: titleStyle,
+            submitStyle: submitStyle,
+          ),
         ),
-      ),
-    );
-  }
+      );
 
   @override
   State<BankBatchPaymentReviewSheet> createState() =>
@@ -289,12 +286,16 @@ class _BankBatchPaymentReviewSheetState
                                 .copyWith(color: theme.onSurface),
                           ),
                         ),
-                        Switch(
-                          value: _errorsOnly,
-                          activeThumbColor: theme.onPrimary,
-                          activeTrackColor: accent,
-                          onChanged: (value) =>
-                              setState(() => _errorsOnly = value),
+                        SwitchTheme(
+                          data: BankControlTheme.switchTheme(
+                            theme,
+                            accent: accent,
+                          ),
+                          child: Switch(
+                            value: _errorsOnly,
+                            onChanged: (value) =>
+                                setState(() => _errorsOnly = value),
+                          ),
                         ),
                       ],
                     ),

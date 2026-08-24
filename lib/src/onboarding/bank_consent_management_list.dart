@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../common/bank_emblem.dart';
+import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
 import '../states/bank_empty_state_view.dart';
 import '../theme/bank_theme_data.dart';
@@ -157,8 +158,8 @@ class _BankConsentManagementListState extends State<BankConsentManagementList> {
 
   Future<void> _confirmRevoke(BankConsent consent) async {
     final theme = BankThemeData.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
+    final confirmed = await BankDialog.show<bool>(
+      context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: theme.surface,
         title: Text(

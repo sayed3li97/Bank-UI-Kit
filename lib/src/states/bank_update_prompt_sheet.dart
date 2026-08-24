@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../common/bank_icon_spec.dart';
+import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/button_text_style.dart';
@@ -188,7 +189,7 @@ class BankUpdatePromptSheet extends StatelessWidget {
   // Convenience presenter
   // ---------------------------------------------------------------------------
 
-  /// Presents the sheet with [showModalBottomSheet] using the ambient
+  /// Presents the sheet with [BankSheet.show] using the ambient
   /// [BankThemeData.sheetRadius] shape and [BankThemeData.surface]
   /// background (or [backgroundColor] when provided).
   ///
@@ -222,44 +223,42 @@ class BankUpdatePromptSheet extends StatelessWidget {
     Widget? header,
     Widget? footer,
     String? semanticLabel,
-  }) {
-    final theme = BankThemeData.of(context);
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: backgroundColor ?? theme.surface,
-      shape: RoundedRectangleBorder(borderRadius: theme.sheetRadius),
-      builder: (_) => BankUpdatePromptSheet(
-        onUpdate: onUpdate,
-        onNotNow: onNotNow,
-        title: title,
-        body: body,
-        updateLabel: updateLabel,
-        notNowLabel: notNowLabel,
-        highlights: highlights,
-        availableVersion: availableVersion,
-        installedVersion: installedVersion,
-        icon: icon,
-        unsupportedAfter: unsupportedAfter,
-        unsupportedAfterTemplate: unsupportedAfterTemplate,
-        hideNotNow: hideNotNow,
-        availableVersionTemplate: availableVersionTemplate,
-        installedVersionTemplate: installedVersionTemplate,
-        padding: padding,
-        accentColor: accentColor,
-        titleStyle: titleStyle,
-        bodyStyle: bodyStyle,
-        highlightIcon: highlightIcon,
-        warningIcon: warningIcon,
-        animationDuration: animationDuration,
-        animationCurve: animationCurve,
-        header: header,
-        footer: footer,
-        semanticLabel: semanticLabel,
-      ),
-    );
-  }
+  }) =>
+      BankSheet.show<void>(
+        context,
+        backgroundColor: backgroundColor,
+        // The default header already carries a handle bar above the icon
+        // circle, so the surface must not draw a second one.
+        showHandle: false,
+        builder: (_) => BankUpdatePromptSheet(
+          onUpdate: onUpdate,
+          onNotNow: onNotNow,
+          title: title,
+          body: body,
+          updateLabel: updateLabel,
+          notNowLabel: notNowLabel,
+          highlights: highlights,
+          availableVersion: availableVersion,
+          installedVersion: installedVersion,
+          icon: icon,
+          unsupportedAfter: unsupportedAfter,
+          unsupportedAfterTemplate: unsupportedAfterTemplate,
+          hideNotNow: hideNotNow,
+          availableVersionTemplate: availableVersionTemplate,
+          installedVersionTemplate: installedVersionTemplate,
+          padding: padding,
+          accentColor: accentColor,
+          titleStyle: titleStyle,
+          bodyStyle: bodyStyle,
+          highlightIcon: highlightIcon,
+          warningIcon: warningIcon,
+          animationDuration: animationDuration,
+          animationCurve: animationCurve,
+          header: header,
+          footer: footer,
+          semanticLabel: semanticLabel,
+        ),
+      );
 
   // ---------------------------------------------------------------------------
   // Build
