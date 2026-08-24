@@ -15,7 +15,7 @@ four built-in themes, your backend.
 [![Flutter](https://img.shields.io/badge/Flutter-3.44%2B-027DFD.svg)](https://flutter.dev)
 [![style: flutter_lints](https://img.shields.io/badge/style-flutter__lints-40c4ff.svg)](https://pub.dev/packages/flutter_lints)
 
-**164 components** · **23 modules** · **4 built-in themes** · **WCAG 2.1 AA gates enforced in CI** · **RTL + Arabic-Indic numerals**
+**173 components** · **23 modules** · **4 built-in themes** · **WCAG 2.1 AA gates enforced in CI** · **RTL + Arabic-Indic numerals**
 
 ### [▶ Try the live demo](https://sayed3li97.github.io/Bank-UI-Kit/)
 
@@ -80,7 +80,7 @@ A component library, not a screen template. You compose the widgets into an
 app you already own rather than copying whole screens out of a starter
 project. The kit covers accounts, payments, cards, onboarding and KYC, PFM
 and insights, lending, rewards, Islamic banking, business-banking approvals,
-disputes, secure messaging, and statements: 164 components across 23
+disputes, secure messaging, and statements: 173 components across 23
 modules, benchmarked against 21 of the world's leading banking apps.
 
 It is backend-agnostic by construction. Data goes in through constructors,
@@ -118,7 +118,7 @@ than take it.
 
 ### Where this project is honest about its gaps
 
-It is version 0.2.0, which means pre-1.0 minors are permitted to break you,
+It is version 0.3.0, which means pre-1.0 minors are permitted to break you,
 so pin exactly. It has one maintainer, so the bus factor is one. The
 accessibility report is a self-assessment and no independent firm has
 audited it. Those facts are why the documents above exist, and each document
@@ -196,7 +196,7 @@ kit. Full pipeline in
 ### One token change rebrands every surface
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/diagrams/architecture-flow.svg" width="880" alt="Design tokens flow into four presets, into 164 components, into your app" />
+  <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/diagrams/architecture-flow.svg" width="880" alt="Design tokens flow into four presets, into 173 components, into your app" />
 </p>
 
 Tokens set colour, shape, depth, and numeral typography once. Presets are
@@ -257,12 +257,12 @@ Details, and how to verify any of it yourself, are in
 
 ## Stability: what can change under you
 
-The package is at 0.2.0. Under SemVer a 0.x minor may break you, so **pin
+The package is at 0.3.0. Under SemVer a 0.x minor may break you, so **pin
 exactly** until 1.0:
 
 ```yaml
 dependencies:
-  bank_ui_kit: 0.2.0   # exact, no caret, while the package is pre-1.0
+  bank_ui_kit: 0.3.0   # exact, no caret, while the package is pre-1.0
 ```
 
 For a UI kit the interesting breakage is not a deleted method. It is a
@@ -287,7 +287,7 @@ Release mechanics and the roadmap are in
 
 ```yaml
 dependencies:
-  bank_ui_kit: 0.2.0   # exact, no caret, while the package is pre-1.0
+  bank_ui_kit: 0.3.0   # exact, no caret, while the package is pre-1.0
 ```
 
 Or take it straight from git, which is also the vendoring path if you mirror
@@ -298,7 +298,7 @@ dependencies:
   bank_ui_kit:
     git:
       url: https://github.com/sayed3li97/bank-ui-kit.git
-      ref: v0.2.0
+      ref: v0.3.0
 ```
 
 Pin exactly either way until 1.0, and read
@@ -542,7 +542,7 @@ states) lives in [doc/banking-journeys.md](https://raw.githubusercontent.com/say
 
 ## Component catalogue
 
-164 widgets across 23 modules. Each screenshot below is a live render of that module's
+173 widgets across 23 modules. Each screenshot below is a live render of that module's
 showcase screen (Studio preset, light mode) from the example app.
 
 For the full parameter-level API reference (every constructor argument, type, required/optional status, and default value) see **[doc/component-reference.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/component-reference.md)**.
