@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../common/bank_emblem.dart';
+import '../common/bank_icon_spec.dart';
+import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
@@ -42,6 +44,25 @@ typedef BankScaApproveCallback = Future<bool> Function(
 /// dynamic linking requires the customer to see exactly what they are
 /// approving.
 ///
+/// ## Colour
+///
+/// This is the highest-stakes surface in the kit, so it spends exactly two
+/// kinds of colour and no decoration:
+///
+/// - **one accent** ([accentColor], the theme primary) for the security
+///   mark, the alternate-method link, and the waiting spinner — the parts
+///   that say "this is your bank asking";
+/// - **one status colour at a time**, and only when there is a status to
+///   report: [BankThemeData.pending] once the countdown is genuinely short,
+///   [BankThemeData.negativeBalance] on a failed verification,
+///   [BankThemeData.positiveBalance] on approval. They are mutually
+///   exclusive by construction.
+///
+/// A permanently amber header and a permanently amber countdown chip
+/// (which is what this sheet used to ship) spend the alarm colour before
+/// anything is wrong, so nothing is left to say when the timer actually
+/// runs out. Everything else is theme ink on the theme surface.
+///
 /// Present it with [BankScaApprovalSheet.show], which resolves `true` on
 /// approval, `false` on rejection or expiry, and blocks drag/tap dismissal.
 ///
@@ -73,12 +94,15 @@ class BankScaApprovalSheet extends StatefulWidget {
     this.useBiometricLabel = 'Use biometrics instead',
     this.pushWaitingLabel = 'Approve this payment in your authenticator',
     this.expiresPrefix = 'Expires in',
+    this.expiryWarningThreshold = const Duration(minutes: 1),
     this.padding,
     this.amountStyle,
     this.titleStyle,
     this.headerIcon,
     this.successIcon,
     this.successColor,
+    this.accentColor,
+    this.rejectColor,
     this.amountSemanticPrefix = 'Amount',
   });
 
@@ -117,6 +141,14 @@ class BankScaApprovalSheet extends StatefulWidget {
   final String pushWaitingLabel;
   final String expiresPrefix;
 
+  /// How much time must be left before the countdown chip escalates from
+  /// neutral ink to the theme's pending colour. Defaults to one minute.
+  ///
+  /// The chip is factual until it is urgent: a countdown that is amber for
+  /// its whole five minutes has told the customer nothing by the time it
+  /// has thirty seconds left.
+  final Duration expiryWarningThreshold;
+
   /// Outer content padding of the sheet. Defaults to symmetric horizontal
   /// [BankTokens.space5] and vertical [BankTokens.space4] when null.
   final EdgeInsetsGeometry? padding;
@@ -129,8 +161,12 @@ class BankScaApprovalSheet extends StatefulWidget {
   /// in the theme foreground). Null applies no override.
   final TextStyle? titleStyle;
 
-  /// Glyph for the header security icon. Defaults to
-  /// [Icons.gpp_maybe_outlined] when null.
+  /// Glyph for the header security icon. Defaults to [BankIcons.shield]
+  /// when null.
+  ///
+  /// A shield, not the warning-badged [Icons.gpp_maybe_outlined] this used
+  /// to draw: nothing has gone wrong yet, and the header's job is to say
+  /// the request is authentic.
   final IconData? headerIcon;
 
   /// Glyph for the success confirmation icon. Defaults to
@@ -140,6 +176,17 @@ class BankScaApprovalSheet extends StatefulWidget {
   /// Color of the success confirmation icon. Defaults to the theme
   /// `positiveBalance` when null.
   final Color? successColor;
+
+  /// The sheet's single accent: the header security mark, the
+  /// alternate-method link, and the out-of-band spinner. Defaults to
+  /// [BankThemeData.primary].
+  final Color? accentColor;
+
+  /// Ink of the reject action. Defaults to
+  /// [BankThemeData.negativeBalance], which is brightness-corrected per
+  /// preset — unlike the raw [BankTokens.danger] this used to paint, which
+  /// fails contrast on the kit's dark surfaces.
+  final Color? rejectColor;
 
   /// Prefix used in the amount accessibility label, joined as
   /// `'<prefix>: <amount>'`. Defaults to `'Amount'`.
@@ -167,58 +214,78 @@ class BankScaApprovalSheet extends StatefulWidget {
     String useBiometricLabel = 'Use biometrics instead',
     String pushWaitingLabel = 'Approve this payment in your authenticator',
     String expiresPrefix = 'Expires in',
+    Duration expiryWarningThreshold = const Duration(minutes: 1),
     EdgeInsetsGeometry? padding,
     TextStyle? amountStyle,
     TextStyle? titleStyle,
     IconData? headerIcon,
     IconData? successIcon,
     Color? successColor,
+    Color? accentColor,
+    Color? rejectColor,
     String amountSemanticPrefix = 'Amount',
     Color? backgroundColor,
     BorderRadius? sheetRadius,
-  }) {
-    final theme = BankThemeData.of(context);
-    return showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      isDismissible: false,
-      enableDrag: false,
-      backgroundColor: backgroundColor ?? theme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: sheetRadius ?? theme.sheetRadius,
-      ),
-      builder: (_) => BankScaApprovalSheet(
-        amount: amount,
-        payeeName: payeeName,
-        onApprove: onApprove,
-        onReject: onReject,
-        payeeAccountMasked: payeeAccountMasked,
-        reference: reference,
-        expiresAt: expiresAt,
-        methods: methods,
-        pinLength: pinLength,
-        title: title,
-        rejectLabel: rejectLabel,
-        usePinLabel: usePinLabel,
-        useBiometricLabel: useBiometricLabel,
-        pushWaitingLabel: pushWaitingLabel,
-        expiresPrefix: expiresPrefix,
-        padding: padding,
-        amountStyle: amountStyle,
-        titleStyle: titleStyle,
-        headerIcon: headerIcon,
-        successIcon: successIcon,
-        successColor: successColor,
-        amountSemanticPrefix: amountSemanticPrefix,
-      ),
-    );
-  }
+    bool? showHandle,
+  }) =>
+      // Presentation — branded ground, sheet radius, floating depth, token
+      // motion, scrim, and the grab handle — all come from BankSheet; this
+      // sheet contributes only its body.
+      //
+      // Strong-customer authentication must be completed or explicitly
+      // rejected, so the sheet is neither dismissible nor draggable, and
+      // BankSheet's `showHandle ?? enableDrag` rule therefore drops the
+      // handle: a grab bar on a surface that cannot be dragged is an
+      // affordance that lies. Hosts whose SCA flow *is* dismissible pass
+      // [showHandle] explicitly.
+      BankSheet.show<bool>(
+        context,
+        isDismissible: false,
+        enableDrag: false,
+        showHandle: showHandle,
+        backgroundColor: backgroundColor,
+        radius: sheetRadius,
+        builder: (_) => BankScaApprovalSheet(
+          amount: amount,
+          payeeName: payeeName,
+          onApprove: onApprove,
+          onReject: onReject,
+          payeeAccountMasked: payeeAccountMasked,
+          reference: reference,
+          expiresAt: expiresAt,
+          methods: methods,
+          pinLength: pinLength,
+          title: title,
+          rejectLabel: rejectLabel,
+          usePinLabel: usePinLabel,
+          useBiometricLabel: useBiometricLabel,
+          pushWaitingLabel: pushWaitingLabel,
+          expiresPrefix: expiresPrefix,
+          expiryWarningThreshold: expiryWarningThreshold,
+          padding: padding,
+          amountStyle: amountStyle,
+          titleStyle: titleStyle,
+          headerIcon: headerIcon,
+          successIcon: successIcon,
+          successColor: successColor,
+          accentColor: accentColor,
+          rejectColor: rejectColor,
+          amountSemanticPrefix: amountSemanticPrefix,
+        ),
+      );
 
   @override
   State<BankScaApprovalSheet> createState() => _BankScaApprovalSheetState();
 }
 
 class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
+  /// How long the success check stays on screen before the sheet pops.
+  ///
+  /// A confirmation the customer never sees is not a confirmation; a rung
+  /// of the motion scale keeps that beat in step with the sheet's own exit
+  /// instead of inventing a duration for it.
+  static const Duration _successDwell = BankTokens.durationXSlow;
+
   late BankScaMethod _method;
   String _pin = '';
   bool _pinError = false;
@@ -288,7 +355,7 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
     if (approved) {
       setState(() => _succeeded = true);
       _ticker?.cancel();
-      await Future<void>.delayed(const Duration(milliseconds: 750));
+      await Future<void>.delayed(_successDwell);
       if (mounted) Navigator.of(context).pop(true);
       return;
     }
@@ -321,10 +388,18 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
+  /// Whether the countdown has entered the window where the remaining time
+  /// is itself the message.
+  bool get _expiringSoon =>
+      widget.expiresAt != null &&
+      _remaining > Duration.zero &&
+      _remaining <= widget.expiryWarningThreshold;
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final accent = widget.accentColor ?? theme.primary;
 
     // Dynamic linking: the approved amount is always visible, never masked.
     final formattedAmount = BankMoneyFormatter.format(
@@ -348,9 +423,11 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
             _Header(
               title: widget.title,
               theme: theme,
+              accent: accent,
               expiryChip: widget.expiresAt == null
                   ? null
                   : '${widget.expiresPrefix} ${_formatRemaining()}',
+              expiringSoon: _expiringSoon,
               titleStyle: widget.titleStyle,
               icon: widget.headerIcon,
             ),
@@ -385,12 +462,12 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
                 ),
                 child: Icon(
                   widget.successIcon ?? Icons.check_circle_rounded,
-                  size: 64,
+                  size: BankTokens.iconHero,
                   color: widget.successColor ?? theme.positiveBalance,
                 ),
               )
             else
-              _methodWidget(theme),
+              _methodWidget(theme, accent),
             if (!_succeeded) ...[
               const SizedBox(height: BankTokens.space3),
               if (_alternate != null && !_busy)
@@ -405,7 +482,7 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
                     _alternate == BankScaMethod.pin
                         ? widget.usePinLabel
                         : widget.useBiometricLabel,
-                    style: BankTokens.labelLarge.copyWith(color: theme.primary),
+                    style: BankTokens.labelLarge.copyWith(color: accent),
                   ),
                 ),
               TextButton(
@@ -417,8 +494,9 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
                       },
                 child: Text(
                   widget.rejectLabel,
-                  style:
-                      BankTokens.labelLarge.copyWith(color: BankTokens.danger),
+                  style: BankTokens.labelLarge.copyWith(
+                    color: widget.rejectColor ?? theme.negativeBalance,
+                  ),
                 ),
               ),
             ],
@@ -428,7 +506,7 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
     );
   }
 
-  Widget _methodWidget(BankThemeData theme) {
+  Widget _methodWidget(BankThemeData theme, Color accent) {
     switch (_method) {
       case BankScaMethod.biometric:
         return BankBiometricPromptButton(
@@ -437,9 +515,7 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
             setState(() => _succeeded = true);
             _ticker?.cancel();
             unawaited(
-              Future<void>.delayed(
-                const Duration(milliseconds: 750),
-              ).then((_) {
+              Future<void>.delayed(_successDwell).then((_) {
                 if (mounted) Navigator.of(context).pop(true);
               }),
             );
@@ -473,11 +549,11 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                width: 40,
-                height: 40,
+                width: BankTokens.iconHero,
+                height: BankTokens.iconHero,
                 child: CircularProgressIndicator(
                   strokeWidth: 3,
-                  color: theme.primary,
+                  color: accent,
                 ),
               ),
               const SizedBox(height: BankTokens.space4),
@@ -498,6 +574,8 @@ class _Header extends StatelessWidget {
   const _Header({
     required this.title,
     required this.theme,
+    required this.accent,
+    required this.expiringSoon,
     this.expiryChip,
     this.titleStyle,
     this.icon,
@@ -505,43 +583,55 @@ class _Header extends StatelessWidget {
 
   final String title;
   final BankThemeData theme;
+  final Color accent;
+  final bool expiringSoon;
   final String? expiryChip;
   final TextStyle? titleStyle;
   final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
+    // The chip carries the accent's neutral tier until the countdown is
+    // actually short, at which point — and only then — it takes the
+    // pending colour. One escalation, one meaning.
+    final chipInk = expiringSoon ? theme.pending : theme.onSurfaceVariant;
+
     return Row(
       children: [
         Icon(
-          icon ?? Icons.gpp_maybe_outlined,
-          size: 22,
-          color: BankTokens.warning,
+          icon ?? BankIcons.shield,
+          size: BankTokens.iconLarge,
+          color: accent,
         ),
         const SizedBox(width: BankTokens.space2),
         Expanded(
           child: Text(
             title,
             style: BankTokens.headlineSmall
-                .copyWith(color: theme.onSurface)
+                .copyWith(color: theme.onSurface, fontFamily: theme.fontFamily)
                 .merge(titleStyle),
           ),
         ),
         if (expiryChip != null)
           DecoratedBox(
             decoration: BoxDecoration(
-              color: BankTokens.warning.withValues(alpha: 0.12),
+              color: chipInk.withValues(alpha: BankTokens.alphaMuted),
               borderRadius: theme.chipRadius,
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
+              padding: const EdgeInsetsDirectional.symmetric(
                 horizontal: BankTokens.space2,
                 vertical: 2,
               ),
               child: Text(
                 expiryChip!,
-                style:
-                    BankTokens.labelSmall.copyWith(color: BankTokens.warning),
+                // Tabular numerals: without them the countdown's digits
+                // change width every second and the chip twitches.
+                style: theme.numeralSmall.copyWith(
+                  color: chipInk,
+                  fontSize: BankTokens.labelSmall.fontSize,
+                  fontWeight: BankTokens.labelSmall.fontWeight,
+                ),
               ),
             ),
           ),
@@ -565,11 +655,6 @@ class _PayeeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final secondary = [
-      if (accountMasked != null) accountMasked!,
-      if (reference != null) reference!,
-    ].join(' · ');
-
     return Row(
       children: [
         BankEmblem(initialsFrom: name),
@@ -587,9 +672,20 @@ class _PayeeRow extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (secondary.isNotEmpty)
+              // The destination mask is what dynamic linking asks the
+              // customer to check, so it keeps full ink and tabular
+              // numerals instead of sharing a caption-grey line with the
+              // payment reference.
+              if (accountMasked != null)
                 Text(
-                  secondary,
+                  accountMasked!,
+                  style: theme.numeralSmall.copyWith(color: theme.onSurface),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              if (reference != null)
+                Text(
+                  reference!,
                   style: BankTokens.bodySmall
                       .copyWith(color: theme.onSurfaceVariant),
                   maxLines: 1,

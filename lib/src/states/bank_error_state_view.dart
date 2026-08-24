@@ -176,7 +176,7 @@ class BankErrorStateView extends StatelessWidget {
               const SizedBox(height: BankTokens.space2),
               Semantics(
                 button: true,
-                label: supportLabel ?? 'Contact Support',
+                label: supportLabel ?? 'Contact support',
                 child: TextButton(
                   onPressed: onContactSupport,
                   style: TextButton.styleFrom(
@@ -187,7 +187,7 @@ class BankErrorStateView extends StatelessWidget {
                     ),
                     textStyle: bankButtonTextStyle(context),
                   ),
-                  child: Text(supportLabel ?? 'Contact Support'),
+                  child: Text(supportLabel ?? 'Contact support'),
                 ),
               ),
             ],

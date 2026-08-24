@@ -5,6 +5,7 @@
 library;
 
 export 'bank_app_gate_screen.dart';
+export 'bank_async_content.dart';
 export 'bank_connectivity_banner.dart';
 export 'bank_empty_state_view.dart';
 export 'bank_error_state_view.dart';

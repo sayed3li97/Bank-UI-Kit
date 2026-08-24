@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_control_theme.dart';
 import '../../src/common/bank_icon_spec.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
@@ -40,7 +41,7 @@ class BankCardControlsPanel extends StatelessWidget {
   /// Called when the user taps "Change PIN". No-op when `null`.
   final VoidCallback? onChangePinTap;
 
-  /// Called when the user taps "Report Lost or Stolen". No-op when `null`.
+  /// Called when the user taps "Report lost or stolen". No-op when `null`.
   final VoidCallback? onReportLostOrStolen;
 
   /// Overrides the outer padding around the panel. Defaults to none.
@@ -92,35 +93,35 @@ class BankCardControlsPanel extends StatelessWidget {
   /// Trailing chevron of the action rows. Defaults to [BankIcons.forward].
   final IconData forwardIcon;
 
-  /// Label of the freeze toggle. Defaults to `'Freeze Card'`.
+  /// Label of the freeze toggle. Defaults to `'Freeze card'`.
   final String freezeLabel;
 
   /// Subtitle of the freeze toggle. Defaults to
   /// `'Temporarily block all transactions'`.
   final String freezeSubtitle;
 
-  /// Label of the online payments toggle. Defaults to `'Online Payments'`.
+  /// Label of the online payments toggle. Defaults to `'Online payments'`.
   final String onlinePaymentsLabel;
 
   /// Subtitle of the online payments toggle. Defaults to
   /// `'Allow card-not-present purchases'`.
   final String onlinePaymentsSubtitle;
 
-  /// Label of the contactless toggle. Defaults to `'Contactless Payments'`.
+  /// Label of the contactless toggle. Defaults to `'Contactless payments'`.
   final String contactlessLabel;
 
   /// Subtitle of the contactless toggle. Defaults to `'Tap-to-pay via NFC'`.
   final String contactlessSubtitle;
 
   /// Label of the international toggle. Defaults to
-  /// `'International Payments'`.
+  /// `'International payments'`.
   final String internationalLabel;
 
   /// Subtitle of the international toggle. Defaults to
   /// `'Use card outside home country'`.
   final String internationalSubtitle;
 
-  /// Heading of the spend-limit row. Defaults to `'Spend Limit'`.
+  /// Heading of the spend-limit row. Defaults to `'Spend limit'`.
   final String spendLimitLabel;
 
   /// Text shown when no spend limit is set. Defaults to `'No limit'`.
@@ -133,7 +134,7 @@ class BankCardControlsPanel extends StatelessWidget {
   /// Label of the change PIN action row. Defaults to `'Change PIN'`.
   final String changePinLabel;
 
-  /// Label of the report action row. Defaults to `'Report Lost or Stolen'`.
+  /// Label of the report action row. Defaults to `'Report lost or stolen'`.
   final String reportLostOrStolenLabel;
 
   /// Semantics value announced for a toggle that is on. Defaults to
@@ -177,19 +178,19 @@ class BankCardControlsPanel extends StatelessWidget {
     this.changePinIcon = BankIcons.lock,
     this.reportLostOrStolenIcon = BankIcons.warning,
     this.forwardIcon = BankIcons.forward,
-    this.freezeLabel = 'Freeze Card',
+    this.freezeLabel = 'Freeze card',
     this.freezeSubtitle = 'Temporarily block all transactions',
-    this.onlinePaymentsLabel = 'Online Payments',
+    this.onlinePaymentsLabel = 'Online payments',
     this.onlinePaymentsSubtitle = 'Allow card-not-present purchases',
-    this.contactlessLabel = 'Contactless Payments',
+    this.contactlessLabel = 'Contactless payments',
     this.contactlessSubtitle = 'Tap-to-pay via NFC',
-    this.internationalLabel = 'International Payments',
+    this.internationalLabel = 'International payments',
     this.internationalSubtitle = 'Use card outside home country',
-    this.spendLimitLabel = 'Spend Limit',
+    this.spendLimitLabel = 'Spend limit',
     this.noLimitLabel = 'No limit',
     this.spendLimitSemanticLabel,
     this.changePinLabel = 'Change PIN',
-    this.reportLostOrStolenLabel = 'Report Lost or Stolen',
+    this.reportLostOrStolenLabel = 'Report lost or stolen',
     this.enabledSemanticValue = 'enabled',
     this.disabledSemanticValue = 'disabled',
     this.semanticLabel,
@@ -432,10 +433,15 @@ class _ControlRow extends StatelessWidget {
                   SizedBox(
                     height: BankTokens.minTapTarget,
                     child: Center(
-                      child: Switch(
-                        value: value,
-                        onChanged: onChanged,
-                        activeThumbColor: activeColor,
+                      child: SwitchTheme(
+                        data: BankControlTheme.switchTheme(
+                          bankTheme,
+                          accent: activeColor,
+                        ),
+                        child: Switch(
+                          value: value,
+                          onChanged: onChanged,
+                        ),
                       ),
                     ),
                   ),
@@ -536,16 +542,20 @@ class _SpendLimitRow extends StatelessWidget {
                 ),
               ],
             ),
-            Slider(
-              value: sliderValue,
-              max: maxLimit,
-              divisions: maxLimit > 0 ? maxLimit.toInt() ~/ 100 : null,
-              activeColor: activeColor,
-              inactiveColor: bankTheme.outline,
-              label: sliderValue > 0
-                  ? sliderValue.toStringAsFixed(0)
-                  : noLimitLabel,
-              onChanged: onChanged,
+            SliderTheme(
+              data: BankControlTheme.sliderTheme(
+                bankTheme,
+                accent: activeColor,
+              ),
+              child: Slider(
+                value: sliderValue,
+                max: maxLimit,
+                divisions: maxLimit > 0 ? maxLimit.toInt() ~/ 100 : null,
+                label: sliderValue > 0
+                    ? sliderValue.toStringAsFixed(0)
+                    : noLimitLabel,
+                onChanged: onChanged,
+              ),
             ),
           ],
         ),

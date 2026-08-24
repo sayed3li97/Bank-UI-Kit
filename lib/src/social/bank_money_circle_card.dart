@@ -152,6 +152,8 @@ class BankMoneyCircleCard extends StatelessWidget {
     this.paidBadgeIcon,
     this.completedIcon,
     this.avatarSize,
+    this.maxVisibleMembers,
+    this.memberOverflowTemplate = '+{n}',
   });
 
   /// Display name of the circle.
@@ -284,8 +286,22 @@ class BankMoneyCircleCard extends StatelessWidget {
   /// Icon beside the completed line. Defaults to a celebration glyph.
   final IconData? completedIcon;
 
-  /// Avatar diameter in the turn tracker. Defaults to 40.
+  /// Avatar diameter in the turn tracker. Defaults to
+  /// [BankEmblemSize.medium].
   final double? avatarSize;
+
+  /// Caps how many member avatars the turn tracker draws before folding the
+  /// rest into a `+N` overflow disc.
+  ///
+  /// `null` (the default) means "as many as fit the card": the tracker
+  /// measures its own width and folds the remainder. It never scrolls and
+  /// never runs off the edge, which is what used to swallow the seventh
+  /// member of a circle without leaving a trace that they existed.
+  final int? maxVisibleMembers;
+
+  /// Template for the tracker's overflow disc; `{n}` is substituted.
+  /// Defaults to '+{n}'.
+  final String memberOverflowTemplate;
 
   @override
   Widget build(BuildContext context) {
@@ -405,7 +421,7 @@ class BankMoneyCircleCard extends StatelessWidget {
             ),
             if (cycleText != null) ...[
               const SizedBox(width: BankTokens.space2),
-              _CircleChip(label: cycleText, color: resolvedAccent),
+              BankTintChip(label: cycleText, color: resolvedAccent),
             ],
           ],
         ),
@@ -435,7 +451,9 @@ class BankMoneyCircleCard extends StatelessWidget {
           accent: resolvedAccent,
           isAdminView: isAdminView,
           meLabel: meLabel,
-          avatarSize: avatarSize ?? 40,
+          avatarSize: avatarSize ?? BankEmblemSize.medium.diameter,
+          maxVisible: maxVisibleMembers,
+          overflowTemplate: memberOverflowTemplate,
           paidBadgeIcon: paidBadgeIcon,
         ),
         const SizedBox(height: BankTokens.space4),
@@ -444,15 +462,15 @@ class BankMoneyCircleCard extends StatelessWidget {
             children: [
               Icon(
                 completedIcon ?? Icons.celebration_outlined,
-                size: 20,
-                color: BankTokens.success,
+                size: BankTokens.iconMedium,
+                color: theme.positiveBalance,
               ),
               const SizedBox(width: BankTokens.space2),
               Expanded(
                 child: Text(
                   completedLabel,
                   style: BankTokens.labelMedium
-                      .copyWith(color: BankTokens.success),
+                      .copyWith(color: theme.positiveBalance),
                 ),
               ),
             ],
@@ -462,7 +480,7 @@ class BankMoneyCircleCard extends StatelessWidget {
             children: [
               Icon(
                 collectionDateIcon ?? BankIcons.calendar,
-                size: 16,
+                size: BankTokens.iconSmall,
                 color: theme.onSurfaceVariant,
               ),
               const SizedBox(width: BankTokens.space2),
@@ -496,8 +514,9 @@ class BankMoneyCircleCard extends StatelessWidget {
             ),
             child: LinearProgressIndicator(
               value: paidFraction,
-              minHeight: 4,
-              backgroundColor: theme.outline.withValues(alpha: 0.2),
+              minHeight: BankTokens.space1,
+              backgroundColor:
+                  theme.outline.withValues(alpha: BankTokens.alphaStrong),
               valueColor: AlwaysStoppedAnimation<Color>(resolvedAccent),
             ),
           ),
@@ -568,45 +587,24 @@ class BankMoneyCircleCard extends StatelessWidget {
   }
 }
 
-/// Accent-tinted chip used for the cycle indicator.
-class _CircleChip extends StatelessWidget {
-  const _CircleChip({
-    required this.label,
-    required this.color,
-  });
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = BankThemeData.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: theme.chipRadius,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: BankTokens.space2,
-          vertical: BankTokens.space1,
-        ),
-        child: Text(
-          label,
-          style: BankTokens.labelSmall.copyWith(color: color),
-          maxLines: 1,
-        ),
-      ),
-    );
-  }
-}
-
 /// Horizontal avatar rail of members in turn order.
 ///
 /// Past turns are dimmed and badged with a check; the current turn is
 /// ringed in the accent colour; the signed-in user is labelled with a
 /// chip. In admin view, members who have not paid this cycle receive
-/// a quiet warning-tinted ring.
+/// a quiet ring in [BankThemeData.pending].
+///
+/// The rail is width-bounded rather than scrollable: it measures the space it
+/// was given, draws as many turns as fit, and folds the rest into a `+N`
+/// overflow disc. A silently scrolling rail hid later members behind a gesture
+/// nobody knew to make — a circle's *last* turn is exactly the one a member
+/// wants to find. Because every item is [BankEmblem]-sized from the identity
+/// ladder, and a ring is inset rather than added around the disc, each slot is
+/// exactly one avatar wide whatever state it is in.
+///
+/// This is not a [BankEmblemStack] because each turn carries a caption below
+/// it (the "You" chip); the stack is the uncaptioned, overlapping form of the
+/// same vocabulary.
 class _CircleTurnTracker extends StatelessWidget {
   const _CircleTurnTracker({
     required this.members,
@@ -615,6 +613,8 @@ class _CircleTurnTracker extends StatelessWidget {
     required this.isAdminView,
     required this.meLabel,
     required this.avatarSize,
+    required this.overflowTemplate,
+    this.maxVisible,
     this.paidBadgeIcon,
   });
 
@@ -624,32 +624,65 @@ class _CircleTurnTracker extends StatelessWidget {
   final bool isAdminView;
   final String meLabel;
   final double avatarSize;
+  final int? maxVisible;
+  final String overflowTemplate;
   final IconData? paidBadgeIcon;
+
+  /// Gap between two turn slots.
+  static const double _gap = BankTokens.space3;
 
   @override
   Widget build(BuildContext context) {
+    final theme = BankThemeData.of(context);
     final ordered = [...members]
       ..sort((a, b) => a.turnIndex.compareTo(b.turnIndex));
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (var i = 0; i < ordered.length; i++) ...[
-            if (i > 0) const SizedBox(width: BankTokens.space3),
-            _TurnAvatar(
-              member: ordered[i],
-              currentCycle: currentCycle,
-              accent: accent,
-              isAdminView: isAdminView,
-              meLabel: meLabel,
-              size: avatarSize,
-              paidBadgeIcon: paidBadgeIcon,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final slot = avatarSize + _gap;
+        final fits = constraints.maxWidth.isFinite
+            ? ((constraints.maxWidth + _gap) / slot).floor()
+            : ordered.length;
+        var capacity = fits < 1 ? 1 : fits;
+        final cap = maxVisible;
+        if (cap != null && cap < capacity) capacity = cap;
+
+        final int visible;
+        if (ordered.length <= capacity) {
+          visible = ordered.length;
+        } else {
+          // One slot goes to the overflow disc.
+          visible = capacity - 1 < 0 ? 0 : capacity - 1;
+        }
+        final hidden = ordered.length - visible;
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < visible; i++) ...[
+              if (i > 0) const SizedBox(width: _gap),
+              _TurnAvatar(
+                member: ordered[i],
+                currentCycle: currentCycle,
+                accent: accent,
+                isAdminView: isAdminView,
+                meLabel: meLabel,
+                size: avatarSize,
+                paidBadgeIcon: paidBadgeIcon,
+              ),
+            ],
+            if (hidden > 0) ...[
+              if (visible > 0) const SizedBox(width: _gap),
+              BankEmblem(
+                label: overflowTemplate.replaceAll('{n}', '$hidden'),
+                size: avatarSize,
+                tintColor: theme.onSurfaceVariant,
+              ),
+            ],
           ],
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -674,65 +707,54 @@ class _TurnAvatar extends StatelessWidget {
   final double size;
   final IconData? paidBadgeIcon;
 
+  /// A collected turn is history, not a disabled control: it recedes but
+  /// stays readable.
+  static const double _spentTurnOpacity = 0.45;
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final past = member.turnIndex < currentCycle;
     final current = member.turnIndex == currentCycle;
 
-    BoxBorder? border;
+    BankEmblemRing? ring;
     if (current) {
-      border = Border.all(color: accent, width: 2);
+      ring = BankEmblemRing(color: accent);
     } else if (isAdminView && !member.paidThisCycle) {
-      border = Border.all(
-        color: BankTokens.warning.withValues(alpha: 0.8),
-        width: 1.5,
-      );
+      ring = BankEmblemRing(color: theme.pending);
     }
 
     Widget emblem = BankEmblem(
       imageUrl: member.avatarUrl,
       initialsFrom: member.name,
       size: size,
-      border: border,
+      ring: ring,
       badgeOverlay:
           past ? _PaidBadge(surface: theme.surface, icon: paidBadgeIcon) : null,
     );
 
     if (past) {
-      emblem = Opacity(opacity: 0.45, child: emblem);
+      emblem = Opacity(opacity: _spentTurnOpacity, child: emblem);
     }
 
-    if (!member.isMe) return emblem;
+    if (!member.isMe) return SizedBox(width: size, child: emblem);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        emblem,
-        const SizedBox(height: BankTokens.space1),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: accent.withValues(alpha: 0.12),
-            borderRadius: theme.chipRadius,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: BankTokens.space2,
-              vertical: 2,
-            ),
-            child: Text(
-              meLabel,
-              style: BankTokens.labelSmall.copyWith(color: accent),
-              maxLines: 1,
-            ),
-          ),
-        ),
-      ],
+    return SizedBox(
+      width: size,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          emblem,
+          const SizedBox(height: BankTokens.space1),
+          BankTintChip(label: meLabel, color: accent),
+        ],
+      ),
     );
   }
 }
 
-/// Small success-coloured check badge marking a completed turn.
+/// Small check badge marking a completed turn, in the theme's own positive
+/// colour so it stays AA in dark mode.
 class _PaidBadge extends StatelessWidget {
   const _PaidBadge({
     required this.surface,
@@ -742,27 +764,39 @@ class _PaidBadge extends StatelessWidget {
   final Color surface;
   final IconData? icon;
 
+  /// The check glyph inside the bubble. Off the icon ladder on purpose: this
+  /// is a mark stamped inside a 16 px disc that already spends 4 px on its
+  /// surface ring, not an icon in its own right.
+  static const double _glyphSize = 10;
+
   @override
   Widget build(BuildContext context) {
+    final theme = BankThemeData.of(context);
+    final fill = theme.positiveBalance;
+    // A solid fill, so the check takes a plain black/white ink rather than
+    // the tinted-container ink: the dark-mode positive green is light enough
+    // that a white check on it falls under AA.
+    final ink = ThemeData.estimateBrightnessForColor(fill) == Brightness.dark
+        ? BankTokens.neutral0
+        : BankTokens.neutral950;
     return Container(
-      width: 16,
-      height: 16,
+      width: BankTokens.iconSmall,
+      height: BankTokens.iconSmall,
       decoration: BoxDecoration(
-        color: BankTokens.success,
+        color: fill,
         shape: BoxShape.circle,
-        border: Border.all(color: surface, width: 1.5),
+        border: Border.all(
+          color: surface,
+          width: BankTokens.hairlineWidth * 2,
+        ),
       ),
       alignment: Alignment.center,
-      child: Icon(
-        icon ?? Icons.check,
-        size: 10,
-        color: const Color(0xFFFFFFFF),
-      ),
+      child: Icon(icon ?? Icons.check, size: _glyphSize, color: ink),
     );
   }
 }
 
-/// Pending-tinted pill showing the user's outstanding contribution.
+/// Pending-tinted chip showing the user's outstanding contribution.
 class _DuePill extends StatelessWidget {
   const _DuePill({
     required this.label,
@@ -775,29 +809,22 @@ class _DuePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: BankTokens.pending.withValues(alpha: 0.14),
-        borderRadius: theme.chipRadius,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: BankTokens.space3,
-          vertical: BankTokens.space1,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '$label ',
-              style: BankTokens.labelMedium.copyWith(color: BankTokens.pending),
-            ),
-            BankBalanceText(
-              money: amount,
-              style: theme.numeralSmall.copyWith(color: BankTokens.pending),
-            ),
-          ],
-        ),
+    final ink = BankTintChip.inkFor(theme, theme.pending);
+    return BankTintChip(
+      color: theme.pending,
+      semanticLabel: label,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$label ',
+            style: BankTokens.caption.copyWith(color: ink),
+          ),
+          BankBalanceText(
+            money: amount,
+            style: theme.numeralSmall.copyWith(color: ink),
+          ),
+        ],
       ),
     );
   }

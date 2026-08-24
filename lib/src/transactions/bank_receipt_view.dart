@@ -5,13 +5,20 @@ import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/button_text_style.dart';
 import '../../src/theme/tokens.dart';
 import '../common/bank_format_context.dart';
+import '../common/bank_surface_depth.dart';
 
 /// Shareable receipt layout. The package renders the view;
 /// the host app wires up PDF generation or share-sheet logic.
 ///
 /// Wrap in a [RepaintBoundary] and call `toImage()` for PDF export.
+///
+/// Unlike every other surface in the kit, the receipt does **not** invert in
+/// dark themes: it is a printed artefact, so it keeps printing on light
+/// stock (see [paperFor]) and inks itself from the *paper*, never from the
+/// ambient theme's on-surface roles.
 class BankReceiptView extends StatelessWidget {
   final Transaction transaction;
   final String? fromAccountName;
@@ -30,14 +37,20 @@ class BankReceiptView extends StatelessWidget {
   /// [BankTokens.radiusMedium].
   final BorderRadius? radius;
 
-  /// Overrides the paper color. Defaults to white.
+  /// Overrides the paper color. Defaults to [paperFor] — the brand's own
+  /// receipt stock.
+  ///
+  /// Every ink on the receipt is derived from the resolved paper's
+  /// brightness, so a dark override re-inks the whole receipt rather than
+  /// leaving dark text on a dark sheet.
   final Color? backgroundColor;
 
-  /// Overrides the drop shadow. Defaults to a soft black shadow;
-  /// pass const [] to flatten.
+  /// Overrides the drop shadow. Defaults to the brightness-aware resting
+  /// card shadow; pass const [] to flatten.
   final List<BoxShadow>? shadow;
 
-  /// Overrides the dashed divider color. Defaults to a light grey.
+  /// Overrides the dashed divider color. Defaults to the border-outline role
+  /// matching the paper's brightness.
   final Color? dividerColor;
 
   /// Overrides the export button background. Defaults to theme primary.
@@ -143,6 +156,52 @@ class BankReceiptView extends StatelessWidget {
     this.exportIcon,
   });
 
+  /// The receipt stock [theme] prints on.
+  ///
+  /// A receipt reads as a printed artefact, so the paper stays light in dark
+  /// themes instead of inverting with the rest of the UI — an inverted sheet
+  /// is what used to swallow the hero amount, because theme-driven ink was
+  /// being painted on a hardcoded white sheet. It is not a raw white constant
+  /// either: [BankThemeData.primary] is composited over [BankTokens.neutral50]
+  /// at [BankTokens.alphaFaint], so each preset prints on its own faintly
+  /// tinted stock while staying light enough for [BankTokens.inkStrong] to
+  /// clear WCAG AA.
+  ///
+  /// Exposed because a host exporting the view to PDF has to paint the same
+  /// stock behind the rasterised page.
+  static Color paperFor(BankThemeData theme) => Color.alphaBlend(
+        theme.primary.withValues(alpha: BankTokens.alphaFaint),
+        BankTokens.neutral50,
+      );
+
+  /// Minimum contrast a coloured ink must clear against the paper before it
+  /// is used instead of the neutral fallback (WCAG AA for body text).
+  static const double _minInkContrast = 4.5;
+
+  /// Width of the label column in the detail rows.
+  static const double _rowLabelWidth = 100;
+
+  /// Side of the square QR placeholder frame.
+  static const double _qrPlaceholderSize = 120;
+
+  /// [seed] when it clears [_minInkContrast] against [paper], else [fallback].
+  ///
+  /// A brand's semantic inks are tuned for its own surfaces, and the
+  /// dark-mode variants (emerald-400 and family) land near 3:1 on receipt
+  /// stock. Since the paper does not invert with the theme, the ink on it
+  /// cannot be chosen by the theme's brightness alone — it has to be
+  /// measured against the sheet actually being printed.
+  static Color _legibleOn(Color seed, Color paper, {required Color fallback}) =>
+      _contrastRatio(seed, paper) >= _minInkContrast ? seed : fallback;
+
+  static double _contrastRatio(Color a, Color b) {
+    final la = a.computeLuminance();
+    final lb = b.computeLuminance();
+    final hi = la > lb ? la : lb;
+    final lo = la > lb ? lb : la;
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
   String _categoryLabel(TransactionCategory cat) => switch (cat) {
         TransactionCategory.groceries => 'Groceries',
         TransactionCategory.dining => 'Dining',
@@ -184,11 +243,37 @@ class BankReceiptView extends StatelessWidget {
       showSign: isCredit,
     );
 
-    final amountColor =
-        isCredit ? bankTheme.positiveBalance : bankTheme.onSurface;
+    // Ink follows the *paper*, not the theme: the sheet stays light in dark
+    // mode, so onSurface ink would be white-on-white there.
+    final paper = backgroundColor ?? paperFor(bankTheme);
+    final paperBrightness = ThemeData.estimateBrightnessForColor(paper);
+    final onDarkPaper = paperBrightness == Brightness.dark;
+    final ink = onDarkPaper ? BankTokens.inkStrongDark : BankTokens.inkStrong;
+    final inkMuted =
+        onDarkPaper ? BankTokens.inkMutedDark : BankTokens.inkMuted;
+    final inkFaint =
+        onDarkPaper ? BankTokens.inkFaintDark : BankTokens.inkFaint;
+    final paperOutline =
+        onDarkPaper ? BankTokens.borderOutlineDark : BankTokens.borderOutline;
+
+    final amountColor = isCredit
+        ? _legibleOn(
+            bankTheme.positiveBalance,
+            paper,
+            fallback: onDarkPaper
+                ? BankTokens.positiveBalanceDark
+                : BankTokens.positiveBalance,
+          )
+        : ink;
+
+    final depth = BankSurfaceDepth.resolve(
+      bankTheme,
+      surfaceColor: paper,
+      shadow: shadow,
+    );
 
     final sectionPadding = padding ?? const EdgeInsets.all(BankTokens.space6);
-    final resolvedDividerColor = dividerColor ?? const Color(0xFFE5E7EB);
+    final resolvedDividerColor = dividerColor ?? paperOutline;
     final resolvedCategoryLabel =
         (categoryLabelBuilder ?? _categoryLabel)(transaction.category);
 
@@ -197,17 +282,11 @@ class BankReceiptView extends StatelessWidget {
           'Receipt for ${transaction.merchantName}, $formattedAmount',
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: backgroundColor ?? Colors.white,
+          color: paper,
           borderRadius:
               radius ?? BorderRadius.circular(BankTokens.radiusMedium),
-          boxShadow: shadow ??
-              [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+          boxShadow: depth.shadow,
+          border: depth.border,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -224,14 +303,14 @@ class BankReceiptView extends StatelessWidget {
                   Text(
                     titleText,
                     style: BankTokens.headlineMedium
-                        .copyWith(color: const Color(0xFF111111))
+                        .copyWith(color: ink)
                         .merge(titleStyle),
                   ),
                   const SizedBox(height: BankTokens.space1),
                   Text(
                     BankDateFormatter.formatLong(transaction.settledAt),
                     style: BankTokens.bodySmall
-                        .copyWith(color: const Color(0xFF6B7280))
+                        .copyWith(color: inkMuted)
                         .merge(subtitleStyle),
                   ),
                   const SizedBox(height: BankTokens.space6),
@@ -239,7 +318,7 @@ class BankReceiptView extends StatelessWidget {
                   Text(
                     transaction.merchantName,
                     style: BankTokens.labelLarge
-                        .copyWith(color: const Color(0xFF374151))
+                        .copyWith(color: inkMuted)
                         .merge(merchantStyle),
                     textAlign: TextAlign.center,
                   ),
@@ -270,6 +349,8 @@ class BankReceiptView extends StatelessWidget {
                       value: fromAccountName!,
                       labelStyle: rowLabelStyle,
                       valueStyle: rowValueStyle,
+                      labelColor: inkMuted,
+                      valueColor: ink,
                     ),
                   if (toName != null)
                     _ReceiptRow(
@@ -277,6 +358,8 @@ class BankReceiptView extends StatelessWidget {
                       value: toName!,
                       labelStyle: rowLabelStyle,
                       valueStyle: rowValueStyle,
+                      labelColor: inkMuted,
+                      valueColor: ink,
                     ),
                   if (referenceNumber != null)
                     _ReceiptRow(
@@ -284,18 +367,24 @@ class BankReceiptView extends StatelessWidget {
                       value: referenceNumber!,
                       labelStyle: rowLabelStyle,
                       valueStyle: rowValueStyle,
+                      labelColor: inkMuted,
+                      valueColor: ink,
                     ),
                   _ReceiptRow(
                     label: categoryLabel,
                     value: resolvedCategoryLabel,
                     labelStyle: rowLabelStyle,
                     valueStyle: rowValueStyle,
+                    labelColor: inkMuted,
+                    valueColor: ink,
                   ),
                   _ReceiptRow(
                     label: statusRowLabel,
                     value: _statusLabel(transaction.status, scope),
                     labelStyle: rowLabelStyle,
                     valueStyle: rowValueStyle,
+                    labelColor: inkMuted,
+                    valueColor: ink,
                   ),
                   if (transaction.reference != null)
                     _ReceiptRow(
@@ -303,6 +392,8 @@ class BankReceiptView extends StatelessWidget {
                       value: transaction.reference!,
                       labelStyle: rowLabelStyle,
                       valueStyle: rowValueStyle,
+                      labelColor: inkMuted,
+                      valueColor: ink,
                     ),
                 ],
               ),
@@ -317,12 +408,15 @@ class BankReceiptView extends StatelessWidget {
               child: Column(
                 children: [
                   Container(
-                    width: 120,
-                    height: 120,
+                    width: _qrPlaceholderSize,
+                    height: _qrPlaceholderSize,
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: const Color(0xFFD1D5DB),
-                        width: 1.5,
+                        color: paperOutline,
+                        // Matches Border.all's default today; keep the token
+                        // as the source of truth for hairline geometry.
+                        // ignore: avoid_redundant_argument_values
+                        width: BankTokens.hairlineWidth,
                       ),
                       borderRadius:
                           BorderRadius.circular(BankTokens.radiusSmall),
@@ -332,15 +426,13 @@ class BankReceiptView extends StatelessWidget {
                       children: [
                         Icon(
                           qrIcon ?? BankIcons.scan,
-                          size: 32,
-                          color: const Color(0xFF9CA3AF),
+                          size: BankTokens.iconXLarge,
+                          color: inkFaint,
                         ),
                         const SizedBox(height: BankTokens.space1),
                         Text(
                           qrLabel,
-                          style: BankTokens.bodySmall.copyWith(
-                            color: const Color(0xFF9CA3AF),
-                          ),
+                          style: BankTokens.bodySmall.copyWith(color: inkFaint),
                         ),
                       ],
                     ),
@@ -355,7 +447,7 @@ class BankReceiptView extends StatelessWidget {
                         icon: Icon(
                           exportIcon ?? BankIcons.share,
                           color: bankTheme.onPrimary,
-                          size: 18,
+                          size: BankTokens.iconMedium,
                         ),
                         label: Text(
                           exportLabel,
@@ -365,6 +457,7 @@ class BankReceiptView extends StatelessWidget {
                         ),
                         style: FilledButton.styleFrom(
                           backgroundColor: accentColor ?? bankTheme.primary,
+                          textStyle: bankButtonTextStyle(context),
                           minimumSize: const Size(
                             double.infinity,
                             BankTokens.minTapTarget,
@@ -396,9 +489,17 @@ class _ReceiptRow extends StatelessWidget {
   final TextStyle? labelStyle;
   final TextStyle? valueStyle;
 
+  /// Ink for the label column, resolved from the paper's brightness.
+  final Color labelColor;
+
+  /// Ink for the value column, resolved from the paper's brightness.
+  final Color valueColor;
+
   const _ReceiptRow({
     required this.label,
     required this.value,
+    required this.labelColor,
+    required this.valueColor,
     this.labelStyle,
     this.valueStyle,
   });
@@ -406,16 +507,16 @@ class _ReceiptRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: BankTokens.space3),
+      padding: const EdgeInsetsDirectional.only(bottom: BankTokens.space3),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100,
+            width: BankReceiptView._rowLabelWidth,
             child: Text(
               label,
               style: BankTokens.bodySmall
-                  .copyWith(color: const Color(0xFF6B7280))
+                  .copyWith(color: labelColor)
                   .merge(labelStyle),
             ),
           ),
@@ -424,7 +525,7 @@ class _ReceiptRow extends StatelessWidget {
             child: Text(
               value,
               style: BankTokens.bodyMedium
-                  .copyWith(color: const Color(0xFF111111))
+                  .copyWith(color: valueColor)
                   .merge(valueStyle),
               textAlign: TextAlign.end,
             ),

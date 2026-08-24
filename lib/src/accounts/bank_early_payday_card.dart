@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_control_theme.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
@@ -336,10 +337,12 @@ class BankEarlyPaydayCard extends StatelessWidget {
                 height: BankTokens.minTapTarget,
                 child: Semantics(
                   label: title,
-                  child: Switch(
-                    value: enabled,
-                    onChanged: onChanged,
-                    activeThumbColor: accent,
+                  child: SwitchTheme(
+                    data: BankControlTheme.switchTheme(theme, accent: accent),
+                    child: Switch(
+                      value: enabled,
+                      onChanged: onChanged,
+                    ),
                   ),
                 ),
               ),

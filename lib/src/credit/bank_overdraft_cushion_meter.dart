@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_control_theme.dart';
 import '../models/money.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
@@ -282,9 +283,15 @@ class BankOverdraftCushionMeter extends StatelessWidget {
                 // scaleDown keeps the switch at its natural size rather
                 // than inflating it to fill the tap target.
                 fit: BoxFit.scaleDown,
-                child: Switch(
-                  value: enabled,
-                  onChanged: onChanged,
+                child: SwitchTheme(
+                  data: BankControlTheme.switchTheme(
+                    theme,
+                    accent: accentColor ?? theme.primary,
+                  ),
+                  child: Switch(
+                    value: enabled,
+                    onChanged: onChanged,
+                  ),
                 ),
               ),
             ),

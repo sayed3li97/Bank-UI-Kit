@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 
-import '../../src/common/money_formatter.dart';
-import '../../src/models/models.dart';
-import '../../src/scope/bank_ui_scope.dart';
-import '../../src/theme/bank_theme_data.dart';
-import '../../src/theme/tokens.dart';
+import '../common/bank_emblem.dart';
+import '../common/bank_pressable.dart';
+import '../common/money_formatter.dart';
+import '../models/models.dart';
+import '../scope/bank_ui_scope.dart';
+import '../theme/bank_theme_data.dart';
+import '../theme/tokens.dart';
 
 /// Compact price + change-percentage row for a stock, ETF, or crypto asset.
 ///
-/// Displays a logo circle (network image or initials fallback), the asset
-/// symbol and name (unless [compact] is `true`), the current price, and a
-/// colour-coded change badge.
+/// Displays a [BankEmblem] logo circle (network image, symbol monogram
+/// otherwise), the asset symbol and name (unless [compact] is `true`), the
+/// current price, and a change chip.
 ///
-/// The change badge is a rounded pill:
-/// - Green background when [AssetQuote.isPositive] is `true`.
-/// - Red background when the change is negative.
+/// The change chip is a [BankTintChip] — the same height, padding, radius, and
+/// ink as every other chip in the kit — tinted from the gain colour when
+/// [AssetQuote.isPositive] is `true` and the loss colour otherwise. Both are
+/// resolved for the surface brightness, so the pill does not stay light-mode
+/// red on a dark watchlist.
 ///
 /// Tapping the row calls [onTap] when provided.
 class BankAssetPriceTicker extends StatelessWidget {
@@ -46,12 +50,14 @@ class BankAssetPriceTicker extends StatelessWidget {
   /// Merged over the price style (numeralSmall, onSurface).
   final TextStyle? amountStyle;
 
-  /// Overrides the positive badge tint. Defaults to
-  /// [BankTokens.investmentGain].
+  /// Overrides the positive tint used by both the price pulse and the change
+  /// chip. Defaults to [BankTokens.investmentGain], or
+  /// [BankTokens.investmentGainDark] on a dark surface.
   final Color? gainColor;
 
-  /// Overrides the negative badge tint. Defaults to
-  /// [BankTokens.investmentLoss].
+  /// Overrides the negative tint used by both the price pulse and the change
+  /// chip. Defaults to [BankTokens.investmentLoss], or
+  /// [BankTokens.investmentLossDark] on a dark surface.
   final Color? lossColor;
 
   /// Overrides the computed row semantics label.
@@ -80,6 +86,11 @@ class BankAssetPriceTicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final dark = _isDarkSurface(bankTheme);
+    final resolvedGain = gainColor ??
+        (dark ? BankTokens.investmentGainDark : BankTokens.investmentGain);
+    final resolvedLoss = lossColor ??
+        (dark ? BankTokens.investmentLossDark : BankTokens.investmentLoss);
 
     final formattedPrice = BankMoneyFormatter.format(
       amount: quote.price.amount,
@@ -98,160 +109,87 @@ class BankAssetPriceTicker extends StatelessWidget {
     final computedSemanticLabel = '${quote.symbol}: $formattedPrice, '
         '$changeSign$changePercentStr% today';
 
-    return Semantics(
-      label: semanticLabel ?? computedSemanticLabel,
-      button: onTap != null,
+    return BankPressable(
+      onTap: onTap,
+      borderRadius: radius ?? bankTheme.cardRadius,
+      semanticLabel: semanticLabel ?? computedSemanticLabel,
       excludeSemantics: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: radius ?? bankTheme.cardRadius,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: BankTokens.minTapTarget),
-          child: Padding(
-            padding: padding ??
-                const EdgeInsets.symmetric(
-                  horizontal: BankTokens.space4,
-                  vertical: BankTokens.space2,
-                ),
-            child: Row(
-              children: [
-                // ── Logo / initials circle ─────────────────────────────────
-                leading ??
-                    _AssetLogo(
-                      logoUrl: quote.logoUrl,
-                      symbol: quote.symbol,
-                      bankTheme: bankTheme,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: BankTokens.minTapTarget),
+        child: Padding(
+          padding: padding ??
+              const EdgeInsets.symmetric(
+                horizontal: BankTokens.space4,
+                vertical: BankTokens.space2,
+              ),
+          child: Row(
+            children: [
+              // ── Logo / monogram circle ─────────────────────────────────
+              leading ??
+                  BankEmblem(
+                    imageUrl: quote.logoUrl,
+                    initialsFrom: quote.symbol,
+                    tier: BankEmblemSize.medium,
+                  ),
+
+              const SizedBox(width: BankTokens.space3),
+
+              // ── Symbol + optional name ─────────────────────────────────
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      quote.symbol,
+                      style: BankTokens.labelLarge
+                          .copyWith(color: bankTheme.onSurface)
+                          .merge(titleStyle),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-
-                const SizedBox(width: BankTokens.space3),
-
-                // ── Symbol + optional name ─────────────────────────────────
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+                    if (!compact) ...[
+                      const SizedBox(height: BankTokens.hairlineWidth),
                       Text(
-                        quote.symbol,
-                        style: BankTokens.labelLarge
-                            .copyWith(color: bankTheme.onSurface)
-                            .merge(titleStyle),
+                        quote.name,
+                        style: BankTokens.bodySmall
+                            .copyWith(color: bankTheme.onSurfaceVariant)
+                            .merge(subtitleStyle),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (!compact) ...[
-                        const SizedBox(height: 1),
-                        Text(
-                          quote.name,
-                          style: BankTokens.bodySmall
-                              .copyWith(color: bankTheme.onSurfaceVariant)
-                              .merge(subtitleStyle),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
                     ],
-                  ),
-                ),
-
-                const SizedBox(width: BankTokens.space3),
-
-                // ── Price + change badge ───────────────────────────────────
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _AnimatedPrice(
-                      text: formattedPrice,
-                      value: quote.price.amount.toDouble(),
-                      style: bankTheme.numeralSmall
-                          .copyWith(color: bankTheme.onSurface)
-                          .merge(amountStyle),
-                      gainColor: gainColor ??
-                          (_isDarkSurface(bankTheme)
-                              ? BankTokens.investmentGainDark
-                              : BankTokens.investmentGain),
-                      lossColor: lossColor ??
-                          (_isDarkSurface(bankTheme)
-                              ? BankTokens.investmentLossDark
-                              : BankTokens.investmentLoss),
-                    ),
-                    const SizedBox(height: 4),
-                    _ChangeBadge(
-                      label: changeStr,
-                      positive: positive,
-                      gainColor: gainColor,
-                      lossColor: lossColor,
-                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+
+              const SizedBox(width: BankTokens.space3),
+
+              // ── Price + change badge ───────────────────────────────────
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _AnimatedPrice(
+                    text: formattedPrice,
+                    value: quote.price.amount.toDouble(),
+                    style: bankTheme.numeralSmall
+                        .copyWith(color: bankTheme.onSurface)
+                        .merge(amountStyle),
+                    gainColor: resolvedGain,
+                    lossColor: resolvedLoss,
+                  ),
+                  const SizedBox(height: BankTokens.space1),
+                  BankTintChip(
+                    label: changeStr,
+                    color: positive ? resolvedGain : resolvedLoss,
+                  ),
+                ],
+              ),
+            ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Private: asset logo with network image + fallback
-// ---------------------------------------------------------------------------
-
-class _AssetLogo extends StatefulWidget {
-  const _AssetLogo({
-    required this.logoUrl,
-    required this.symbol,
-    required this.bankTheme,
-  });
-
-  final String? logoUrl;
-  final String symbol;
-  final BankThemeData bankTheme;
-
-  @override
-  State<_AssetLogo> createState() => _AssetLogoState();
-}
-
-class _AssetLogoState extends State<_AssetLogo> {
-  bool _logoFailed = false;
-
-  @override
-  void didUpdateWidget(_AssetLogo oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.logoUrl != widget.logoUrl) {
-      _logoFailed = false;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final url = widget.logoUrl;
-
-    if (url != null && !_logoFailed) {
-      return CircleAvatar(
-        radius: 20,
-        backgroundColor: widget.bankTheme.surfaceVariant,
-        backgroundImage: BankUiScope.imageProviderFor(context, url),
-        onBackgroundImageError: (_, __) {
-          if (mounted) setState(() => _logoFailed = true);
-        },
-      );
-    }
-
-    // Fallback: first character of the symbol on a surface-variant circle.
-    final initial =
-        widget.symbol.isNotEmpty ? widget.symbol[0].toUpperCase() : '?';
-
-    return CircleAvatar(
-      radius: 20,
-      backgroundColor: widget.bankTheme.surfaceVariant,
-      child: Text(
-        initial,
-        style: BankTokens.labelMedium.copyWith(
-          color: widget.bankTheme.primary,
         ),
       ),
     );
@@ -367,48 +305,6 @@ class _AnimatedPriceState extends State<_AnimatedPrice>
           ),
         );
       },
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Private: change percentage pill badge
-// ---------------------------------------------------------------------------
-
-class _ChangeBadge extends StatelessWidget {
-  const _ChangeBadge({
-    required this.label,
-    required this.positive,
-    this.gainColor,
-    this.lossColor,
-  });
-
-  final String label;
-  final bool positive;
-  final Color? gainColor;
-  final Color? lossColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final fg = positive
-        ? gainColor ?? BankTokens.investmentGain
-        : lossColor ?? BankTokens.investmentLoss;
-    final bg = fg.withValues(alpha: 0.15);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: BankTokens.space2,
-        vertical: 2,
-      ),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-      ),
-      child: Text(
-        label,
-        style: BankTokens.labelSmall.copyWith(color: fg),
-        maxLines: 1,
-      ),
     );
   }
 }

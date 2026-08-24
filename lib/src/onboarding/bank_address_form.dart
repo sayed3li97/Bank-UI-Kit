@@ -102,6 +102,7 @@ class BankAddressForm extends StatefulWidget {
     this.line2Label = 'Address line 2 (optional)',
     this.cityLabel = 'City',
     this.regionLabel = 'State / region',
+    this.regionPlaceholder = 'Select',
     this.postalCodeLabel = 'Postal code',
     this.requiredError = 'Required',
     this.postalCodeError = 'Enter a valid postal code',
@@ -129,6 +130,11 @@ class BankAddressForm extends StatefulWidget {
   final String line2Label;
   final String cityLabel;
   final String regionLabel;
+
+  /// Placeholder shown in the US / CA region dropdown while nothing is
+  /// picked. An empty dropdown used to look identical to a filled one.
+  final String regionPlaceholder;
+
   final String postalCodeLabel;
   final String requiredError;
   final String postalCodeError;
@@ -379,6 +385,7 @@ class _BankAddressFormState extends State<BankAddressForm> {
               child: _hasRegionDropdown
                   ? _RegionDropdown(
                       label: widget.regionLabel,
+                      placeholder: widget.regionPlaceholder,
                       value: _regionDropdown,
                       options: _regionOptions,
                       errorText: _errorFor('region', _regionValid),
@@ -419,9 +426,16 @@ class _BankAddressFormState extends State<BankAddressForm> {
   }
 }
 
+/// The US / CA region picker.
+///
+/// A picked region is typographically a *value* — field ink, semibold —
+/// while the untouched field shows a muted, regular-weight placeholder, so
+/// "chosen" and "not yet chosen" are told apart by weight and ink rather
+/// than by two shades of grey.
 class _RegionDropdown extends StatelessWidget {
   const _RegionDropdown({
     required this.label,
+    required this.placeholder,
     required this.value,
     required this.options,
     required this.errorText,
@@ -430,6 +444,7 @@ class _RegionDropdown extends StatelessWidget {
   });
 
   final String label;
+  final String placeholder;
   final String? value;
   final List<String> options;
   final String? errorText;
@@ -438,6 +453,12 @@ class _RegionDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasError = errorText != null;
+    final border = OutlineInputBorder(
+      borderRadius: theme.buttonRadius,
+      borderSide: BorderSide(color: theme.outline),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -446,7 +467,7 @@ class _RegionDropdown extends StatelessWidget {
           child: Text(
             label,
             style: BankTokens.labelMedium.copyWith(
-              color: errorText != null ? BankTokens.danger : theme.onSurface,
+              color: hasError ? BankTokens.danger : theme.onSurface,
             ),
           ),
         ),
@@ -456,9 +477,33 @@ class _RegionDropdown extends StatelessWidget {
             for (final option in options)
               DropdownMenuItem(value: option, child: Text(option)),
           ],
+          // The closed field renders through this builder, so the committed
+          // weight lands on the chosen value without making every menu row
+          // shout.
+          selectedItemBuilder: (BuildContext context) => [
+            for (final option in options)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  option,
+                  style: BankTokens.bodyLarge.copyWith(
+                    color: theme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+          hint: Text(
+            placeholder,
+            style: BankTokens.bodyLarge.copyWith(
+              color: theme.onSurfaceVariant,
+            ),
+          ),
           onChanged: onChanged,
           style: BankTokens.bodyLarge.copyWith(color: theme.onSurface),
           dropdownColor: theme.surface,
+          iconEnabledColor: theme.onSurfaceVariant,
+          borderRadius: theme.buttonRadius,
           decoration: InputDecoration(
             filled: true,
             fillColor: theme.surface,
@@ -467,13 +512,27 @@ class _RegionDropdown extends StatelessWidget {
               horizontal: BankTokens.space4,
               vertical: BankTokens.space3,
             ),
-            border: OutlineInputBorder(
+            border: border,
+            enabledBorder: border,
+            // Matches BankTextField: focus and error both thicken the
+            // outline, so neither state rests on hue alone.
+            focusedBorder: OutlineInputBorder(
               borderRadius: theme.buttonRadius,
-              borderSide: BorderSide(color: theme.outline),
+              borderSide: BorderSide(
+                color: theme.primary,
+                width: BankTokens.focusRingWidth,
+              ),
             ),
-            enabledBorder: OutlineInputBorder(
+            errorBorder: OutlineInputBorder(
               borderRadius: theme.buttonRadius,
-              borderSide: BorderSide(color: theme.outline),
+              borderSide: const BorderSide(color: BankTokens.danger),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: theme.buttonRadius,
+              borderSide: const BorderSide(
+                color: BankTokens.danger,
+                width: BankTokens.focusRingWidth,
+              ),
             ),
           ),
         ),
@@ -568,6 +627,13 @@ class BankAddressPreview extends StatelessWidget {
             if (onEdit != null)
               TextButton(
                 onPressed: onEdit,
+                style: TextButton.styleFrom(
+                  // Material's 36 px default is below the kit's own floor.
+                  minimumSize: const Size(
+                    BankTokens.minTapTarget,
+                    BankTokens.minTapTarget,
+                  ),
+                ),
                 child: Text(
                   editLabel,
                   style: BankTokens.labelLarge

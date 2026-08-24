@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_control_theme.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
@@ -339,13 +340,14 @@ class _BankCreditLimitAdjusterState extends State<BankCreditLimitAdjuster> {
                   label: widget.semanticLabel ?? widget.title,
                   value: formattedSelected,
                   excludeSemantics: true,
-                  child: Slider(
-                    value: _hasRange ? _selected.clamp(_min, _max) : 0,
-                    min: _hasRange ? _min : 0,
-                    max: _hasRange ? _max : 1,
-                    activeColor: accent,
-                    inactiveColor: theme.surfaceVariant,
-                    onChanged: _busy || !_hasRange ? null : _onSliderChanged,
+                  child: SliderTheme(
+                    data: BankControlTheme.sliderTheme(theme, accent: accent),
+                    child: Slider(
+                      value: _hasRange ? _selected.clamp(_min, _max) : 0,
+                      min: _hasRange ? _min : 0,
+                      max: _hasRange ? _max : 1,
+                      onChanged: _busy || !_hasRange ? null : _onSliderChanged,
+                    ),
                   ),
                 ),
               ],

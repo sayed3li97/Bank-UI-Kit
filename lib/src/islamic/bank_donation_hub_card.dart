@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_amount_input_field.dart';
+import '../common/bank_control_theme.dart';
 import '../common/bank_emblem.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_surface_depth.dart';
@@ -435,12 +436,13 @@ class _BankDonationHubCardState extends State<BankDonationHubCard> {
                         ),
                       ),
                       const SizedBox(width: BankTokens.space2),
-                      Switch(
-                        value: widget.roundUpEnabled,
-                        onChanged: widget.onRoundUpChanged,
-                        activeTrackColor: accent,
-                        thumbColor:
-                            WidgetStatePropertyAll<Color>(theme.onPrimary),
+                      SwitchTheme(
+                        data:
+                            BankControlTheme.switchTheme(theme, accent: accent),
+                        child: Switch(
+                          value: widget.roundUpEnabled,
+                          onChanged: widget.onRoundUpChanged,
+                        ),
                       ),
                     ],
                   ),

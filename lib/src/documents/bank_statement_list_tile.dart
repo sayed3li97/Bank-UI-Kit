@@ -219,12 +219,34 @@ class BankStatementListTile extends StatelessWidget {
         BankDocumentType.receipt => BankIcons.receipt,
       };
 
-  static String _formatBytes(int bytes) {
-    if (bytes < 1000) return '$bytes B';
-    if (bytes < 1000000) {
-      return '${(bytes / 1000).toStringAsFixed(0)} KB';
+  /// Renders [bytes] as a human-readable file size: `'0 B'`, `'999 B'`,
+  /// `'1.5 KB'`, `'245 KB'`, `'1.0 MB'`, `'3.4 GB'`.
+  ///
+  /// Decimal (1000-based) units, matching what iOS, macOS, and every
+  /// storage vendor report — a customer comparing the figure against
+  /// their phone's own file listing has to see the same number.
+  ///
+  /// Two details the naive version gets wrong. Rounding is decided
+  /// *before* the unit is chosen, so 999,999 bytes reads `1.0 MB` and
+  /// never the nonsensical `1000 KB`; and a fraction digit is kept only
+  /// below 10, where it carries information (`1.5 KB` is meaningfully
+  /// different from `2 KB`, `245.3 KB` is not from `245 KB`).
+  ///
+  /// The number and its unit are joined by a no-break space so a size
+  /// never wraps mid-value at the end of a dense row.
+  static String formatFileSize(int bytes) {
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    var value = bytes.abs().toDouble();
+    var unit = 0;
+    // 999.5 rather than 1000: anything that would *print* as 1000 has
+    // already earned the next unit.
+    while (value >= 999.5 && unit < units.length - 1) {
+      value /= 1000;
+      unit++;
     }
-    return '${(bytes / 1000000).toStringAsFixed(1)} MB';
+    final fractionDigits = unit > 0 && value < 9.95 ? 1 : 0;
+    final sign = bytes < 0 ? '-' : '';
+    return '$sign${value.toStringAsFixed(fractionDigits)}\u00A0${units[unit]}';
   }
 
   @override
@@ -234,9 +256,13 @@ class BankStatementListTile extends StatelessWidget {
 
     final sizeSuffix = document.fileSizeBytes == null
         ? ''
-        : ' · ${_formatBytes(document.fileSizeBytes!)}';
+        : ' · ${formatFileSize(document.fileSizeBytes!)}';
+    // Statement periods and issue dates arrive as date-only values, which
+    // sit at midnight; printing their time claims a precision the document
+    // does not have ("30 June 2026, 00:00").
     final subtitle =
-        '${BankDateFormatter.formatLong(document.periodOrDate)}$sizeSuffix';
+        '${BankDateFormatter.formatLongOrDate(document.periodOrDate)}'
+        '$sizeSuffix';
 
     return Semantics(
       button: true,

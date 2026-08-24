@@ -48,8 +48,8 @@ enum BankProductItemVariant {
 /// Type-specific secondary content:
 /// - **current**: an "Available" caption next to the masked number.
 /// - **savings / isa**: the [rateLabel] slot (e.g. `'4.20%'`); its label
-///   respects `islamicFinanceMode` from [BankUiScope] (Interest Rate vs
-///   Profit Rate).
+///   respects `islamicFinanceMode` from [BankUiScope] (Interest rate vs
+///   Profit rate).
 /// - **credit**: when [creditLimit] and [outstanding] are supplied, a
 ///   thin progress bar of used vs available credit coloured with
 ///   [BankTokens.creditUsed] / [BankTokens.creditAvailable].

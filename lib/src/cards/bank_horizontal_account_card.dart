@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 
 import '../../src/cards/bank_card_network_badge.dart';
 import '../../src/cards/bank_flip_card.dart';
 import '../../src/common/bank_icon_spec.dart';
+import '../../src/common/bank_pressable.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
@@ -211,6 +215,10 @@ class BankHorizontalAccountCard extends StatelessWidget {
   /// Copy-action glyph on back-face rows. Defaults to [Icons.copy_outlined].
   final IconData? copyIcon;
 
+  /// Glyph shown on a copied row while the confirmation lasts. Defaults to
+  /// [BankIcons.success].
+  final IconData? copiedIcon;
+
   /// Glyph next to the copy hint. Defaults to [Icons.touch_app_outlined].
   final IconData? copyHintIcon;
 
@@ -226,9 +234,25 @@ class BankHorizontalAccountCard extends StatelessWidget {
   /// Copy hint shown on the back face. Defaults to 'Tap values to copy'.
   final String? copyHintLabel;
 
-  /// Verb used in the copy-icon semantics, read as `<verb> <row label>`.
+  /// Verb used in the copy-row semantics, read as `<verb> <row label>`.
   /// Defaults to 'Copy'.
   final String? copyActionLabel;
+
+  /// Builds the copy confirmation — shown in place of the copy hint and
+  /// announced to assistive technology. Defaults to `'<row label> copied'`.
+  ///
+  /// A clipboard write is invisible: without a confirmation the user cannot
+  /// tell a successful copy from a missed tap, and a screen-reader user gets
+  /// nothing at all (WCAG 4.1.3).
+  final String Function(String fieldLabel)? copiedFeedbackBuilder;
+
+  /// How long the copy confirmation stays up. Defaults to 1.5 s, matching
+  /// the rest of the kit's copy affordances.
+  final Duration? copyConfirmDuration;
+
+  /// Called after a back-face value is copied, with the row label and the
+  /// copied value — for host-side haptics, toasts, or analytics.
+  final void Function(String fieldLabel, String value)? onCopied;
 
   /// Overrides the card semantics label. Defaults to
   /// `Account card: <account name>, balance <balance>`.
@@ -269,12 +293,16 @@ class BankHorizontalAccountCard extends StatelessWidget {
     this.copyHintStyle,
     this.typeIcon,
     this.copyIcon,
+    this.copiedIcon,
     this.copyHintIcon,
     this.ibanLabel,
     this.sortCodeLabel,
     this.currencyLabel,
     this.copyHintLabel,
     this.copyActionLabel,
+    this.copiedFeedbackBuilder,
+    this.copyConfirmDuration,
+    this.onCopied,
     this.semanticLabel,
   });
 
@@ -535,137 +563,8 @@ class BankHorizontalAccountCard extends StatelessWidget {
 
   // ── Back face ─────────────────────────────────────────────────────────────
 
-  Widget _buildBack(BuildContext context, BankThemeData bankTheme) {
-    final primary = foregroundColor ?? bankTheme.onPrimary;
-    final secondary = primary.withValues(alpha: 0.72);
-    final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space5);
-    final resolvedCopyIcon = copyIcon ?? Icons.copy_outlined;
-    final resolvedCopyAction = copyActionLabel ?? 'Copy';
-    final dec = _buildDecoration(bankTheme);
-    final holder = cardholderName ?? account.name;
-    final cornerClearance = _cornerClearance(context, resolvedPadding);
-
-    Widget detailRow({
-      required String label,
-      required String value,
-      bool copyable = false,
-    }) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: BankTokens.labelSmall
-                .copyWith(color: secondary)
-                .merge(detailLabelStyle),
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                value,
-                style: BankTokens.bodySmall.copyWith(
-                  color: primary,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: value.contains(' ') ? 1.0 : 0,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ).merge(detailValueStyle),
-                textDirection: TextDirection.ltr,
-              ),
-              if (copyable) ...[
-                const SizedBox(width: BankTokens.space1),
-                GestureDetector(
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: value));
-                  },
-                  child: Icon(
-                    resolvedCopyIcon,
-                    size: 14,
-                    color: secondary,
-                    semanticLabel: '$resolvedCopyAction $label',
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
-      );
-    }
-
-    return Container(
-      width: width,
-      height: height,
-      decoration: dec,
-      clipBehavior: Clip.antiAlias,
-      child: _withPattern(
-        Padding(
-          padding: resolvedPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                // Keep a long cardholder name clear of the built-in flip
-                // button at the top-end corner.
-                padding: EdgeInsetsDirectional.only(end: cornerClearance),
-                child: Text(
-                  holder,
-                  style: BankTokens.labelLarge
-                      .copyWith(color: primary)
-                      .merge(titleStyle),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ),
-              const Spacer(),
-              if (account.ibanOrAccountNumber != null) ...[
-                detailRow(
-                  label: ibanLabel ?? 'IBAN / Account',
-                  value: account.ibanOrAccountNumber!,
-                  copyable: true,
-                ),
-                const SizedBox(height: BankTokens.space3),
-              ],
-              if (account.sortCodeOrBic != null) ...[
-                detailRow(
-                  label: sortCodeLabel ?? 'Sort Code / BIC',
-                  value: account.sortCodeOrBic!,
-                  copyable: true,
-                ),
-                const SizedBox(height: BankTokens.space3),
-              ],
-              detailRow(
-                label: currencyLabel ?? 'Currency',
-                value: account.currencyCode,
-              ),
-              const Spacer(),
-              // Tap-to-copy hint
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Icon(
-                    copyHintIcon ?? Icons.touch_app_outlined,
-                    size: 12,
-                    color: secondary,
-                  ),
-                  const SizedBox(width: BankTokens.space1),
-                  Text(
-                    copyHintLabel ?? 'Tap values to copy',
-                    style: BankTokens.labelSmall
-                        .copyWith(
-                          color: secondary,
-                          fontSize: 10,
-                        )
-                        .merge(copyHintStyle),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        bankTheme,
-      ),
-    );
-  }
+  Widget _buildBack(BuildContext context, BankThemeData bankTheme) =>
+      _CardBackFace(card: this, bankTheme: bankTheme);
 
   // ── Build ─────────────────────────────────────────────────────────────────
 
@@ -696,6 +595,254 @@ class BankHorizontalAccountCard extends StatelessWidget {
         frontBuilder: (ctx, _) => _buildFront(ctx, bankTheme),
         backBuilder: (ctx, _) => _buildBack(ctx, bankTheme),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Back face
+// ---------------------------------------------------------------------------
+
+/// The details face of [BankHorizontalAccountCard].
+///
+/// Stateful because the copy confirmation lives here: a copied row and the
+/// hint slot at the foot of the card have to agree on which field was just
+/// written to the clipboard.
+class _CardBackFace extends StatefulWidget {
+  const _CardBackFace({required this.card, required this.bankTheme});
+
+  final BankHorizontalAccountCard card;
+  final BankThemeData bankTheme;
+
+  @override
+  State<_CardBackFace> createState() => _CardBackFaceState();
+}
+
+class _CardBackFaceState extends State<_CardBackFace> {
+  /// Matches the confirmation window of the kit's other copy affordances
+  /// (`BankAccountNumberText`, `BankSummaryStack`).
+  static const Duration _confirmFor = Duration(milliseconds: 1500);
+
+  Timer? _resetTimer;
+  String? _copiedField;
+
+  @override
+  void dispose() {
+    _resetTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _copy(String label, String value) async {
+    final card = widget.card;
+    await Clipboard.setData(ClipboardData(text: value));
+    if (!mounted) return;
+    setState(() => _copiedField = label);
+    card.onCopied?.call(label, value);
+    // The visible swap is invisible to a screen reader, so the same sentence
+    // is spoken; without it a copy is silent to assistive tech.
+    unawaited(
+      SemanticsService.sendAnnouncement(
+        View.of(context),
+        _feedbackFor(label),
+        Directionality.of(context),
+      ),
+    );
+    _resetTimer?.cancel();
+    _resetTimer = Timer(card.copyConfirmDuration ?? _confirmFor, () {
+      if (mounted) setState(() => _copiedField = null);
+    });
+  }
+
+  String _feedbackFor(String label) =>
+      widget.card.copiedFeedbackBuilder?.call(label) ?? '$label copied';
+
+  @override
+  Widget build(BuildContext context) {
+    final card = widget.card;
+    final bankTheme = widget.bankTheme;
+    final primary = card.foregroundColor ?? bankTheme.onPrimary;
+    final secondary = primary.withValues(alpha: BankTokens.alphaSecondaryInk);
+    final resolvedPadding =
+        card.padding ?? const EdgeInsets.all(BankTokens.space5);
+    final holder = card.cardholderName ?? card.account.name;
+    final cornerClearance = card._cornerClearance(context, resolvedPadding);
+    final copiedField = _copiedField;
+
+    return Container(
+      width: card.width,
+      height: card.height,
+      decoration: card._buildDecoration(bankTheme),
+      clipBehavior: Clip.antiAlias,
+      child: card._withPattern(
+        Padding(
+          padding: resolvedPadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                // Keep a long cardholder name clear of the built-in flip
+                // button at the top-end corner.
+                padding: EdgeInsetsDirectional.only(end: cornerClearance),
+                child: Text(
+                  holder,
+                  style: BankTokens.labelLarge
+                      .copyWith(color: primary)
+                      .merge(card.titleStyle),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+              const Spacer(),
+              if (card.account.ibanOrAccountNumber != null)
+                _detailRow(
+                  label: card.ibanLabel ?? 'IBAN / Account',
+                  value: card.account.ibanOrAccountNumber!,
+                  primary: primary,
+                  secondary: secondary,
+                  copyable: true,
+                ),
+              if (card.account.sortCodeOrBic != null)
+                _detailRow(
+                  label: card.sortCodeLabel ?? 'Sort Code / BIC',
+                  value: card.account.sortCodeOrBic!,
+                  primary: primary,
+                  secondary: secondary,
+                  copyable: true,
+                ),
+              _detailRow(
+                label: card.currencyLabel ?? 'Currency',
+                value: card.account.currencyCode,
+                primary: primary,
+                secondary: secondary,
+              ),
+              const Spacer(),
+              _hintRow(primary, secondary, copiedField),
+            ],
+          ),
+        ),
+        bankTheme,
+      ),
+    );
+  }
+
+  /// One `label … value` row. Copyable rows are the whole row, not the
+  /// glyph: the 14 px icon was a fifth of the 44 px minimum, and the card's
+  /// own hint already promises that tapping the *value* copies it.
+  Widget _detailRow({
+    required String label,
+    required String value,
+    required Color primary,
+    required Color secondary,
+    bool copyable = false,
+  }) {
+    final card = widget.card;
+    final copied = copyable && _copiedField == label;
+
+    final row = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: BankTokens.labelSmall
+              .copyWith(color: secondary)
+              .merge(card.detailLabelStyle),
+        ),
+        Flexible(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                // A full 22-character IBAN is wider than a card face on a
+                // small phone. Scaling it down keeps every character on the
+                // card; ellipsis or a clip would silently drop digits the
+                // user is about to copy.
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: Text(
+                    value,
+                    style: BankTokens.bodySmall.copyWith(
+                      color: primary,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: value.contains(' ') ? 1.0 : 0,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ).merge(card.detailValueStyle),
+                    textDirection: TextDirection.ltr,
+                  ),
+                ),
+              ),
+              if (copyable) ...[
+                const SizedBox(width: BankTokens.space1),
+                Icon(
+                  copied
+                      ? (card.copiedIcon ?? BankIcons.success)
+                      : (card.copyIcon ?? Icons.copy_outlined),
+                  size: BankTokens.iconXSmall,
+                  // Full-strength foreground on confirmation: the state
+                  // change reads as a glyph swap plus a lift in weight,
+                  // never as colour alone.
+                  color: copied ? primary : secondary,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+
+    // Read-only rows stay at their intrinsic height: the card face is a
+    // fixed ISO-7810 rectangle, and spending 44 px on a row nothing taps
+    // is what pushes the block into overflow on a 320 pt screen.
+    if (!copyable) return row;
+
+    return BankPressable(
+      onTap: () => _copy(label, value),
+      borderRadius: widget.bankTheme.buttonRadius,
+      // The card face is a saturated brand fill, so the state layer inks in
+      // the face's own foreground rather than the ambient onSurface.
+      overlayColor: primary,
+      // One sentence for the whole row: naming the action, the field, and
+      // the value beats a button label followed by the same two strings
+      // again as separate child nodes.
+      semanticLabel: '${card.copyActionLabel ?? 'Copy'} $label, $value',
+      excludeSemantics: true,
+      child: SizedBox(
+        height: BankTokens.minTapTarget,
+        child: Center(child: row),
+      ),
+    );
+  }
+
+  /// The foot of the card: the tap-to-copy hint, replaced by the copy
+  /// confirmation while one is live.
+  Widget _hintRow(Color primary, Color secondary, String? copiedField) {
+    final card = widget.card;
+    final copied = copiedField != null;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Icon(
+          copied
+              ? (card.copiedIcon ?? BankIcons.success)
+              : (card.copyHintIcon ?? Icons.touch_app_outlined),
+          size: BankTokens.iconXSmall,
+          color: copied ? primary : secondary,
+        ),
+        const SizedBox(width: BankTokens.space1),
+        Flexible(
+          child: Text(
+            copied
+                ? _feedbackFor(copiedField)
+                : (card.copyHintLabel ?? 'Tap values to copy'),
+            style: BankTokens.caption
+                .copyWith(color: copied ? primary : secondary)
+                .merge(card.copyHintStyle),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

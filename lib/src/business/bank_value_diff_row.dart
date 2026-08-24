@@ -9,14 +9,37 @@ import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
 /// Layout variant for [BankValueDiffRow].
+///
+/// Both variants speak the same grammar — old value, arrow, new value. They
+/// differ only in where that phrase sits relative to the field label, which
+/// is a density decision, not a change in what the reader is being told.
 enum BankValueDiffStyle {
-  /// Old and new values on one line: the old value struck through in a
-  /// secondary colour, followed by an arrow icon and the new value.
+  /// Field label and the change phrase share one line, the phrase pushed to
+  /// the trailing edge.
   inline,
 
-  /// Old and new values on two lines, each introduced by a microlabel
-  /// (`'Previous'` / `'New'` by default).
+  /// The change phrase sits on its own line beneath the field label, for
+  /// narrow columns and long values.
   stacked,
+}
+
+/// What a change *means* to the person reviewing it.
+///
+/// Drives the colour of the change marker (the arrow) — and only that
+/// marker. The new value itself is content, not a verdict, so it stays in
+/// [BankThemeData.onSurface]: painting it amber turned every routine limit
+/// edit into something that looked like a warning about the number itself.
+enum BankValueDiffMeaning {
+  /// The change is a fact. The default: most edits are neither good nor bad.
+  neutral,
+
+  /// The change is in the reviewer's favour (a fee going down, a rate
+  /// improving).
+  favourable,
+
+  /// The change deserves scrutiny before approval — more exposure, weaker
+  /// control, a limit going up.
+  adverse,
 }
 
 /// An old-vs-new change display for approval and profile-change review
@@ -29,20 +52,21 @@ enum BankValueDiffStyle {
 /// Provide the previous value via [oldValue] *or* [oldMoney], and the new
 /// value via [newValue] *or* [newMoney]:
 ///
-/// - Both present: rendered per [style]: [BankValueDiffStyle.inline]
-///   strikes through the old value and points an arrow at the new one;
-///   [BankValueDiffStyle.stacked] lists them on two microlabelled lines.
+/// - Both present: the old value struck through, an arrow, then the new
+///   value — one grammar, in both [BankValueDiffStyle] variants.
 /// - Old absent: the field was **added**: the new value is shown with a
 ///   positive `'+ Added'` chip.
 /// - New absent: the field was **removed**: the old value is shown struck
-///   through with a danger `'– Removed'` chip.
+///   through with a `'– Removed'` chip in the theme's negative colour.
 ///
 /// Monetary values render through [BankBalanceText] (small tier), so they
 /// mask automatically when privacy mode is active on the ambient
-/// [BankUiScope]. When [highlightIncrease] is `true` and both sides are
-/// [Money] in the same currency, an increased new value is tinted with
-/// [BankTokens.warning]: use this for limits and amounts where an
-/// increase deserves reviewer attention.
+/// [BankUiScope].
+///
+/// Colour encodes *meaning*, and only on the arrow — see
+/// [BankValueDiffMeaning] and [meaning]. [highlightIncrease] is the
+/// shorthand for the common case: an increase between two [Money] values in
+/// the same currency reads as [BankValueDiffMeaning.adverse].
 ///
 /// Assistive technologies announce the row as
 /// `'label changed from X to Y'` (or the added/removed equivalent);
@@ -78,17 +102,30 @@ class BankValueDiffRow extends StatelessWidget {
   /// How the old and new values are laid out when both are present.
   final BankValueDiffStyle style;
 
+  /// What this change means to the reviewer; colours the arrow.
+  ///
+  /// Defaults to [BankValueDiffMeaning.neutral]. Set it whenever the host
+  /// knows the direction of travel — [highlightIncrease] only ever infers
+  /// [BankValueDiffMeaning.adverse], and only for same-currency [Money].
+  final BankValueDiffMeaning meaning;
+
   /// When `true` and both [oldMoney] and [newMoney] are provided in the
-  /// same currency, a new value greater than the old one is tinted with
-  /// [BankTokens.warning]. Enable for limit/amount fields.
+  /// same currency, a new value greater than the old one is treated as
+  /// [BankValueDiffMeaning.adverse]. Enable for limit/amount fields.
+  ///
+  /// An explicit [meaning] wins over this inference.
   final bool highlightIncrease;
 
-  /// Microlabel above/next to the previous value in
-  /// [BankValueDiffStyle.stacked].
+  /// Retained for source compatibility; no longer rendered.
+  ///
+  /// The row settled on a single grammar — old value, arrow, new value — in
+  /// both [BankValueDiffStyle] variants, so `'Previous'` / `'New'`
+  /// microlabels no longer appear anywhere. Keeping the parameters means
+  /// existing localised call sites still compile.
   final String previousLabel;
 
-  /// Microlabel above/next to the new value in
-  /// [BankValueDiffStyle.stacked].
+  /// Retained for source compatibility; no longer rendered. See
+  /// [previousLabel].
   final String newLabel;
 
   /// Chip text (minus the `'+ '` prefix) for added fields.
@@ -113,11 +150,13 @@ class BankValueDiffRow extends StatelessWidget {
   /// positiveBalance.
   final Color? addedColor;
 
-  /// Overrides the "removed" chip colour. Defaults to [BankTokens.danger].
+  /// Overrides the "removed" chip colour. Defaults to the theme
+  /// negativeBalance, which — unlike the raw [BankTokens.danger] constant —
+  /// is already the right red for the ambient brightness.
   final Color? removedColor;
 
-  /// Overrides the tint applied to an increased new value when
-  /// [highlightIncrease] is on. Defaults to [BankTokens.warning].
+  /// Overrides the arrow tint for an [BankValueDiffMeaning.adverse] change.
+  /// Defaults to the theme pending colour.
   final Color? increaseColor;
 
   /// Merged over the field-label style
@@ -139,6 +178,7 @@ class BankValueDiffRow extends StatelessWidget {
     this.oldMoney,
     this.newMoney,
     this.style = BankValueDiffStyle.inline,
+    this.meaning = BankValueDiffMeaning.neutral,
     this.highlightIncrease = false,
     this.previousLabel = 'Previous',
     this.newLabel = 'New',
@@ -179,6 +219,12 @@ class BankValueDiffRow extends StatelessWidget {
       newMoney != null &&
       oldMoney!.currencyCode == newMoney!.currencyCode &&
       newMoney!.amount > oldMoney!.amount;
+
+  /// [meaning], or the one [highlightIncrease] infers from the two amounts.
+  BankValueDiffMeaning get _meaning =>
+      meaning != BankValueDiffMeaning.neutral || !_isIncrease
+          ? meaning
+          : BankValueDiffMeaning.adverse;
 
   String _describe(
     BankUiScopeData scope, {
@@ -233,15 +279,16 @@ class BankValueDiffRow extends StatelessWidget {
   }
 
   Widget _buildNewValue(BankThemeData theme) {
-    final color =
-        _isIncrease ? (increaseColor ?? BankTokens.warning) : theme.onSurface;
+    // Always onSurface: the new value is what the field will *be*, and a
+    // number is not a warning. Whether the change deserves attention is the
+    // arrow's job — see [_changeColor].
     if (newMoney != null) {
       return BankBalanceText(
         money: newMoney!,
         size: BankBalanceSize.small,
         style: theme.numeralSmall
             .copyWith(
-              color: color,
+              color: theme.onSurface,
               fontWeight: FontWeight.w600,
             )
             .merge(newValueStyle),
@@ -258,10 +305,45 @@ class BankValueDiffRow extends StatelessWidget {
     );
   }
 
+  /// The ink of the change marker, by [_meaning].
+  Color _changeColor(BankThemeData theme) => switch (_meaning) {
+        BankValueDiffMeaning.neutral => theme.onSurfaceVariant,
+        BankValueDiffMeaning.favourable => theme.positiveBalance,
+        // Theme pending, not the raw BankTokens.warning constant: the token
+        // is the light-surface amber and drops below AA on a dark card.
+        BankValueDiffMeaning.adverse => increaseColor ?? theme.pending,
+      };
+
+  /// The arrow, bundled with the value it points at.
+  ///
+  /// Kept in one un-splittable [Row] because the cluster wraps: an arrow
+  /// stranded at the end of a line points at nothing and reads as a stray
+  /// glyph. The value is [Flexible] (loose, in a min-size row, so it is also
+  /// safe under unbounded width) — the bundle must yield to a narrow column
+  /// rather than run off the end of it.
+  Widget _buildChangeMarkerAndNewValue(
+    BuildContext context,
+    BankThemeData theme,
+  ) {
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          arrowIcon ?? (isRtl ? BankIcons.back : BankIcons.forward),
+          size: BankTokens.iconXSmall,
+          color: _changeColor(theme),
+        ),
+        const SizedBox(width: BankTokens.space2),
+        Flexible(child: _buildNewValue(theme)),
+      ],
+    );
+  }
+
   Widget _buildChip(BankThemeData theme, String text, Color color) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: color.withValues(alpha: BankTokens.alphaMuted),
         borderRadius: theme.chipRadius,
       ),
       child: Padding(
@@ -278,16 +360,10 @@ class BankValueDiffRow extends StatelessWidget {
   }
 
   List<Widget> _buildValueCluster(BuildContext context, BankThemeData theme) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
     if (_hasOld && _hasNew) {
       return [
         _buildOldValue(theme),
-        Icon(
-          arrowIcon ?? (isRtl ? BankIcons.back : BankIcons.forward),
-          size: 14,
-          color: theme.onSurfaceVariant,
-        ),
-        _buildNewValue(theme),
+        _buildChangeMarkerAndNewValue(context, theme),
       ];
     }
     if (_hasNew) {
@@ -302,18 +378,26 @@ class BankValueDiffRow extends StatelessWidget {
     }
     return [
       _buildOldValue(theme),
-      _buildChip(theme, '– $removedLabel', removedColor ?? BankTokens.danger),
+      _buildChip(
+        theme,
+        '– $removedLabel',
+        removedColor ?? theme.negativeBalance,
+      ),
     ];
   }
 
   Widget _buildInline(BuildContext context, BankThemeData theme) {
     return Row(
       children: [
-        Text(
-          label,
-          style: BankTokens.bodySmall
-              .copyWith(color: theme.onSurfaceVariant)
-              .merge(labelStyle),
+        Flexible(
+          child: Text(
+            label,
+            style: BankTokens.bodySmall
+                .copyWith(color: theme.onSurfaceVariant)
+                .merge(labelStyle),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         const SizedBox(width: BankTokens.space4),
         Expanded(
@@ -332,74 +416,9 @@ class BankValueDiffRow extends StatelessWidget {
     );
   }
 
-  Widget _buildStackedLine(
-    BankThemeData theme,
-    String microlabel,
-    Widget value,
-  ) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 72,
-          child: Text(
-            microlabel,
-            style:
-                BankTokens.labelSmall.copyWith(color: theme.onSurfaceVariant),
-          ),
-        ),
-        const SizedBox(width: BankTokens.space2),
-        Expanded(
-          child: Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: value,
-          ),
-        ),
-      ],
-    );
-  }
-
+  /// The same value cluster as [_buildInline], moved under the field label
+  /// instead of beside it — a density variant, not a second grammar.
   Widget _buildStacked(BuildContext context, BankThemeData theme) {
-    final List<Widget> lines;
-    if (_hasOld && _hasNew) {
-      lines = [
-        _buildStackedLine(theme, previousLabel, _buildOldValue(theme)),
-        const SizedBox(height: BankTokens.space1),
-        _buildStackedLine(theme, newLabel, _buildNewValue(theme)),
-      ];
-    } else if (_hasNew) {
-      lines = [
-        Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: BankTokens.space2,
-          runSpacing: BankTokens.space1,
-          children: [
-            _buildChip(
-              theme,
-              '+ $addedLabel',
-              addedColor ?? theme.positiveBalance,
-            ),
-            _buildNewValue(theme),
-          ],
-        ),
-      ];
-    } else {
-      lines = [
-        Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: BankTokens.space2,
-          runSpacing: BankTokens.space1,
-          children: [
-            _buildChip(
-              theme,
-              '– $removedLabel',
-              removedColor ?? BankTokens.danger,
-            ),
-            _buildOldValue(theme),
-          ],
-        ),
-      ];
-    }
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,7 +430,12 @@ class BankValueDiffRow extends StatelessWidget {
               .merge(labelStyle),
         ),
         const SizedBox(height: BankTokens.space1),
-        ...lines,
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: BankTokens.space2,
+          runSpacing: BankTokens.space1,
+          children: _buildValueCluster(context, theme),
+        ),
       ],
     );
   }
@@ -466,6 +490,9 @@ class BankValueDiffItem {
   /// New monetary value. Mutually exclusive with [newValue].
   final Money? newMoney;
 
+  /// See [BankValueDiffRow.meaning].
+  final BankValueDiffMeaning meaning;
+
   /// See [BankValueDiffRow.highlightIncrease].
   final bool highlightIncrease;
 
@@ -479,6 +506,7 @@ class BankValueDiffItem {
     this.newValue,
     this.oldMoney,
     this.newMoney,
+    this.meaning = BankValueDiffMeaning.neutral,
     this.highlightIncrease = false,
     this.semanticLabel,
   })  : assert(
@@ -506,6 +534,7 @@ class BankValueDiffItem {
         other.newValue == newValue &&
         other.oldMoney == oldMoney &&
         other.newMoney == newMoney &&
+        other.meaning == meaning &&
         other.highlightIncrease == highlightIncrease &&
         other.semanticLabel == semanticLabel;
   }
@@ -517,6 +546,7 @@ class BankValueDiffItem {
         newValue,
         oldMoney,
         newMoney,
+        meaning,
         highlightIncrease,
         semanticLabel,
       );
@@ -674,6 +704,7 @@ class BankValueDiffList extends StatelessWidget {
           oldMoney: item.oldMoney,
           newMoney: item.newMoney,
           style: style,
+          meaning: item.meaning,
           highlightIncrease: item.highlightIncrease,
           previousLabel: previousLabel,
           newLabel: newLabel,

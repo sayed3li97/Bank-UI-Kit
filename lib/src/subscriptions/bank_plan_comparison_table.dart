@@ -51,10 +51,19 @@ class BankPlanFeature {
 
 /// Side-by-side plan tier comparison table.
 ///
-/// Horizontally scrollable when there are more than 3 tiers. Each tier header
-/// is tappable when [onSelectTier] is provided. The tier identified by
-/// [highlightedTierId] receives a primary-coloured 2px emphasis border.
-class BankPlanComparisonTable extends StatelessWidget {
+/// The table scrolls horizontally whenever its natural width (the label
+/// column plus one column per tier) exceeds the space it is given — tier
+/// *count* is a poor proxy for that, and going by it is how three wide
+/// columns used to clip off-screen in silence. While columns remain
+/// off-screen the corresponding edge fades out, so the row of tiers reads as
+/// continuing rather than ending; see [showEdgeFade].
+///
+/// Each tier header is tappable when [onSelectTier] is provided. The tier
+/// identified by [highlightedTierId] is framed by a closed
+/// [BankTokens.radiusMedium] emphasis border in [highlightColor], drawn as an
+/// overlay so the emphasised column keeps the exact geometry of its
+/// neighbours and its rows stay on the same baselines.
+class BankPlanComparisonTable extends StatefulWidget {
   final List<BankPlanTier> tiers;
   final String? highlightedTierId;
   final ValueChanged<BankPlanTier>? onSelectTier;
@@ -130,6 +139,19 @@ class BankPlanComparisonTable extends StatelessWidget {
   /// (`'Plan comparison table with <n> tiers'`).
   final String? semanticLabel;
 
+  /// Whether an edge fade marks the direction the table can still scroll in.
+  ///
+  /// Purely decorative and excluded from semantics — screen readers already
+  /// get the whole table. Set to `false` when the table sits on a patterned
+  /// or image background that [edgeFadeColor] cannot match.
+  final bool showEdgeFade;
+
+  /// The colour the edge fade ramps to. Defaults to the theme surface — the
+  /// tone a table is normally carded on. Set it to whatever is actually
+  /// behind the table when that differs, otherwise the fade reads as a
+  /// coloured bar instead of the content running out.
+  final Color? edgeFadeColor;
+
   const BankPlanComparisonTable({
     required this.tiers,
     super.key,
@@ -155,6 +177,8 @@ class BankPlanComparisonTable extends StatelessWidget {
     this.notIncludedSemanticsLabel = 'not included',
     this.partialSemanticsLabel = 'partially included',
     this.semanticLabel,
+    this.showEdgeFade = true,
+    this.edgeFadeColor,
   });
 
   static const double _columnWidth = 120;
@@ -162,65 +186,15 @@ class BankPlanComparisonTable extends StatelessWidget {
   static const double _rowHeight = 44;
   static const double _headerHeight = 120;
 
+  /// Stroke of the emphasis frame around the highlighted tier.
+  static const double _emphasisWidth = 2;
+
+  /// How far the edge fade reaches into the table.
+  static const double _edgeFadeWidth = BankTokens.space8;
+
   @override
-  Widget build(BuildContext context) {
-    final bankTheme = BankThemeData.of(context);
-    final scope = BankUiScope.of(context);
-    final needsScroll = tiers.length > 3;
-
-    final resolvedColumnWidth = columnWidth ?? _columnWidth;
-    final resolvedLabelColumnWidth = labelColumnWidth ?? _labelColumnWidth;
-    final resolvedRowHeight = rowHeight ?? _rowHeight;
-    final resolvedHeaderHeight = headerHeight ?? _headerHeight;
-    final resolvedHighlight = highlightColor ?? bankTheme.primary;
-
-    // Collect all unique feature labels preserving insertion order.
-    final allFeatures = _collectFeatures();
-
-    Widget table = Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Fixed label column
-        _LabelColumn(
-          features: allFeatures,
-          bankTheme: bankTheme,
-          headerHeight: resolvedHeaderHeight,
-          rowHeight: resolvedRowHeight,
-          labelColumnWidth: resolvedLabelColumnWidth,
-          labelStyle: featureLabelStyle,
-        ),
-        // Tier columns
-        ...tiers.map(
-          (tier) => _TierColumn(
-            tier: tier,
-            features: allFeatures,
-            bankTheme: bankTheme,
-            scope: scope,
-            isHighlighted: tier.id == highlightedTierId,
-            onSelectTier: onSelectTier,
-            columnWidth: resolvedColumnWidth,
-            headerHeight: resolvedHeaderHeight,
-            rowHeight: resolvedRowHeight,
-            table: this,
-            highlightColor: resolvedHighlight,
-          ),
-        ),
-      ],
-    );
-
-    if (needsScroll) {
-      table = SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: table,
-      );
-    }
-
-    return Semantics(
-      label:
-          semanticLabel ?? 'Plan comparison table with ${tiers.length} tiers',
-      child: table,
-    );
-  }
+  State<BankPlanComparisonTable> createState() =>
+      _BankPlanComparisonTableState();
 
   List<BankPlanFeature> _collectFeatures() {
     final seen = <String>{};
@@ -236,6 +210,204 @@ class BankPlanComparisonTable extends StatelessWidget {
   }
 }
 
+class _BankPlanComparisonTableState extends State<BankPlanComparisonTable> {
+  /// Whether columns remain off the leading / trailing edge.
+  ///
+  /// Seeded for a table that has just been laid out overflowing — parked at
+  /// offset 0, so everything hidden is on the trailing side. Scroll
+  /// notifications take over from there; waiting for one would leave the
+  /// affordance missing exactly when it matters most, on first paint.
+  bool _hiddenBefore = false;
+  bool _hiddenAfter = true;
+
+  @override
+  void didUpdateWidget(BankPlanComparisonTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A different number of columns is a different scroll extent; re-seed
+    // rather than inherit the previous table's edges. Compared by length, not
+    // by list identity: hosts routinely rebuild the same tiers into a fresh
+    // list, and that must not throw the affordance away mid-scroll.
+    if (oldWidget.tiers.length != widget.tiers.length) {
+      _hiddenBefore = false;
+      _hiddenAfter = true;
+    }
+  }
+
+  bool _handleScroll(ScrollNotification notification) {
+    if (notification.metrics.axis != Axis.horizontal) return false;
+    final before = notification.metrics.extentBefore > 0;
+    final after = notification.metrics.extentAfter > 0;
+    if (before != _hiddenBefore || after != _hiddenAfter) {
+      setState(() {
+        _hiddenBefore = before;
+        _hiddenAfter = after;
+      });
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bankTheme = BankThemeData.of(context);
+    final scope = BankUiScope.of(context);
+
+    final resolvedColumnWidth =
+        widget.columnWidth ?? BankPlanComparisonTable._columnWidth;
+    final resolvedLabelColumnWidth =
+        widget.labelColumnWidth ?? BankPlanComparisonTable._labelColumnWidth;
+    final resolvedRowHeight =
+        widget.rowHeight ?? BankPlanComparisonTable._rowHeight;
+    final resolvedHeaderHeight =
+        widget.headerHeight ?? BankPlanComparisonTable._headerHeight;
+    final resolvedHighlight = widget.highlightColor ?? bankTheme.primary;
+
+    // One rule definition for the whole table, derived from the surface it is
+    // carded on rather than from a fixed alpha, so it holds up in dark mode.
+    final rule = BorderSide(
+      color: BankTokens.hairlineColor(
+        bankTheme.onSurface,
+        ThemeData.estimateBrightnessForColor(bankTheme.surface),
+      ),
+      // Matches BorderSide's default today; keep the token as the source of
+      // truth for hairline geometry.
+      // ignore: avoid_redundant_argument_values
+      width: BankTokens.hairlineWidth,
+    );
+
+    // Collect all unique feature labels preserving insertion order.
+    final allFeatures = widget._collectFeatures();
+
+    final table = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Fixed label column
+        _LabelColumn(
+          features: allFeatures,
+          bankTheme: bankTheme,
+          headerHeight: resolvedHeaderHeight,
+          rowHeight: resolvedRowHeight,
+          labelColumnWidth: resolvedLabelColumnWidth,
+          labelStyle: widget.featureLabelStyle,
+          rule: rule,
+        ),
+        // Tier columns
+        ...widget.tiers.map(
+          (tier) => _TierColumn(
+            tier: tier,
+            features: allFeatures,
+            bankTheme: bankTheme,
+            scope: scope,
+            isHighlighted: tier.id == widget.highlightedTierId,
+            onSelectTier: widget.onSelectTier,
+            columnWidth: resolvedColumnWidth,
+            headerHeight: resolvedHeaderHeight,
+            rowHeight: resolvedRowHeight,
+            table: widget,
+            highlightColor: resolvedHighlight,
+            rule: rule,
+          ),
+        ),
+      ],
+    );
+
+    final naturalWidth =
+        resolvedLabelColumnWidth + resolvedColumnWidth * widget.tiers.length;
+
+    return Semantics(
+      label: widget.semanticLabel ??
+          'Plan comparison table with ${widget.tiers.length} tiers',
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // An unbounded parent lays the table out at its natural width, and
+          // a table that already fits needs neither scrolling nor a hint.
+          if (!constraints.hasBoundedWidth ||
+              naturalWidth <= constraints.maxWidth) {
+            return table;
+          }
+          final fadeColor = widget.edgeFadeColor ?? bankTheme.surface;
+          return NotificationListener<ScrollNotification>(
+            onNotification: _handleScroll,
+            child: Stack(
+              children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: table,
+                ),
+                if (widget.showEdgeFade) ...[
+                  _EdgeFade(
+                    color: fadeColor,
+                    atStart: true,
+                    visible: _hiddenBefore,
+                  ),
+                  _EdgeFade(
+                    color: fadeColor,
+                    atStart: false,
+                    visible: _hiddenAfter,
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Scroll affordance
+// ---------------------------------------------------------------------------
+
+/// A directional fade over one edge of the scroll view, shown while columns
+/// remain hidden on that side.
+class _EdgeFade extends StatelessWidget {
+  const _EdgeFade({
+    required this.color,
+    required this.atStart,
+    required this.visible,
+  });
+
+  final Color color;
+
+  /// Leading edge in the ambient reading direction (left in LTR).
+  final bool atStart;
+
+  final bool visible;
+
+  @override
+  Widget build(BuildContext context) {
+    return PositionedDirectional(
+      top: 0,
+      bottom: 0,
+      start: atStart ? 0 : null,
+      end: atStart ? null : 0,
+      width: BankPlanComparisonTable._edgeFadeWidth,
+      child: IgnorePointer(
+        child: ExcludeSemantics(
+          child: AnimatedOpacity(
+            opacity: visible ? 1 : 0,
+            duration: BankTokens.durationFast,
+            curve: BankTokens.curveStandard,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: atStart
+                      ? AlignmentDirectional.centerStart
+                      : AlignmentDirectional.centerEnd,
+                  end: atStart
+                      ? AlignmentDirectional.centerEnd
+                      : AlignmentDirectional.centerStart,
+                  colors: [color, color.withValues(alpha: 0)],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Label column
 // ---------------------------------------------------------------------------
@@ -248,6 +420,9 @@ class _LabelColumn extends StatelessWidget {
   final double labelColumnWidth;
   final TextStyle? labelStyle;
 
+  /// The shared row rule, resolved once by the table.
+  final BorderSide rule;
+
   const _LabelColumn({
     required this.features,
     required this.bankTheme,
@@ -255,6 +430,7 @@ class _LabelColumn extends StatelessWidget {
     required this.rowHeight,
     required this.labelColumnWidth,
     required this.labelStyle,
+    required this.rule,
   });
 
   @override
@@ -268,15 +444,10 @@ class _LabelColumn extends StatelessWidget {
           (f) => Container(
             height: rowHeight,
             width: labelColumnWidth,
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(right: BankTokens.space2),
+            alignment: AlignmentDirectional.centerStart,
+            padding: const EdgeInsetsDirectional.only(end: BankTokens.space2),
             decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: bankTheme.outline.withValues(alpha: 0.3),
-                  width: 0.5,
-                ),
-              ),
+              border: Border(bottom: rule),
             ),
             child: Text(
               f.label,
@@ -310,6 +481,9 @@ class _TierColumn extends StatelessWidget {
   final BankPlanComparisonTable table;
   final Color highlightColor;
 
+  /// The shared row rule, resolved once by the table.
+  final BorderSide rule;
+
   const _TierColumn({
     required this.tier,
     required this.features,
@@ -322,6 +496,7 @@ class _TierColumn extends StatelessWidget {
     required this.rowHeight,
     required this.table,
     required this.highlightColor,
+    required this.rule,
   });
 
   @override
@@ -334,27 +509,12 @@ class _TierColumn extends StatelessWidget {
       hideFraction: true,
     );
 
-    final highlightSide = isHighlighted
-        ? BorderSide(color: highlightColor, width: 2)
-        : BorderSide.none;
-
     Widget header = Container(
       height: headerHeight,
       width: columnWidth,
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.08),
-        border: Border(
-          top: highlightSide,
-          left: highlightSide,
-          right: highlightSide,
-          bottom: BorderSide(
-            color: bankTheme.outline.withValues(alpha: 0.3),
-            width: 0.5,
-          ),
-        ),
-        borderRadius: isHighlighted
-            ? const BorderRadius.vertical(top: Radius.circular(8))
-            : BorderRadius.zero,
+        color: accent.withValues(alpha: BankTokens.alphaSubtle),
+        border: Border(bottom: rule),
       ),
       padding: const EdgeInsets.all(BankTokens.space2),
       child: Column(
@@ -419,7 +579,8 @@ class _TierColumn extends StatelessWidget {
       );
     }
 
-    return Column(
+    final column = Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         header,
         ...features.map((feature) {
@@ -427,15 +588,40 @@ class _TierColumn extends StatelessWidget {
           return _FeatureCell(
             support: support,
             bankTheme: bankTheme,
-            isHighlighted: isHighlighted,
             columnWidth: columnWidth,
             rowHeight: rowHeight,
             featureLabel: feature.label,
             tierName: tier.name,
             table: table,
-            highlightColor: highlightColor,
+            rule: rule,
           );
         }),
+      ],
+    );
+
+    if (!isHighlighted) return column;
+
+    // The emphasis frame is an overlay, not a per-cell border: drawn cell by
+    // cell it could only ever close on three sides (the last cell's bottom
+    // belongs to the row rule), and the 2 px sides would eat into the
+    // emphasised column's content box while its neighbours kept theirs.
+    const radius = BorderRadius.all(Radius.circular(BankTokens.radiusMedium));
+    return Stack(
+      children: [
+        ClipRRect(borderRadius: radius, child: column),
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: highlightColor,
+                  width: BankPlanComparisonTable._emphasisWidth,
+                ),
+                borderRadius: radius,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -448,24 +634,24 @@ class _TierColumn extends StatelessWidget {
 class _FeatureCell extends StatelessWidget {
   final bool? support;
   final BankThemeData bankTheme;
-  final bool isHighlighted;
   final double columnWidth;
   final double rowHeight;
   final String featureLabel;
   final String tierName;
   final BankPlanComparisonTable table;
-  final Color highlightColor;
+
+  /// The shared row rule, resolved once by the table.
+  final BorderSide rule;
 
   const _FeatureCell({
     required this.support,
     required this.bankTheme,
-    required this.isHighlighted,
     required this.columnWidth,
     required this.rowHeight,
     required this.featureLabel,
     required this.tierName,
     required this.table,
-    required this.highlightColor,
+    required this.rule,
   });
 
   @override
@@ -488,30 +674,18 @@ class _FeatureCell extends StatelessWidget {
       semanticValue = table.partialSemanticsLabel;
     }
 
-    final highlightSide = isHighlighted
-        ? BorderSide(color: highlightColor, width: 2)
-        : BorderSide(
-            color: bankTheme.outline.withValues(alpha: 0.3),
-            width: 0.5,
-          );
-
     return Semantics(
       label: '$featureLabel in $tierName: $semanticValue',
       child: Container(
         height: rowHeight,
         width: columnWidth,
         decoration: BoxDecoration(
-          border: Border(
-            left: highlightSide,
-            right: highlightSide,
-            bottom: BorderSide(
-              color: bankTheme.outline.withValues(alpha: 0.3),
-              width: 0.5,
-            ),
-          ),
+          // Leading side only: two adjacent cells each drawing their own
+          // vertical rule would double the hairline between columns.
+          border: BorderDirectional(start: rule, bottom: rule),
         ),
         alignment: Alignment.center,
-        child: Icon(icon, size: 18, color: color),
+        child: Icon(icon, size: BankTokens.iconMedium, color: color),
       ),
     );
   }

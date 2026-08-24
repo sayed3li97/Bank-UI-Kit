@@ -66,7 +66,7 @@ class BankBiometricPromptButton extends StatefulWidget {
   /// Called with an error message when [onAuthenticate] returns `false`.
   final ValueChanged<String>? onError;
 
-  /// Button label displayed below the icon. Defaults to `'Use Biometrics'`.
+  /// Button label displayed below the icon. Defaults to `'Use biometrics'`.
   final String label;
 
   /// Determines the icon displayed. Defaults to
@@ -124,7 +124,7 @@ class BankBiometricPromptButton extends StatefulWidget {
     super.key,
     this.onSuccess,
     this.onError,
-    this.label = 'Use Biometrics',
+    this.label = 'Use biometrics',
     this.type = BankBiometricType.fingerprint,
     this.icon,
     this.successIcon,

@@ -31,7 +31,7 @@ enum BankShariahBadgeSize {
 class BankShariahBadge extends StatelessWidget {
   const BankShariahBadge({
     super.key,
-    this.label = 'Shariah Compliant',
+    this.label = 'Shariah compliant',
     this.size = BankShariahBadgeSize.medium,
     this.accentColor,
     this.padding,
@@ -44,7 +44,7 @@ class BankShariahBadge extends StatelessWidget {
     this.semanticLabel,
   });
 
-  /// Badge text. Defaults to `'Shariah Compliant'`.
+  /// Badge text. Defaults to `'Shariah compliant'`.
   final String label;
 
   final BankShariahBadgeSize size;

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_control_theme.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
@@ -295,13 +296,21 @@ class _ChannelEditorState extends State<_ChannelEditor> {
             slider: true,
             label: '${channel.label}: $formattedValue',
             excludeSemantics: true,
-            child: Slider(
-              value: _value.clamp(0, _max),
-              max: _max <= 0 ? 1 : _max,
-              activeColor: accent,
-              inactiveColor: track,
-              onChanged: _awaitingSca ? null : _onSliderChanged,
-              onChangeEnd: _onSliderCommit,
+            child: SliderTheme(
+              // The groove sits directly under a progress bar already painted
+              // in [track], so this slider keeps that fill rather than the
+              // kit's default ambient-ink groove.
+              data: BankControlTheme.sliderTheme(
+                theme,
+                accent: accent,
+                inactiveTrackColor: track,
+              ),
+              child: Slider(
+                value: _value.clamp(0, _max),
+                max: _max <= 0 ? 1 : _max,
+                onChanged: _awaitingSca ? null : _onSliderChanged,
+                onChangeEnd: _onSliderCommit,
+              ),
             ),
           ),
           Row(

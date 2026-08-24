@@ -9,6 +9,7 @@ class BankSegmentItem<T> {
   const BankSegmentItem({
     required this.value,
     required this.label,
+    this.icon,
     this.semanticLabel,
   });
 
@@ -17,6 +18,12 @@ class BankSegmentItem<T> {
 
   /// The visible segment label.
   final String label;
+
+  /// Optional leading glyph, drawn at [BankTokens.iconSmall] before the label.
+  ///
+  /// Decorative by definition: the label always ships alongside it, so the
+  /// icon is excluded from semantics rather than announced twice.
+  final IconData? icon;
 
   /// Optional semantic override for assistive technologies.
   final String? semanticLabel;
@@ -135,24 +142,31 @@ class BankSegmentedControl<T> extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(_trackInset),
         child: IntrinsicWidth(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final segment in segments)
-                Expanded(
-                  child: _Segment<T>(
-                    item: segment,
-                    isSelected: segment.value == selected,
-                    onChanged: onChanged,
-                    selectedFill: resolvedSelectedFill,
-                    selectedForeground: resolvedSelectedFg,
-                    foreground: resolvedFg,
-                    radius: pillRadius,
-                    padding: resolvedPadding,
-                    baseStyle: baseStyle,
+          // CrossAxisAlignment.stretch hands children a *tight* height taken
+          // from the incoming constraint, which is infinite inside the
+          // commonest host of all — a Column in a SingleChildScrollView.
+          // IntrinsicHeight resolves the tallest segment first, so the track
+          // still shares one height without requiring a bounded parent.
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final segment in segments)
+                  Expanded(
+                    child: _Segment<T>(
+                      item: segment,
+                      isSelected: segment.value == selected,
+                      onChanged: onChanged,
+                      selectedFill: resolvedSelectedFill,
+                      selectedForeground: resolvedSelectedFg,
+                      foreground: resolvedFg,
+                      radius: pillRadius,
+                      padding: resolvedPadding,
+                      baseStyle: baseStyle,
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -247,35 +261,52 @@ class _Segment<T> extends StatelessWidget {
           ),
           padding: padding,
           alignment: Alignment.center,
-          child: Stack(
-            alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Invisible bold ghost: reserves the selected-weight width so
-              // the control's intrinsic width — and therefore the equal-flex
-              // division — never shifts when the selection changes.
-              Visibility(
-                visible: false,
-                maintainSize: true,
-                maintainAnimation: true,
-                maintainState: true,
-                child: Text(
-                  item.label,
-                  style: selectedStyle,
-                  maxLines: 1,
-                  softWrap: false,
-                  textAlign: TextAlign.center,
+              if (item.icon != null) ...[
+                Icon(
+                  item.icon,
+                  size: BankTokens.iconSmall,
+                  color: isSelected ? selectedForeground : foreground,
                 ),
-              ),
-              AnimatedDefaultTextStyle(
-                duration: BankTokens.durationFast,
-                curve: BankTokens.curveEmphasized,
-                style: isSelected ? selectedStyle : unselectedStyle,
-                child: Text(
-                  item.label,
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
+                const SizedBox(width: BankTokens.space2),
+              ],
+              Flexible(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Invisible bold ghost: reserves the selected-weight width
+                    // so the control's intrinsic width — and therefore the
+                    // equal-flex division — never shifts when the selection
+                    // changes.
+                    Visibility(
+                      visible: false,
+                      maintainSize: true,
+                      maintainAnimation: true,
+                      maintainState: true,
+                      child: Text(
+                        item.label,
+                        style: selectedStyle,
+                        maxLines: 1,
+                        softWrap: false,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    AnimatedDefaultTextStyle(
+                      duration: BankTokens.durationFast,
+                      curve: BankTokens.curveEmphasized,
+                      style: isSelected ? selectedStyle : unselectedStyle,
+                      child: Text(
+                        item.label,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
