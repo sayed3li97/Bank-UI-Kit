@@ -161,10 +161,7 @@ chapters:
                 labeledTapTargetGuideline in
                 test/accessibility_widget_test.dart. Gap: the gate covers a
                 representative composition, not all 173 widget classes, and no
-                lint forbids an unlabelled Icon. Gap: the 14 sheet bodies that
-                suppress the built-in grab handle draw their own 40x4 bar with
-                no semantics node, so on those sheets the drag affordance is
-                unannounced (see 1.3.1). Gap:
+                lint forbids an unlabelled Icon. Gap:
                 lib/src/insights/bank_spending_breakdown_chart.dart adds no
                 semantics node unless the host passes semanticLabel, so the
                 chart is silent by default (BankCashflowChart and
@@ -214,11 +211,11 @@ chapters:
                 BankAppBar and BankSliverAppBar as a header while excluding the
                 framework's duplicate unlabelled header node. Gate: "grab
                 handle renders and carries semantics" in
-                test/sheet_presentation_test.dart. Gap: 14 of the 25
-                BankSheet.show call sites pass showHandle false because the
-                body paints its own ground, and every one of those bodies
-                draws a plain 40x4 Container in place of BankSheetHandle, so
-                those sheets announce no handle at all. Gap:
+                test/sheet_presentation_test.dart. Closed in this edition: the 14 sheet
+                bodies that paint their own ground previously drew a plain
+                40x4 Container and announced no handle; each now routes
+                through BankSheetHandle. Gate: test/sheet_handle_semantics_test.dart
+                pumps all 14 standalone and asserts a labelled handle. Gap:
                 lib/src/common/bank_text_field.dart renders its label and its
                 errorText as sibling Text widgets rather than through
                 InputDecoration.labelText and InputDecoration.errorText, so

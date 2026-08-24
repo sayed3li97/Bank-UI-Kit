@@ -215,19 +215,13 @@ class BankTransactionDetailSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle bar
-          Padding(
-            padding: const EdgeInsets.only(top: BankTokens.space2),
-            child: Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: handleColor ?? bankTheme.outline,
-                  borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-                ),
-              ),
-            ),
+          // Handle bar. The body paints its own surface and is presented with
+          // `showHandle: false`, so the handle — and the semantics that
+          // announce it — belong here. The margin keeps the existing rhythm:
+          // the scroll view's own top padding supplies the gap underneath.
+          BankSheetHandle(
+            color: handleColor ?? bankTheme.outline,
+            margin: const EdgeInsets.only(top: BankTokens.space2),
           ),
           // Scrollable body
           Flexible(

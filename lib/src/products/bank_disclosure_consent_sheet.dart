@@ -414,7 +414,7 @@ class _BankDisclosureConsentSheetState
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (widget.showHandle) const _SheetHandleBar(),
+                if (widget.showHandle) _sheetHandleBar,
                 _Heading(
                   title: widget.title,
                   subtitle: widget.subtitle,
@@ -493,27 +493,15 @@ class _BankDisclosureConsentSheetState
 // Sub-widgets
 // ---------------------------------------------------------------------------
 
-class _SheetHandleBar extends StatelessWidget {
-  const _SheetHandleBar();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = BankThemeData.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(top: BankTokens.space2),
-      child: Center(
-        child: Container(
-          width: 40,
-          height: 4,
-          decoration: BoxDecoration(
-            color: theme.outline,
-            borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          ),
-        ),
-      ),
-    );
-  }
-}
+/// The grab handle for the sheet body, which paints its own surface and so
+/// presents itself with `showHandle: false`.
+///
+/// [BankSheetHandle] carries the [Semantics] the affordance needs; the margin
+/// keeps the body's existing rhythm, where the heading padding below supplies
+/// the gap the handle would otherwise reserve.
+const Widget _sheetHandleBar = BankSheetHandle(
+  margin: EdgeInsets.only(top: BankTokens.space2),
+);
 
 class _Heading extends StatelessWidget {
   const _Heading({

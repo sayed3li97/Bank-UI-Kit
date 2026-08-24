@@ -15,7 +15,7 @@ what counts as a breaking change for a UI kit, how long you get to react to
 one, what 1.0 will mean, which versions are supported, and what an adopter
 can do about a single-maintainer project.
 
-Scope: the `bank_ui_kit` package at version 0.2.0 (`pubspec.yaml`), 164
+Scope: the `bank_ui_kit` package at version 0.3.0 (`pubspec.yaml`), 173
 widget classes plus the headless flow controllers under
 `lib/src/controllers/`, reachable through six entry points
 (`bank_ui_kit.dart`, `core.dart`, `saving.dart`, `social.dart`,
@@ -179,7 +179,7 @@ that SemVer allows to break you:
 
 ```yaml
 dependencies:
-  bank_ui_kit: 0.2.0   # exact, no caret, while the package is pre-1.0
+  bank_ui_kit: 0.3.0   # exact, no caret, while the package is pre-1.0
 ```
 
 From 1.0, `^1.2.0` is safe against everything in this document except the
@@ -208,7 +208,7 @@ the full gate, and where an item duplicates that document it is marked.
 | 5 | A second maintainer with merge rights, named in `.github/CODEOWNERS` | Not met: bench of one |
 | 6 | pub.dev publication under a verified publisher with at least two uploader accounts | Not met: the publish pipeline exists (`.github/workflows/publish.yml`, trusted publishing over OIDC, no stored credentials); the second uploader does not |
 | 7 | DCO sign-off enforced in CI, and branch protection requiring a review distinct from the author | Not met |
-| 8 | The accessibility conformance report reissued against the frozen API, with the known-gaps list current | Partially met: [ACR](./acr/ACR.md) published for 0.2.0 |
+| 8 | The accessibility conformance report reissued against the frozen API, with the known-gaps list current | Partially met: [ACR](./acr/ACR.md) published for 0.3.0 |
 | 9 | An OpenSSF Scorecard result published continuously, with no unaddressed high-severity check | Partially met: [`scorecard.yml`](../../.github/workflows/scorecard.yml) publishes weekly |
 | 10 | SBOM and signed build provenance attached to every release, not only to the latest | Met for the current pipeline: [`sbom.yml`](../../.github/workflows/sbom.yml) and the provenance job in `release.yml` |
 | 11 | A published upgrade guide from the last 0.x to 1.0, covering every visual default that moved across the 0.x line | Not met |
@@ -228,8 +228,8 @@ the current version.
 
 | Version | Status | Fixes |
 |---------|--------|-------|
-| 0.2.0 | Current | Defect and security fixes |
-| 0.1.0 and earlier | Superseded | None. Upgrade to current |
+| 0.3.0 | Current | Defect and security fixes |
+| 0.2.0 and earlier | Superseded | None. Upgrade to current |
 
 Response times are the ones stated elsewhere and are not restated as new
 promises: regressions in a released version are triaged within 5 business

@@ -12,7 +12,7 @@ UI kit (including visual defaults), the pinning guidance, the full 1.0 gate
 with current status, which versions are supported, and the continuity story.
 This document covers the mechanics; that one covers the promise.
 
-Scope: the package at version 0.2.0 (`pubspec.yaml`), 164 widget classes
+Scope: the package at version 0.3.0 (`pubspec.yaml`), 173 widget classes
 plus the headless flow controllers under `lib/src/controllers/`, surfaced
 through six entry points (`bank_ui_kit.dart`, `core.dart`, `saving.dart`,
 `social.dart`, `investing.dart`, `credit.dart`).

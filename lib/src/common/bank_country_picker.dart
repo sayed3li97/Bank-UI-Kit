@@ -756,20 +756,10 @@ class _BankCountrySheetState extends State<_BankCountrySheet> {
       ),
       child: Column(
         children: [
-          // Drag handle.
-          Center(
-            child: Container(
-              width: BankTokens.space10,
-              height: BankTokens.space1,
-              margin: const EdgeInsets.symmetric(vertical: BankTokens.space3),
-              decoration: BoxDecoration(
-                color: theme.outline,
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(BankTokens.radiusFull),
-                ),
-              ),
-            ),
-          ),
+          // Drag handle. The picker paints its own ground and is presented
+          // with `showHandle: false`, so the handle — and the semantics that
+          // announce it — belong here rather than to the wrapping surface.
+          BankSheetHandle(color: theme.outline),
 
           // Pinned search field.
           Padding(

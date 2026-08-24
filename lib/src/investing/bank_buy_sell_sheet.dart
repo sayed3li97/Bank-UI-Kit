@@ -173,16 +173,14 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: BankTokens.space4),
-                  decoration: BoxDecoration(
-                    color: widget.handleColor ?? theme.outline,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
+              // The body paints its own surface and is presented with
+              // `showHandle: false`, so the handle — and the semantics that
+              // announce it — belong here. The enclosing padding already
+              // supplies the gap above, so the margin only reserves the one
+              // below.
+              BankSheetHandle(
+                color: widget.handleColor ?? theme.outline,
+                margin: const EdgeInsets.only(bottom: BankTokens.space4),
               ),
               BankSegmentedControl<BankOrderSide>(
                 segments: [

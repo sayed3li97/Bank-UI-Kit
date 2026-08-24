@@ -23,13 +23,26 @@ class BankSheetHandle extends StatelessWidget {
     super.key,
     this.semanticLabel = BankSheet.defaultHandleSemanticLabel,
     this.color,
+    this.margin,
   });
+
+  /// The default breathing room above and below the bar.
+  static const EdgeInsetsGeometry defaultMargin =
+      EdgeInsets.symmetric(vertical: BankTokens.space3);
 
   /// Announced by assistive technologies for the handle region.
   final String semanticLabel;
 
   /// Bar ink. Defaults to the ambient [BankThemeData.outline].
   final Color? color;
+
+  /// Space reserved around the bar. Defaults to [defaultMargin].
+  ///
+  /// Sheet bodies that paint their own surface already own the vertical rhythm
+  /// between the handle and whatever follows it; they pass their own margin so
+  /// adopting this widget does not shift their layout. Prefer the default
+  /// anywhere the rhythm is not already spoken for.
+  final EdgeInsetsGeometry? margin;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +57,7 @@ class BankSheetHandle extends StatelessWidget {
         child: Container(
           width: BankTokens.space10,
           height: BankTokens.space1,
-          margin: const EdgeInsets.symmetric(vertical: BankTokens.space3),
+          margin: margin ?? defaultMargin,
           decoration: BoxDecoration(
             color: ink,
             borderRadius: const BorderRadius.all(

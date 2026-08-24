@@ -197,18 +197,14 @@ class BankPaywallSheet extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Handle bar
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: BankTokens.space6),
-                    decoration: BoxDecoration(
-                      color: bankTheme.outline.withValues(alpha: 0.4),
-                      borderRadius:
-                          BorderRadius.circular(BankTokens.radiusFull),
-                    ),
-                  ),
+                // Handle bar. The body paints its own surface and is presented
+                // with `showHandle: false`, so the handle — and the semantics
+                // that announce it — belong here. The enclosing padding already
+                // supplies the gap above, so the margin only reserves the one
+                // below.
+                BankSheetHandle(
+                  color: bankTheme.outline.withValues(alpha: 0.4),
+                  margin: const EdgeInsets.only(bottom: BankTokens.space6),
                 ),
 
                 if (header != null) ...[

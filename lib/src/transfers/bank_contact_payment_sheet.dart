@@ -400,17 +400,12 @@ class _BankContactPaymentSheetState extends State<BankContactPaymentSheet> {
       ),
       child: Column(
         children: [
-          // Drag handle
-          Padding(
-            padding: const EdgeInsets.only(top: BankTokens.space3),
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: bankTheme.outline.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-              ),
-            ),
+          // Drag handle. The body paints its own ground and is presented with
+          // `showHandle: false`, so the handle — and the semantics that
+          // announce it — belong here rather than to the wrapping surface.
+          BankSheetHandle(
+            color: bankTheme.outline.withValues(alpha: 0.4),
+            margin: const EdgeInsets.only(top: BankTokens.space3),
           ),
           // Header row
           Padding(

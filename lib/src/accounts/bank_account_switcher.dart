@@ -147,19 +147,12 @@ class BankAccountSwitcher extends StatelessWidget {
     final screenHeight = MediaQuery.sizeOf(context).height;
     final maxSheetHeight = screenHeight * (maxHeightFraction ?? 0.70);
 
-    // The drag-handle bar at the top of the sheet.
-    final Widget handleBar = Center(
-      child: Container(
-        width: 40,
-        height: 4,
-        margin: const EdgeInsets.symmetric(vertical: BankTokens.space3),
-        decoration: BoxDecoration(
-          color: handleColor ?? bankTheme.outline,
-          borderRadius:
-              const BorderRadius.all(Radius.circular(BankTokens.radiusFull)),
-        ),
-      ),
-    );
+    // The drag-handle bar at the top of the sheet. This body paints its own
+    // surface and is presented with `showHandle: false`, so the handle — and
+    // the semantics that announce it — belong here rather than to the
+    // wrapping surface.
+    final Widget handleBar =
+        BankSheetHandle(color: handleColor ?? bankTheme.outline);
 
     return Container(
       constraints: BoxConstraints(maxHeight: maxSheetHeight),

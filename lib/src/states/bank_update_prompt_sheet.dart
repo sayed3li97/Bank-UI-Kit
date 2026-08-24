@@ -427,18 +427,11 @@ class BankUpdatePromptSheet extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
-          width: 36,
-          height: 4,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: theme.outline,
-              borderRadius: const BorderRadius.all(
-                Radius.circular(BankTokens.radiusFull),
-              ),
-            ),
-          ),
-        ),
+        // This header carries the handle so the wrapping surface does not draw
+        // a second one (`showHandle: false`); routing it through
+        // [BankSheetHandle] is what gives the affordance its semantics. The
+        // spacing below is the header's own, so the handle reserves none.
+        BankSheetHandle(color: theme.outline, margin: EdgeInsets.zero),
         const SizedBox(height: BankTokens.space5),
         circle,
       ],

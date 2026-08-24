@@ -272,19 +272,13 @@ class _BankTransactionCategorySplitSheetState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle
-            Padding(
-              padding: const EdgeInsets.only(top: BankTokens.space2),
-              child: Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: widget.handleColor ?? bankTheme.outline,
-                    borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-                  ),
-                ),
-              ),
+            // Handle. The body paints its own surface and is presented with
+            // `showHandle: false`, so the handle — and the semantics that
+            // announce it — belong here. The margin keeps the existing rhythm:
+            // the title row padding below already supplies the gap underneath.
+            BankSheetHandle(
+              color: widget.handleColor ?? bankTheme.outline,
+              margin: const EdgeInsets.only(top: BankTokens.space2),
             ),
             // Title row
             Padding(
