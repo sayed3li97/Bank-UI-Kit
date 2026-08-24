@@ -153,12 +153,18 @@ class BankHeritageTheme {
       onPrimary: bank.onPrimary,
       surface: bank.surface,
       onSurface: bank.onSurface,
+      // Material paints its elevation shadows from ColorScheme.shadow; a
+      // brand that tints its depth ink must reach Material too, or the two
+      // depth systems cast different-coloured light. Null keeps M3's black.
+      shadow: bank.shadowTint,
     );
 
     final themed = base.copyWith(
       colorScheme: colorScheme,
       scaffoldBackgroundColor: bank.background,
       cardColor: bank.surface,
+      // Pre-M3 widgets read ThemeData.shadowColor instead; keep both in step.
+      shadowColor: bank.shadowTint,
       extensions: <ThemeExtension<dynamic>>[bank],
     );
 

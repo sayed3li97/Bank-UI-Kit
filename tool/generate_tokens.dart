@@ -86,6 +86,9 @@ String _renderRegion(Map<String, dynamic> data) {
     if (map == null) return;
     b.writeln('  // $heading');
     map.forEach((key, value) {
+      // DTCG reserves `$`-prefixed keys for group metadata ($description,
+      // $type); only the sibling entries are tokens.
+      if (key.startsWith(r'$')) return;
       final token = value as Map<String, dynamic>;
       final desc = token[r'$description'] as String?;
       if (desc != null) {
@@ -102,6 +105,22 @@ String _renderRegion(Map<String, dynamic> data) {
     final hex = _colorLiteral(t[r'$value'] as String);
     return '  static const Color $key = $hex;';
   });
+  group('neutral', 'Neutral ramp', (key, t) {
+    final hex = _colorLiteral(t[r'$value'] as String);
+    return '  static const Color neutral$key = $hex;';
+  });
+  group('surface', 'Surface tiers', (key, t) {
+    final hex = _colorLiteral(t[r'$value'] as String);
+    return '  static const Color surface${_cap(key)} = $hex;';
+  });
+  group('ink', 'On-surface ink tiers', (key, t) {
+    final hex = _colorLiteral(t[r'$value'] as String);
+    return '  static const Color ink${_cap(key)} = $hex;';
+  });
+  group('border', 'Border & divider roles', (key, t) {
+    final hex = _colorLiteral(t[r'$value'] as String);
+    return '  static const Color border${_cap(key)} = $hex;';
+  });
   group('space', 'Spacing (4 pt grid)', (key, t) {
     final v = _dimension(t[r'$value'] as String);
     return '  static const double space$key = $v;';
@@ -110,10 +129,22 @@ String _renderRegion(Map<String, dynamic> data) {
     final v = _dimension(t[r'$value'] as String);
     return '  static const double radius${_cap(key)} = $v;';
   });
+  group('icon', 'Icon size ladder', (key, t) {
+    final v = _dimension(t[r'$value'] as String);
+    return '  static const double icon${_cap(key)} = $v;';
+  });
   group('duration', 'Motion: durations', (key, t) {
     final ms = _durationMs(t[r'$value'] as String);
     return '  static const Duration duration${_cap(key)} = '
         'Duration(milliseconds: $ms);';
+  });
+  group('lineHeight', 'Typography: line-height ladder', (key, t) {
+    final v = _number(t[r'$value'] as num);
+    return '  static const double lineHeight${_cap(key)} = $v;';
+  });
+  group('tracking', 'Typography: tracking (letter-spacing)', (key, t) {
+    final v = _dimension(t[r'$value'] as String);
+    return '  static const double tracking${_cap(key)} = $v;';
   });
   group('size', 'Accessibility & sizing', (key, t) {
     final v = _dimension(t[r'$value'] as String);
@@ -123,9 +154,17 @@ String _renderRegion(Map<String, dynamic> data) {
     final v = _number(t[r'$value'] as num);
     return '  static const double $key = $v;';
   });
+  group('opacity', 'Alpha ladder', (key, t) {
+    final v = _number(t[r'$value'] as num);
+    return '  static const double alpha${_cap(key)} = $v;';
+  });
   group('effect', 'Visual effects', (key, t) {
     final v = _number(t[r'$value'] as num);
     return '  static const double $key = $v;';
+  });
+  group('elevationTier', 'Elevation tiers (stacking ranks)', (key, t) {
+    final v = _integer(t[r'$value'] as num);
+    return '  static const int elevationTier${_cap(key)} = $v;';
   });
 
   b.write(_end);
@@ -177,6 +216,16 @@ String _dimension(String value) {
 String _number(num value) {
   final n = value.toDouble();
   return n == n.roundToDouble() ? n.toInt().toString() : n.toString();
+}
+
+/// DTCG `number` -> Dart `int` literal, for tokens that are ordinals rather
+/// than measurements (stacking ranks). A fractional value is a source error.
+String _integer(num value) {
+  if (value != value.roundToDouble()) {
+    stderr.writeln('Expected an integer token value, got $value');
+    exit(2);
+  }
+  return value.toInt().toString();
 }
 
 /// `"150ms"` -> `150`.

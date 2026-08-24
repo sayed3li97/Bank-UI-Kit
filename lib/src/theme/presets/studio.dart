@@ -7,7 +7,7 @@ import '../tokens.dart';
 ///
 /// Characteristics:
 /// - Warm off-white / off-black neutrals
-/// - Petrol green primary (#4A7C80 light / #5E9EA3 dark)
+/// - Petrol green primary (#4A7C80 light / #7BB8BC dark)
 /// - Rectangular cards with rounded corners (12 px)
 /// - No gradient, no glow
 /// - Standard Material elevations
@@ -72,12 +72,24 @@ class BankStudioTheme {
 
   // ---------------------------------------------------------------------------
   // Dark
+  //
+  // The primary/onPrimary pair is deliberately brighter than the dark card
+  // gradient above. A filled CTA is a small patch of colour asked to carry the
+  // screen's one action; at the card face's luminance it reads as a disabled
+  // slab, because a washed mid-tone plus near-black ink is exactly how
+  // Material renders a *disabled* filled button. The fill therefore steps up
+  // to the palette's brightest petrol tint (#7BB8BC — 6.3:1 against the card
+  // surface, so the button separates from what it sits on) and the ink steps
+  // down to a deep petrol black (#0E2426) rather than the neutral #1C1C1E,
+  // which was literally the page background colour and made the label read as
+  // a hole punched in the fill instead of ink laid on it. The pair clears
+  // 7.2:1 — AAA, not the 5.6:1 it used to scrape.
   // ---------------------------------------------------------------------------
 
   static BankThemeData dark() => const BankThemeData(
-        primary: Color(0xFF5E9EA3),
-        primaryVariant: Color(0xFF7BB8BC),
-        onPrimary: Color(0xFF1C1C1E),
+        primary: Color(0xFF7BB8BC),
+        primaryVariant: Color(0xFF93C5C8),
+        onPrimary: Color(0xFF0E2426),
         surface: Color(0xFF2C2C2A),
         surfaceVariant: Color(0xFF3A3A38),
         onSurface: Color(0xFFF5F5F3),
@@ -123,12 +135,18 @@ class BankStudioTheme {
       onPrimary: bank.onPrimary,
       surface: bank.surface,
       onSurface: bank.onSurface,
+      // Material paints its elevation shadows from ColorScheme.shadow; a
+      // brand that tints its depth ink must reach Material too, or the two
+      // depth systems cast different-coloured light. Null keeps M3's black.
+      shadow: bank.shadowTint,
     );
 
     final themed = base.copyWith(
       colorScheme: colorScheme,
       scaffoldBackgroundColor: bank.background,
       cardColor: bank.surface,
+      // Pre-M3 widgets read ThemeData.shadowColor instead; keep both in step.
+      shadowColor: bank.shadowTint,
       extensions: <ThemeExtension<dynamic>>[bank],
     );
 

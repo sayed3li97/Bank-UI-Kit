@@ -84,11 +84,17 @@ extension BankThemeDataApply on ThemeData {
       onPrimary: bankTheme.onPrimary,
       surface: bankTheme.surface,
       onSurface: bankTheme.onSurface,
+      // Material paints its elevation shadows from ColorScheme.shadow; a
+      // brand that tints its depth ink must reach Material too, or the two
+      // depth systems cast different-coloured light. Null keeps M3's black.
+      shadow: bankTheme.shadowTint,
     );
     final themed = copyWith(
       colorScheme: colorScheme,
       scaffoldBackgroundColor: bankTheme.background,
       cardColor: bankTheme.surface,
+      // Pre-M3 widgets read ThemeData.shadowColor instead; keep both in step.
+      shadowColor: bankTheme.shadowTint,
       extensions: <ThemeExtension<dynamic>>[bankTheme],
     );
     // Always attach the glyph-coverage fallback fonts so currency symbols,

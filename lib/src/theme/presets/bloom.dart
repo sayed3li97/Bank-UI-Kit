@@ -12,10 +12,24 @@ import '../tokens.dart';
 /// - Fully-pill buttons and chips for a friendly, approachable feel
 /// - Generous 20 px card radius and 28 px sheet radius
 /// - No accent gradient, no glow: warmth is conveyed through colour alone
-/// - `elevationLow` carries a subtle warm-tinted shadow (modelled as a very
-///   low opacity value; the host app applies it via [BoxShadow.blurRadius])
+/// - Light mode casts a **warm-tinted shadow** ([BankThemeData.shadowTint]),
+///   which is the preset's differentiator — see [_warmShadowInk]
 class BankBloomTheme {
   const BankBloomTheme._();
+
+  /// The ink Bloom's light-mode depth shadows are cast in: a deep plum-brown
+  /// drawn from the dark end of the card gradient.
+  ///
+  /// The kit default is a blue-grey (`0x101828`), which under a cream-and-coral
+  /// palette reads as a cold grey smudge rather than as shade. Bloom keeps the
+  /// kit's shadow *geometry* — the same blur and offset every other preset
+  /// uses — and changes only the hue, so cards sit at the same height but the
+  /// light warms as it falls.
+  ///
+  /// Dark mode deliberately does **not** tint: on a near-black canvas depth
+  /// reads as blocked light, and any hue in the occlusion just muddies it —
+  /// which is why [BankTokens.shadowCardDark] and friends are pure black.
+  static const Color _warmShadowInk = Color(0xFF4A2B33);
 
   // ---------------------------------------------------------------------------
   // Card-face gradients
@@ -65,9 +79,10 @@ class BankBloomTheme {
         buttonRadius: BorderRadius.all(Radius.circular(999)),
         sheetRadius: BorderRadius.vertical(top: Radius.circular(28)),
         chipRadius: BorderRadius.all(Radius.circular(999)),
-        // 0.02 signals a warm-tinted shadow at very low opacity.
-        // Consumers map this to a BoxShadow with a warm colour.
-        elevationLow: 0.02,
+        // Was 0.02 — a sentinel meaning "warm-tinted shadow" that no consumer
+        // could act on and that Card.elevation rounds away to nothing. The
+        // warmth now lives in shadowTint, so this can be a real elevation.
+        elevationLow: 1,
         elevationMedium: 4,
         elevationHigh: 8,
         numeralHero: BankTokens.numeralHero,
@@ -80,6 +95,7 @@ class BankBloomTheme {
         cardSurfaceGradient: _lightCardGradient,
         cardPattern: BankCardPattern.arcs,
         cardPatternColor: _arcInk,
+        shadowTint: _warmShadowInk,
       );
 
   // ---------------------------------------------------------------------------
@@ -138,12 +154,18 @@ class BankBloomTheme {
       onPrimary: bank.onPrimary,
       surface: bank.surface,
       onSurface: bank.onSurface,
+      // Material paints Card / Material / AppBar elevation shadows from
+      // ColorScheme.shadow, so wiring the warm ink here is what turns Bloom's
+      // elevation contract into pixels. Null leaves M3's default black.
+      shadow: bank.shadowTint,
     );
 
     final themed = base.copyWith(
       colorScheme: colorScheme,
       scaffoldBackgroundColor: bank.background,
       cardColor: bank.surface,
+      // Pre-M3 widgets read ThemeData.shadowColor instead; keep both in step.
+      shadowColor: bank.shadowTint,
       extensions: <ThemeExtension<dynamic>>[bank],
     );
 

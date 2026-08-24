@@ -1,9 +1,9 @@
 {
   "version": 1,
   "colors": {
-    "primary": "#5E9EA3FF",
-    "primaryVariant": "#7BB8BCFF",
-    "onPrimary": "#1C1C1EFF",
+    "primary": "#7BB8BCFF",
+    "primaryVariant": "#93C5C8FF",
+    "onPrimary": "#0E2426FF",
     "surface": "#2C2C2AFF",
     "surfaceVariant": "#3A3A38FF",
     "onSurface": "#F5F5F3FF",

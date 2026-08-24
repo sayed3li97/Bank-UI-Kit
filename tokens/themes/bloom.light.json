@@ -15,7 +15,8 @@
     "negativeBalance": "#C62828FF",
     "pending": "#B45309FF",
     "frozen": "#8E8E93FF",
-    "cardPatternColor": "#1A203014"
+    "cardPatternColor": "#1A203014",
+    "shadowTint": "#4A2B33FF"
   },
   "radius": {
     "card": 20.0,
@@ -24,7 +25,7 @@
     "chip": 999.0
   },
   "elevation": {
-    "low": 0.02,
+    "low": 1.0,
     "medium": 4.0,
     "high": 8.0
   },
