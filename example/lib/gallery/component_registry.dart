@@ -88,6 +88,7 @@ class GalleryEntry {
     required this.builder,
     this.codeExample,
     this.isFullScreen = false,
+    this.fillsViewport = false,
     this.autoOpen = false,
   });
 
@@ -101,6 +102,18 @@ class GalleryEntry {
 
   /// When true the widget fills the container width (list tiles, banners…).
   final bool isFullScreen;
+
+  /// When true the entry's canonical surface is an entire device screen — a
+  /// blocking gate, an onboarding carousel, a message thread, a full-screen
+  /// picker — whose root deliberately expands to fill the viewport (typically
+  /// a `Column` with an `Expanded` list or page view).
+  ///
+  /// Only the screenshot harness reads this: it lays such entries out against
+  /// the full viewport height, while every other entry is measured at its
+  /// intrinsic height so the capture crops to the widget instead of leaving an
+  /// empty void below it. The interactive gallery previews every entry inside
+  /// a scroll view and ignores this flag.
+  final bool fillsViewport;
 
   /// When true the entry's canonical surface is a modal/sheet behind a
   /// launcher button. Under the screenshot harness (see
@@ -1116,6 +1129,7 @@ final List<GalleryEntry> kGalleryEntries = [
     description: 'Searchable list of saved payment beneficiaries.',
     category: GalleryCategory.transfers,
     isFullScreen: true,
+    fillsViewport: true,
     codeExample: '''BankBeneficiaryPicker(
   beneficiaries: myBeneficiaries,
   onSelected: (b) => proceed(b),
@@ -2073,6 +2087,7 @@ final List<GalleryEntry> kGalleryEntries = [
     description: 'Swipeable notification feed with read/unread state.',
     category: GalleryCategory.notifications,
     isFullScreen: true,
+    fillsViewport: true,
     codeExample: '''BankInAppNotificationCenter(
   notifications: myNotifications,
   onDismiss: (n) => markDismissed(n),
@@ -2834,6 +2849,7 @@ final List<GalleryEntry> kGalleryEntries = [
     description: 'First-run walkthrough with parallax and pill dots.',
     category: GalleryCategory.onboarding,
     isFullScreen: true,
+    fillsViewport: true,
     params: const [],
     builder: (ctx, p) => BankOnboardingCarousel(
       pages: [
@@ -2861,6 +2877,7 @@ final List<GalleryEntry> kGalleryEntries = [
     description: 'Secure-inbox conversation with delivery ticks.',
     category: GalleryCategory.support,
     isFullScreen: true,
+    fillsViewport: true,
     params: const [],
     builder: (ctx, p) => BankSecureMessageThread(
       messages: [
@@ -3645,6 +3662,7 @@ final List<GalleryEntry> kGalleryEntries = [
     description: 'Full-screen gate: maintenance, blocks, force update.',
     category: GalleryCategory.states,
     isFullScreen: true,
+    fillsViewport: true,
     params: const [
       GalleryParam(
         name: 'reason',
