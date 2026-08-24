@@ -1,0 +1,1572 @@
+# bank_ui_kit — Accessibility Conformance Report (machine-readable)
+#
+# Format: OpenACR (https://github.com/GSA/openacr), schema openacr-0.1.0.json.
+# Catalog: 2.4-edition-wcag-2.1-508-eu-en — the OpenACR catalog whose criteria
+# set matches WCAG 2.1 plus EN 301 549 V3.2.1, the technical standard the
+# European Accessibility Act points at. The human-readable companion is
+# ACR.md in this directory.
+#
+# Validate:
+#   npx --yes ts-node src/openacr.ts validate -f openacr.yaml   (from a clone
+#   of GSA/openacr; requires network, so it is NOT part of this repo's CI)
+#
+# The in-repo guard is test/accessibility_conformance_test.dart: it parses this
+# file offline and fails the build when a claim here stops matching the code or
+# the tests that back it.
+
+title: bank_ui_kit Accessibility Conformance Report
+product:
+  name: bank_ui_kit
+  version: "0.3.0"
+  description: >-
+    A themeable Flutter UI component library for mobile banking and fintech
+    apps: 173 widget classes across four design presets (Studio, Bloom,
+    Heritage, Voltage), each in light and dark brightness. The kit is a
+    component library, not an application: it ships widgets that a bank
+    composes into its own screens and journeys.
+author:
+  name: Sayed Ali Alkamel
+  company_name: bank_ui_kit maintainers
+  email: alkamelsayedali@gmail.com
+  website: https://github.com/sayed3li97/bank-ui-kit
+vendor:
+  company_name: bank_ui_kit maintainers
+  email: alkamelsayedali@gmail.com
+  website: https://github.com/sayed3li97/bank-ui-kit
+report_date: "2026-08-24"
+last_modified_date: "2026-08-24"
+version: 2
+catalog: 2.4-edition-wcag-2.1-508-eu-en
+license: CC-BY-4.0
+repository: >-
+  https://github.com/sayed3li97/bank-ui-kit/blob/main/doc/enterprise/acr/openacr.yaml
+feedback: https://github.com/sayed3li97/bank-ui-kit/issues
+
+notes: >-
+  SCOPE. This report covers the bank_ui_kit package as published to pub.dev at
+  version 0.3.0, evaluated as non-web software (EN 301 549 chapter 11) on the
+  iOS and Android targets. Flutter web and desktop builds of the kit exist but
+  were NOT evaluated and are out of scope for this edition; chapter 9 (Web) is
+  reported as out of scope rather than as conforming.
+
+  DIVISION OF RESPONSIBILITY. A component library can only be conformant for
+  the properties it owns: the semantics a widget emits, the colour pairs its
+  tokens produce, the tap targets it enforces, the motion it plays. It cannot
+  be conformant for screen titles, navigation structure, focus order across
+  screens, error-recovery journeys, or the language the host declares — those
+  belong to the application that composes the widgets. Criteria in that second
+  group are recorded as "not applicable" with the reason stated, never as
+  "supports". The bank composing this kit remains the responsible party for
+  end-to-end journey conformance under the European Accessibility Act.
+
+  HONESTY RULE. "Supports" is used only where a mechanism exists AND either an
+  automated gate in this repository proves it, or the reason it holds is
+  structural (the kit ships no audio, so audio criteria cannot fail). Anything
+  resting on code review alone, or on behaviour that has not been exercised
+  with a real screen reader, is at best "partially supports" with the gap
+  named. No claim in this report depends on TalkBack or VoiceOver behaviour,
+  because no TalkBack or VoiceOver testing has been performed.
+
+evaluation_methods_used: >-
+  SELF-ASSESSMENT by the package maintainers. This is not a third-party audit
+  and must not be read as one. No independent accessibility firm has assessed
+  this package; the external-audit plan and its date are in ACR.md.
+
+  Three evaluation methods were used.
+
+  (1) Automated gates that run on every push and pull request via
+  .github/workflows/ci.yml (Flutter 3.44.4): test/accessibility_contrast_test.dart
+  computes WCAG 2.1 relative-luminance contrast ratios for every semantic
+  colour role in all eight preset/brightness combinations and fails below
+  4.5:1 for text pairs and 3.0:1 for the muted "frozen" state;
+  test/accessibility_widget_test.dart runs Flutter's iOSTapTargetGuideline and
+  labeledTapTargetGuideline over a representative interactive composition;
+  test/design_tokens_test.dart pins BankTokens.minTapTarget to 44;
+  test/privacy_mask_test.dart asserts that the privacy mask changes the
+  announced semantic label rather than only the pixels;
+  test/accessibility_targets_test.dart drives the individually audited
+  controls and asserts their hit areas, their focus encoding, and their
+  non-colour state signals; test/sheet_presentation_test.dart asserts the
+  sheet grab handle carries semantics and that reduced motion collapses the
+  sheet transition; test/async_states_test.dart asserts the skeleton ticker
+  stops under reduced motion and that a state change reaches the platform
+  accessibility channel; test/accessibility_conformance_test.dart re-checks
+  the claims in this file against the code and the other gates on every
+  run.
+
+  (2) Source inspection of all 223 library files for the mechanisms named in
+  the remarks below. COUNTING METHODOLOGY, stated so every figure in this
+  report can be reproduced: "widget classes" are public classes extending
+  StatelessWidget or StatefulWidget reachable from the package's exported
+  libraries (core.dart, saving.dart, social.dart, investing.dart,
+  credit.dart), which is 173; "library files" is every .dart file under lib/,
+  which is 223; a "Semantics constructor" is a literal Semantics( call in
+  lib/, of which there are 284 across 140 files; a "trait" is an argument
+  passed to one of those constructors, giving 142 button, 9 header across 8
+  files, and 24 selected/toggled. Also counted the same way: 12 files passing
+  liveRegion, 4 SemanticsService.sendAnnouncement call sites, 66
+  excludeSemantics arguments plus 42 ExcludeSemantics widgets across 27
+  files, BankTokens.minTapTarget referenced in 79 files, and the platform
+  reduced-motion preference read in 40 files (via
+  MediaQuery.disableAnimationsOf, MediaQuery.maybeDisableAnimationsOf, or
+  MediaQuery.of(context).disableAnimations - the kit uses all three spellings,
+  so counting only the first would understate it).
+
+  (3) Manual code review of the mechanisms above across all 223 library files,
+  plus sighted visual review of the example gallery
+  (example/lib/gallery_main.dart) in all four presets in both light and dark,
+  evidenced by the rendered screenshots committed under doc/screenshots/. No
+  assistive technology was involved in that review.
+
+  NOT PERFORMED, and therefore never claimed as support anywhere in this
+  report: screen-reader testing with TalkBack, VoiceOver, or any other
+  assistive technology; testing at text scales above 1.0; testing in landscape
+  or at 400% zoom; switch-control, voice-control, or braille-display testing;
+  any third-party audit.
+
+legal_disclaimer: >-
+  This report is provided in good faith and describes the package as analysed
+  at version 0.3.0 on the date shown. It is a self-assessment, not a
+  legally-binding conformance claim, and it does not transfer any obligation
+  under Directive (EU) 2019/882 (the European Accessibility Act) from the
+  service provider to the package maintainers. Conformance of a deployed
+  banking application depends on how these components are composed, themed,
+  localised, and populated with content, none of which the package controls.
+  Report errors or disagreements through the feedback URL above and they will
+  be re-evaluated and corrected.
+
+chapters:
+  success_criteria_level_a:
+    notes: >-
+      Reported for the "software" component only, per the scope note. These
+      rows are shared between the WCAG 2.1 report and EN 301 549 clause 11.1
+      to 11.4.
+    criteria:
+      - num: "1.1.1"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: icons are paired with visible text or wrapped in a
+                labelled Semantics node; decorative artwork is removed from the
+                tree with excludeSemantics (66 arguments plus 42
+                ExcludeSemantics widgets); BankPressable takes a
+                semanticLabel for whole-surface announcement. The insight
+                confidence indicator, formerly three unlabelled dots, now
+                renders a visible confidence level inside a labelled
+                Semantics node (lib/src/insights/bank_insight_card.dart),
+                gated by "confidence meter is labelled, valued, and spelled
+                out" in test/accessibility_targets_test.dart. Gate:
+                labeledTapTargetGuideline in
+                test/accessibility_widget_test.dart. Gap: the gate covers a
+                representative composition, not all 173 widget classes, and no
+                lint forbids an unlabelled Icon. Gap: the 14 sheet bodies that
+                suppress the built-in grab handle draw their own 40x4 bar with
+                no semantics node, so on those sheets the drag affordance is
+                unannounced (see 1.3.1). Gap:
+                lib/src/insights/bank_spending_breakdown_chart.dart adds no
+                semantics node unless the host passes semanticLabel, so the
+                chart is silent by default (BankCashflowChart and
+                BankBudgetGaugeWidget do synthesise a default summary).
+      - num: "1.2.1"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package ships no audio or video content and no media
+                player. Verified by test/accessibility_conformance_test.dart,
+                which fails if any media-player API appears in lib/.
+      - num: "1.2.2"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                No prerecorded synchronised media is shipped, so there is
+                nothing to caption; see 1.2.1.
+      - num: "1.2.3"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                No prerecorded video is shipped, so there is nothing to
+                describe or to provide an alternative for; see 1.2.1.
+      - num: "1.3.1"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: 284 Semantics constructors carry role and state
+                traits (142 button, 9 header, 24 selected/toggled); composite
+                tiles collapse to one announced node via
+                Semantics(label:, excludeSemantics: true), so
+                lib/src/transactions/bank_transaction_list_tile.dart reads as
+                one sentence instead of five fragments. Structure improved in
+                0.3.0: every modal surface is now presented through
+                lib/src/common/bank_sheet.dart, whose BankSheetHeader marks
+                the sheet title with the header trait and whose BankSheetHandle
+                gives the drag affordance a labelled node, and
+                lib/src/common/bank_app_bar.dart marks the large-title tier of
+                BankAppBar and BankSliverAppBar as a header while excluding the
+                framework's duplicate unlabelled header node. Gate: "grab
+                handle renders and carries semantics" in
+                test/sheet_presentation_test.dart. Gap: 14 of the 25
+                BankSheet.show call sites pass showHandle false because the
+                body paints its own ground, and every one of those bodies
+                draws a plain 40x4 Container in place of BankSheetHandle, so
+                those sheets announce no handle at all. Gap:
+                lib/src/common/bank_text_field.dart renders its label and its
+                errorText as sibling Text widgets rather than through
+                InputDecoration.labelText and InputDecoration.errorText, so
+                assistive technology does not associate either with the field.
+                Gap: no widget in the package sets the textField trait.
+      - num: "1.3.2"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: every layout is built in reading order, so Flutter's
+                default reading-order traversal matches the visual order. Gap:
+                the package contains zero FocusTraversalGroup usages, so
+                composite controls (keypads, sheets, the bottom nav) rely on
+                that default rather than declaring their own order, and no test
+                asserts the resulting sequence.
+      - num: "1.3.3"
+        components:
+          - name: software
+            adherence:
+              level: supports
+              notes: >-
+                Mechanism: instructions supplied by the package route through
+                lib/src/scope/bank_ui_strings.dart and none of them identify a
+                control by shape, size, colour, or screen position. Evidence:
+                manual review of the string table, plus a scan of every string
+                literal in lib/ for positional and sensory wording, which found
+                none. There is no automated gate keeping it that way, and
+                content the host supplies is the host's responsibility.
+      - num: "1.4.1"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: money is rendered by lib/src/common/money_formatter.dart
+                with an explicit sign and currency, so a debit is not
+                distinguishable by colour alone; status is carried by label
+                text next to the colour; the spending breakdown chart pairs
+                each slice with a text legend of category name and amount.
+                Three colour-only signals were removed in 0.3.0:
+                lib/src/auth/bank_otp_input.dart now keeps its fill constant
+                and encodes focus as an added ring rather than a recolour, and
+                signals error with a thickened border and a shake as well as
+                the danger hue; the insight confidence indicator carries a
+                text level beside its bars; and a chosen value in
+                lib/src/common/bank_country_picker.dart and
+                lib/src/onboarding/bank_address_form.dart is now typographically
+                distinct from a placeholder (weight 600 against 400) rather
+                than distinguished by ink alone. Gate:
+                test/accessibility_targets_test.dart asserts the OTP error
+                state is distinguishable without colour and that picker values
+                are typographically distinct from placeholders. Gap: no
+                automated gate proves colour is never the sole carrier across
+                all 173 widget classes, and chart series supplied by the host
+                may be.
+      - num: "1.4.2"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                Nothing in the package plays audio automatically or otherwise,
+                so there is no sound for a user to pause or silence; see
+                1.2.1.
+      - num: "2.1.1"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: lib/src/common/bank_pressable.dart wraps every
+                tappable surface in FocusableActionDetector and maps both
+                ActivateIntent (Space) and ButtonActivateIntent (Enter) to the
+                tap callback; all other interactive widgets are focusable
+                Material controls. Gate: a keyboard-activation test in
+                test/accessibility_conformance_test.dart drives BankPressable
+                with Enter and asserts the callback fires. Gap: the
+                swipe-actioned rows built on Dismissible - one file,
+                lib/src/notifications/bank_in_app_notification_center.dart, not
+                the four this report previously claimed; the earlier figure
+                counted the unrelated isDismissible sheet parameter - expose no
+                keyboard-reachable equivalent, and the stories carousel's pause
+                is a press-and-hold gesture with no key binding.
+      - num: "2.1.2"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: no widget installs a FocusScope that withholds
+                focus; sheets and dialogs use the standard Flutter routes,
+                which release focus on dismissal. Evidence: source inspection
+                only. Gap: no automated test walks focus into and back out of
+                each modal surface.
+      - num: "2.1.4"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package registers no keyboard shortcuts of any kind, so no
+                single-character shortcut exists to remap or disable. Gate:
+                test/accessibility_conformance_test.dart fails if
+                SingleActivator, CharacterActivator, Shortcuts, or
+                CallbackShortcuts appears in lib/.
+      - num: "2.2.1"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: lib/src/auth/bank_session_timeout_dialog.dart takes
+                the remaining time as a parameter, exposes an extend action,
+                and marks the countdown as a liveRegion so it is announced as
+                it changes; lib/src/auth/bank_otp_input.dart exposes a resend
+                countdown. Gap: the package cannot enforce the WCAG timing
+                rules (warn at least 20 seconds ahead, allow extension at least
+                ten times) because the host chooses the durations and decides
+                what happens at zero.
+      - num: "2.2.2"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: lib/src/common/bank_stories_carousel.dart pauses its
+                auto-advance while pressed and disables it entirely under
+                MediaQuery.disableAnimationsOf;
+                lib/src/onboarding/bank_onboarding_carousel.dart defaults
+                autoAdvance to false and cancels its timer under reduced
+                motion; the price ticker likewise. Closed in 0.3.0:
+                lib/src/states/bank_skeleton_loader.dart now reads
+                MediaQuery.maybeDisableAnimationsOf, stops its controller
+                rather than merely ignoring it, and drops the ShaderMask
+                entirely, so the shimmer is static under reduced motion. Gate:
+                "reduced motion stops the ticker and drops the mask" in
+                test/async_states_test.dart. Gap: three widgets still start a
+                repeating controller with no reduced-motion check at all -
+                lib/src/cards/bank_virtual_card_widget.dart,
+                lib/src/onboarding/bank_liveness_check_overlay.dart, and
+                lib/src/onboarding/bank_async_verification_state.dart - so
+                moving decoration a user asked to stop still runs on those
+                surfaces. Gap: the carousel pause is a press-and-hold gesture
+                with no assistive-technology-reachable control.
+      - num: "2.3.1"
+        components:
+          - name: software
+            adherence:
+              level: supports
+              notes: >-
+                Mechanism: no widget flashes. The package does contain
+                repeating animations - the 1200 ms skeleton shimmer
+                (BankTokens.durationXSlow doubled) plus glow, pulse, sweep and
+                wiggle controllers in nine other files - but the fastest of
+                them that changes luminance is a 600 ms pulse, which is 1.7
+                cycles per second against the criterion's limit of three, and
+                the single sub-333 ms repeat (the
+                quick-actions edit wiggle, 150 ms reversed) is a
+                Transform.rotate, which is motion rather than flash. Gate:
+                test/accessibility_conformance_test.dart asserts every
+                BankTokens duration token is at least 150 ms, which holds the
+                floor under every token-driven animation. Correction: earlier
+                editions of this report described that 150 ms floor as proof
+                that no animation can reach three cycles per second. It is not
+                - a 150 ms period is 6.7 cycles per second - so the claim now
+                rests on the per-animation review above, and a duration token
+                dropping below 150 ms still fails the build.
+      - num: "2.4.1"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                A component library ships no blocks of content repeated across
+                screens, and therefore nothing to bypass. Skip links, landmark
+                structure, and repeated-navigation design belong to the
+                application that composes these widgets.
+      - num: "2.4.2"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package ships no screens or windows. BankAppBar renders the
+                title the host passes to it; naming screens is the composing
+                application's responsibility.
+      - num: "2.4.3"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: within a widget the tree is built in reading order,
+                so the default traversal policy produces a meaningful sequence.
+                Gap: zero FocusTraversalGroup usages, so no widget declares its
+                own order, and focus order across a screen is set by the host's
+                composition, which this package cannot test.
+      - num: "2.4.4"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: every interactive widget takes an explicit label,
+                and BankPressable.semanticLabel lets a composite tile announce
+                its whole purpose. Gap: the purpose text is host-supplied, and
+                no gate checks that a label describes a destination rather than
+                repeating a generic verb.
+      - num: "2.5.1"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: no multipoint gesture exists anywhere in the
+                package. Gate: test/accessibility_conformance_test.dart fails
+                if onScaleStart, onScaleUpdate, onScaleEnd, or InteractiveViewer
+                appears in lib/. Gap: the swipe-to-action row built on
+                Dismissible (one file) and the press-and-hold carousel pause
+                are path- and duration-based single-pointer gestures shipped
+                without a documented simple-tap alternative.
+      - num: "2.5.2"
+        components:
+          - name: software
+            adherence:
+              level: supports
+              notes: >-
+                Mechanism: lib/src/common/bank_pressable.dart activates on
+                GestureDetector.onTap, which fires on the up-event and is
+                cancelled when the pointer leaves the target; no widget in the
+                package acts on a down-event. Gate: a behavioural test in
+                test/accessibility_conformance_test.dart presses a
+                BankPressable, drags off it, releases, and asserts the callback
+                never fired.
+      - num: "2.5.3"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: labels on single-purpose controls are the visible
+                text. Gap: composite tiles that use excludeSemantics replace
+                the visible text with a summary sentence, which can reorder or
+                reword the visible label, and no gate proves the accessible
+                name still starts with it. This is the criterion most likely to
+                fail a voice-control review, and it has not been reviewed with
+                voice control.
+      - num: "2.5.4"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                No function is operated by device motion or by gesturing at a
+                sensor; the package depends on no sensor plugin and reads no
+                accelerometer.
+      - num: "3.1.1"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package declares no human language of its own. Strings come
+                from the host through lib/src/scope/bank_ui_strings.dart and
+                the locale comes from the host's Localizations and
+                Directionality; declaring the software's language is the
+                composing application's responsibility.
+      - num: "3.2.1"
+        components:
+          - name: software
+            adherence:
+              level: supports
+              notes: >-
+                Mechanism: no widget navigates, submits, or opens a surface in
+                response to receiving focus; focus changes only alter the
+                focus-ring and state-layer painting in
+                lib/src/common/bank_pressable.dart. The one focus-driven
+                content change is lib/src/onboarding/bank_address_form.dart,
+                which marks a field touched on focus LOSS so its validation
+                message appears — a change of content on blur, not a change of
+                context on focus. Evidence: source inspection of every focus
+                callback in lib/ — no automated gate.
+      - num: "3.2.2"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: input widgets report through callbacks and never
+                navigate on their own. Gap:
+                lib/src/auth/bank_otp_input.dart moves focus between cells as
+                digits arrive and invokes onCompleted the moment the final
+                digit lands, so the change of context that usually follows is
+                initiated by typing rather than by an explicit submit the user
+                chose; the package exposes no way to defer it.
+      - num: "3.3.1"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: lib/src/common/bank_text_field.dart takes errorText,
+                renders it in the danger colour under the field, and tints the
+                label and border to match, so the error is identified in text
+                and not by colour alone. Gap: that error text is a sibling Text
+                widget, not InputDecoration.errorText and not a live region, so
+                a screen reader neither ties it to the field nor announces it
+                when it appears.
+      - num: "3.3.2"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: BankTextField renders a persistent label above the
+                field rather than a placeholder that disappears on focus, and
+                offers a helper slot for instructions. Gap: the same
+                association gap as 3.3.1 — the visible label is not the field's
+                accessible name.
+      - num: "4.1.1"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                Flutter composites a widget tree directly; there is no markup
+                to be parsed, no start or end tags, and no duplicate IDs. This
+                is the standard non-web position, and WCAG 2.2 removed the
+                criterion for the same reason.
+      - num: "4.1.2"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: 284 Semantics nodes supply name, role, and state —
+                142 button traits, 9 header traits, 24 selected/toggled traits
+                — and BankPressable emits button plus enabled/disabled for
+                every custom surface. Gate: labeledTapTargetGuideline in
+                test/accessibility_widget_test.dart, plus the per-control
+                assertions in test/accessibility_targets_test.dart. Gap: no
+                widget sets the
+                textField trait, so text inputs report a weaker role than they
+                should; and no name, role, or value has been verified as
+                actually announced by TalkBack or VoiceOver, which is the only
+                evidence that would justify "supports".
+
+  success_criteria_level_aa:
+    notes: >-
+      Reported for the "software" component only, per the scope note.
+    criteria:
+      - num: "1.2.4"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                No live synchronised media is shipped, so there is no live
+                stream to caption; see 1.2.1.
+      - num: "1.2.5"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                No prerecorded video is shipped, so there is no visual track
+                needing audio description; see 1.2.1.
+      - num: "1.3.4"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: no widget locks or requests a device orientation.
+                Gate: test/accessibility_conformance_test.dart fails if
+                SystemChrome appears in lib/. Gap: no layout has been tested in
+                landscape, and several card faces carry fixed aspect ratios
+                that have not been checked against a short viewport.
+      - num: "1.3.5"
+        components:
+          - name: software
+            adherence:
+              level: does-not-support
+              notes: >-
+                Only lib/src/auth/bank_otp_input.dart declares an autofill
+                purpose (AutofillHints.oneTimeCode). BankTextField,
+                BankPhoneInputField, BankAmountInputField, and BankAddressForm
+                expose no autofillHints parameter at all, so a host cannot mark
+                name, email, telephone, or address fields even if it wants to.
+                Closing this is additive (one optional parameter per input
+                widget) and is the first item on the roadmap in ACR.md.
+      - num: "1.4.3"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Gate: test/accessibility_contrast_test.dart holds onSurface,
+                onSurfaceVariant, onPrimary, onBackground, positiveBalance,
+                negativeBalance, and pending to at least 4.5:1 against their
+                canvases in all eight preset/brightness combinations - 92
+                test cases in that file in total - and CI fails below that.
+                test/accessibility_conformance_test.dart recomputes those
+                ratios independently so the claim cannot rot. Gap: the gate
+                measures token pairs, not rendered pixels — text drawn over
+                cardSurfaceGradient or accentGradient (Voltage, Bloom) and over
+                the generative BankCardPattern overlays is not measured, and
+                host-supplied colours are not gated at all.
+      - num: "1.4.4"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: all text is real text in logical pixels and inherits
+                the platform text scale through MediaQuery; no widget overrides
+                textScaler or textScaleFactor. Gate:
+                test/accessibility_conformance_test.dart fails if a TextScaler
+                or textScaleFactor override appears in lib/. Gap: fixed-height
+                cells clip above roughly 1.5x — the amount keypad's keys
+                default to 56 logical pixels
+                (lib/src/transfers/bank_amount_keypad.dart) and the PIN keypad
+                uses a fixed square key
+                (lib/src/auth/bank_pin_keypad.dart) — and there is no
+                text-scale golden coverage to catch a regression.
+      - num: "1.4.5"
+        components:
+          - name: software
+            adherence:
+              level: supports
+              notes: >-
+                Mechanism: every string is rendered as text; the package bundles
+                no raster images at all, only font files under
+                lib/src/assets/fonts. Card network marks are drawn as vectors
+                and are logotypes, which the criterion exempts. Gate:
+                test/accessibility_conformance_test.dart fails if any non-font
+                asset appears under lib/src/assets.
+      - num: "1.4.10"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: layouts are constraint-driven and scroll vertically;
+                no widget requires horizontal scrolling to read text. Gap: no
+                widget has been measured at a 320-pixel-equivalent width or at
+                400% zoom, so reflow is asserted from construction, not from
+                evidence.
+      - num: "1.4.11"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Gate: the "frozen" muted state is held to at least 3.0:1
+                against surface in all eight combinations by
+                test/accessibility_contrast_test.dart. Gap: two non-text
+                contrasts are ungated and therefore cannot be claimed — the
+                hairline separator derived from BankTokens.hairlineColor, and
+                the keyboard focus ring, which paints the primary colour at
+                BankTokens.focusRingOpacity of 0.4 over whatever sits behind
+                it, so its composited ratio is unmeasured and may fall below
+                3.0:1 on some presets.
+      - num: "1.4.12"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package offers no mode for adjusting line height, letter
+                spacing, word spacing, or paragraph spacing, and Flutter
+                software exposes no user mechanism to override them. Per
+                WCAG2ICT, the criterion applies to non-web software only where
+                the software supports those text-style properties.
+      - num: "1.4.13"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: hover and focus produce state-layer and focus-ring
+                painting only, revealing no additional content; the package
+                contains two Tooltips, in
+                lib/src/payments/bank_atm_locator_tile.dart and
+                lib/src/onboarding/bank_step_progress_indicator.dart, which
+                inherit Material's dismissible and hoverable behaviour. Gap:
+                neither tooltip nor the press-to-reveal balance in
+                lib/src/accounts/bank_peek_balance.dart has been tested for
+                dismissibility and persistence.
+      - num: "2.4.5"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package ships no set of screens and no navigation model, so
+                there is nothing to provide multiple ways to reach. Search,
+                site maps, and navigation belong to the composing application.
+      - num: "2.4.6"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: every control takes an explicit descriptive label,
+                and 9 header traits across 8 files mark headings, including
+                lib/src/transactions/bank_transaction_group_header.dart, the
+                sheet title in lib/src/common/bank_sheet.dart, and the
+                large-title tier of both bars in
+                lib/src/common/bank_app_bar.dart - three of the nine landed in
+                0.3.0 with the sheet and app-bar work, so every branded modal
+                and every large title is now a heading. Gap: most section
+                titles inside widget bodies are still plain Text without the
+                header trait, so heading-by-heading navigation remains largely
+                unavailable to a screen reader across the 173 widget classes.
+      - num: "2.4.7"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: lib/src/common/bank_pressable.dart paints a
+                2-logical-pixel focus ring outside the child's bounds, at a
+                radius concentric with the surface, whenever
+                FocusableActionDetector reports the focus highlight; Material
+                controls keep their own focus overlays. lib/src/auth/bank_otp_input.dart
+                adopted that same ring in 0.3.0, replacing a recoloured border
+                and fill, and reserves the ring's inset on every cell so the row
+                does not shift as focus moves. Gate: "OTP encodes focus once and
+                keeps the fill stable" in
+                test/accessibility_targets_test.dart. Gap: no gate asserts the
+                ring appears on BankPressable itself, and its contrast is
+                unmeasured (see 1.4.11), so "visible" is claimed for existence,
+                not for perceptibility.
+      - num: "3.1.2"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package supplies no prose passages of its own and marks no
+                language on any subtree; strings and their language come from
+                the host. See 3.1.1.
+      - num: "3.2.3"
+        components:
+          - name: software
+            adherence:
+              level: not-applicable
+              notes: >-
+                Navigation repeated across screens is the composing
+                application's structure, not the package's.
+      - num: "3.2.4"
+        components:
+          - name: software
+            adherence:
+              level: supports
+              notes: >-
+                Mechanism: consistent identification is what the package exists
+                to provide — one interaction grammar
+                (lib/src/common/bank_pressable.dart), one icon vocabulary
+                (lib/src/common/bank_icon_spec.dart), one string table
+                (lib/src/scope/bank_ui_strings.dart), and one token set, so a
+                component with the same function is identified identically
+                wherever it is placed. Evidence: architecture plus
+                test/design_tokens_test.dart, which pins the token values.
+                Scope: the package guarantees the vocabulary; applying it
+                consistently across a journey remains the host's job.
+      - num: "3.3.3"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: BankTextField provides errorText and helper slots
+                for a suggestion, and the OTP and PIN flows surface retry
+                affordances. Gap: the package supplies no suggestion text
+                itself and cannot know what correction is valid; whether a
+                usable suggestion is offered is decided by the host.
+      - num: "3.3.4"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: the package ships the confirm-before-commit
+                vocabulary a financial transaction needs —
+                lib/src/transfers/bank_transfer_review_card.dart for review,
+                lib/src/transfers/bank_transaction_pin_sheet.dart and
+                lib/src/auth/bank_sca_approval_sheet.dart for explicit
+                confirmation, and a deliberate hold gesture on
+                lib/src/auth/bank_panic_freeze_button.dart. Gap: nothing in the
+                package can force a host to place a review or reversal step in
+                the journey, and this criterion is judged on the journey. For
+                an EAA assessment this row is the bank's to answer.
+      - num: "4.1.3"
+        components:
+          - name: software
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: 12 files mark status surfaces as liveRegion,
+                including lib/src/states/bank_toast_banner.dart,
+                lib/src/states/bank_connectivity_banner.dart,
+                lib/src/auth/bank_otp_input.dart, and
+                lib/src/auth/bank_session_timeout_dialog.dart; four call
+                sites push explicit announcements through
+                SemanticsService.sendAnnouncement - the two carousels, plus
+                lib/src/states/bank_async_content.dart, which speaks the
+                skeleton-to-loaded transition and stays silent on first build
+                and where MediaQuery.supportsAnnounceOf is false, and
+                lib/src/cards/bank_horizontal_account_card.dart, which speaks
+                the copy confirmation. Gate: test/async_states_test.dart and
+                test/accessibility_targets_test.dart capture the platform
+                accessibility channel and assert the announcement is actually
+                dispatched, so the message is now observed leaving the
+                framework rather than merely declared. Gap: dispatch is not
+                speech - no screen-reader session has confirmed any of these is
+                spoken, which is why this row is not "supports". Gap: the
+                inline error text described in 3.3.1 still announces
+                nothing.
+
+  functional_performance_criteria:
+    disabled: true
+    notes: >-
+      Revised Section 508 chapters 3 to 6 are not evaluated in this edition.
+      This report is scoped to WCAG 2.1 Level A/AA and EN 301 549 V3.2.1, the
+      technical standard the European Accessibility Act relies on. The WCAG
+      tables above are shared between the two standards; a Section 508 edition
+      can be issued on request.
+  hardware:
+    disabled: true
+    notes: >-
+      Not evaluated in this edition; see the note on chapter 3. The package is
+      software and ships no hardware.
+  software:
+    disabled: true
+    notes: >-
+      Not evaluated in this edition as a Section 508 chapter; the equivalent
+      requirements are answered under EN 301 549 chapter 11 below.
+  support_documentation_and_services:
+    disabled: true
+    notes: >-
+      Not evaluated in this edition as a Section 508 chapter; the equivalent
+      requirements are answered under EN 301 549 chapter 12 below.
+
+  en_301_549_functional_performance:
+    notes: >-
+      Chapter 4 states outcomes rather than mechanisms. Where an outcome
+      depends on a screen reader, a magnifier, or a switch device actually
+      working with the composed application, it is reported as partially
+      supported, because none of those have been exercised.
+    criteria:
+      - num: "4.1.1"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                Clause 4.1.1 is a scoping provision, not a testable
+                requirement; the outcomes it scopes are answered in 4.2.1 to
+                4.2.11 below.
+      - num: "4.2.1"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: every interactive surface emits a semantics node
+                with a name and a role, composite tiles collapse into one
+                readable sentence, and 12 files announce state changes through
+                liveRegion. Gap: usage without vision is an outcome that can
+                only be evidenced with a screen reader, and no TalkBack or
+                VoiceOver session has been run. See also the unassociated field
+                labels in 1.3.1.
+      - num: "4.2.2"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: contrast is gated at 4.5:1 for all text roles in all
+                eight preset/brightness combinations
+                (test/accessibility_contrast_test.dart), text is real text that
+                inherits the platform scale, and both a light and a dark
+                brightness ship for every preset. Gap: the fixed-height keypads
+                clip above roughly 1.5x text scale, and no magnification or
+                large-text session has been run.
+      - num: "4.2.3"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: amounts carry an explicit sign and currency and
+                statuses carry label text, so the primary financial signal is
+                not colour-only. Gap: not gated, and chart series may rely on
+                hue; see 1.4.1.
+      - num: "4.2.4"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package conveys no information through sound at any point,
+                so no function depends on the user hearing it; see 1.2.1.
+      - num: "4.2.5"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                There is no audio output whose clarity, volume, or separation
+                from background sound could be enhanced; see 1.2.1.
+      - num: "4.2.6"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                No function requires vocal input or speech: the package
+                integrates no speech recognition and offers no voice-only
+                control path.
+      - num: "4.2.7"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: BankTokens.minTapTarget is 44 logical pixels, pinned
+                by test/design_tokens_test.dart and consumed in 79 files;
+                iOSTapTargetGuideline runs in
+                test/accessibility_widget_test.dart. Three controls that were
+                below the floor were enlarged in 0.3.0 - the insight-card
+                dismiss button, the IBAN copy affordance on the horizontal
+                account card (now the whole row rather than a 14-pixel glyph),
+                and the address-form edit button - each asserted at 44 by 44 in
+                both dimensions by test/accessibility_targets_test.dart, which
+                also re-checks them in RTL, in dark, and on a flat preset. No
+                interaction needs simultaneous pointers. Gap: the tap-target
+                gate covers audited controls and a representative composition
+                rather than all 173 widget classes, and the swipe and
+                press-and-hold gestures named in 2.5.1 demand sustained
+                manipulation with no alternative.
+      - num: "4.2.8"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: the 44-pixel target floor and generous spacing
+                tokens keep controls reachable, and primary actions sit at the
+                bottom of sheets. Gap: reach is a property of the composed
+                screen, which the package does not control.
+      - num: "4.2.9"
+        components:
+          - name: none
+            adherence:
+              level: supports
+              notes: >-
+                Mechanism: nothing flashes; the fastest repeating animation
+                that changes luminance is a 600 ms pulse (1.7 cycles per
+                second), and the skeleton shimmer is 1200 ms. Gate: the motion-token floor
+                asserted in test/accessibility_conformance_test.dart, plus the
+                per-animation review recorded in 2.3.1, which also corrects
+                the flash-rate reasoning earlier editions used here.
+      - num: "4.2.10"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: plain-language default strings, persistent field
+                labels rather than disappearing placeholders, confirm-before-
+                commit sheets for money movement, and reduced-motion support in
+                40 files. Gap: no cognitive-accessibility review or user
+                testing has been performed, and the three widgets named in
+                2.2.2 still animate through a reduced-motion preference.
+      - num: "4.2.11"
+        components:
+          - name: none
+            adherence:
+              level: supports
+              notes: >-
+                Mechanism: the privacy mask changes what is announced, not only
+                what is drawn — lib/src/accounts/bank_balance_text.dart
+                announces "Balance hidden" instead of the amount when
+                BankUiScope.privacyEnabled is set, so a screen-reader user is
+                not the only person in the room whose balance is spoken aloud;
+                PIN entry is obscured. Gate: test/privacy_mask_test.dart
+                asserts the hidden label is present AND that no "Balance:"
+                label leaks into the semantics tree;
+                test/accessibility_conformance_test.dart requires both
+                assertions to still exist.
+
+  en_301_549_generic_requirements:
+    notes: >-
+      Chapter 5 addresses closed functionality and physical operable parts.
+      The package is open functionality running on iOS and Android with the
+      platform accessibility services available, and it ships no hardware, so
+      most of this chapter does not apply.
+    criteria:
+      - num: "5.1"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package is not closed functionality: it runs on platforms
+                whose accessibility services are available to the user and it
+                does not prevent assistive technology from attaching.
+      - num: "5.2"
+        components:
+          - name: none
+            adherence:
+              level: supports
+              notes: >-
+                Mechanism: the package installs no platform overrides and never
+                intercepts or suppresses an accessibility setting; it reads
+                MediaQuery.disableAnimations in 40 files and adapts. Activation
+                happens in the operating system's settings and is not blocked.
+      - num: "5.3"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: the package ships a non-biometric path alongside the
+                biometric one — lib/src/auth/bank_pin_keypad.dart and
+                lib/src/auth/bank_otp_input.dart next to
+                lib/src/auth/bank_biometric_prompt_button.dart, which merely
+                invokes a host-supplied callback and holds no biometric data.
+                Gap: nothing in the package requires the host to offer the
+                non-biometric alternative; a bank that ships only the biometric
+                button would not meet this clause, and that choice is the
+                bank's.
+      - num: "5.4"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package converts, transcodes, and copies no content between
+                formats, so there is no conversion in which accessibility
+                information could be lost.
+      - num: "5.5"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package is software only and ships no physical operable
+                parts, so there is no control needing tactile discernibility or
+                an operation mode that does not require vision.
+      - num: "5.6"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package ships no physical locking or toggle control such as
+                a caps-lock key whose status would need a tactile or auditory
+                indication.
+      - num: "5.7"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package provides no keyboard hardware and configures no key
+                repeat rate or delay; those belong to the platform's own
+                keyboard settings.
+      - num: "5.8"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                No physical keyboard is provided, so there is no key-acceptance
+                timing for the package to make adjustable.
+      - num: "5.9"
+        components:
+          - name: none
+            adherence:
+              level: supports
+              notes: >-
+                Mechanism: no interaction anywhere in the package requires two
+                pointers or two simultaneous actions. Gate:
+                test/accessibility_conformance_test.dart fails if any
+                multipoint gesture API appears in lib/.
+
+  en_301_549_ICT_with_2way_voice:
+    disabled: true
+    notes: >-
+      Not applicable: the package provides no two-way voice communication.
+  en_301_549_ICT_with_Video:
+    disabled: true
+    notes: >-
+      Not applicable: the package provides no video capability; see 1.2.1.
+  en_301_549_hardware:
+    disabled: true
+    notes: >-
+      Not applicable: the package is software and ships no hardware.
+  en_301_549_web:
+    disabled: true
+    notes: >-
+      Out of scope for this edition. Flutter can compile this package for the
+      web, and the example harness does so for screenshots, but no web build
+      has been evaluated for accessibility and none is claimed. A web edition
+      requires evaluating Flutter's web semantics output, which is a separate
+      exercise.
+
+  en_301_549_non-web-documents:
+    notes: >-
+      The package produces no documents.
+    criteria:
+      - num: "10.0"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                Informative clause. The package generates no non-web documents;
+                statements, receipts, and exports are produced by the host.
+      - num: "10.5"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package produces no documents at all, so no document
+                carries captions whose positioning could be evaluated.
+      - num: "10.6"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package produces no documents at all, so no document
+                carries an audio description whose timing could be
+                evaluated.
+
+  en_301_549_software:
+    notes: >-
+      Chapter 11 is the chapter that matters for a UI component library.
+      Clauses 11.1 to 11.4 mirror the WCAG success criteria answered in Tables
+      1 and 2 above and are not repeated here. Clauses 11.5 onward concern the
+      accessibility-services bridge. Everything in 11.5.2 is implemented by the
+      Flutter framework, which converts the semantics tree this package builds
+      into Android AccessibilityNodeInfo and iOS UIAccessibility objects. The
+      package's contribution is the content of that tree. Because the
+      end-to-end bridge has not been exercised with a screen reader, no clause
+      in 11.5.2 is claimed as fully supported.
+    criteria:
+      - num: "11.0"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                Clause 11.0 is informative and states no testable requirement;
+                the software requirements it introduces are answered in 11.5
+                onward and in Tables 1 and 2.
+      - num: "11.5"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Interoperability rests on Flutter's platform accessibility
+                bridge, which this package feeds with 284 Semantics nodes
+                across 140 files. Gap: the bridge's output has not been
+                inspected on a device with assistive technology running.
+      - num: "11.5.1"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package is not closed functionality; see 5.1.
+      - num: "11.5.2"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Accessibility services are provided by the platform and used by
+                Flutter; the package supplies the semantic content. Untested on
+                device.
+      - num: "11.5.2.1"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Platform accessibility service support is provided by the
+                Flutter engine for any software built with it. The package adds
+                no barrier and contributes labels, roles, and states. Gap: not
+                verified on device.
+      - num: "11.5.2.2"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                As 11.5.2.1: the framework exposes the semantics tree to
+                assistive technologies; the package neither blocks nor
+                validates that exposure.
+      - num: "11.5.2.3"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                The package uses the documented Semantics API rather than
+                painting inaccessible custom surfaces; 66 excludeSemantics
+                arguments and 42 ExcludeSemantics widgets remove decorative
+                noise instead of hiding content. Gap: not verified on device.
+      - num: "11.5.2.4"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Assistive technology receives the semantics tree through the
+                platform bridge. Gap: never observed in practice.
+      - num: "11.5.2.5"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Object information — role, boundary, name, state — is supplied
+                for interactive surfaces: 142 button traits, 9 header traits,
+                24 selected/toggled traits. Gap: no textField trait is set
+                anywhere, so text inputs report incomplete role information
+                (see 1.3.1 and 4.1.2).
+      - num: "11.5.2.6"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package ships no data table or grid; there are no rows,
+                columns, or headers to expose. Gate:
+                test/accessibility_conformance_test.dart fails if DataTable
+                appears in lib/.
+      - num: "11.5.2.7"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Values are exposed for the widgets that carry them — balances,
+                gauges, sliders, the OTP field. Gap: no gate proves a value
+                node exists for every value-bearing widget, and value changes
+                have not been observed with assistive technology.
+      - num: "11.5.2.8"
+        components:
+          - name: none
+            adherence:
+              level: does-not-support
+              notes: >-
+                Label relationships are the package's weakest area.
+                lib/src/common/bank_text_field.dart draws its label and its
+                error message as sibling Text widgets rather than through
+                InputDecoration, so no programmatic relationship exists between
+                a field and its label or its error. This affects every input
+                built on that widget. The fix is additive and is item 2 on the
+                roadmap in ACR.md.
+      - num: "11.5.2.9"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Parent-child relationships follow the widget tree, and merged
+                composite nodes are deliberate: a transaction row announces one
+                sentence rather than five fragments. Gap: merging is a design
+                decision that has not been validated with a screen reader, and
+                over-merging can hide structure.
+      - num: "11.5.2.10"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                All text is real text exposed to the platform, in logical
+                pixels, with bundled fallback fonts covering Arabic, Devanagari,
+                and currency glyphs. Gap: not verified through an assistive
+                technology's text API.
+      - num: "11.5.2.11"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Tap and long-press map to the standard semantics actions
+                through BankPressable and Flutter's gesture semantics. Gap:
+                the swipe actions built on Dismissible in the one file that
+                uses it expose no equivalent semantics action, so an assistive
+                technology cannot list or invoke them (see 2.1.1).
+      - num: "11.5.2.12"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Available actions can be invoked through the semantics layer
+                for tap and long-press. Same Dismissible gap as 11.5.2.11.
+      - num: "11.5.2.13"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Focus and selection are tracked by the framework;
+                BankPressable reports focus through FocusableActionDetector and
+                24 selected/toggled traits carry selection state. Gap: no
+                FocusTraversalGroup declares order (see 2.4.3), and tracking
+                has not been observed on device.
+      - num: "11.5.2.14"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Focus can be set programmatically through the FocusNode
+                parameters the input widgets expose. Gap: not every interactive
+                widget accepts a FocusNode, and none has been driven by an
+                assistive technology.
+      - num: "11.5.2.15"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Change notification is declared through liveRegion in 12 files
+                and four SemanticsService.sendAnnouncement call sites, two of
+                them added in 0.3.0 for the skeleton-to-loaded transition and
+                the copy confirmation. Gap: the announcements are observed
+                reaching the platform channel by test/async_states_test.dart
+                and test/accessibility_targets_test.dart, but never observed
+                being spoken; and the inline error text still announces
+                nothing (see 4.1.3).
+      - num: "11.5.2.16"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                State and property changes flow through the framework when a
+                widget rebuilds with new Semantics values. Gap: not verified
+                with assistive technology.
+      - num: "11.5.2.17"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Text and value modification is handled by Flutter's editable
+                text implementation, which the package uses unmodified. Gap:
+                not verified with assistive technology.
+      - num: "11.6"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Accessibility usage is documented in
+                doc/enterprise/accessibility-conformance.md and in this report.
+                Gap: the per-widget API documentation does not yet state the
+                semantics each widget emits.
+      - num: "11.6.1"
+        components:
+          - name: none
+            adherence:
+              level: supports
+              notes: >-
+                The package exposes no accessibility feature of its own to
+                control, and it never overrides the user's platform settings:
+                it reads MediaQuery.disableAnimations and adapts, and it sets
+                no SystemChrome or accessibility override anywhere. Gate: the
+                SystemChrome scan in
+                test/accessibility_conformance_test.dart.
+      - num: "11.6.2"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: nothing in the package disables or intercepts a
+                platform accessibility feature, and the skeleton-loader defect
+                this row carried at 0.2.0 is fixed:
+                lib/src/states/bank_skeleton_loader.dart now stops its
+                controller and drops its ShaderMask under reduced motion, gated
+                by test/async_states_test.dart. Gap: the same defect survives
+                in three other widgets, which start repeating controllers
+                without reading the preference at all -
+                lib/src/cards/bank_virtual_card_widget.dart,
+                lib/src/onboarding/bank_liveness_check_overlay.dart, and
+                lib/src/onboarding/bank_async_verification_state.dart. Until
+                those are fixed the kit still disrupts a setting the user
+                chose, so this row stays below "supports" (see 2.2.2).
+      - num: "11.7"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Mechanism: the package honours the platform text scale
+                implicitly (no textScaler override anywhere), the platform
+                brightness through paired light and dark presets, and the
+                reduced-motion preference in 40 files, including the skeleton
+                loader and the sheet transition as of 0.3.0. Gap: it reads none
+                of MediaQuery.boldText, MediaQuery.highContrast, or
+                MediaQuery.accessibleNavigation, so users who set bold text or
+                a high-contrast theme get no adaptation. Gap: the three
+                widgets named in 11.6.2 still ignore reduced motion.
+      - num: "11.8"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package is not an authoring tool: it produces no content
+                that a third party will consume outside the application.
+      - num: "11.8.1"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package creates no content in a content technology, so there is
+                no authoring-tool obligation to support accessible output;
+                see 11.8.
+      - num: "11.8.2"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package assists no author in creating content, so there is
+                nothing to guide toward accessible content creation; see
+                11.8.
+      - num: "11.8.3"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package performs no transformation of authored content in
+                which accessibility information could be lost; see 11.8.
+      - num: "11.8.4"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package checks no content for accessibility problems and so
+                offers no repair assistance; see 11.8.
+      - num: "11.8.5"
+        components:
+          - name: none
+            adherence:
+              level: not-applicable
+              notes: >-
+                The package ships no authoring templates; its widgets are code
+                that a developer composes, not templates an author fills in;
+                see 11.8.
+
+  en_301_549_documentation_and_support_services:
+    notes: >-
+      Documentation for this package is Markdown in the public repository and
+      Dartdoc on pub.dev. Support is the public issue tracker; there is no
+      commercial support desk.
+    criteria:
+      - num: "12.1"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Product documentation exists and is public. Gap: it has not
+                been evaluated against WCAG as rendered by pub.dev or GitHub.
+      - num: "12.1.1"
+        components:
+          - name: none
+            adherence:
+              level: supports
+              notes: >-
+                Accessibility features are documented, and the documentation is
+                versioned with the code: this report,
+                doc/enterprise/accessibility-conformance.md, and
+                doc/enterprise/design-tokens.md name the tokens, the semantics
+                patterns, and the enforcing tests, including the open gaps.
+      - num: "12.1.2"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Documentation is plain Markdown with heading structure, table
+                headers, and text link labels, which renders accessibly in the
+                usual viewers and needs no PDF. Gap: the rendered documentation
+                has not been tested with a screen reader, and the SVG diagrams
+                in doc/diagrams carry no text alternative.
+      - num: "12.2"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Support is the public issue tracker linked in the feedback
+                field. Gap: no dedicated accessibility contact and no
+                service-level commitment.
+      - num: "12.2.2"
+        components:
+          - name: none
+            adherence:
+              level: supports
+              notes: >-
+                Information about accessibility and compatibility features is
+                published in this report and in
+                doc/enterprise/accessibility-conformance.md, at the same URL as
+                the source, with gaps and dates stated.
+      - num: "12.2.3"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Communication is text-based through the issue tracker, which
+                suits many disabilities. Gap: no alternative channel — no
+                telephone, no relay-service route — is offered for people for
+                whom text is not accessible.
+      - num: "12.2.4"
+        components:
+          - name: none
+            adherence:
+              level: partially-supports
+              notes: >-
+                Support documentation is the same Markdown as the product
+                documentation; the same gap as 12.1.2 applies.
+
+  en_301_549_ICT_providing_relay_or_emergency_service_access:
+    disabled: true
+    notes: >-
+      Not applicable: the package provides no relay service and no access to
+      emergency services.
