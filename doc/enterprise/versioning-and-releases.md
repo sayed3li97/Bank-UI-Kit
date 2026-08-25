@@ -62,10 +62,17 @@ floor, so an irregular cadence cannot shorten it, and there is a separate
 procedure for retiring a visual default, since an `@Deprecated` annotation
 cannot be attached to a colour.
 
-Current position, stated plainly: `lib/` contains zero `@Deprecated`
-annotations today because no exported API has yet been retired. The policy
-above is how the first retirement will be executed, and reviewers enforce it
-through the pull-request process described in `GOVERNANCE.md`.
+Current position, stated plainly: the policy was exercised for the first time
+in 0.3.0. `BankValueDiffRow.previousLabel` and `newLabel`, and the same two
+parameters on `BankValueDiffList`, stopped being rendered when both
+`BankValueDiffStyle` variants moved to one old-to-new grammar, so they carry
+an `@Deprecated` annotation naming the removing version (0.5.0) and the
+changelog carries the before and after rendering. Those are the only
+`@Deprecated` annotations in `lib/`. Nothing has been removed yet, so the
+grace window has not run end to end, which is why 1.0 criterion 2 in
+[stability-and-support.md](./stability-and-support.md#what-10-will-mean) is
+still short of met. Reviewers enforce the rest of the policy through the
+pull-request process described in `GOVERNANCE.md`.
 
 ## Release process: automated, attested, no stored credentials
 
@@ -180,24 +187,29 @@ place (for example `BankOtpInput`, `BankPinKeypad`, and
 | # | Journey (doc/banking-journeys.md) | Controller | Status |
 |---|-----------------------------------|------------|--------|
 | 1 | Onboarding + KYC | `BankKycFlowController` | Shipped, 0.0.1 |
-| 2 | Login / re-auth | `BankAuthFlowController` | Planned, v0.3.0 |
-| 3 | Add money / top-up | `BankTopUpFlowController` | Planned, v0.3.0 |
-| 4 | P2P transfer | `BankP2pFlowController` | Planned, v0.3.0 |
+| 2 | Login / re-auth | `BankAuthFlowController` | Planned, v0.4.0 |
+| 3 | Add money / top-up | `BankTopUpFlowController` | Planned, v0.4.0 |
+| 4 | P2P transfer | `BankP2pFlowController` | Planned, v0.4.0 |
 | 5 | Domestic bank transfer | `BankTransferFlowController` | Shipped, 0.0.1 |
-| 6 | International remittance | `BankRemittanceFlowController` | Planned, v0.3.0 |
-| 7 | Bill payment | `BankBillPayFlowController` | Planned, v0.4.0 |
-| 8 | QR pay | `BankQrPayFlowController` | Planned, v0.4.0 |
-| 9 | QR receive | `BankQrReceiveFlowController` | Planned, v0.4.0 |
+| 6 | International remittance | `BankRemittanceFlowController` | Planned, v0.4.0 |
+| 7 | Bill payment | `BankBillPayFlowController` | Planned, v0.5.0 |
+| 8 | QR pay | `BankQrPayFlowController` | Planned, v0.5.0 |
+| 9 | QR receive | `BankQrReceiveFlowController` | Planned, v0.5.0 |
 | 10 | Card issuance | `BankCardIssuanceFlowController` | Planned, v0.5.0 |
+
+The four controllers dated v0.3.0 in the previous edition of this table did
+not land in 0.3.0, which shipped the enterprise trust artifacts and the
+component work instead. They are re-dated above rather than left pointing at a
+released version, and the three that were dated v0.4.0 move behind them.
 
 Dated milestones, including the enterprise gates from `GOVERNANCE.md`:
 
 | Date | Release | Deliverables |
 |------|---------|--------------|
-| 2026-08-31 | v0.2.0 | Shipped: visual and interaction overhaul, the token architecture, and the enterprise trust artifacts (SBOM, provenance, Scorecard, ACR, this policy set). Controllers #2 and #3 moved to v0.3.0 |
-| 2026-10-31 | v0.3.0 | Controllers #2, #3, #4, and #6; `.github/CODEOWNERS` with a second named maintainer; first signed tag; pub.dev publication under a verified publisher |
-| 2026-12-31 | v0.4.0 | Controllers #7, #8, #9; second pub.dev uploader; DCO check in CI; branch protection requiring author-distinct human review |
-| 2027-02-28 | v0.5.0 | Controller #10; full API review pass with any renames landed as `@Deprecated` forwards under the grace-window policy |
+| 2026-07-24 | v0.2.0 | Shipped: the visual and interaction overhaul (interaction states, the dark-mode depth system, per-preset brand voices, real network marks). Controllers #2 and #3 moved on |
+| 2026-08-24 | v0.3.0 | Shipped: the enterprise trust artifacts (ACR and OpenACR, the stability policy, SBOM, provenance, Scorecard), the token architecture finished end to end, branded sheet and dialog presentation, and the audit backlog. Controllers #2, #3, #4, and #6 moved to v0.4.0 |
+| 2026-12-31 | v0.4.0 | Controllers #2, #3, #4, and #6; the accessibility roadmap items the ACR re-targeted from v0.3.0; `.github/CODEOWNERS` with a second named maintainer; first signed tag; pub.dev publication under a verified publisher; second pub.dev uploader; DCO check in CI; branch protection requiring author-distinct human review |
+| 2027-02-28 | v0.5.0 | Controllers #7, #8, #9, and #10; full API review pass with any renames landed as `@Deprecated` forwards under the grace-window policy; removal of the parameters deprecated in 0.3.0 |
 | 2027-04-30 | v1.0.0-rc.1 | API freeze candidate; migration notes complete; no new API until 1.0 |
 | 2027-06-30 | v1.0.0 | API freeze in force; first LTS-designated line per `GOVERNANCE.md`; three-maintainer bench target |
 

@@ -152,7 +152,7 @@ names the mitigation available to an adopter rather than an aspiration.
 | **Visual regression** | Golden tests pin every preset × light/dark | None |
 | **State management** | Agnostic (pure props + callbacks) | Tied to the template's choice |
 | **Money** | Lossless `Decimal`-backed `Money` type | `double` |
-| **Tests** | 433 unit, widget, golden, and accessibility tests | None |
+| **Tests** | 487 unit, widget, golden, and accessibility test cases | None |
 
 ---
 
@@ -211,7 +211,7 @@ multi-quarter project.
 Accessibility here is a build gate, not a section in a sales deck. Every
 push runs:
 
-- a **WCAG contrast** test (89 assertions) covering every text pair and
+- a **WCAG contrast** test (92 cases) covering every text pair and
   financial colour across all four presets in light and dark;
 - **tap-target** (44 px) and **accessible-label** guideline checks on
   interactive widgets;
@@ -270,7 +270,7 @@ default colour, size, elevation, font, or motion value moving, which changes
 what ships to customers without a single analyzer warning and fails your own
 golden tests. This project treats those as breaking changes and says so. The
 [stability and support](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/stability-and-support.md)
-policy lists them item by item, and names the two releases that have already
+policy lists them item by item, and names the three releases that have already
 changed visual defaults.
 
 The rest of the dependency contract, including the deprecation window, the

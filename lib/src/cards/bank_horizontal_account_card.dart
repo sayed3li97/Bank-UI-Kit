@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../../src/cards/bank_card_network_badge.dart';
 import '../../src/cards/bank_flip_card.dart';
+import '../../src/common/bank_gradient_surface.dart';
 import '../../src/common/bank_icon_spec.dart';
 import '../../src/common/bank_pressable.dart';
 import '../../src/models/models.dart';
@@ -313,18 +314,25 @@ class BankHorizontalAccountCard extends StatelessWidget {
 
     switch (background) {
       case BankHorizontalCardBackground.themeGradient:
+        // A card face is the signature surface of the screen it sits on, so
+        // it resolves at hero, the tier no gradientReach policy rations down.
+        // Routing through the resolver rather than reading accentGradient
+        // directly is what keeps a brand's reach policy meaningful.
+        final face = BankGradientSurface.resolve(
+          bankTheme,
+          BankGradientRole.hero,
+          override: gradient ?? bankTheme.cardSurfaceGradient,
+          fallback: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              primaryColor ?? bankTheme.primary,
+              secondaryColor ?? bankTheme.primaryVariant,
+            ],
+          ),
+        );
         return BoxDecoration(
-          gradient: gradient ??
-              bankTheme.cardSurfaceGradient ??
-              bankTheme.accentGradient ??
-              LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  primaryColor ?? bankTheme.primary,
-                  secondaryColor ?? bankTheme.primaryVariant,
-                ],
-              ),
+          gradient: face.gradient,
           borderRadius: baseRadius,
         );
 
@@ -603,6 +611,46 @@ class BankHorizontalAccountCard extends StatelessWidget {
 // Back face
 // ---------------------------------------------------------------------------
 
+/// Gives the built face the full height of the card when its content fits,
+/// and lets it scroll when it does not.
+///
+/// The back face is a `Column` with two `Spacer`s inside a box whose height is
+/// fixed by the ISO-7810 card ratio, so its budget is finite while its content
+/// is not: an account carrying both an IBAN and a sort code, on a narrow
+/// device or at a raised text scale, used to push the `Spacer`s to zero and
+/// overflow the face — debug stripes in a test, silently clipped digits in
+/// release. Sizing the child to `max(viewport, intrinsic)` keeps the resting
+/// layout pixel-identical (the `Spacer`s still distribute real slack) and
+/// turns the over-budget case into a scroll instead of a clip.
+///
+/// [builder] receives the face's own content width, because the rows need it
+/// and cannot measure it themselves: a `LayoutBuilder` nested inside the
+/// [IntrinsicHeight] below cannot answer an intrinsic-dimension query.
+class _FitOrScroll extends StatelessWidget {
+  const _FitOrScroll({required this.builder});
+
+  final Widget Function(double contentWidth) builder;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) =>
+            SingleChildScrollView(
+          // No bounce or glow: this is a degradation path on a card face, not
+          // a list the user is meant to browse.
+          physics: const ClampingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight:
+                  constraints.hasBoundedHeight ? constraints.maxHeight : 0,
+            ),
+            // Bounds the unbounded height the viewport hands down, so the
+            // `Spacer`s keep working instead of asserting.
+            child: IntrinsicHeight(child: builder(constraints.maxWidth)),
+          ),
+        ),
+      );
+}
+
 /// The details face of [BankHorizontalAccountCard].
 ///
 /// Stateful because the copy confirmation lives here: a copied row and the
@@ -622,6 +670,11 @@ class _CardBackFaceState extends State<_CardBackFace> {
   /// Matches the confirmation window of the kit's other copy affordances
   /// (`BankAccountNumberText`, `BankSummaryStack`).
   static const Duration _confirmFor = Duration(milliseconds: 1500);
+
+  /// Horizontal room a detail row always keeps for its value cluster — the
+  /// value, its gap, and the copy glyph — before the row label is allowed to
+  /// ellipsize.
+  static const double _minValueExtent = BankTokens.minTapTarget;
 
   Timer? _resetTimer;
   String? _copiedField;
@@ -676,48 +729,53 @@ class _CardBackFaceState extends State<_CardBackFace> {
       child: card._withPattern(
         Padding(
           padding: resolvedPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                // Keep a long cardholder name clear of the built-in flip
-                // button at the top-end corner.
-                padding: EdgeInsetsDirectional.only(end: cornerClearance),
-                child: Text(
-                  holder,
-                  style: BankTokens.labelLarge
-                      .copyWith(color: primary)
-                      .merge(card.titleStyle),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+          child: _FitOrScroll(
+            builder: (double contentWidth) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  // Keep a long cardholder name clear of the built-in flip
+                  // button at the top-end corner.
+                  padding: EdgeInsetsDirectional.only(end: cornerClearance),
+                  child: Text(
+                    holder,
+                    style: BankTokens.labelLarge
+                        .copyWith(color: primary)
+                        .merge(card.titleStyle),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              if (card.account.ibanOrAccountNumber != null)
+                const Spacer(),
+                if (card.account.ibanOrAccountNumber != null)
+                  _detailRow(
+                    label: card.ibanLabel ?? 'IBAN / Account',
+                    value: card.account.ibanOrAccountNumber!,
+                    primary: primary,
+                    secondary: secondary,
+                    contentWidth: contentWidth,
+                    copyable: true,
+                  ),
+                if (card.account.sortCodeOrBic != null)
+                  _detailRow(
+                    label: card.sortCodeLabel ?? 'Sort Code / BIC',
+                    value: card.account.sortCodeOrBic!,
+                    primary: primary,
+                    secondary: secondary,
+                    contentWidth: contentWidth,
+                    copyable: true,
+                  ),
                 _detailRow(
-                  label: card.ibanLabel ?? 'IBAN / Account',
-                  value: card.account.ibanOrAccountNumber!,
+                  label: card.currencyLabel ?? 'Currency',
+                  value: card.account.currencyCode,
                   primary: primary,
                   secondary: secondary,
-                  copyable: true,
+                  contentWidth: contentWidth,
                 ),
-              if (card.account.sortCodeOrBic != null)
-                _detailRow(
-                  label: card.sortCodeLabel ?? 'Sort Code / BIC',
-                  value: card.account.sortCodeOrBic!,
-                  primary: primary,
-                  secondary: secondary,
-                  copyable: true,
-                ),
-              _detailRow(
-                label: card.currencyLabel ?? 'Currency',
-                value: card.account.currencyCode,
-                primary: primary,
-                secondary: secondary,
-              ),
-              const Spacer(),
-              _hintRow(primary, secondary, copiedField),
-            ],
+                const Spacer(),
+                _hintRow(primary, secondary, copiedField),
+              ],
+            ),
           ),
         ),
         bankTheme,
@@ -733,19 +791,34 @@ class _CardBackFaceState extends State<_CardBackFace> {
     required String value,
     required Color primary,
     required Color secondary,
+    required double contentWidth,
     bool copyable = false,
   }) {
     final card = widget.card;
     final copied = copyable && _copiedField == label;
+    // Bounded, not `Flexible`: a second flex child would split the row evenly
+    // with the value cluster and start ellipsizing the label while the value
+    // still had room (the same trap the insight card's confidence meter fell
+    // into). The label instead yields only once it would push the value below
+    // [_minValueExtent] — at a raised text scale a long label used to squeeze
+    // the value cluster past its own copy glyph and overflow the row.
+    final labelMaxWidth = contentWidth.isFinite
+        ? (contentWidth - _minValueExtent).clamp(0.0, contentWidth)
+        : double.infinity;
 
     final row = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: BankTokens.labelSmall
-              .copyWith(color: secondary)
-              .merge(card.detailLabelStyle),
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: labelMaxWidth),
+          child: Text(
+            label,
+            style: BankTokens.labelSmall
+                .copyWith(color: secondary)
+                .merge(card.detailLabelStyle),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         Flexible(
           child: Row(
@@ -768,6 +841,15 @@ class _CardBackFaceState extends State<_CardBackFace> {
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ).merge(card.detailValueStyle),
                     textDirection: TextDirection.ltr,
+                    // The [FittedBox] lays this out unconstrained, so it is
+                    // already a single line — but saying so keeps the *height*
+                    // it reports to an intrinsic query to one line too.
+                    // Without it the face's intrinsic height is measured from
+                    // an IBAN wrapped into a dozen lines at the width left
+                    // over inside the row, and the card back would scroll a
+                    // phantom several hundred pixels tall.
+                    maxLines: 1,
+                    softWrap: false,
                   ),
                 ),
               ),
@@ -806,8 +888,13 @@ class _CardBackFaceState extends State<_CardBackFace> {
       // again as separate child nodes.
       semanticLabel: '${card.copyActionLabel ?? 'Copy'} $label, $value',
       excludeSemantics: true,
-      child: SizedBox(
-        height: BankTokens.minTapTarget,
+      child: ConstrainedBox(
+        // A *minimum*, not a fixed box. The row already spans the full face
+        // width, so the 44 px floor only has to be met on the vertical axis —
+        // and a hard `SizedBox(height: 44)` both wasted budget inside the
+        // fixed ISO-7810 rectangle and clipped its own content once the OS
+        // text size pushed the label past 44 px.
+        constraints: const BoxConstraints(minHeight: BankTokens.minTapTarget),
         child: Center(child: row),
       ),
     );

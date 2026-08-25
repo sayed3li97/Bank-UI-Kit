@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
@@ -396,11 +397,13 @@ class BankPrizeDrawCard extends StatelessWidget {
         amount: minDeposit!.amount,
         currencyCode: minDeposit!.currencyCode,
         numeralStyle: scope.numeralStyle,
+        locale: context.bankLocale,
       );
       eligibilityHint = minDepositTemplate.replaceFirst('{amount}', minAmount);
     }
 
-    final summary = semanticLabel ?? _summary(scope, entriesText, countdown);
+    final summary = semanticLabel ??
+        _summary(scope, entriesText, countdown, context.bankLocale);
 
     final resolvedTitleStyle = BankTokens.headlineSmall
         .copyWith(color: theme.onSurface)
@@ -510,6 +513,7 @@ class BankPrizeDrawCard extends StatelessWidget {
     BankUiScopeData scope,
     String entriesText,
     String? countdown,
+    String? locale,
   ) {
     final balanceText = scope.privacyEnabled
         ? scope.strings.balanceHidden
@@ -517,6 +521,7 @@ class BankPrizeDrawCard extends StatelessWidget {
             amount: balance.amount,
             currencyCode: balance.currencyCode,
             numeralStyle: scope.numeralStyle,
+            locale: locale,
           );
     final buffer = StringBuffer()
       ..write('$title. ')
@@ -767,6 +772,9 @@ class _DrawRow extends StatelessWidget {
             amount: draw.prizeAmount!.amount,
             currencyCode: draw.prizeAmount!.currencyCode,
             numeralStyle: numeralStyle,
+            // The app's locale, not the ambient Intl one: a de-DE reader
+            // handed US grouping reads `500,000` as five hundred.
+            locale: context.bankLocale,
             trimZeroCents: true,
             useIsoCode: useIsoCode,
           );

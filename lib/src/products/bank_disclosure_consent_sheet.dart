@@ -750,14 +750,23 @@ class _ConsentRow extends StatelessWidget {
                   child: Checkbox(
                     value: ticked,
                     onChanged: onChanged,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    visualDensity: VisualDensity.compact,
+                    // The box is independently tappable, so it is a target in
+                    // its own right and has to clear [BankTokens.minTapTarget]
+                    // (44) on both axes. Material's padded tap target is 48;
+                    // both knobs are passed explicitly so an ambient
+                    // `ThemeData.materialTapTargetSize` or a compact
+                    // `VisualDensity` (which is what shrank this box to 32)
+                    // cannot pull a consent control back under the floor.
+                    materialTapTargetSize: MaterialTapTargetSize.padded,
+                    visualDensity: VisualDensity.standard,
                   ),
                 ),
                 const SizedBox(width: BankTokens.space3),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(top: BankTokens.space2),
+                    // Optically centres the first label line on the tick box,
+                    // which now reserves the full tap-target height.
+                    padding: const EdgeInsets.only(top: BankTokens.space3),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

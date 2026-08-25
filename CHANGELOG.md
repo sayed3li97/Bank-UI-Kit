@@ -10,6 +10,38 @@ Four themes: the trust artifacts an enterprise intake process asks for, the
 token architecture finished end to end, a branded motion system, and the
 remaining audit backlog cleared.
 
+### Breaking
+
+- **`BankSkeletonVariant` gained four values.** `listTile`, `card`,
+  `balanceHero`, and `chart` were appended to the four the enum shipped with
+  in 0.2.0. Dart 3 checks switch exhaustiveness, so a `switch` over the enum
+  written against 0.2.0 with no `default` or wildcard arm stops compiling on
+  upgrade (`non_exhaustive_switch_expression`). Adding a wildcard arm is the
+  whole migration:
+
+  ```dart
+  // Before: compiles against 0.2.0, fails against 0.3.0.
+  final caption = switch (variant) {
+    BankSkeletonVariant.accountCard => 'Loading account',
+    BankSkeletonVariant.transactionTile => 'Loading transactions',
+    BankSkeletonVariant.potCard => 'Loading pots',
+    BankSkeletonVariant.generic => 'Loading',
+  };
+
+  // After: compiles against both.
+  final caption = switch (variant) {
+    BankSkeletonVariant.accountCard => 'Loading account',
+    BankSkeletonVariant.transactionTile => 'Loading transactions',
+    BankSkeletonVariant.potCard => 'Loading pots',
+    _ => 'Loading',
+  };
+  ```
+
+  The original four keep their names and their declaration order, so a
+  persisted index or name still resolves to the same variant. The full list
+  and its order are pinned by `test/async_states_test.dart`, so a further
+  addition cannot ship without another entry under this heading.
+
 ### Added
 
 - **Accessibility Conformance Report** (`doc/enterprise/acr/ACR.md`): a
@@ -45,14 +77,15 @@ remaining audit backlog cleared.
   split, the SBOM and provenance chain, the published Scorecard, and the
   stability contract, each linked to the document that carries the proof. The
   component catalogue, screenshots, and quick start are unchanged in
-  substance. Counts corrected to 164 exported widget classes and 433 tests,
-  and the badges row gains Scorecard and pub.dev.
+  substance. Counts corrected to 173 exported widget classes and 487 test
+  cases, and the badges row gains Scorecard and pub.dev.
 - `doc/enterprise/versioning-and-releases.md` now describes the release
   pipeline as implemented rather than as planned, and corrects the Flutter
   floor to 3.44.0 with CI on 3.44.4. Cross-links the new stability policy
-  rather than restating it. The 0.2.0 roadmap milestone is re-dated: the
-  controller work moves to 0.3.0, and the release that shipped is recorded
-  for what it contained.
+  rather than restating it. The roadmap milestones are re-dated against what
+  each release actually contained, and the four journey controllers that did
+  not land in this one move to v0.4.0 rather than staying pointed at a
+  version that has shipped.
 - Documentation corrected where it lagged the code: injectable image
   resolution through `BankUiScopeData.imageResolver` ships, so the README no
   longer lists air-gapped image loading as a roadmap item.
@@ -63,8 +96,9 @@ remaining audit backlog cleared.
   `BankThemeData.custom` and `fromJson` read their greys from these tokens
   instead of hard-coding them, with no behaviour change. Typography gains a
   line-height ladder on every text style and caps-tracking tokens.
-- **Branded sheet presentation** (`BankSheet`, `BankDialog`): all 27 modal
-  surfaces in the kit now present with the theme's radius, a brand-derived
+- **Branded sheet presentation** (`BankSheet`, `BankDialog`): all 31 modal
+  surfaces in the kit (23 `BankSheet.show` call sites and 8 `BankDialog.show`)
+  now present with the theme's radius, a brand-derived
   scrim, a grab handle with semantics, an optional shared header,
   keyboard-aware insets, and token motion that collapses under reduced
   motion. No stock `showModalBottomSheet` or `showDialog` call remains in
@@ -79,24 +113,111 @@ remaining audit backlog cleared.
   that measure their own contrast to clear AA on any hue, an inset ring
   slot, and `BankEmblemStack` with +N overflow.
 
+### Deprecated
+
+- **`BankValueDiffRow.previousLabel` and `BankValueDiffRow.newLabel`**, and
+  the same two parameters on `BankValueDiffList`. Both `BankValueDiffStyle`
+  variants now render one grammar, old value then arrow then new value, so
+  the `'Previous'` / `'New'` microlabels are gone from the output and passing
+  a value has no effect. There is no replacement parameter: the old-to-new
+  relationship is carried by the struck value and the arrow, and what
+  assistive technology says about the row is localised through
+  `semanticLabel`. `BankValueDiffList` no longer forwards either parameter to
+  its rows, so the analyzer warning reaches the call site that set it rather
+  than being swallowed. Both are removed in 0.5.0.
+
+  ```dart
+  // 0.2.0: two captioned lines, 'Précédent 5 000,00 €' / 'Nouveau 8 000,00 €'.
+  BankValueDiffRow(
+    label: 'Limite',
+    oldMoney: previous,
+    newMoney: next,
+    style: BankValueDiffStyle.stacked,
+    previousLabel: 'Précédent',
+    newLabel: 'Nouveau',
+  )
+
+  // 0.3.0: '5 000,00 € → 8 000,00 €', the old value struck through.
+  BankValueDiffRow(
+    label: 'Limite',
+    oldMoney: previous,
+    newMoney: next,
+    style: BankValueDiffStyle.stacked,
+    semanticLabel: 'Limite passe de 5 000,00 € à 8 000,00 €',
+  )
+  ```
+
 ### Fixed
 
-- **Accessibility**: every interactive target now reaches the kit's 44 px
-  minimum without inflating its glyph (insight-card dismiss, IBAN copy,
-  address-form edit); the IBAN copy affordance confirms visually and
-  announces to assistive technology; OTP cells encode focus with one signal
-  instead of swapping both fill and border; picker values are
+- **Accessibility**: every interactive target named in the audit now reaches
+  the kit's 44 px minimum without inflating its glyph (insight-card dismiss,
+  IBAN copy, address-form edit, the consent tick boxes in
+  `BankConsentModal` and `BankDisclosureConsentSheet`, and every tappable
+  emblem inside `BankEmblemStack`); the IBAN copy affordance confirms
+  visually and announces to assistive technology; OTP cells encode focus with
+  one signal instead of swapping both fill and border; picker values are
   typographically distinct from placeholders; the insight card's confidence
   dots are labelled instead of reading as broken pagination.
+- **Semantics that were being thrown away**: the 14 sheet bodies that paint
+  their own ground drew a bare 40×4 bar and announced no handle, and now
+  route through `BankSheetHandle`; the sliders in `BankCardControlsPanel`,
+  `BankCreditLimitAdjuster` and `BankTransferLimitManager` sat inside
+  `excludeSemantics: true`, which deleted the framework's slider node
+  together with its role, its value and its increase and decrease actions, so
+  the limit could not be changed by assistive technology at all, and now
+  merge their heading into that node instead of replacing it; a consent
+  checkbox the user cannot tick yet paints its outline at the disabled
+  opacity again rather than at full strength; and `BankSliverAppBar` in its
+  collapsing mode no longer leaves an unnamed heading with an empty
+  `namesRoute` beside the large title. The sliders in
+  `BankLoanCalculatorCard` and `BankSavingsProjectionCard` still exclude
+  their node; that is item 19 on the ACR roadmap.
+- **Money rendering**: a currency symbol written in a right-to-left script is
+  wrapped in an FSI/PDI isolate so its letters cannot retype the European
+  digits beside them. For the ten currencies that have one (SAR, AED, QAR,
+  KWD, BHD, OMR, JOD, IQD, TND, MAD), the
+  no-break space between the symbol and the digits was packed inside that
+  isolate. A no-break space is a CS neutral, so surrounded by
+  Arabic letters it resolved right-to-left with them and reordered to the far
+  side of the symbol: `BankMoneyFormatter.format(currencyCode: 'BHD', ...)`
+  rendered ` د.ب1,234.567`, a stray leading space and the marker glued to the
+  first digit, instead of `د.ب 1,234.567`. The gap now sits outside the
+  isolate on the digits' side, which is where it holds its place in an
+  English paragraph and an Arabic one alike. `splitMajorMinor` carries the
+  corrected atom too.
+- **`BankPrizeDrawCard`** formatted `prizeAmount` and its semantic summary
+  with the ambient `Intl.defaultLocale` rather than the app locale, so a
+  de-DE app rendered `USD 500,000` and a German reader parsed it as five
+  hundred. Both now resolve `context.bankLocale`, matching every other money
+  surface in the kit.
+- **Two layouts that overflowed their box**: the insight card's confidence
+  wording competed with a `Spacer` for the action row's slack and ellipsized
+  to "High confid…" on a 360 pt phone, defeating the point of replacing the
+  dots with words; and the horizontal account card's back face, whose height
+  is fixed by the card aspect ratio, overflowed once an account carried both
+  an IBAN and a sort code on a narrow device or at a raised text scale. The
+  meter now takes the whole slack, and the back face degrades by scrolling
+  rather than by clipping.
 - **Skeleton shimmer** travelled a darker band over flat slabs, in phase
   across every tile, and never entered the placeholder shapes. It now sweeps
   a lighter band through the shapes with per-tile phase offsets, and stops
   entirely under reduced motion.
-- **Brand contracts honoured**: Bloom's warm shadow tint reaches kit
-  surfaces rather than dying on a `Card.elevation` sentinel, Studio dark's
-  primary CTA no longer reads as disabled, and Voltage's accent gradient
-  concentrates on hero surfaces instead of being painted at full strength
-  across ten component families.
+- **Brand contracts honoured, and consulted by the widgets rather than only
+  declared on the theme**: Bloom's warm shadow tint reaches every kit surface
+  rather than dying on a `Card.elevation` sentinel or on a direct
+  `BankTokens.shadow*` call, so two resting cards on one screen no longer
+  drop differently coloured shadows; Studio dark's primary CTA no longer
+  reads as disabled; and `BankThemeData.gradientReach` is now read at the
+  twelve surfaces that used to paint the accent gradient raw, so under
+  Voltage the violet-to-cyan sweep stays full strength on hero card faces and
+  drops to the same hues at a rationed alpha on supporting headers, promo
+  strips and icon rings. `BankHorizontalAccountCard`'s theme-gradient face
+  still reads the gradient directly; it is a hero surface, the tier
+  `gradientReach` never rations, so it renders identically either way.
+  `test/policy_adoption_test.dart` asserts both policies on the painted
+  decorations of a rendered tree rather than on the theme methods, so a call
+  site that drops back to `theme.accentGradient` or `BankTokens.shadow*` raw
+  fails CI.
 - **Chrome**: the app bar's 18 px title and grey 12 px subtitle become a
   real hierarchy; the connectivity banner adopts the toast treatment with a
   single left edge.
@@ -106,9 +227,8 @@ remaining audit backlog cleared.
   and colour by meaning, the period selector is content-sized with real
   chevron targets, transfer review gives the amount the hierarchy it needs,
   the SCA sheet drops to one accent, statement rows no longer leak a
-  midnight timestamp, stock Material controls are themed, CTA copy is
-  consistently sentence case, and non-Latin currency glyphs get correct
-  spacing and bidi isolation.
+  midnight timestamp, stock Material controls are themed, and CTA copy is
+  consistently sentence case.
 
 ## 0.2.0
 

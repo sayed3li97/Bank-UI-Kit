@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import '../../src/cards/bank_card_network_badge.dart';
 import '../../src/cards/bank_flip_card.dart';
+import '../../src/common/bank_gradient_surface.dart';
+import '../../src/common/bank_surface_depth.dart';
 import '../../src/models/bank_account.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/card_pattern.dart';
@@ -147,15 +149,19 @@ class BankVirtualCardWidget extends StatefulWidget {
   final Color? foregroundColor;
 
   /// Overrides the gradient painted for [BankCardSurface.gradient].
-  /// Defaults to [BankThemeData.cardSurfaceGradient], then
-  /// [BankThemeData.accentGradient], then a primary/secondary blend.
+  /// Defaults to [BankThemeData.cardSurfaceGradient], then the brand gradient
+  /// resolved at [BankGradientRole.hero], then a primary/secondary blend.
+  ///
+  /// A card face is a hero surface, so it keeps the brand gradient at full
+  /// strength under every [BankThemeData.gradientReach] setting.
   final Gradient? gradient;
 
   /// Overrides the hero shadow behind the card — **all** surface modes keep
   /// it, including [BankCardSurface.animatedMesh],
   /// [BankCardSurface.metallicSweep], and image backgrounds. Defaults to
-  /// [BankTokens.shadowHeroFor] of the theme background brightness; an empty
-  /// list removes it.
+  /// the hero-tier shadow for the theme background brightness, re-inked with
+  /// [BankThemeData.shadowTint] when the brand defines one; an empty list
+  /// removes it.
   final List<BoxShadow>? shadow;
 
   /// Merged over the custom (non-network) [networkLabel] text style
@@ -360,10 +366,11 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
   /// background brightness. Applied uniformly to **every** surface mode so
   /// mesh / metallic / image cards never float as flat cutouts.
   List<BoxShadow> _resolvedShadow(BankThemeData bankTheme) =>
-      widget.shadow ??
-      BankTokens.shadowHeroFor(
-        ThemeData.estimateBrightnessForColor(bankTheme.background),
-      );
+      BankSurfaceDepth.resolve(
+        bankTheme,
+        shadow: widget.shadow,
+        tier: BankSurfaceDepthTier.hero,
+      ).shadow;
 
   BoxDecoration _buildFlatColorDecoration(BankThemeData bankTheme) =>
       BoxDecoration(
@@ -372,17 +379,19 @@ class _BankVirtualCardWidgetState extends State<BankVirtualCardWidget>
       );
 
   BoxDecoration _buildGradientDecoration(BankThemeData bankTheme) {
-    final resolvedGradient = widget.gradient ??
-        bankTheme.cardSurfaceGradient ??
-        bankTheme.accentGradient ??
-        LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            widget.primaryColor ?? bankTheme.primary,
-            widget.secondaryColor ?? bankTheme.primaryVariant,
-          ],
-        );
+    final resolvedGradient = BankGradientSurface.resolve(
+      bankTheme,
+      BankGradientRole.hero,
+      override: widget.gradient ?? bankTheme.cardSurfaceGradient,
+      fallback: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          widget.primaryColor ?? bankTheme.primary,
+          widget.secondaryColor ?? bankTheme.primaryVariant,
+        ],
+      ),
+    ).gradient;
     return BoxDecoration(
       gradient: resolvedGradient,
       borderRadius: _resolvedRadius(bankTheme),

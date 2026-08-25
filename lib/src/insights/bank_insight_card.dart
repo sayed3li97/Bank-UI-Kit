@@ -252,9 +252,16 @@ class BankInsightCard extends StatelessWidget {
                 const SizedBox(height: BankTokens.space3),
                 Row(
                   children: [
+                    // One flex child, not two: a `Spacer` beside a `Flexible`
+                    // meter splits the slack evenly, so the meter could never
+                    // exceed half of it and its wording ellipsized on a 360 pt
+                    // phone. `Expanded` hands the meter all the free space —
+                    // it lays out at its natural width and the trailing button
+                    // still sits flush with the content edge.
                     if (showConfidence)
-                      Flexible(child: _confidenceMeter(color)),
-                    const Spacer(),
+                      Expanded(child: _confidenceMeter(color))
+                    else
+                      const Spacer(),
                     TextButton(
                       onPressed: onAction,
                       style: TextButton.styleFrom(

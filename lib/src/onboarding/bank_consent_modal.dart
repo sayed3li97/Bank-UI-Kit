@@ -405,8 +405,15 @@ class _CheckboxRow extends StatelessWidget {
                 child: Checkbox(
                   value: checked,
                   onChanged: enabled ? onChanged : null,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
+                  // The box is independently tappable, so it is a target in
+                  // its own right and has to clear [BankTokens.minTapTarget]
+                  // (44) on both axes. Material's padded tap target is 48;
+                  // both knobs are passed explicitly so an ambient
+                  // `ThemeData.materialTapTargetSize` or a compact
+                  // `VisualDensity` (which is what shrank this box to 32)
+                  // cannot pull a consent control back under the floor.
+                  materialTapTargetSize: MaterialTapTargetSize.padded,
+                  visualDensity: VisualDensity.standard,
                 ),
               ),
               const SizedBox(width: BankTokens.space3),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_gradient_surface.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_surface_depth.dart';
 import '../models/money.dart';
@@ -145,15 +146,21 @@ class BankFoundMoneyList extends StatefulWidget {
   /// Label shown once a row has been claimed.
   final String claimedLabel;
 
-  /// Overrides the header fill. Defaults to the theme accentGradient
-  /// (or a primary-to-primaryVariant fallback).
+  /// Overrides the header fill. Defaults to the brand gradient resolved at
+  /// [BankGradientRole.accent] (or a primary-to-primaryVariant fallback).
+  ///
+  /// A promo header is a supporting brand surface, so a brand whose
+  /// [BankThemeData.gradientReach] stops at [BankGradientRole.hero] gets the
+  /// same hues here as a low-alpha wash, inked with
+  /// [BankThemeData.onSurface].
   final Gradient? gradient;
 
   /// Overrides the header celebration glyph. Defaults to
   /// [Icons.celebration_outlined].
   final IconData? headerIcon;
 
-  /// Merged over the header text style (headlineSmall, onPrimary).
+  /// Merged over the header text style (headlineSmall, inked to match the
+  /// resolved header fill).
   final TextStyle? headerTextStyle;
 
   /// Overrides the header and list corner radius. Defaults to the
@@ -163,8 +170,9 @@ class BankFoundMoneyList extends StatefulWidget {
   /// Overrides the list card fill. Defaults to the theme surface.
   final Color? backgroundColor;
 
-  /// Overrides the header and list shadow. Defaults to
-  /// [BankTokens.shadowCardFor] of the theme background brightness; pass
+  /// Overrides the header and list shadow. Defaults to the card-tier shadow
+  /// for the theme background brightness, re-inked with
+  /// [BankThemeData.shadowTint] when the brand defines one; pass
   /// `const []` to flatten.
   final List<BoxShadow>? shadow;
 
@@ -344,9 +352,19 @@ class _BankFoundMoneyHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final resolvedGradient = gradient ??
-        theme.accentGradient ??
-        LinearGradient(colors: [theme.primary, theme.primaryVariant]);
+    // A celebration header is a supporting brand surface, not the screen's
+    // hero: it resolves at BankGradientRole.accent so gradientReach can
+    // ration it down to a wash.
+    final headerSurface = BankGradientSurface.resolve(
+      theme,
+      BankGradientRole.accent,
+      override: gradient,
+      fallback: LinearGradient(
+        colors: [theme.primary, theme.primaryVariant],
+      ),
+    );
+    // Ink follows the fill; never resolve the two separately.
+    final onHeader = headerSurface.foreground;
 
     const placeholder = '{total}';
     final index = template.indexOf(placeholder);
@@ -355,19 +373,15 @@ class _BankFoundMoneyHeader extends StatelessWidget {
     final after =
         index >= 0 ? template.substring(index + placeholder.length).trim() : '';
 
-    final resolvedTextStyle = BankTokens.headlineSmall
-        .copyWith(color: theme.onPrimary)
-        .merge(textStyle);
+    final resolvedTextStyle =
+        BankTokens.headlineSmall.copyWith(color: onHeader).merge(textStyle);
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: resolvedGradient,
+        gradient: headerSurface.gradient,
         borderRadius: radius ?? theme.cardRadius,
         // Gradient surface: brightness-resolved shadow, no hairline.
-        boxShadow: shadow ??
-            BankTokens.shadowCardFor(
-              ThemeData.estimateBrightnessForColor(theme.background),
-            ),
+        boxShadow: BankSurfaceDepth.resolve(theme, shadow: shadow).shadow,
       ),
       child: Padding(
         padding: const EdgeInsets.all(BankTokens.space5),
@@ -378,12 +392,12 @@ class _BankFoundMoneyHeader extends StatelessWidget {
               height: BankTokens.minTapTarget,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: theme.onPrimary.withValues(alpha: 0.16),
+                color: onHeader.withValues(alpha: 0.16),
               ),
               child: Icon(
                 icon ?? Icons.celebration_outlined,
                 size: 22,
-                color: theme.onPrimary,
+                color: onHeader,
               ),
             ),
             const SizedBox(width: BankTokens.space4),
@@ -397,8 +411,7 @@ class _BankFoundMoneyHeader extends StatelessWidget {
                   if (index >= 0)
                     BankBalanceText(
                       money: total,
-                      style:
-                          theme.numeralLarge.copyWith(color: theme.onPrimary),
+                      style: theme.numeralLarge.copyWith(color: onHeader),
                     ),
                   if (after.isNotEmpty) Text(after, style: resolvedTextStyle),
                 ],

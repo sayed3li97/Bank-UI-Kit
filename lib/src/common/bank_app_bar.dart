@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
 
 import '../theme/bank_theme_data.dart';
@@ -393,9 +395,13 @@ class BankSliverAppBar extends StatelessWidget {
       snap: snap,
       stretch: stretch,
       bottom: bottom,
-      // The tier carries its own header semantics; without this AppBar wraps
-      // the whole flexible space in a second, unlabelled header node.
-      excludeHeaderSemantics: large && compact == null,
+      // Every large tier labels its own heading — the expanded title in
+      // [_BankExpandedTitle], the compact one in [_BankCollapsedTitle] — so
+      // AppBar's wrapper would only add a second header node. While the bar is
+      // expanded that node is even unlabelled, because the compact title it
+      // wraps is excluded until the hand-off, which puts an anonymous heading
+      // (and an empty `namesRoute`) in front of heading navigation.
+      excludeHeaderSemantics: large,
       flexibleSpace: large
           ? _BankExpandedTitle(
               bottomInset: bottomExtent,
@@ -675,7 +681,22 @@ class _BankCollapsedTitle extends StatelessWidget {
 
     return ExcludeSemantics(
       excluding: t < _titleHandoff,
-      child: Opacity(opacity: opacity, child: child),
+      // The bar passes `excludeHeaderSemantics: true` in every large mode, so
+      // the heading trait AppBar would have added is supplied here instead —
+      // inside the exclusion, so it exists only once the compact title is the
+      // visible heading, and on a node that actually carries the title text.
+      child: Semantics(
+        header: true,
+        namesRoute: switch (defaultTargetPlatform) {
+          TargetPlatform.android ||
+          TargetPlatform.fuchsia ||
+          TargetPlatform.linux ||
+          TargetPlatform.windows =>
+            true,
+          TargetPlatform.iOS || TargetPlatform.macOS => null,
+        },
+        child: Opacity(opacity: opacity, child: child),
+      ),
     );
   }
 }

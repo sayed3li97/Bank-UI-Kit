@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_gradient_surface.dart';
 import '../../src/common/bank_icon_spec.dart';
 import '../../src/common/bank_pressable.dart';
 import '../../src/models/models.dart';
@@ -78,8 +79,11 @@ class BankAccountCard extends StatelessWidget {
   /// `surface`. Ignored while a gradient is painted.
   final Color? backgroundColor;
 
-  /// Overrides the background gradient. Defaults to the theme
-  /// `accentGradient` when the preset provides one.
+  /// Overrides the background gradient. Defaults to the brand gradient
+  /// resolved at [BankGradientRole.hero] when the preset provides one.
+  ///
+  /// A card face is a hero surface, so it keeps the brand gradient at full
+  /// strength under every [BankThemeData.gradientReach] setting.
   final Gradient? gradient;
 
   /// Overrides the primary text colour. Defaults to white on gradient
@@ -92,7 +96,8 @@ class BankAccountCard extends StatelessWidget {
 
   /// Overrides the card shadow. Defaults to the theme glow when
   /// `useGlow` is on, otherwise the resting card shadow
-  /// ([BankTokens.shadowCardFor] of the theme background brightness);
+  /// (the card tier resolved for the theme background brightness and re-inked
+  /// with [BankThemeData.shadowTint] when the brand defines one);
   /// pass `const []` to remove it.
   final List<BoxShadow>? shadow;
 
@@ -283,8 +288,15 @@ class BankAccountCard extends StatelessWidget {
     final bankTheme = BankThemeData.of(context);
     // An explicit backgroundColor suppresses the theme gradient; an
     // explicit gradient always wins.
-    final resolvedGradient =
-        gradient ?? (backgroundColor == null ? bankTheme.accentGradient : null);
+    // A card face is the screen's signature surface: it resolves at
+    // BankGradientRole.hero, the tier gradientReach never rations down.
+    final resolvedGradient = gradient ??
+        (backgroundColor == null
+            ? BankGradientSurface.resolve(
+                bankTheme,
+                BankGradientRole.hero,
+              ).gradient
+            : null);
     final isGradient = resolvedGradient != null;
     final isFrozen = account.status == BankAccountStatus.frozen;
     final resolvedRadius = radius ?? bankTheme.cardRadius;
@@ -441,7 +453,10 @@ class BankAccountCard extends StatelessWidget {
                   spreadRadius: -4,
                 ),
               ]
-            : BankTokens.shadowCardFor(backgroundBrightness));
+            : bankTheme.shadowFor(
+                BankElevationTier.card,
+                brightness: backgroundBrightness,
+              ));
     if (resolvedShadow.isNotEmpty) {
       card = DecoratedBox(
         decoration: BoxDecoration(

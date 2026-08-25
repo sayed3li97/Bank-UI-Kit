@@ -112,14 +112,19 @@ void main() {
   // Rank 42 — bidi isolation
   // -------------------------------------------------------------------------
 
-  group('rank 42: Gulf markers carry their gap inside their isolate', () {
+  group('rank 42: Gulf markers isolate the symbol, gap stays outside', () {
     test('the gap belongs to the marker, not to the paragraph', () {
       final s = BankMoneyFormatter.format(
         amount: Decimal.parse('1234.567'),
         currencyCode: 'BHD',
       );
-      // Marker and gap are one isolated unit; the digits follow it bare.
-      expect(s, '$fsiد.ب$nbsp$pdi' '1,234.567');
+      // The isolate wraps the marker alone and the gap sits outside it, on
+      // the amount's side. U+00A0 is bidi class CS: inside the isolate it
+      // resolves to R next to the AL-derived marker and reorders to the far
+      // side of it, which is what produced a leading space and marker glued
+      // to digits. Outside, it is a lone neutral between an opaque isolate
+      // and a number, so it takes the embedding direction and stays put.
+      expect(s, '$fsiد.ب$pdi$nbsp' '1,234.567');
       expect(isolatesBalanced(s), isTrue);
     });
 
@@ -131,10 +136,14 @@ void main() {
         );
         expect(
           s.contains('$pdi$nbsp'),
-          isFalse,
-          reason: '$code left its gap outside the isolate',
+          isTrue,
+          reason: '$code lost its gap',
         );
-        expect(s.contains('$nbsp$pdi'), isTrue, reason: '$code lost its gap');
+        expect(
+          s.contains('$nbsp$pdi'),
+          isFalse,
+          reason: '$code packed the gap inside its isolate',
+        );
         expect(isolatesBalanced(s), isTrue);
       }
     });
@@ -187,7 +196,7 @@ void main() {
           currencyCode: 'BHD',
           bidiIsolate: true,
         ),
-        '$lri-$fsiد.ب$nbsp$pdi' '1,234.500$pdi',
+        '$lri-$fsiد.ب$pdi$nbsp' '1,234.500$pdi',
       );
     });
 

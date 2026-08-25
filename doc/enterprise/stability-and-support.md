@@ -59,7 +59,9 @@ libraries bother to write down.
 - Adding a value to an exported enum. Dart 3 checks switch exhaustiveness,
   so a new value breaks an adopter who switches over the enum without a
   default case. This is treated as breaking even though many libraries do
-  not.
+  not. 0.3.0 is the first release to hit this rule: `BankSkeletonVariant`
+  grew from four values to eight, and `CHANGELOG.md` records it under
+  Breaking with the wildcard arm that migrates a 0.2.0 switch.
 - Adding a required constructor parameter, or making an existing optional
   parameter required.
 - Narrowing a parameter type, widening a return type, or changing a
@@ -104,8 +106,11 @@ constructor overrides, a change to any of the following is breaking:
 | Default motion duration or curve on an existing animation | A duration token change, which every widget reading it inherits |
 | Default composition of a component's own chrome | The Visa, Mastercard, and Amex marks replacing the synthetic text treatment in 0.2.0 |
 
-Both 0.1.0 and 0.2.0 shipped as minors under 0.x, which SemVer permits
-pre-1.0, and both recorded what moved in `CHANGELOG.md`. After 1.0 the same
+0.1.0, 0.2.0, and 0.3.0 all shipped as minors under 0.x, which SemVer permits
+pre-1.0, and each recorded what moved in `CHANGELOG.md`. 0.3.0 moved shadow
+ink on tinted brands, rationed the accent gradient by surface role, and
+changed how two card faces distribute their slack; all three are in the
+changelog with the surfaces they affect. After 1.0 the same
 changes would require a major.
 
 Why this matters more for a UI kit than for a typical library: an adopting
@@ -202,7 +207,7 @@ the full gate, and where an item duplicates that document it is marked.
 | # | Criterion | Status |
 |---|-----------|--------|
 | 1 | The top-10 journey controllers are exported, each with a sealed status hierarchy and step enum, covered in `test/controllers_test.dart` (see the roadmap) | Not met: 2 of the top 10 shipped |
-| 2 | The deprecation policy has been exercised end to end at least once, so the grace window is proven rather than theoretical (see the roadmap) | Not met: `lib/` contains no `@Deprecated` annotations |
+| 2 | The deprecation policy has been exercised end to end at least once, so the grace window is proven rather than theoretical (see the roadmap) | Partially met: the first deprecation shipped in 0.3.0 (`BankValueDiffRow.previousLabel` / `newLabel`, and the same pair on `BankValueDiffList`), annotated and recorded in `CHANGELOG.md`. Nothing has been removed yet, so the window has not run to its end |
 | 3 | The visual-default procedure above has been exercised at least once, including the one-line restore recipe in the changelog | Not met |
 | 4 | Every exported symbol has dartdoc and an entry in `doc/component-reference.md` (see the roadmap) | Partially met |
 | 5 | A second maintainer with merge rights, named in `.github/CODEOWNERS` | Not met: bench of one |

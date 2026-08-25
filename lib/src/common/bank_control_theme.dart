@@ -132,12 +132,9 @@ class BankControlTheme {
         return states.contains(WidgetState.selected) ? on : Colors.transparent;
       }),
       checkColor: WidgetStatePropertyAll<Color>(onAccent ?? theme.onPrimary),
-      // A plain BorderSide is applied by Material only while the box is
-      // unticked — the ticked box is a solid fill — which is exactly the state
-      // that needs a visible outline.
-      side: BorderSide(
-        color: theme.onSurfaceVariant,
-        width: _checkboxOutlineWidth,
+      side: _BankCheckboxSide(
+        enabledColor: theme.onSurfaceVariant,
+        disabledColor: theme.onSurface.withValues(alpha: theme.disabledOpacity),
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(BankTokens.radiusSmall),
@@ -164,4 +161,51 @@ class BankControlTheme {
         }
         return null;
       });
+}
+
+/// The checkbox outline, as a side that resolves per state *and* still reads
+/// as the plain resting [BorderSide] it draws at rest.
+///
+/// The outline is the only thing an unticked box paints — the kit's
+/// `fillColor` is transparent whether the box is enabled or not — so it has to
+/// carry the disabled state on its own. A plain [BorderSide] cannot: Material
+/// hands a non-[WidgetStateBorderSide] back verbatim for *every* unselected
+/// state and never consults its own state-aware default, which left a consent
+/// gate the user cannot tick yet outlined at full strength, indistinguishable
+/// from one they can.
+///
+/// [WidgetStateBorderSide.resolveWith] would fix that but degrades to an empty
+/// `BorderSide()` — a black hairline — anywhere the value is read as a plain
+/// side rather than resolved, so this subclass pins the inherited [color] and
+/// [width] to the resting outline instead.
+class _BankCheckboxSide extends WidgetStateBorderSide {
+  const _BankCheckboxSide({
+    required this.enabledColor,
+    required this.disabledColor,
+  });
+
+  /// Outline of an unticked box the user can tick.
+  final Color enabledColor;
+
+  /// Outline of an unticked box that is not accepting input.
+  final Color disabledColor;
+
+  @override
+  Color get color => enabledColor;
+
+  @override
+  double get width => BankControlTheme._checkboxOutlineWidth;
+
+  @override
+  BorderSide? resolve(Set<WidgetState> states) {
+    // A ticked box is a solid fill; Material's own defaults keep its outline
+    // transparent rather than ringing the fill.
+    if (states.contains(WidgetState.selected)) {
+      return BorderSide(color: Colors.transparent, width: width);
+    }
+    return BorderSide(
+      color: states.contains(WidgetState.disabled) ? disabledColor : color,
+      width: width,
+    );
+  }
 }

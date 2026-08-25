@@ -336,6 +336,49 @@ void main() {
     });
   });
 
+  // -------------------------------------------------------------------------
+  // Published API contract
+  //
+  // 0.3.0 appended listTile, card, balanceHero, and chart to a four-value enum
+  // that 0.2.0 shipped. Dart 3 checks switch exhaustiveness, so that is a
+  // compile break for any adopter switching over the enum without a wildcard
+  // arm — which doc/enterprise/stability-and-support.md classifies as breaking
+  // and CHANGELOG.md must record as such. The break is disclosed; this gate
+  // exists so the *next* one cannot land silently.
+  // -------------------------------------------------------------------------
+
+  group('BankSkeletonVariant is a published enum', () {
+    test('its values and their order are pinned', () {
+      expect(
+        BankSkeletonVariant.values.map((variant) => variant.name).toList(),
+        <String>[
+          // Shipped in 0.2.0. These four keep their names and their positions,
+          // so a persisted index or name still resolves to the same shape.
+          'accountCard',
+          'transactionTile',
+          'potCard',
+          'generic',
+          // Appended in 0.3.0, recorded there as a breaking change.
+          'listTile',
+          'card',
+          'balanceHero',
+          'chart',
+        ],
+        reason: 'Adding, removing, renaming, or reordering a value of an '
+            'exported enum is a breaking change under '
+            'doc/enterprise/stability-and-support.md. Edit this list only '
+            'alongside a Breaking entry in CHANGELOG.md.',
+      );
+    });
+
+    test('the 0.2.0 values keep their indices', () {
+      expect(BankSkeletonVariant.accountCard.index, 0);
+      expect(BankSkeletonVariant.transactionTile.index, 1);
+      expect(BankSkeletonVariant.potCard.index, 2);
+      expect(BankSkeletonVariant.generic.index, 3);
+    });
+  });
+
   group('BankAsyncContent', () {
     Widget subject(
       BankAsyncStatus status, {

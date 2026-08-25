@@ -7,7 +7,9 @@
 // shrinks, when a state signal doubles up, or when the meter loses its
 // accessible name.
 import 'package:bank_ui_kit/core.dart';
+import 'package:bank_ui_kit/credit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -43,6 +45,50 @@ Widget _host(Widget child, {BankPreset preset = BankPreset.studio}) =>
         home: Scaffold(body: child),
       ),
     );
+
+/// The slider nodes assistive technology actually receives.
+///
+/// A node that merges its descendants is where the merge stops: its data
+/// already carries the framework slider's role, value, and actions, so
+/// descending past it would count the same control twice.
+List<SemanticsData> _sliderNodes(WidgetTester tester) {
+  final nodes = <SemanticsData>[];
+  void visit(SemanticsNode node) {
+    final data = node.getSemanticsData();
+    if (data.flagsCollection.isSlider) {
+      nodes.add(data);
+      return;
+    }
+    if (node.mergeAllDescendantsIntoThisNode) return;
+    node.visitChildren((SemanticsNode child) {
+      visit(child);
+      return true;
+    });
+  }
+
+  visit(tester.getSemantics(find.byType(MaterialApp)));
+  return nodes;
+}
+
+/// The data of the first semantics node whose label contains [needle].
+SemanticsData _nodeLabelled(WidgetTester tester, String needle) {
+  SemanticsData? found;
+  void visit(SemanticsNode node) {
+    if (found != null) return;
+    final data = node.getSemanticsData();
+    if (data.label.contains(needle)) {
+      found = data;
+      return;
+    }
+    node.visitChildren((SemanticsNode child) {
+      visit(child);
+      return true;
+    });
+  }
+
+  visit(tester.getSemantics(find.byType(MaterialApp)));
+  return found ?? (throw StateError('no semantics node mentions "$needle"'));
+}
 
 /// Every [AnimatedContainer] box decoration inside an OTP input.
 List<BoxDecoration> _otpBoxes(WidgetTester tester) => tester
@@ -258,6 +304,216 @@ void main() {
         SystemChannels.accessibility,
         null,
       );
+    handle.dispose();
+  });
+
+  testWidgets('consent tick boxes are targets in their own right',
+      (tester) async {
+    final handle = tester.ensureSemantics();
+
+    final surfaces = <String, Widget>{
+      'BankConsentModal': BankConsentModal(
+        title: 'Terms of service',
+        termsContent: 'You agree to the terms.',
+        onAccept: () {},
+        onDecline: () {},
+      ),
+      'BankDisclosureConsentSheet': BankDisclosureConsentSheet(
+        disclosures: const [
+          BankDisclosure(
+            title: 'Representative example',
+            body: 'Borrow 10,000 over 48 months at 5.9% APR.',
+            required: true,
+          ),
+        ],
+        consents: const [
+          BankConsentItem(
+            id: 'terms',
+            label: 'I agree to the loan terms',
+            required: true,
+          ),
+        ],
+        onChanged: (_) {},
+        onAgree: () {},
+      ),
+    };
+
+    for (final entry in surfaces.entries) {
+      await tester.pumpWidget(_host(Center(child: entry.value)));
+      await tester.pumpAndSettle();
+
+      // The box carries `onChanged` itself, so it is an independently
+      // tappable node and owes the floor on its own — the enclosing row
+      // meeting it is not enough.
+      final box = tester.getSize(find.byType(Checkbox));
+      expect(
+        box.width,
+        greaterThanOrEqualTo(BankTokens.minTapTarget),
+        reason: '${entry.key} tick box is narrower than the floor',
+      );
+      expect(
+        box.height,
+        greaterThanOrEqualTo(BankTokens.minTapTarget),
+        reason: '${entry.key} tick box is shorter than the floor',
+      );
+
+      await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    }
+
+    handle.dispose();
+  });
+
+  testWidgets('a consent gate that cannot be ticked yet reads as disabled',
+      (tester) async {
+    await tester.pumpWidget(
+      _host(
+        Center(
+          child: BankConsentModal(
+            title: 'Terms of service',
+            termsContent: 'You agree to the terms.',
+            onAccept: () {},
+            onDecline: () {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final side = CheckboxTheme.of(tester.element(find.byType(Checkbox))).side;
+    // A plain BorderSide is handed back verbatim for every unselected state,
+    // which is what erased the disabled outline: the box the user cannot tick
+    // painted at exactly the strength of one they can.
+    expect(side, isA<WidgetStateBorderSide>());
+    final resolvable = side! as WidgetStateBorderSide;
+    final enabled = resolvable.resolve(<WidgetState>{});
+    final disabled = resolvable.resolve(<WidgetState>{WidgetState.disabled});
+    expect(disabled!.color, isNot(enabled!.color));
+    expect(
+      disabled.color.a,
+      lessThan(enabled.color.a),
+      reason: 'the disabled outline must be the faded one',
+    );
+    expect(disabled.width, enabled.width);
+  });
+
+  // -------------------------------------------------------------------------
+  // Item 74 — sliders stay adjustable
+  // -------------------------------------------------------------------------
+
+  testWidgets('kit sliders keep the role, the value, and both adjustments',
+      (tester) async {
+    final handle = tester.ensureSemantics();
+
+    final sliders = <String, Widget>{
+      'BankCardControlsPanel': BankCardControlsPanel(
+        isFrozen: false,
+        isOnlinePaymentsEnabled: true,
+        isContactlessEnabled: true,
+        isInternationalEnabled: false,
+        onFreezeChanged: (_) {},
+        onOnlinePaymentsChanged: (_) {},
+        onContactlessChanged: (_) {},
+        onInternationalChanged: (_) {},
+        spendLimit: 2000,
+        maxSpendLimit: 5000,
+        onSpendLimitChanged: (_) {},
+      ),
+      'BankCreditLimitAdjuster': BankCreditLimitAdjuster(
+        currentLimit: Money.fromDouble(4500, 'GBP'),
+        maxApproved: Money.fromDouble(8000, 'GBP'),
+        used: Money.fromDouble(1250, 'GBP'),
+        onCommit: (_) async => true,
+      ),
+      'BankTransferLimitManager': BankTransferLimitManager(
+        channels: [
+          BankLimitChannel(
+            id: 'atm',
+            label: 'ATM withdrawals',
+            icon: Icons.atm_outlined,
+            current: Money.fromDouble(500, 'GBP'),
+            max: Money.fromDouble(2000, 'GBP'),
+            used: Money.fromDouble(120, 'GBP'),
+          ),
+        ],
+        onChanged: (_, __) {},
+      ),
+    };
+
+    for (final entry in sliders.entries) {
+      await tester.pumpWidget(
+        _host(SingleChildScrollView(child: entry.value)),
+      );
+      await tester.pumpAndSettle();
+
+      final nodes = _sliderNodes(tester);
+      expect(
+        nodes,
+        hasLength(1),
+        reason: '${entry.key} lost the framework slider node',
+      );
+      final node = nodes.single;
+      expect(
+        node.label,
+        isNotEmpty,
+        reason: '${entry.key} slider has no accessible name',
+      );
+      expect(
+        node.value,
+        isNotEmpty,
+        reason: '${entry.key} slider announces no value',
+      );
+      expect(
+        node.hasAction(SemanticsAction.increase),
+        isTrue,
+        reason: '${entry.key} cannot be raised by assistive technology',
+      );
+      expect(
+        node.hasAction(SemanticsAction.decrease),
+        isTrue,
+        reason: '${entry.key} cannot be lowered by assistive technology',
+      );
+      // The adjustment previews are the values the control would land on,
+      // never the framework's fallback percentage of the track.
+      expect(node.increasedValue, isNotEmpty);
+      expect(node.decreasedValue, isNotEmpty);
+      expect(node.increasedValue, isNot(node.decreasedValue));
+    }
+
+    handle.dispose();
+  });
+
+  testWidgets('card control toggles can be operated, not only read',
+      (tester) async {
+    final handle = tester.ensureSemantics();
+
+    await tester.pumpWidget(
+      _host(
+        SingleChildScrollView(
+          child: BankCardControlsPanel(
+            isFrozen: false,
+            isOnlinePaymentsEnabled: true,
+            isContactlessEnabled: true,
+            isInternationalEnabled: false,
+            onFreezeChanged: (_) {},
+            onOnlinePaymentsChanged: (_) {},
+            onContactlessChanged: (_) {},
+            onInternationalChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Excluding the row's whole subtree took the tap action with it, so the
+    // freeze toggle announced its state and offered no way to change it.
+    final freeze = _nodeLabelled(tester, 'Freeze card');
+    expect(freeze.value, 'disabled');
+    expect(
+      freeze.hasAction(SemanticsAction.tap),
+      isTrue,
+      reason: 'the freeze toggle cannot be flipped by assistive technology',
+    );
+
     handle.dispose();
   });
 

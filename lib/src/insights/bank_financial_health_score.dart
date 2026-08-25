@@ -146,7 +146,9 @@ class BankFinancialHealthScore extends StatefulWidget {
   /// Overrides the card fill colour. Defaults to the theme surface.
   final Color? backgroundColor;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
+  /// Overrides the card shadow. Defaults to the card-tier shadow for the
+  /// theme background brightness, re-inked with [BankThemeData.shadowTint]
+  /// when the brand defines one;
   /// pass `const []` to flatten.
   final List<BoxShadow>? shadow;
 
@@ -285,7 +287,7 @@ class _BankFinancialHealthScoreState extends State<BankFinancialHealthScore>
       decoration: BoxDecoration(
         color: widget.backgroundColor ?? theme.surface,
         borderRadius: widget.radius ?? theme.cardRadius,
-        boxShadow: widget.shadow ?? BankTokens.shadowCard,
+        boxShadow: widget.shadow ?? theme.shadowFor(BankElevationTier.card),
       ),
       child: Padding(
         padding: widget.padding ?? const EdgeInsets.all(BankTokens.space4),

@@ -726,6 +726,13 @@ class BankEmblem extends StatelessWidget {
 ///   maxVisible: 5,
 /// )
 /// ```
+///
+/// A group whose members are purely decorative is exactly as tall as one
+/// disc. As soon as anything in it can be tapped — a member's
+/// [BankEmblemData.onTap] or [onOverflowTap] — every slot grows to
+/// [BankTokens.minTapTarget] per side with the disc centred inside it, the
+/// same floor [BankEmblem] reserves on its own. The discs stay where they
+/// were; the group gains the half-difference as padding on each edge.
 class BankEmblemStack extends StatelessWidget {
   /// Creates a stacked identity group.
   const BankEmblemStack({
@@ -816,12 +823,31 @@ class BankEmblemStack extends StatelessWidget {
     final advance = diameter * (1 - overlap) + spacing;
     final groupRing = ring ?? (overlap > 0 ? const BankEmblemRing() : null);
 
+    // A group of decorative discs reads as noise, so it collapses to one
+    // label — unless something in it is tappable, in which case the buttons
+    // underneath have to stay reachable.
+    final interactive =
+        onOverflowTap != null || visible.any((item) => item.onTap != null);
+
+    // A [BankEmblem] that can be tapped reserves [BankTokens.minTapTarget] per
+    // side around its disc; a slot pinned to the visual diameter would hand it
+    // tight constraints and squeeze that promise back out. So once anything in
+    // the group is tappable, every slot is the tap-target square and the disc
+    // is centred inside it — which keeps the discs exactly where they were and
+    // pads the group by the same half-difference on each edge.
+    final slotSide = interactive && diameter < BankTokens.minTapTarget
+        ? BankTokens.minTapTarget
+        : diameter;
+    final slotInset = (slotSide - diameter) / 2;
+
     Widget at(int slot, Widget child) => PositionedDirectional(
           start: slot * advance,
           top: 0,
-          width: diameter,
-          height: diameter,
-          child: child,
+          width: slotSide,
+          height: slotSide,
+          // Loosens the slot's tight constraints again, so a non-interactive
+          // disc keeps its diameter and an interactive one takes the square.
+          child: Center(child: child),
         );
 
     final children = <Widget>[
@@ -852,19 +878,13 @@ class BankEmblemStack extends StatelessWidget {
       if (showOverflow) overflowLabel,
     ];
 
-    // A group of decorative discs reads as noise, so it collapses to one
-    // label — unless something in it is tappable, in which case the buttons
-    // underneath have to stay reachable.
-    final interactive =
-        onOverflowTap != null || visible.any((item) => item.onTap != null);
-
     return Semantics(
       container: true,
       label: semanticLabel ?? labels.join(', '),
       excludeSemantics: !interactive,
       child: SizedBox(
-        width: diameter + (slots - 1) * advance,
-        height: diameter,
+        width: diameter + (slots - 1) * advance + 2 * slotInset,
+        height: slotSide,
         child: Stack(children: children),
       ),
     );

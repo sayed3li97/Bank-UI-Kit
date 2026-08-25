@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../common/bank_country_flag.dart';
 import '../common/bank_country_picker.dart';
+import '../common/bank_gradient_surface.dart';
 import '../common/bank_text_field.dart';
 import '../common/money_formatter.dart';
 import '../models/bank_account.dart';
@@ -301,7 +302,15 @@ class _BankTravelNoticeFormState extends State<BankTravelNoticeForm> {
                   unselectedIcon: widget.cardIcon,
                   radius: resolvedChipRadius,
                   accentColor: resolvedAccent,
-                  foregroundColor: resolvedForeground,
+                  // A selectable card chip is incidental decoration, so
+                  // gradientReach may ration its fill down to a wash; the
+                  // chip's ink has to follow whatever fill it gets.
+                  fill: BankGradientSurface.resolve(
+                    theme,
+                    BankGradientRole.incidental,
+                    fallbackForeground: resolvedForeground,
+                  ),
+                  overrideForeground: widget.foregroundColor,
                   duration: resolvedDuration,
                   curve: resolvedCurve,
                 ),
@@ -482,7 +491,8 @@ class _CardChip extends StatelessWidget {
     required this.unselectedIcon,
     required this.radius,
     required this.accentColor,
-    required this.foregroundColor,
+    required this.fill,
+    required this.overrideForeground,
     required this.duration,
     required this.curve,
   });
@@ -495,12 +505,22 @@ class _CardChip extends StatelessWidget {
   final IconData unselectedIcon;
   final BorderRadius radius;
   final Color accentColor;
-  final Color foregroundColor;
+
+  /// The chip fill resolved through the brand's gradient-reach policy,
+  /// together with the ink that stays legible on it.
+  final BankGradientSurface fill;
+
+  /// A caller-supplied foreground that wins over [fill]'s resolved ink.
+  final Color? overrideForeground;
   final Duration duration;
   final Curve curve;
 
   @override
   Widget build(BuildContext context) {
+    // Ink follows the fill: a rationed wash is translucent over the form
+    // surface, so the chip switches to onSurface unless the host pinned a
+    // foreground of its own.
+    final ink = overrideForeground ?? fill.foreground;
     return Semantics(
       button: true,
       selected: selected,
@@ -514,8 +534,8 @@ class _CardChip extends StatelessWidget {
           width: 92,
           height: 58,
           decoration: BoxDecoration(
-            gradient: theme.accentGradient,
-            color: theme.accentGradient == null ? theme.surfaceVariant : null,
+            gradient: fill.gradient,
+            color: fill.gradient == null ? theme.surfaceVariant : null,
             borderRadius: radius,
             border: Border.all(
               color: selected ? accentColor : theme.outline,
@@ -531,11 +551,11 @@ class _CardChip extends StatelessWidget {
                 Icon(
                   selected ? selectedIcon : unselectedIcon,
                   size: 16,
-                  color: foregroundColor,
+                  color: ink,
                 ),
                 Text(
                   account.maskedNumber,
-                  style: BankTokens.labelSmall.copyWith(color: foregroundColor),
+                  style: BankTokens.labelSmall.copyWith(color: ink),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

@@ -59,6 +59,25 @@ int _nodesLabelled(WidgetTester tester, String needle) {
   return count;
 }
 
+/// Labels of every node carrying the heading trait, empty labels included —
+/// an anonymous heading is exactly the thing heading navigation trips over.
+List<String> _headingLabels(WidgetTester tester) {
+  final labels = <String>[];
+  void visit(SemanticsNode node) {
+    final data = node.getSemanticsData();
+    if (data.flagsCollection.isHeader || data.flagsCollection.namesRoute) {
+      labels.add(data.label);
+    }
+    node.visitChildren((child) {
+      visit(child);
+      return true;
+    });
+  }
+
+  visit(tester.getSemantics(find.byType(MaterialApp)));
+  return labels;
+}
+
 void main() {
   // -------------------------------------------------------------------------
   // BankAppBar (rank 68)
@@ -233,6 +252,26 @@ void main() {
       await tester.drag(find.text('row 2'), const Offset(0, -400));
       await tester.pumpAndSettle();
       expect(_nodesLabelled(tester, 'Accounts'), 1);
+      handle.dispose();
+    });
+
+    testWidgets('leaves no anonymous heading behind the large title',
+        (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(scrollHost());
+
+      // Expanded: the tier's own labelled heading, and nothing else. The
+      // framework's wrapper around the (still excluded) compact title used to
+      // add a second, unlabelled header and an empty route name here.
+      expect(_headingLabels(tester), hasLength(1));
+      expect(_headingLabels(tester).single, contains('Accounts'));
+
+      await tester.drag(find.text('row 2'), const Offset(0, -400));
+      await tester.pumpAndSettle();
+
+      // Collapsed: the compact title takes the heading over, still named.
+      expect(_headingLabels(tester), hasLength(1));
+      expect(_headingLabels(tester).single, contains('Accounts'));
       handle.dispose();
     });
 

@@ -49,6 +49,31 @@ const BorderRadius _pill =
 /// the component it stands in for. A skeleton that is only *about* the right
 /// size causes a visible reflow the moment real data lands, which reads as a
 /// second loading event rather than as a resolution.
+///
+/// ## Breaking in 0.3.0
+///
+/// [listTile], [card], [balanceHero], and [chart] were appended to the four
+/// values this enum shipped with in 0.2.0. Dart 3 checks switch
+/// exhaustiveness, so a `switch` over `BankSkeletonVariant` written against
+/// 0.2.0 without a `default` or wildcard arm stops compiling on upgrade
+/// (`non_exhaustive_switch_expression`). Adding a wildcard arm is the whole
+/// migration:
+///
+/// ```dart
+/// // Compiles against 0.2.0 and 0.3.0 alike.
+/// final caption = switch (variant) {
+///   BankSkeletonVariant.accountCard => 'Loading account',
+///   BankSkeletonVariant.transactionTile => 'Loading transactions',
+///   BankSkeletonVariant.potCard => 'Loading pots',
+///   _ => 'Loading',
+/// };
+/// ```
+///
+/// The original four values keep both their names and their declaration
+/// order, so a persisted index or name still resolves to the same variant.
+/// The full list — names and order — is pinned by
+/// `test/async_states_test.dart`, so a further addition cannot ship without a
+/// deliberate Breaking entry in `CHANGELOG.md`.
 enum BankSkeletonVariant {
   /// Mimics a [BankAccountCard]: a card surface carrying a balance block and
   /// two meta lines.
@@ -69,19 +94,27 @@ enum BankSkeletonVariant {
   /// A generic Bank UI Kit list row: leading emblem, title and subtitle lines,
   /// and a trailing affordance. Use it for any tile-shaped list that is not a
   /// transaction feed.
+  ///
+  /// Added in 0.3.0.
   listTile,
 
   /// A generic content card: header glyph and title, two body lines, and a
   /// footer line, on a real card surface.
+  ///
+  /// Added in 0.3.0.
   card,
 
   /// A balance / hero block: micro-label, hero numeral, and two chips.
   /// Deliberately shell-less — it stands in for a screen header such as
   /// [BankPeekBalance], not for a card.
+  ///
+  /// Added in 0.3.0.
   balanceHero,
 
   /// A chart panel: title line, a bar plot area, a baseline rule, and axis
   /// tick labels, on a real card surface.
+  ///
+  /// Added in 0.3.0.
   chart,
 }
 

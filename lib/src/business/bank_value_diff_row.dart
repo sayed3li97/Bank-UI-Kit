@@ -116,16 +116,32 @@ class BankValueDiffRow extends StatelessWidget {
   /// An explicit [meaning] wins over this inference.
   final bool highlightIncrease;
 
-  /// Retained for source compatibility; no longer rendered.
+  /// No longer rendered. Kept so 0.2.0 call sites still compile.
   ///
-  /// The row settled on a single grammar — old value, arrow, new value — in
-  /// both [BankValueDiffStyle] variants, so `'Previous'` / `'New'`
-  /// microlabels no longer appear anywhere. Keeping the parameters means
-  /// existing localised call sites still compile.
+  /// Up to 0.2.0 [BankValueDiffStyle.stacked] printed this string as a
+  /// microlabel above the old value. In 0.3.0 the row settled on a single
+  /// grammar — old value, arrow, new value — in *both*
+  /// [BankValueDiffStyle] variants, so the `'Previous'` / `'New'`
+  /// microlabels are gone from the rendering. Passing a value has no effect.
+  ///
+  /// There is no replacement parameter: the old/new relationship is carried
+  /// by the struck-through value and the arrow, which need no caption. To
+  /// localise what assistive technology says about the row, pass
+  /// [semanticLabel].
+  @Deprecated(
+    'No longer rendered: 0.3.0 gave both BankValueDiffStyle variants one '
+    'old-to-new grammar with no microlabels. Delete the argument; localise '
+    'the spoken row with semanticLabel. Removed in 0.5.0.',
+  )
   final String previousLabel;
 
-  /// Retained for source compatibility; no longer rendered. See
-  /// [previousLabel].
+  /// No longer rendered. Kept so 0.2.0 call sites still compile. See
+  /// [previousLabel] for the migration.
+  @Deprecated(
+    'No longer rendered: 0.3.0 gave both BankValueDiffStyle variants one '
+    'old-to-new grammar with no microlabels. Delete the argument; localise '
+    'the spoken row with semanticLabel. Removed in 0.5.0.',
+  )
   final String newLabel;
 
   /// Chip text (minus the `'+ '` prefix) for added fields.
@@ -180,7 +196,17 @@ class BankValueDiffRow extends StatelessWidget {
     this.style = BankValueDiffStyle.inline,
     this.meaning = BankValueDiffMeaning.neutral,
     this.highlightIncrease = false,
+    @Deprecated(
+      'No longer rendered: 0.3.0 gave both BankValueDiffStyle variants one '
+      'old-to-new grammar with no microlabels. Delete the argument; localise '
+      'the spoken row with semanticLabel. Removed in 0.5.0.',
+    )
     this.previousLabel = 'Previous',
+    @Deprecated(
+      'No longer rendered: 0.3.0 gave both BankValueDiffStyle variants one '
+      'old-to-new grammar with no microlabels. Delete the argument; localise '
+      'the spoken row with semanticLabel. Removed in 0.5.0.',
+    )
     this.newLabel = 'New',
     this.addedLabel = 'Added',
     this.removedLabel = 'Removed',
@@ -598,10 +624,22 @@ class BankValueDiffList extends StatelessWidget {
   /// Inner padding of the card. Defaults to [BankTokens.space4] all round.
   final EdgeInsetsGeometry? padding;
 
-  /// See [BankValueDiffRow.previousLabel].
+  /// No longer rendered, and no longer forwarded to the rows. See
+  /// [BankValueDiffRow.previousLabel] for the migration.
+  @Deprecated(
+    'No longer rendered: 0.3.0 gave both BankValueDiffStyle variants one '
+    'old-to-new grammar with no microlabels. Delete the argument; localise '
+    'each row with BankValueDiffItem.semanticLabel. Removed in 0.5.0.',
+  )
   final String previousLabel;
 
-  /// See [BankValueDiffRow.newLabel].
+  /// No longer rendered, and no longer forwarded to the rows. See
+  /// [BankValueDiffRow.previousLabel] for the migration.
+  @Deprecated(
+    'No longer rendered: 0.3.0 gave both BankValueDiffStyle variants one '
+    'old-to-new grammar with no microlabels. Delete the argument; localise '
+    'each row with BankValueDiffItem.semanticLabel. Removed in 0.5.0.',
+  )
   final String newLabel;
 
   /// See [BankValueDiffRow.addedLabel].
@@ -655,7 +693,17 @@ class BankValueDiffList extends StatelessWidget {
     this.title,
     this.showDividers = true,
     this.padding,
+    @Deprecated(
+      'No longer rendered: 0.3.0 gave both BankValueDiffStyle variants one '
+      'old-to-new grammar with no microlabels. Delete the argument; localise '
+      'each row with BankValueDiffItem.semanticLabel. Removed in 0.5.0.',
+    )
     this.previousLabel = 'Previous',
+    @Deprecated(
+      'No longer rendered: 0.3.0 gave both BankValueDiffStyle variants one '
+      'old-to-new grammar with no microlabels. Delete the argument; localise '
+      'each row with BankValueDiffItem.semanticLabel. Removed in 0.5.0.',
+    )
     this.newLabel = 'New',
     this.addedLabel = 'Added',
     this.removedLabel = 'Removed',
@@ -706,8 +754,9 @@ class BankValueDiffList extends StatelessWidget {
           style: style,
           meaning: item.meaning,
           highlightIncrease: item.highlightIncrease,
-          previousLabel: previousLabel,
-          newLabel: newLabel,
+          // previousLabel / newLabel are deliberately not forwarded: both are
+          // deprecated no-ops on the row, and passing them here would only
+          // hide the analyzer warning an adopter needs to see.
           addedLabel: addedLabel,
           removedLabel: removedLabel,
           semanticLabel: item.semanticLabel,

@@ -21,6 +21,25 @@ Widget _host(Widget child, {Brightness brightness = Brightness.light}) {
   );
 }
 
+/// [_host] with [child] rendered under an explicit ambient [direction], so a
+/// money atom can be pumped in LTR and RTL copy alike.
+Widget _directionalHost(Widget child, TextDirection direction) => _host(
+      Directionality(textDirection: direction, child: child),
+    );
+
+/// [_host] with the subtree's locale overridden to [locale], reusing the
+/// app's own delegates so the widget sees a foreign locale without needing
+/// localizations published for it.
+Widget _localeHost(Widget child, Locale locale) => _host(
+      Builder(
+        builder: (context) => Localizations.override(
+          context: context,
+          locale: locale,
+          child: child,
+        ),
+      ),
+    );
+
 Transaction _txn({
   required double amount,
   TransactionStatus status = TransactionStatus.cleared,
@@ -266,6 +285,73 @@ void main() {
         _host(BankTransactionGroupHeader(date: DateTime(2026, 3, 14))),
       );
       expect(find.text('14 MARCH 2026'), findsOneWidget);
+    });
+  });
+
+  group('a Gulf money atom renders the same in either direction', () {
+    // Marker, no-break space, digits. The defect this pins packed the
+    // gap inside the marker's isolate, where it resolves right-to-left with
+    // the marker and reorders to its far side: a leading space, and the
+    // Arabic marker painted flush against the first brand-font digit.
+    const bhd = '\u2068د.ب\u2069\u00A01,234.567';
+    const gapInsideIsolate = '\u2068د.ب\u00A0\u20691,234.567';
+
+    String format() => BankMoneyFormatter.format(
+          amount: Decimal.parse('1234.567'),
+          currencyCode: 'BHD',
+          locale: 'en',
+        );
+
+    for (final direction in TextDirection.values) {
+      testWidgets('composition is unchanged by ${direction.name} copy',
+          (tester) async {
+        await tester.pumpWidget(
+          _directionalHost(
+            Builder(builder: (context) => Text(format())),
+            direction,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text(bhd), findsOneWidget);
+        expect(find.text(gapInsideIsolate), findsNothing);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
+
+  group('BankPrizeDrawCard prize amount follows the app locale', () {
+    BankPrizeDrawCard buildCard() => BankPrizeDrawCard(
+          balance: Money.fromDouble(1250, 'USD'),
+          entriesCount: 25,
+          clock: () => DateTime(2026, 5, 2),
+          useIsoCurrencyCodes: true,
+          draws: [
+            BankPrizeDraw(
+              id: 'may',
+              prizeLabel: 'Cash prize',
+              prizeAmount: Money.fromDouble(500000, 'USD'),
+              drawDate: DateTime(2026, 5, 13),
+              lastDepositDate: DateTime(2026, 5, 8),
+            ),
+          ],
+        );
+
+    testWidgets('a German app gets German grouping', (tester) async {
+      await tester.pumpWidget(_localeHost(buildCard(), const Locale('de')));
+      await tester.pumpAndSettle();
+
+      // `USD 500,000` read by a German customer is five hundred dollars.
+      expect(find.text('USD\u00A0500.000'), findsOneWidget);
+      expect(find.text('USD\u00A0500,000'), findsNothing);
+    });
+
+    testWidgets('an English app still gets US grouping', (tester) async {
+      await tester.pumpWidget(_localeHost(buildCard(), const Locale('en')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('USD\u00A0500,000'), findsOneWidget);
+      expect(find.text('USD\u00A0500.000'), findsNothing);
     });
   });
 

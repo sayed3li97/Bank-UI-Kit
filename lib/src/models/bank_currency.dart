@@ -66,8 +66,10 @@ class BankCurrency {
   ///
   /// Use this for a symbol standing on its own — an input prefix, an axis
   /// label. `BankMoneyFormatter` composes its own marker unit instead,
-  /// because a symbol next to an amount has to carry the gap *inside* the
-  /// isolate with it.
+  /// because a symbol next to an amount also carries the gap that separates
+  /// it from the digits, and that gap has to sit *outside* the isolate: a
+  /// no-break space enclosed with an Arabic marker resolves right-to-left
+  /// along with it and reorders to the marker's far side.
   String get embeddableSymbol =>
       symbolIsRtlScript ? '\u2068$symbol\u2069' : symbol;
 }

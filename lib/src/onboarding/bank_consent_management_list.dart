@@ -128,7 +128,9 @@ class BankConsentManagementList extends StatefulWidget {
   /// Fill of each consent card. Defaults to the theme surface.
   final Color? cardColor;
 
-  /// Shadow of each consent card. Defaults to [BankTokens.shadowCard];
+  /// Shadow of each consent card. Defaults to the card-tier shadow for the
+  /// theme background brightness, re-inked with [BankThemeData.shadowTint]
+  /// when the brand defines one;
   /// pass `const []` to flatten.
   final List<BoxShadow>? cardShadow;
 
@@ -324,7 +326,8 @@ class _ConsentCard extends StatelessWidget {
             color: widget.cardColor ?? theme.surface,
             borderRadius: widget.cardRadius ?? theme.cardRadius,
             border: Border.all(color: theme.outline),
-            boxShadow: widget.cardShadow ?? BankTokens.shadowCard,
+            boxShadow:
+                widget.cardShadow ?? theme.shadowFor(BankElevationTier.card),
           ),
           child: Padding(
             padding:

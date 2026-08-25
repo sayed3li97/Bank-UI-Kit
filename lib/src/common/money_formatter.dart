@@ -40,13 +40,16 @@ import 'bank_hijri_date.dart';
 /// inside an FSI/PDI isolate, and the digits stay European wherever the
 /// amount lands.
 ///
-/// The gap between them travels inside that isolate too. Left outside, it is
-/// a bare neutral resolved against whatever paragraph the amount was dropped
-/// into, and at a directional boundary that is exactly what separates a
-/// marker from the number it belongs to. With marker and gap isolated as one
-/// unit, `د.ب 1,234.567` reads correctly in an English screen and an Arabic
-/// one, with the marker on the side the currency's own placement rule asks
-/// for.
+/// The gap between them stays *outside* that isolate, on the amount's side
+/// of the marker. U+00A0 is bidi class CS, which resolves to ON and then —
+/// packed inside an isolate whose only strong character is an Arabic letter
+/// — to R by rule N1, so it reorders to the far side of the marker and
+/// renders as a leading space with the marker glued to the digits. Left
+/// where it belongs it is a lone neutral between the isolate and the number:
+/// rule N2 gives it the embedding direction and it holds its place. That is
+/// what makes `د.ب 1,234.567` read correctly in an English screen and an
+/// Arabic one, with the marker on the side the currency's own placement rule
+/// asks for.
 ///
 /// What that does *not* pin is the sign: an unisolated `-$1,234.00` puts its
 /// minus on the far end of the number in an Arabic paragraph, because a
@@ -330,10 +333,8 @@ abstract final class BankMoneyFormatter {
   /// Assembles sign, symbol, gap and [unsigned] digits into one money atom,
   /// wrapped in an LRI/PDI isolate when [isolate] is set.
   ///
-  /// The gap sits *inside* the isolate alongside the marker and the digits.
-  /// Left outside it is a bare neutral that resolves against the surrounding
-  /// paragraph, and at a directional boundary that is exactly what lets a
-  /// marker drift away from the number it belongs to.
+  /// The gap travels with the marker (see [_markerFor]) and sits on the
+  /// digits' side of it, outside the marker's own FSI/PDI isolate.
   static String _compose(
     BankCurrency currency,
     String sign,
@@ -347,19 +348,26 @@ abstract final class BankMoneyFormatter {
     return isolate ? '$_lri$atom$_pdi' : atom;
   }
 
-  /// The currency marker as one embeddable unit: the symbol, the gap that
-  /// belongs on the amount's side of it, and — for an RTL-script marker —
-  /// the FSI/PDI isolate that holds both.
+  /// The currency marker as one embeddable unit: the symbol — wrapped in an
+  /// FSI/PDI isolate when it is written in an RTL script — followed (or
+  /// preceded, for a symbol-after currency) by the gap that separates it
+  /// from the digits.
   ///
-  /// Isolating symbol *and* gap together is the point: the marker's Arabic
-  /// letters can no longer retype the digits beside them, and the gap can no
-  /// longer resolve against the surrounding paragraph and let the marker
-  /// drift off the number.
+  /// The isolate holds the *letters and nothing else*. That is what stops
+  /// Arabic-Letter marker glyphs retyping the European digits beside them,
+  /// and it is deliberately all it does: a no-break space packed in with the
+  /// marker is a CS neutral surrounded by R, resolves to R, and reorders to
+  /// the far side of the marker — which paints a stray space in front of the
+  /// marker and glues the marker itself to the first digit, the exact
+  /// fallback-font seam the gap exists to prevent. Outside the isolate the
+  /// gap is a neutral between an isolate (opaque to the algorithm) and a
+  /// number, so it takes the embedding direction and stays put in an LTR and
+  /// an RTL paragraph alike.
   static String _markerFor(BankCurrency currency) {
     final symbol = currency.symbol.trim();
+    final mark = currency.symbolIsRtlScript ? '$_fsi$symbol$_pdi' : symbol;
     final gap = _gapFor(currency);
-    final unit = currency.symbolBeforeAmount ? '$symbol$gap' : '$gap$symbol';
-    return currency.symbolIsRtlScript ? '$_fsi$unit$_pdi' : unit;
+    return currency.symbolBeforeAmount ? '$mark$gap' : '$gap$mark';
   }
 }
 

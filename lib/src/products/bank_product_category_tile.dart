@@ -131,7 +131,9 @@ class BankProductCategoryTile extends StatelessWidget {
   /// Optional gradient painted on the disc instead of a flat [discColor].
   final Gradient? discGradient;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard]; pass
+  /// Overrides the card shadow. Defaults to the card-tier shadow for the
+  /// theme background brightness, re-inked with [BankThemeData.shadowTint]
+  /// when the brand defines one; pass
   /// `const []` to flatten it.
   final List<BoxShadow>? shadow;
 
@@ -237,7 +239,7 @@ class BankProductCategoryTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: backgroundColor ?? theme.surface,
             borderRadius: cardRadius,
-            boxShadow: shadow ?? BankTokens.shadowCard,
+            boxShadow: shadow ?? theme.shadowFor(BankElevationTier.card),
           ),
           child: Material(
             type: MaterialType.transparency,

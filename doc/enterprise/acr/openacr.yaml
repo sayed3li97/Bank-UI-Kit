@@ -85,34 +85,50 @@ evaluation_methods_used: >-
   test/privacy_mask_test.dart asserts that the privacy mask changes the
   announced semantic label rather than only the pixels;
   test/accessibility_targets_test.dart drives the individually audited
-  controls and asserts their hit areas, their focus encoding, and their
-  non-colour state signals; test/sheet_presentation_test.dart asserts the
-  sheet grab handle carries semantics and that reduced motion collapses the
-  sheet transition; test/async_states_test.dart asserts the skeleton ticker
+  controls and asserts their hit areas, their focus encoding, their
+  non-colour state signals, and that a slider keeps its adjustable role,
+  its value, and both adjust actions; test/sheet_presentation_test.dart
+  asserts the sheet grab handle carries semantics and that reduced motion
+  collapses the sheet transition; test/sheet_handle_semantics_test.dart pumps
+  each of the 14 sheet bodies that paints its own ground and asserts the
+  handle's semantics label is non-empty; test/identity_system_test.dart
+  asserts a tappable emblem inside BankEmblemStack keeps 44 logical pixels on
+  both axes at the tightest rung of the size ladder;
+  test/app_chrome_test.dart asserts BankSliverAppBar announces
+  its heading exactly once at both ends of the collapse and carries exactly
+  one header node, labelled, at each end;
+  test/async_states_test.dart asserts the skeleton ticker
   stops under reduced motion and that a state change reaches the platform
   accessibility channel; test/accessibility_conformance_test.dart re-checks
   the claims in this file against the code and the other gates on every
   run.
 
-  (2) Source inspection of all 223 library files for the mechanisms named in
+  (2) Source inspection of all 224 library files for the mechanisms named in
   the remarks below. COUNTING METHODOLOGY, stated so every figure in this
   report can be reproduced: "widget classes" are public classes extending
   StatelessWidget or StatefulWidget reachable from the package's exported
   libraries (core.dart, saving.dart, social.dart, investing.dart,
   credit.dart), which is 173; "library files" is every .dart file under lib/,
-  which is 223; a "Semantics constructor" is a literal Semantics( call in
-  lib/, of which there are 284 across 140 files; a "trait" is an argument
-  passed to one of those constructors, giving 142 button, 9 header across 8
+  which is 224; a "Semantics constructor" is a literal Semantics( call in
+  lib/ matched on a word boundary so ExcludeSemantics(, MergeSemantics( and
+  BlockSemantics( are not swept in, of which there are 285 across 140 files;
+  a "trait" is a named argument passed to one of those constructors, counted
+  by matching the constructor's own parentheses rather than by grepping the
+  argument name, giving 142 button, 10 header across 8
   files, and 24 selected/toggled. Also counted the same way: 12 files passing
-  liveRegion, 4 SemanticsService.sendAnnouncement call sites, 66
-  excludeSemantics arguments plus 42 ExcludeSemantics widgets across 27
+  liveRegion. Counted as plain occurrences in lib/: 4
+  SemanticsService.sendAnnouncement call sites, 62
+  "excludeSemantics: true" arguments plus 44 ExcludeSemantics widgets across 28
   files, BankTokens.minTapTarget referenced in 79 files, and the platform
   reduced-motion preference read in 40 files (via
-  MediaQuery.disableAnimationsOf, MediaQuery.maybeDisableAnimationsOf, or
-  MediaQuery.of(context).disableAnimations - the kit uses all three spellings,
-  so counting only the first would understate it).
+  MediaQuery.disableAnimationsOf, MediaQuery.maybeDisableAnimationsOf,
+  MediaQuery.of(context).disableAnimations, or
+  MediaQuery.maybeOf(context)?.disableAnimations - the kit uses all four
+  spellings, and the first three alone return 34, so a recipe naming only
+  those understates it. lib/src/products/bank_e_signature_pad.dart names the
+  preference in a doc comment only and is excluded).
 
-  (3) Manual code review of the mechanisms above across all 223 library files,
+  (3) Manual code review of the mechanisms above across all 224 library files,
   plus sighted visual review of the example gallery
   (example/lib/gallery_main.dart) in all four presets in both light and dark,
   evidenced by the rendered screenshots committed under doc/screenshots/. No
@@ -150,7 +166,7 @@ chapters:
               notes: >-
                 Mechanism: icons are paired with visible text or wrapped in a
                 labelled Semantics node; decorative artwork is removed from the
-                tree with excludeSemantics (66 arguments plus 42
+                tree with excludeSemantics (62 arguments plus 44
                 ExcludeSemantics widgets); BankPressable takes a
                 semanticLabel for whole-surface announcement. The insight
                 confidence indicator, formerly three unlabelled dots, now
@@ -161,7 +177,19 @@ chapters:
                 labeledTapTargetGuideline in
                 test/accessibility_widget_test.dart. Gap: the gate covers a
                 representative composition, not all 173 widget classes, and no
-                lint forbids an unlabelled Icon. Gap:
+                lint forbids an unlabelled Icon. Gap: ten icon-only IconButton
+                call sites pass no tooltip, no Icon(semanticLabel:) and sit
+                under no labelled Semantics ancestor, so they reach assistive
+                technology as an unnamed button -
+                lib/src/business/bank_batch_payment_review_sheet.dart,
+                lib/src/cards/bank_travel_notice_form.dart,
+                lib/src/support/bank_help_faq_list.dart (three: clear search
+                and the two helpful votes),
+                lib/src/support/bank_dispute_wizard_sheet.dart (three: back,
+                close, remove evidence),
+                lib/src/support/bank_secure_message_thread.dart, and
+                lib/src/insights/bank_recurring_merchant_tile.dart. This is
+                roadmap item 20 in ACR.md. Gap:
                 lib/src/insights/bank_spending_breakdown_chart.dart adds no
                 semantics node unless the host passes semanticLabel, so the
                 chart is silent by default (BankCashflowChart and
@@ -197,8 +225,8 @@ chapters:
             adherence:
               level: partially-supports
               notes: >-
-                Mechanism: 284 Semantics constructors carry role and state
-                traits (142 button, 9 header, 24 selected/toggled); composite
+                Mechanism: 285 Semantics constructors carry role and state
+                traits (142 button, 10 header, 24 selected/toggled); composite
                 tiles collapse to one announced node via
                 Semantics(label:, excludeSemantics: true), so
                 lib/src/transactions/bank_transaction_list_tile.dart reads as
@@ -206,16 +234,24 @@ chapters:
                 0.3.0: every modal surface is now presented through
                 lib/src/common/bank_sheet.dart, whose BankSheetHeader marks
                 the sheet title with the header trait and whose BankSheetHandle
-                gives the drag affordance a labelled node, and
-                lib/src/common/bank_app_bar.dart marks the large-title tier of
-                BankAppBar and BankSliverAppBar as a header while excluding the
-                framework's duplicate unlabelled header node. Gate: "grab
+                gives the drag affordance a labelled node. Gate: "grab
                 handle renders and carries semantics" in
                 test/sheet_presentation_test.dart. Closed in this edition: the 14 sheet
                 bodies that paint their own ground previously drew a plain
                 40x4 Container and announced no handle; each now routes
                 through BankSheetHandle. Gate: test/sheet_handle_semantics_test.dart
-                pumps all 14 standalone and asserts a labelled handle. Gap:
+                pumps all 14 standalone and asserts a labelled handle. Also
+                closed in this edition: lib/src/common/bank_app_bar.dart marks
+                the large-title tier of BankAppBar and BankSliverAppBar as a
+                header, and BankSliverAppBar now suppresses the framework's own
+                header wrapper
+                in every large mode rather than only in the non-collapsing
+                one, so an expanded collapsing bar no longer leaves an
+                unlabelled header node with an empty namesRoute in front of
+                heading navigation. BankAppBar was never affected: its tier
+                sits in the bottom slot, outside the title slot the framework
+                wraps. Gate: "leaves no anonymous heading behind
+                the large title" in test/app_chrome_test.dart. Gap:
                 lib/src/common/bank_text_field.dart renders its label and its
                 errorText as sibling Text widgets rather than through
                 InputDecoration.labelText and InputDecoration.errorText, so
@@ -421,9 +457,13 @@ chapters:
             adherence:
               level: partially-supports
               notes: >-
-                Mechanism: every interactive widget takes an explicit label,
-                and BankPressable.semanticLabel lets a composite tile announce
-                its whole purpose. Gap: the purpose text is host-supplied, and
+                Mechanism: controls that name an action take an explicit
+                label, and BankPressable.semanticLabel lets a composite tile
+                announce its whole purpose in one sentence. Gap: the ten
+                icon-only IconButtons listed under 1.1.1 expose no accessible
+                name at all, so their purpose reaches assistive technology as
+                "button". Gap: for everything else the purpose text is
+                host-supplied, and
                 no gate checks that a label describes a destination rather than
                 repeating a generic verb.
       - num: "2.5.1"
@@ -553,12 +593,27 @@ chapters:
             adherence:
               level: partially-supports
               notes: >-
-                Mechanism: 284 Semantics nodes supply name, role, and state —
-                142 button traits, 9 header traits, 24 selected/toggled traits
+                Mechanism: 285 Semantics nodes supply name, role, and state —
+                142 button traits, 10 header traits, 24 selected/toggled traits
                 — and BankPressable emits button plus enabled/disabled for
                 every custom surface. Gate: labeledTapTargetGuideline in
                 test/accessibility_widget_test.dart, plus the per-control
-                assertions in test/accessibility_targets_test.dart. Gap: no
+                assertions in test/accessibility_targets_test.dart. Closed in
+                this edition: three of the five slider surfaces used to sit
+                inside excludeSemantics: true, which removed the framework's
+                own slider node together with its role, its value, and its
+                increase and decrease actions;
+                lib/src/cards/bank_card_controls_panel.dart,
+                lib/src/credit/bank_credit_limit_adjuster.dart and
+                lib/src/payments/bank_transfer_limit_manager.dart now merge
+                their heading into that node instead of replacing it. Gate:
+                "kit sliders keep the role, the value, and both adjustments"
+                in test/accessibility_targets_test.dart. Gap: the four sliders
+                in lib/src/credit/bank_loan_calculator_card.dart and
+                lib/src/saving/bank_savings_projection_card.dart still exclude
+                it and report neither an adjustable role nor a value; this is
+                roadmap item 19 in ACR.md. Gap: the ten icon-only buttons
+                listed under 1.1.1 report a role with no name. Gap: no
                 widget sets the
                 textField trait, so text inputs report a weaker role than they
                 should; and no name, role, or value has been verified as
@@ -722,14 +777,18 @@ chapters:
             adherence:
               level: partially-supports
               notes: >-
-                Mechanism: every control takes an explicit descriptive label,
-                and 9 header traits across 8 files mark headings, including
+                Mechanism: controls that name an action take an explicit
+                descriptive label,
+                and 10 header traits across 8 files mark headings, including
                 lib/src/transactions/bank_transaction_group_header.dart, the
-                sheet title in lib/src/common/bank_sheet.dart, and the
-                large-title tier of both bars in
-                lib/src/common/bank_app_bar.dart - three of the nine landed in
+                sheet title in lib/src/common/bank_sheet.dart, and the large
+                title of both bars in
+                lib/src/common/bank_app_bar.dart - four of the ten landed in
                 0.3.0 with the sheet and app-bar work, so every branded modal
-                and every large title is now a heading. Gap: most section
+                title and every large title is now a heading, in
+                BankSliverAppBar's expanded and collapsed states alike. Gap:
+                the ten icon-only IconButtons listed under 1.1.1
+                carry no label. Gap: most section
                 titles inside widget bodies are still plain Text without the
                 header trait, so heading-by-heading navigation remains largely
                 unavailable to a screen reader across the 173 widget classes.
@@ -949,13 +1008,27 @@ chapters:
                 Mechanism: BankTokens.minTapTarget is 44 logical pixels, pinned
                 by test/design_tokens_test.dart and consumed in 79 files;
                 iOSTapTargetGuideline runs in
-                test/accessibility_widget_test.dart. Three controls that were
-                below the floor were enlarged in 0.3.0 - the insight-card
+                test/accessibility_widget_test.dart. Five controls that were
+                below the floor were brought up to it in 0.3.0 - the
+                insight-card
                 dismiss button, the IBAN copy affordance on the horizontal
                 account card (now the whole row rather than a 14-pixel glyph),
-                and the address-form edit button - each asserted at 44 by 44 in
-                both dimensions by test/accessibility_targets_test.dart, which
-                also re-checks them in RTL, in dark, and on a flat preset. No
+                the address-form edit button, the consent tick boxes in
+                lib/src/onboarding/bank_consent_modal.dart and
+                lib/src/products/bank_disclosure_consent_sheet.dart (a compact
+                VisualDensity on a shrink-wrapped Checkbox had made them 32 by
+                32), and every tappable emblem inside BankEmblemStack in
+                lib/src/common/bank_emblem.dart, whose slot used to clamp the
+                emblem back to the visual disc. The coverage is not uniform,
+                and the report states which is which rather than averaging
+                them: test/accessibility_targets_test.dart asserts the
+                insight-card dismiss and the IBAN copy row at 44 by 44 in LTR
+                light on the Studio preset and again in RTL on Voltage dark;
+                it asserts the address-form edit button and the consent tick
+                boxes in LTR light on Studio only; and
+                test/identity_system_test.dart asserts the emblem stack at the
+                xSmall rung, which is the tightest one and the rung the size
+                ladder documents for stacked rails. No
                 interaction needs simultaneous pointers. Gap: the tap-target
                 gate covers audited controls and a representative composition
                 rather than all 173 widget classes, and the swipe and
@@ -1187,7 +1260,7 @@ chapters:
               level: partially-supports
               notes: >-
                 Interoperability rests on Flutter's platform accessibility
-                bridge, which this package feeds with 284 Semantics nodes
+                bridge, which this package feeds with 285 Semantics nodes
                 across 140 files. Gap: the bridge's output has not been
                 inspected on a device with assistive technology running.
       - num: "11.5.1"
@@ -1232,8 +1305,8 @@ chapters:
               level: partially-supports
               notes: >-
                 The package uses the documented Semantics API rather than
-                painting inaccessible custom surfaces; 66 excludeSemantics
-                arguments and 42 ExcludeSemantics widgets remove decorative
+                painting inaccessible custom surfaces; 62 excludeSemantics
+                arguments and 44 ExcludeSemantics widgets remove decorative
                 noise instead of hiding content. Gap: not verified on device.
       - num: "11.5.2.4"
         components:
@@ -1250,10 +1323,12 @@ chapters:
               level: partially-supports
               notes: >-
                 Object information — role, boundary, name, state — is supplied
-                for interactive surfaces: 142 button traits, 9 header traits,
+                for interactive surfaces: 142 button traits, 10 header traits,
                 24 selected/toggled traits. Gap: no textField trait is set
                 anywhere, so text inputs report incomplete role information
-                (see 1.3.1 and 4.1.2).
+                (see 1.3.1 and 4.1.2). Gap: the two slider surfaces named in
+                11.5.2.7 report no adjustable role, and the ten icon-only
+                buttons named in 1.1.1 report a role with no name.
       - num: "11.5.2.6"
         components:
           - name: none
@@ -1271,7 +1346,18 @@ chapters:
               level: partially-supports
               notes: >-
                 Values are exposed for the widgets that carry them — balances,
-                gauges, sliders, the OTP field. Gap: no gate proves a value
+                gauges, the OTP field, and the sliders in
+                lib/src/cards/bank_card_controls_panel.dart,
+                lib/src/credit/bank_credit_limit_adjuster.dart and
+                lib/src/payments/bank_transfer_limit_manager.dart, which keep
+                the framework's own slider node. Gate: "kit sliders keep the
+                role, the value, and both adjustments" in
+                test/accessibility_targets_test.dart. Gap: the four sliders in
+                lib/src/credit/bank_loan_calculator_card.dart and
+                lib/src/saving/bank_savings_projection_card.dart are still
+                wrapped in excludeSemantics: true, which removes the node that
+                carries the value, so they announce a label and nothing else
+                (roadmap item 19 in ACR.md). Gap: no gate proves a value
                 node exists for every value-bearing widget, and value changes
                 have not been observed with assistive technology.
       - num: "11.5.2.8"
@@ -1315,10 +1401,14 @@ chapters:
               level: partially-supports
               notes: >-
                 Tap and long-press map to the standard semantics actions
-                through BankPressable and Flutter's gesture semantics. Gap:
+                through BankPressable and Flutter's gesture semantics, and
+                three of the five slider surfaces regained their increase and
+                decrease actions in 0.3.0 (see 11.5.2.7). Gap:
                 the swipe actions built on Dismissible in the one file that
                 uses it expose no equivalent semantics action, so an assistive
-                technology cannot list or invoke them (see 2.1.1).
+                technology cannot list or invoke them (see 2.1.1). Gap: the
+                four sliders named in 11.5.2.7 expose no adjust action, so
+                those limits cannot be changed by assistive technology at all.
       - num: "11.5.2.12"
         components:
           - name: none
@@ -1326,7 +1416,9 @@ chapters:
               level: partially-supports
               notes: >-
                 Available actions can be invoked through the semantics layer
-                for tap and long-press. Same Dismissible gap as 11.5.2.11.
+                for tap and long-press, and for the three slider surfaces that
+                keep their adjust actions. Same Dismissible and slider gaps as
+                11.5.2.11.
       - num: "11.5.2.13"
         components:
           - name: none

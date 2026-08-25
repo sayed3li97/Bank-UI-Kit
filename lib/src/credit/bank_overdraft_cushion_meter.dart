@@ -83,7 +83,9 @@ class BankOverdraftCushionMeter extends StatelessWidget {
   /// Overrides the card fill color. Defaults to the theme surface.
   final Color? backgroundColor;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
+  /// Overrides the card shadow. Defaults to the card-tier shadow for the
+  /// theme background brightness, re-inked with [BankThemeData.shadowTint]
+  /// when the brand defines one;
   /// pass `const []` to flatten.
   final List<BoxShadow>? shadow;
 
@@ -186,7 +188,7 @@ class BankOverdraftCushionMeter extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor ?? theme.surface,
         borderRadius: resolvedRadius,
-        boxShadow: shadow ?? BankTokens.shadowCard,
+        boxShadow: shadow ?? theme.shadowFor(BankElevationTier.card),
       ),
       child: Material(
         type: MaterialType.transparency,

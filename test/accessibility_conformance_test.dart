@@ -6,7 +6,7 @@
 /// `doc/enterprise/acr/openacr.yaml` offline and fails the build when a claim
 /// there stops matching the code, the tokens, or the tests that back it.
 ///
-/// Three properties are enforced.
+/// Five properties are enforced.
 ///
 /// 1. **No silent drift.** The report's product version tracks `pubspec.yaml`,
 ///    its criteria set is exactly WCAG 2.1 Level A + AA, and every file path
@@ -20,6 +20,18 @@
 ///    tap-target token, the motion floor, the source-level "we ship none of
 ///    this" claims, and two behavioural claims (pointer cancellation and
 ///    keyboard activation) against the live package.
+/// 4. **The report does not contradict itself.** No roadmap item is listed as
+///    open and as closed at once, no open item is still targeted at the
+///    version being shipped, and the engineering companion in
+///    `doc/enterprise/accessibility-conformance.md` follows the same rule.
+/// 5. **The printed figures are recomputed.** The library-file, `Semantics`,
+///    trait, tap-target, reduced-motion, modal-surface, and widget-class
+///    counts are derived from the tree on every run and matched against what
+///    each document prints, so the ACR, the OpenACR file, the companion
+///    document, the README, and the CHANGELOG cannot drift apart or drift
+///    away from the code. The counting recipes the report publishes are run
+///    as written, so a recipe that no longer reproduces its own figure fails
+///    the build too.
 ///
 /// Deliberately offline and dependency-free: validating against the upstream
 /// GSA OpenACR schema needs the network and a Node toolchain, so it stays a
@@ -467,6 +479,299 @@ void main() {
     });
   });
 
+  group('the roadmap says one thing about each gap', () {
+    // A 0.3.0 draft of ACR.md carried the sheet-handle gap in the open
+    // roadmap table and in row 1.3.1's "closed in this edition" text at the
+    // same time, roughly 160 lines apart, while openacr.yaml said closed. An
+    // unreconciled contradiction in the headline trust artifact invalidates
+    // every other row for the reader who finds it, so the two tables are now
+    // checked against each other.
+    test('no roadmap item is open and closed at once', () {
+      final tables = _roadmapTables();
+      expect(
+        tables.open,
+        isNotEmpty,
+        reason: 'The open roadmap table in ACR.md parsed as empty; the parser '
+            'or the table headings have moved.',
+      );
+      expect(
+        tables.closed,
+        isNotEmpty,
+        reason: 'The "Closed in this edition" table in ACR.md parsed as empty.',
+      );
+      final both = tables.open.keys.toSet().intersection(tables.closed.toSet());
+      expect(
+        both,
+        isEmpty,
+        reason: 'ACR.md lists roadmap ${both.length == 1 ? 'item' : 'items'} '
+            '$both as open and as closed in the same report. Move it to one '
+            'table or the other.',
+      );
+    });
+
+    test('no open roadmap row still targets a released version', () {
+      final released = File('pubspec.yaml')
+          .readAsLinesSync()
+          .firstWhere((l) => l.startsWith('version:'), orElse: () => '')
+          .split(':')
+          .last
+          .trim();
+      final stale = <int>[];
+      _roadmapTables().open.forEach((item, target) {
+        if (target.startsWith('v$released')) stale.add(item);
+      });
+      expect(
+        stale,
+        isEmpty,
+        reason: 'Roadmap items $stale are still targeted at v$released, which '
+            'is the version being shipped. Re-target them at the next minor '
+            'rather than pointing a reader at a release that has already '
+            'happened.',
+      );
+
+      // The engineering companion carries the same gaps under G-numbers and
+      // has to follow the same rule, or the two documents promise different
+      // things about one defect.
+      // Only the date cell matters: a closed row legitimately says "Closed at
+      // v$released", and one row explains a figure it printed at v$released.
+      final stragglers = File(_statementPath)
+          .readAsLinesSync()
+          .map((l) => l.trim())
+          .where((l) => RegExp(r'^\|\s*G\d+\s*\|').hasMatch(l))
+          .where((l) {
+        final cells = l.split('|');
+        return cells.length > 2 &&
+            cells[cells.length - 2].trim().startsWith('v$released');
+      }).toList();
+      expect(
+        stragglers,
+        isEmpty,
+        reason: '$_statementPath still dates open gaps at v$released: '
+            '$stragglers',
+      );
+    });
+  });
+
+  group('the inventory the report prints still matches the code', () {
+    // Every figure in the report is meant to be reproducible from a checkout.
+    // These recompute them, so a document that drifts from lib/ fails the
+    // build instead of being discovered by an evaluator.
+    test('library, semantics, and trait counts', () {
+      final i = _inventory();
+
+      final acrNodes =
+          '${i.semanticsCallSites} `Semantics` constructors across '
+          '${i.semanticsFiles} files';
+      final acrTraits = '${i.button} button-role traits, ${i.header} header '
+          'traits across ${i.headerFiles} files, ${i.selection} '
+          'selected/toggled state traits';
+      final acrTargets =
+          '`BankTokens.minTapTarget` referenced in ${i.tapTargetFiles} files';
+      _expectFileContainsNormalized(_acrMarkdownPath, [
+        'All ${i.libraryFiles} library files were inspected',
+        acrNodes,
+        acrTraits,
+        acrTargets,
+        'across all ${i.libraryFiles} library files',
+      ]);
+
+      final yamlNodes =
+          '${i.semanticsCallSites} across ${i.semanticsFiles} files';
+      final yamlTraits = 'giving ${i.button} button, ${i.header} header across '
+          '${i.headerFiles} files, and ${i.selection} selected/toggled';
+      final yamlTargets =
+          'BankTokens.minTapTarget referenced in ${i.tapTargetFiles} files';
+      _expectFileContainsNormalized(_acrYamlPath, [
+        'Source inspection of all ${i.libraryFiles} library files',
+        'which is ${i.libraryFiles}',
+        yamlNodes,
+        yamlTraits,
+        yamlTargets,
+      ]);
+
+      // The companion document is the cited evidence behind EN 12.1.1 and
+      // 12.2.2. It published a different inventory from the ACR at 0.3.0,
+      // which is why it is held to the same figures here.
+      final companionNodes =
+          '${i.semanticsCallSites} `Semantics` constructors across '
+          '${i.semanticsFiles} of the ${i.libraryFiles} library files';
+      final companionHeaders =
+          '${i.header} `header` traits across ${i.headerFiles} files';
+      _expectFileContainsNormalized(_statementPath, [
+        companionNodes,
+        '${i.button} `button` traits',
+        '${i.selection} `selected`/`toggled` state traits',
+        companionHeaders,
+        'referenced in ${i.tapTargetFiles} files',
+      ]);
+    });
+
+    test('the reduced-motion recipe reproduces the figure it justifies', () {
+      // The 0.3.0 draft named three of the four spellings the kit uses, so a
+      // reviewer running the stated greps got 34 against a printed 40 and had
+      // every reason to think the inventory was inflated.
+      final files = _libraryDartFiles()
+          .where(
+            (f) => _reducedMotionSpellings.any(f.readAsStringSync().contains),
+          )
+          .length;
+
+      _expectFileContainsNormalized(_acrMarkdownPath, [
+        'reduced-motion preference read in $files files',
+        'Reduced motion ($files files)',
+        for (final spelling in _reducedMotionSpellings) spelling,
+      ]);
+      _expectFileContainsNormalized(_acrYamlPath, [
+        'reduced-motion preference read in $files files',
+        for (final spelling in _reducedMotionSpellings) spelling,
+      ]);
+    });
+
+    test('the modal-surface counts match lib/', () {
+      final sheets = _callSiteCount('BankSheet.show<');
+      final dialogs = _callSiteCount('BankDialog.show<');
+
+      _expectFileContainsNormalized(_acrMarkdownPath, [
+        '$sheets `BankSheet.show` call sites',
+      ]);
+      final changelogClaim = 'all ${sheets + dialogs} modal surfaces in the '
+          'kit ($sheets `BankSheet.show` call sites and $dialogs '
+          '`BankDialog.show`)';
+      _expectFileContainsNormalized('CHANGELOG.md', [changelogClaim]);
+    });
+
+    test('the published test count is the suite that exists', () {
+      // The README and the CHANGELOG render on the same pub.dev page. A
+      // reader who takes one of these figures as the size of the evidence
+      // base has to be able to reproduce it, so it is counted rather than
+      // carried forward from the previous release.
+      final declared = Directory('test')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'))
+          .map<int>(
+            (f) => RegExp(r'^\s*(?:test|testWidgets)\(', multiLine: true)
+                .allMatches(f.readAsStringSync())
+                .length,
+          )
+          .fold(0, (a, b) => a + b);
+
+      final readmeClaim =
+          '$declared unit, widget, golden, and accessibility test cases';
+      _expectFileContainsNormalized('README.md', [readmeClaim]);
+      _expectFileContainsNormalized('CHANGELOG.md', ['$declared test cases']);
+    });
+
+    test('every document states the same widget-class count', () {
+      const documents = [
+        'README.md',
+        'CHANGELOG.md',
+        _acrMarkdownPath,
+        _acrYamlPath,
+        _statementPath,
+        'doc/enterprise/stability-and-support.md',
+        'doc/enterprise/versioning-and-releases.md',
+      ];
+      final pattern =
+          RegExp(r'(\d{2,4})\s+(?:exported\s+)?(?:widget classes|components)');
+      final byDocument = <String, Set<String>>{};
+      for (final path in documents) {
+        final source = _normalizeWhitespace(File(path).readAsStringSync());
+        final found =
+            pattern.allMatches(source).map((m) => m.group(1)!).toSet();
+        if (found.isNotEmpty) byDocument[path] = found;
+      }
+      final silent = documents.toSet().difference(byDocument.keys.toSet());
+      expect(
+        silent,
+        isEmpty,
+        reason: 'Some document stopped stating the size of the supported '
+            'surface at all: $silent',
+      );
+      final distinct = byDocument.values.expand((v) => v).toSet();
+      expect(
+        distinct,
+        hasLength(1),
+        reason: 'The published documents disagree about how many widget '
+            'classes this package exports: $byDocument. The CHANGELOG and the '
+            'README render on the same pub.dev page, so a reader sees both.',
+      );
+    });
+  });
+
+  group('claims the report is not entitled to make', () {
+    // Each of these sentences shipped in a 0.3.0 draft and was contradicted by
+    // the code or by the suite it cited. They are pinned as strings because
+    // the defect was the sentence, not the number in it.
+    test('no unqualified "every widget is labelled" claim survives', () {
+      final unlabelled = _unlabelledIconButtons();
+      expect(
+        unlabelled,
+        isNotEmpty,
+        reason: 'Every icon-only IconButton in lib/ now carries a label. Close '
+            'roadmap item 20 in ACR.md and delete this expectation with it.',
+      );
+      for (final path in const [_acrMarkdownPath, _acrYamlPath]) {
+        final source = _normalizeWhitespace(File(path).readAsStringSync());
+        for (final overclaim in const [
+          'Every interactive widget takes an explicit label',
+          'every interactive widget takes an explicit label',
+          'Every control takes an explicit descriptive label',
+          'every control takes an explicit descriptive label',
+        ]) {
+          expect(
+            source.contains(overclaim),
+            isFalse,
+            reason: '$path claims "$overclaim" while ${unlabelled.length} '
+                'icon-only IconButtons in lib/ expose no accessible name: '
+                '$unlabelled',
+          );
+        }
+        expect(
+          source.contains('expose no accessible name'),
+          isTrue,
+          reason: '$path no longer discloses the unlabelled icon buttons.',
+        );
+      }
+    });
+
+    test('the tap-target coverage claim matches the composition that backs it',
+        () {
+      // 4.2.7 and the evaluation-methods table both said the address-form
+      // edit button is asserted in RTL, in dark, and on a flat preset. The
+      // widget appears in one of the two guideline compositions, and it is
+      // the LTR light one.
+      final gate = File('test/accessibility_targets_test.dart')
+          .readAsStringSync()
+          .split("testWidgets('targets hold up in RTL");
+      expect(
+        gate,
+        hasLength(2),
+        reason: 'The RTL/dark composition in accessibility_targets_test.dart '
+            'has been renamed; re-point this guard at it.',
+      );
+      final inRtlComposition = gate[1].contains('BankAddressPreview');
+      final claimsRtl = _normalizeWhitespace(
+        File(_acrMarkdownPath).readAsStringSync(),
+      ).contains('the address-form edit button and the consent tick boxes are '
+          'asserted in LTR light on Studio only');
+      expect(
+        inRtlComposition,
+        isFalse,
+        reason: 'BankAddressPreview is now in the RTL/dark composition. Widen '
+            'the 4.2.7 remark in ACR.md and openacr.yaml, then relax this '
+            'guard to match.',
+      );
+      expect(
+        claimsRtl,
+        isTrue,
+        reason: 'ACR.md no longer states which of the enlarged controls are '
+            'covered in RTL and dark and which are not. That distinction is '
+            'the whole content of the claim.',
+      );
+    });
+  });
+
   group('gates behind partially-supported claims', () {
     // These back the *mechanism* half of "partially supports" rows. They are
     // gates in their own right: if the kit acquires a media player or a
@@ -681,6 +986,232 @@ void _expectLibraryFree(List<String> needles, {required String claim}) {
     reason: '$claim That claim is now false: $offenders. Update the ACR row '
         'before landing the change.',
   );
+}
+
+/// The four spellings the kit uses to read the platform reduced-motion
+/// preference. The ACR's counting methodology has to name all four, or the
+/// recipe it prints returns a smaller number than the figure it justifies.
+const List<String> _reducedMotionSpellings = [
+  'MediaQuery.disableAnimationsOf',
+  'MediaQuery.maybeDisableAnimationsOf',
+  'MediaQuery.of(context).disableAnimations',
+  'MediaQuery.maybeOf(context)?.disableAnimations',
+];
+
+/// Every `.dart` file under `lib/`, which is what both reports mean by
+/// "library file".
+List<File> _libraryDartFiles() => Directory('lib')
+    .listSync(recursive: true)
+    .whereType<File>()
+    .where((f) => f.path.endsWith('.dart'))
+    .toList()
+  ..sort((a, b) => a.path.compareTo(b.path));
+
+/// [source] with every run of whitespace collapsed to one space, so a phrase
+/// can be matched across the line wrapping of a Markdown or YAML document.
+String _normalizeWhitespace(String source) =>
+    source.replaceAll(RegExp(r'\s+'), ' ');
+
+/// [source] with comment lines blanked, so a `Semantics(` or an `IconButton(`
+/// inside a dartdoc code sample is not counted as a call site.
+String _withoutComments(String source) => source
+    .split('\n')
+    .map((line) => line.trimLeft().startsWith('//') ? '' : line)
+    .join('\n');
+
+/// The figures the report publishes about the semantics tree.
+class _Inventory {
+  const _Inventory({
+    required this.libraryFiles,
+    required this.semanticsCallSites,
+    required this.semanticsFiles,
+    required this.button,
+    required this.header,
+    required this.headerFiles,
+    required this.selection,
+    required this.tapTargetFiles,
+  });
+
+  final int libraryFiles;
+  final int semanticsCallSites;
+  final int semanticsFiles;
+  final int button;
+  final int header;
+  final int headerFiles;
+  final int selection;
+  final int tapTargetFiles;
+}
+
+/// Recomputes the inventory exactly as the ACR's counting methodology states
+/// it: literal `Semantics(` call sites matched on a word boundary, and traits
+/// read as the named arguments of those call sites by matching the
+/// constructor's own parentheses. Grepping an argument name instead sweeps in
+/// the kit's own widget parameters, which is how one 0.2.0 row came to print
+/// 48 selection traits where the rest of the report printed 24.
+_Inventory _inventory() {
+  final open = RegExp(r'(?<![A-Za-z_])Semantics\(');
+  var callSites = 0;
+  var button = 0;
+  var header = 0;
+  var selection = 0;
+  final semanticsFiles = <String>{};
+  final headerFiles = <String>{};
+  final tapTargetFiles = <String>{};
+
+  for (final file in _libraryDartFiles()) {
+    final raw = file.readAsStringSync();
+    if (raw.contains('BankTokens.minTapTarget')) {
+      tapTargetFiles.add(file.path);
+    }
+    final source = _withoutComments(raw);
+    for (final match in open.allMatches(source)) {
+      callSites++;
+      semanticsFiles.add(file.path);
+      for (final argument in _topLevelArguments(source, match.end)) {
+        final name = RegExp(r'^([A-Za-z]+)\s*:').firstMatch(argument.trim());
+        switch (name?.group(1)) {
+          case 'button':
+            button++;
+          case 'header':
+            header++;
+            headerFiles.add(file.path);
+          case 'selected':
+          case 'toggled':
+            selection++;
+        }
+      }
+    }
+  }
+
+  return _Inventory(
+    libraryFiles: _libraryDartFiles().length,
+    semanticsCallSites: callSites,
+    semanticsFiles: semanticsFiles.length,
+    button: button,
+    header: header,
+    headerFiles: headerFiles.length,
+    selection: selection,
+    tapTargetFiles: tapTargetFiles.length,
+  );
+}
+
+/// The comma-separated arguments of the call whose `(` ends at [start],
+/// split at nesting depth zero so a nested constructor's own arguments are
+/// not mistaken for the outer call's.
+List<String> _topLevelArguments(String source, int start) {
+  var depth = 1;
+  var i = start;
+  while (i < source.length && depth > 0) {
+    switch (source[i]) {
+      case '(':
+        depth++;
+      case ')':
+        depth--;
+    }
+    i++;
+  }
+  final body = source.substring(start, i > start ? i - 1 : start);
+  final arguments = <String>[];
+  final buffer = StringBuffer();
+  var nesting = 0;
+  for (final rune in body.runes) {
+    final char = String.fromCharCode(rune);
+    if (char == '(' || char == '[' || char == '{') nesting++;
+    if (char == ')' || char == ']' || char == '}') nesting--;
+    if (char == ',' && nesting == 0) {
+      arguments.add(buffer.toString());
+      buffer.clear();
+    } else {
+      buffer.write(char);
+    }
+  }
+  arguments.add(buffer.toString());
+  return arguments;
+}
+
+/// How many times [invocation] is actually called in `lib/`, ignoring the
+/// dartdoc references that a plain grep counts alongside it.
+int _callSiteCount(String invocation) => _libraryDartFiles()
+    .map((f) => _withoutComments(f.readAsStringSync()))
+    .map((source) => invocation.allMatches(source).length)
+    .fold(0, (a, b) => a + b);
+
+/// `IconButton` call sites in `lib/` that carry neither a `tooltip:` nor a
+/// `semanticLabel` among their own arguments.
+///
+/// Deliberately conservative: an `IconButton` wrapped in a labelled
+/// `Semantics` ancestor is reported here too, so this is a lower bound on
+/// "labelled" rather than a precise count of the unlabelled. It is used only
+/// to prove that at least one exists, which is what the ACR's 1.1.1 gap says.
+List<String> _unlabelledIconButtons() {
+  final out = <String>[];
+  for (final file in _libraryDartFiles()) {
+    final source = _withoutComments(file.readAsStringSync());
+    for (final match
+        in RegExp(r'(?<![A-Za-z_])IconButton\(').allMatches(source)) {
+      final arguments = _topLevelArguments(source, match.end).join(',');
+      if (!arguments.contains('tooltip:') &&
+          !arguments.contains('semanticLabel')) {
+        out.add(file.path);
+      }
+    }
+  }
+  return out;
+}
+
+/// The two roadmap tables in `ACR.md`: the open one keyed by item number with
+/// its target version, and the item numbers in "Closed in this edition".
+({Map<int, String> open, List<int> closed}) _roadmapTables() {
+  final lines = File(_acrMarkdownPath).readAsLinesSync();
+  final closedHeading =
+      lines.indexWhere((l) => l.trim() == '### Closed in this edition');
+  expect(
+    closedHeading,
+    greaterThan(0),
+    reason: 'ACR.md no longer has a "Closed in this edition" section.',
+  );
+  final roadmapHeading =
+      lines.indexWhere((l) => l.trim() == '## Known gaps and roadmap');
+  expect(
+    roadmapHeading,
+    greaterThan(0),
+    reason: 'ACR.md no longer has a "Known gaps and roadmap" section.',
+  );
+
+  final row = RegExp(r'^\|\s*(\d+)\s*\|(.*)\|\s*$');
+  final open = <int, String>{};
+  final closed = <int>[];
+  for (var i = roadmapHeading; i < lines.length; i++) {
+    final match = row.firstMatch(lines[i].trim());
+    if (match == null) continue;
+    final item = int.parse(match.group(1)!);
+    if (i < closedHeading) {
+      final cells = match.group(2)!.split('|');
+      open[item] = cells.last.trim();
+    } else {
+      closed.add(item);
+    }
+  }
+  return (open: open, closed: closed);
+}
+
+void _expectFileContainsNormalized(String path, List<String> needles) {
+  final file = File(path);
+  expect(
+    file.existsSync(),
+    isTrue,
+    reason: 'The ACR depends on $path, which is missing.',
+  );
+  final source = _normalizeWhitespace(file.readAsStringSync());
+  for (final needle in needles) {
+    expect(
+      source.contains(_normalizeWhitespace(needle)),
+      isTrue,
+      reason: '$path no longer states "$needle". Either the code moved and '
+          'the document was not re-derived, or the document was reworded '
+          'without re-deriving the figure.',
+    );
+  }
 }
 
 void _expectFileContains(String path, List<String> needles) {

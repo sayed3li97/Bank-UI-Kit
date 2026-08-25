@@ -299,6 +299,68 @@ void main() {
       );
     });
 
+    testWidgets('a tappable slot keeps the 44 px target the ladder promises',
+        (tester) async {
+      final handle = tester.ensureSemantics();
+      // xSmall is the rung documented for stacked rails: 24 px of disc, which
+      // a slot pinned to the diameter would hand straight to the button.
+      await tester.pumpWidget(
+        _host(
+          Center(
+            child: BankEmblemStack(
+              emblems: [
+                BankEmblemData(initialsFrom: 'Ada Lovelace', onTap: () {}),
+              ],
+              tier: BankEmblemSize.xSmall,
+              overflowCount: 4,
+              onOverflowTap: () {},
+            ),
+          ),
+        ),
+      );
+
+      // The member and the +4 overflow disc are both wired to a callback, so
+      // both are buttons and both owe the floor.
+      final buttons = find.byType(BankEmblem);
+      expect(buttons, findsNWidgets(2));
+      for (var i = 0; i < 2; i++) {
+        final emblem = tester.widget<BankEmblem>(buttons.at(i));
+        final size = tester.getSize(buttons.at(i));
+        final name = emblem.semanticLabel ?? emblem.initialsFrom;
+        expect(
+          size.width,
+          greaterThanOrEqualTo(BankTokens.minTapTarget),
+          reason: '$name is narrower than the tap-target floor',
+        );
+        expect(
+          size.height,
+          greaterThanOrEqualTo(BankTokens.minTapTarget),
+          reason: '$name is shorter than the tap-target floor',
+        );
+      }
+
+      // The discs themselves stay on the ladder: the slot grew, not the art.
+      expect(
+        tester.getSize(find.text('+4')).height,
+        lessThan(BankTokens.minTapTarget),
+      );
+      await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+      handle.dispose();
+    });
+
+    testWidgets('a decorative group is still exactly one disc tall',
+        (tester) async {
+      const tier = BankEmblemSize.xSmall;
+      await tester.pumpWidget(
+        _host(Center(child: BankEmblemStack(emblems: data(2), tier: tier))),
+      );
+      expect(
+        tester.getSize(find.byType(BankEmblemStack)).height,
+        tier.diameter,
+        reason: 'nothing is tappable, so nothing needs a tap target',
+      );
+    });
+
     testWidgets('stacking order follows the reading direction', (tester) async {
       for (final direction in TextDirection.values) {
         await tester.pumpWidget(
