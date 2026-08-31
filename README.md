@@ -15,11 +15,11 @@ four built-in themes, your backend.
 [![Flutter](https://img.shields.io/badge/Flutter-3.44%2B-027DFD.svg)](https://flutter.dev)
 [![style: flutter_lints](https://img.shields.io/badge/style-flutter__lints-40c4ff.svg)](https://pub.dev/packages/flutter_lints)
 
-**173 components** · **23 modules** · **4 built-in themes** · **WCAG 2.1 AA gates enforced in CI** · **RTL + Arabic-Indic numerals**
+**173 components** · **23 modules** · **4 built-in themes** · **WCAG 2.1 AA gates enforced in CI** · **English + Arabic, RTL-first**
 
 ### [▶ Try the live demo](https://sayed3li97.github.io/Bank-UI-Kit/)
 
-Browse every component and the full Meridian flagship app in your browser: switch themes, dark mode, and RTL live.
+Browse every component and the full Meridian flagship app in your browser: switch themes, dark mode, and language live — picking العربية changes the copy, not just the direction.
 
 <br />
 
@@ -145,14 +145,14 @@ names the mitigation available to an adopter rather than an aspiration.
 | **Design tokens** | Platform-neutral **W3C DTCG `tokens.json`** generates the Dart tokens (CI-enforced) + `toJson`/`fromJson` for Figma and remote branding | Hard-coded values |
 | **Theming** | 4 presets + fully custom themes, runtime-switchable | Fork the package |
 | **RTL support** | First-class, every widget | Mirror-on-demand or none |
-| **Localization** | Locale-aware money (German `1.234,56`, French `1 234,56`, Indian lakh) + 4 numeral scripts + Hijri calendar | English only |
+| **Localization** | A 301-message ARB catalogue with English and Arabic, real ICU plurals (all six Arabic CLDR categories), locale-aware money (German `1.234,56`, French `1 234,56`, Indian lakh), 4 numeral scripts, Hijri calendar | English only |
 | **Accessibility** | WCAG 2.1 AA **enforced in CI**: contrast gate across every preset, tap-target and label gates, semantics | Not specified |
 | **Conformance evidence** | Published ACR (WCAG 2.1 AA, EN 301 549) + machine-readable OpenACR | None |
 | **Supply chain** | SBOM on every commit, OSV scan, SLSA provenance, published Scorecard | None |
 | **Visual regression** | Golden tests pin every preset × light/dark | None |
 | **State management** | Agnostic (pure props + callbacks) | Tied to the template's choice |
 | **Money** | Lossless `Decimal`-backed `Money` type | `double` |
-| **Tests** | 487 unit, widget, golden, and accessibility test cases | None |
+| **Tests** | 543 unit, widget, golden, and accessibility test cases | None |
 
 ---
 
@@ -787,9 +787,40 @@ BankUiScope(initialData: BankUiScopeData(islamicFinanceMode: true), child: ...)
 ```
 
 ### Localization
-Locale-aware number formatting (above) plus injectable copy: ships English
-strings and overrides any subset via `BankUiStrings`. The full position,
-including what the kit does not translate for you, is in
+The kit ships its own message catalogue: 301 messages in English and Arabic
+(`lib/l10n/*.arb`), compiled by `flutter gen-l10n` and gated in CI for
+description coverage, key parity, and placeholder parity.
+
+```dart
+// Simplest: take the kit's list, which bundles the Global*Localizations
+// delegates alongside its own.
+MaterialApp(
+  localizationsDelegates: BankL10n.localizationsDelegates,
+  supportedLocales: BankL10n.supportedLocales,
+)
+
+// Or add just the kit's delegate to a list you already maintain, and keep
+// your own supportedLocales — a locale the kit has no catalogue for simply
+// falls back to English for kit copy.
+MaterialApp(
+  localizationsDelegates: [...myDelegates, BankL10n.delegate],
+  supportedLocales: myLocales,
+)
+```
+
+Install nothing and you get the same English as before — adopting this is
+opt-in. Install it and copy follows the device language, including real ICU
+plurals: Arabic gets all six CLDR categories, which a `'{n} months'`
+template cannot express.
+
+Overrides still win, and now they win *per string*. A field you change on
+`BankUiStrings` keeps your wording in every language; the fields you leave
+alone still translate. That was not expressible before 0.4.0.
+
+The Arabic is machine-assisted and pending native review — it is there to
+prove the mechanism against a real six-plural RTL language, not as a
+finished asset. The full position, including the 639 copy defaults that do
+not consult the catalogue yet, is in
 [doc/enterprise/localization-and-rtl.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/localization-and-rtl.md).
 
 ### RTL

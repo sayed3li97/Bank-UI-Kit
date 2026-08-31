@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 
 import '../common/bank_control_theme.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
@@ -528,7 +529,10 @@ class _BlockRow extends StatelessWidget {
     final pendingText = coolingOff
         ? coolOffTemplate.replaceAll(
             '{date}',
-            BankDateFormatter.formatLong(block.coolOffEndsAt!),
+            BankDateFormatter.formatLong(
+              block.coolOffEndsAt!,
+              locale: context.bankLocale,
+            ),
           )
         : null;
     final noticeText = hasCoolOff

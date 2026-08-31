@@ -2,6 +2,7 @@ import 'dart:ui' show PointMode;
 
 import 'package:flutter/material.dart';
 
+import '../common/bank_format_context.dart';
 import '../common/bank_surface_depth.dart';
 import '../common/bank_text_field.dart';
 import '../common/money_formatter.dart';
@@ -281,7 +282,10 @@ class _BankESignaturePadState extends State<BankESignaturePad> {
     );
 
     final clock = widget.now ?? DateTime.now;
-    final timestamp = BankDateFormatter.formatLong(clock());
+    final timestamp = BankDateFormatter.formatLong(
+      clock(),
+      locale: context.bankLocale,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(

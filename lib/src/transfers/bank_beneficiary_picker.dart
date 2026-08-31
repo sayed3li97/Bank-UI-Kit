@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_bidi.dart';
 import '../../src/common/bank_icon_spec.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 // ---------------------------------------------------------------------------
 // BankBeneficiaryPicker
@@ -383,13 +385,19 @@ class _BeneficiaryRow extends StatelessWidget {
         .toUpperCase();
   }
 
+  /// The row read aloud: name, masked account, and the selected state as
+  /// one sentence the translator can reorder.
+  String _spokenLabel(BankStrings strings) {
+    final summary = '${beneficiary.name}, ${beneficiary.maskedAccount}';
+    return isSelected ? strings.a11ySelectedSuffix(summary) : summary;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
       selected: isSelected,
-      label: '${beneficiary.name}, ${beneficiary.maskedAccount}'
-          '${isSelected ? ', selected' : ''}',
+      label: _spokenLabel(BankStrings.of(context)),
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
@@ -444,7 +452,12 @@ class _BeneficiaryRow extends StatelessWidget {
                       const SizedBox(height: BankTokens.space1),
                       Text(
                         [
-                          beneficiary.maskedAccount,
+                          // Isolated *inside* the join: the identifier
+                          // shares this paragraph with a bank name that
+                          // may well be Arabic, so pinning the whole line
+                          // to LTR would fix the digits by mangling the
+                          // name. The isolate scopes the fix to the mask.
+                          BankBidi.isolate(beneficiary.maskedAccount),
                           if (beneficiary.bankName != null)
                             beneficiary.bankName!,
                         ].join(' · '),

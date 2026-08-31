@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
@@ -558,8 +559,12 @@ class _BankCardlessCashCodeState extends State<BankCardlessCashCode> {
     final expired = _remaining == Duration.zero;
 
     final displayCode = scope.numeralStyle.convert(_groupedCode(widget.code));
-    final expiryTime = scope.numeralStyle
-        .convert(BankDateFormatter.formatTime(widget.expiresAt));
+    final expiryTime = scope.numeralStyle.convert(
+      BankDateFormatter.formatTime(
+        widget.expiresAt,
+        locale: context.bankLocale,
+      ),
+    );
     final progress =
         _window.inSeconds == 0 ? 0.0 : _remaining.inSeconds / _window.inSeconds;
     final ringColor =

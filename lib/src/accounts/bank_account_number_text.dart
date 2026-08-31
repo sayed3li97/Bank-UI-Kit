@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../common/bank_bidi.dart';
 import '../common/bank_icon_spec.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
@@ -55,16 +56,37 @@ enum BankAccountNumberKind {
 abstract final class BankAccountNumberFormatter {
   static final RegExp _separators = RegExp(r'[\s-]');
 
-  /// Strips spaces and hyphens, returning the raw identifier: the exact
-  /// string [BankAccountNumberText] places on the clipboard.
-  static String normalize(String value) => value.replaceAll(_separators, '');
+  /// Strips spaces, hyphens and any invisible bidi control, returning the
+  /// raw identifier: the exact string [BankAccountNumberText] places on
+  /// the clipboard.
+  ///
+  /// The bidi controls are stripped because a display string may carry
+  /// them (see [format]'s `bidiIsolate`) and a value that has made a round
+  /// trip through a display must still copy as digits. Pasting an
+  /// invisible U+2066 into a payment form is a defect the person pasting
+  /// cannot see.
+  static String normalize(String value) =>
+      BankBidi.strip(value).replaceAll(_separators, '');
 
   /// Groups [value] for display according to [kind].
   ///
   /// The input is normalised first, so already-grouped values are safe.
-  static String format(String value, BankAccountNumberKind kind) {
+  ///
+  /// [bidiIsolate] wraps the grouped result in an LRI/PDI isolate so its
+  /// groups keep their order in a right-to-left paragraph; see [BankBidi]
+  /// for the rule N1 mechanics. It is opt-in, not the default, because
+  /// this function's output is also *data*: it is compared, measured,
+  /// spelled out to assistive technology and — after [normalize] — put on
+  /// the clipboard. Only the string that reaches a paragraph should carry
+  /// the controls, which is why [BankAccountNumberText] passes `true` at
+  /// the point it builds its `Text` and nowhere else.
+  static String format(
+    String value,
+    BankAccountNumberKind kind, {
+    bool bidiIsolate = false,
+  }) {
     final raw = normalize(value);
-    return switch (kind) {
+    final grouped = switch (kind) {
       BankAccountNumberKind.iban ||
       BankAccountNumberKind.bban ||
       BankAccountNumberKind.pan =>
@@ -72,18 +94,24 @@ abstract final class BankAccountNumberFormatter {
       BankAccountNumberKind.sortCode => _group(raw, 2, '-'),
       BankAccountNumberKind.routing || BankAccountNumberKind.swiftBic => raw,
     };
+    return bidiIsolate ? BankBidi.isolate(grouped) : grouped;
   }
 
   /// Replaces all but the last four characters of [value] with `•` bullets,
   /// then applies the same grouping as [format].
   ///
   /// Values of four characters or fewer are returned fully visible.
-  static String mask(String value, BankAccountNumberKind kind) {
+  /// [bidiIsolate] behaves exactly as it does on [format].
+  static String mask(
+    String value,
+    BankAccountNumberKind kind, {
+    bool bidiIsolate = false,
+  }) {
     final raw = normalize(value);
-    if (raw.length <= 4) return format(raw, kind);
+    if (raw.length <= 4) return format(raw, kind, bidiIsolate: bidiIsolate);
     final hidden = '•' * (raw.length - 4);
     final visible = raw.substring(raw.length - 4);
-    return format('$hidden$visible', kind);
+    return format('$hidden$visible', kind, bidiIsolate: bidiIsolate);
   }
 
   static String _group(String raw, int size, String separator) {
@@ -116,8 +144,13 @@ abstract final class BankAccountNumberFormatter {
 ///   toast.
 /// - Screen readers announce the characters individually
 ///   (`G B 2 9 N W B K…`), never as one large number.
-/// - Digits respect the ambient [NumeralStyle]; the identifier itself is
-///   always laid out left-to-right, even in RTL locales.
+/// - Digits stay Western whatever the ambient [NumeralStyle] is, and the
+///   identifier is laid out left-to-right — group order included — even
+///   in RTL locales. An account number is a machine token the customer
+///   reads back or types into another form, and converting its digits to
+///   Arabic-Indic (bidi class AN) makes its groups render in reverse
+///   order with no directional markup able to repair them; see [BankBidi].
+///   Amounts, dates and counts localise as before.
 ///
 /// ```dart
 /// BankAccountNumberText(
@@ -253,15 +286,27 @@ class _BankAccountNumberTextState extends State<BankAccountNumberText> {
     final disableAnimations = MediaQuery.of(context).disableAnimations;
 
     final effectiveMasked = widget.masked || scope.privacyEnabled;
-    final western = effectiveMasked
+    // Two strings, deliberately: `grouped` is the identifier as data and
+    // `display` is the identifier as a paragraph. The isolate is asked for
+    // here, at the render boundary, rather than baked into the formatter,
+    // because everything else this value feeds — the clipboard, the
+    // spelled-out semantics label, a host's equality check — wants it
+    // clean, and a control character that reaches the clipboard is pasted
+    // invisibly into the next payment form.
+    //
+    // Digits are *not* run through the ambient NumeralStyle. Arabic-Indic
+    // digits are bidi class AN, which rule W7 never retypes, so a grouped
+    // identifier in that script reverses its groups inside an isolate and
+    // inside an LTR paragraph alike: the one bidi defect no markup fixes.
+    final grouped = effectiveMasked
         ? BankAccountNumberFormatter.mask(widget.value, widget.kind)
         : BankAccountNumberFormatter.format(widget.value, widget.kind);
-    final display = scope.numeralStyle.convert(western);
+    final display = BankBidi.isolate(grouped);
 
     final resolvedStyle =
         widget.style ?? theme.numeralMedium.copyWith(color: theme.onSurface);
 
-    final spelledOut = _spellOut(western);
+    final spelledOut = _spellOut(grouped);
     final semanticLabel = widget.semanticLabel ??
         (widget.label == null ? spelledOut : '${widget.label}: $spelledOut');
 
@@ -283,6 +328,10 @@ class _BankAccountNumberTextState extends State<BankAccountNumberText> {
           ],
           Text(
             display,
+            // Belt and braces: the isolate fixes the internal order
+            // wherever this string ends up, the pinned direction keeps
+            // this paragraph's own base direction stable (ellipsis side,
+            // alignment inside the box) in an RTL screen.
             textDirection: TextDirection.ltr,
             style: resolvedStyle,
             maxLines: 1,

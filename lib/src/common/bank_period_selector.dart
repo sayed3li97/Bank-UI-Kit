@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart' show DateFormat;
 
+import '../l10n/bank_strings.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/numeral_style.dart';
 import '../theme/tokens.dart';
+import 'bank_format_context.dart';
 import 'bank_pressable.dart';
+import 'money_formatter.dart';
 
 /// Granularity of the time period navigated by a [BankPeriodSelector].
 enum BankPeriodUnit {
@@ -197,9 +199,12 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
     DateTime normalized,
     BankPeriodUnit unit,
     NumeralStyle numeralStyle,
+    String? locale,
   ) {
     final raw = switch (unit) {
-      BankPeriodUnit.month => DateFormat('MMMM y').format(normalized),
+      BankPeriodUnit.month =>
+        BankDateFormatter.patternFormat('MMMM y', locale: locale)
+            .format(normalized),
       BankPeriodUnit.quarter =>
         'Q${(normalized.month - 1) ~/ 3 + 1} ${normalized.year}',
       BankPeriodUnit.year => '${normalized.year}',
@@ -207,16 +212,16 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
     return numeralStyle.convert(raw);
   }
 
-  String get _defaultPreviousLabel => switch (widget.unit) {
-        BankPeriodUnit.month => 'Previous month',
-        BankPeriodUnit.quarter => 'Previous quarter',
-        BankPeriodUnit.year => 'Previous year',
+  String _defaultPreviousLabel(BankStrings strings) => switch (widget.unit) {
+        BankPeriodUnit.month => strings.periodPreviousMonth,
+        BankPeriodUnit.quarter => strings.periodPreviousQuarter,
+        BankPeriodUnit.year => strings.periodPreviousYear,
       };
 
-  String get _defaultNextLabel => switch (widget.unit) {
-        BankPeriodUnit.month => 'Next month',
-        BankPeriodUnit.quarter => 'Next quarter',
-        BankPeriodUnit.year => 'Next year',
+  String _defaultNextLabel(BankStrings strings) => switch (widget.unit) {
+        BankPeriodUnit.month => strings.periodNextMonth,
+        BankPeriodUnit.quarter => strings.periodNextQuarter,
+        BankPeriodUnit.year => strings.periodNextYear,
       };
 
   // ---------------------------------------------------------------------------
@@ -227,6 +232,7 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final strings = BankStrings.of(context);
     final isRtl = Directionality.of(context) == TextDirection.rtl;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
@@ -237,7 +243,12 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
         normalized.isBefore(_normalize(widget.maxPeriod!, widget.unit));
 
     final labelText = widget.labelFormatter?.call(normalized) ??
-        _formatLabel(normalized, widget.unit, scope.numeralStyle);
+        _formatLabel(
+          normalized,
+          widget.unit,
+          scope.numeralStyle,
+          context.bankLocale,
+        );
 
     // Slide direction of the label: towards the past or the future,
     // mirrored for RTL so travel always matches reading direction.
@@ -304,7 +315,8 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
         _PeriodChevron(
           icon: widget.previousIcon ??
               (isRtl ? Icons.chevron_right : Icons.chevron_left),
-          semanticLabel: widget.previousSemanticLabel ?? _defaultPreviousLabel,
+          semanticLabel:
+              widget.previousSemanticLabel ?? _defaultPreviousLabel(strings),
           enabled: canGoBack,
           color: widget.foregroundColor,
           backgroundColor: widget.chevronBackgroundColor,
@@ -315,7 +327,7 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
         _PeriodChevron(
           icon: widget.nextIcon ??
               (isRtl ? Icons.chevron_left : Icons.chevron_right),
-          semanticLabel: widget.nextSemanticLabel ?? _defaultNextLabel,
+          semanticLabel: widget.nextSemanticLabel ?? _defaultNextLabel(strings),
           enabled: canGoForward,
           color: widget.foregroundColor,
           backgroundColor: widget.chevronBackgroundColor,

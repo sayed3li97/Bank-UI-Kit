@@ -158,6 +158,20 @@ if (!componentsOnly) {
   shots.push({ screen: 'flagship-product', preset: 'heritage', dark: false, w: 412, h: 1600 });
   shots.push({ screen: 'flagship-catalog', preset: 'voltage', dark: true, w: 412, h: 1600 });
 
+  // Arabic captures. `lang=ar` switches the copy and the direction together,
+  // so these are evidence that the kit runs in a second language, not just
+  // that a mirrored English layout does not fall over.
+  const arabicScreens = [
+    { screen: 'home', preset: 'heritage', dark: false, w: 412, h: 900 },
+    { screen: 'home', preset: 'heritage', dark: true, w: 412, h: 900 },
+    { screen: 'home', preset: 'studio', dark: false, w: 412, h: 900 },
+    { screen: 'accounts', preset: 'heritage', dark: false, w: 412, h: 1500 },
+    { screen: 'cards', preset: 'studio', dark: false, w: 412, h: 1500 },
+    { screen: 'states', preset: 'studio', dark: false, w: 412, h: 1500 },
+    { screen: 'transactions', preset: 'heritage', dark: false, w: 412, h: 1500 },
+  ];
+  for (const s of arabicScreens) shots.push({ ...s, lang: 'ar' });
+
   console.log(`\n── Screens (${shots.length}) ─────────────────────────────────────────────`);
   // Reuse a single page for all screen shots, resizing viewport as needed.
   const screenPage = await browser.newPage({
@@ -167,12 +181,15 @@ if (!componentsOnly) {
   for (const s of shots) {
     totalAttempts++;
     await screenPage.setViewportSize({ width: s.w, height: s.h });
+    const lang = s.lang ?? 'en';
     const url =
       `http://localhost:${PORT}/index.html?screen=${s.screen}` +
-      `&preset=${s.preset}&dark=${s.dark ? 1 : 0}`;
+      `&preset=${s.preset}&dark=${s.dark ? 1 : 0}&lang=${lang}`;
     try {
       await navigatePage(screenPage, url);
-      const name = `${s.screen}-${s.preset}-${s.dark ? 'dark' : 'light'}.png`;
+      const suffix = lang === 'en' ? '' : `-${lang}`;
+      const name =
+        `${s.screen}-${s.preset}-${s.dark ? 'dark' : 'light'}${suffix}.png`;
       await screenPage.screenshot({ path: join(outDir, name) });
       totalOk++;
       console.log(`✓ ${name}`);
@@ -358,11 +375,24 @@ if (!screensOnly) {
     { preset: 'heritage', dark: 0, dir: join(compDir, 'heritage') },
     { preset: 'voltage',  dark: 1, dir: join(compDir, 'voltage') },
     { preset: 'bloom',    dark: 0, dir: join(compDir, 'bloom') },
+    // Arabic. Component mode renders each widget with its own defaults
+    // rather than gallery-supplied copy, so this is where the catalogue
+    // actually shows: the screen captures use the demo app's host strings
+    // and stay English by design.
+    { preset: 'heritage', dark: 0, lang: 'ar', dir: join(compDir, 'ar') },
   ];
-  for (const v of variants) mkdirSync(v.dir, { recursive: true });
+  // --variant=ar restricts the sweep to one row of the matrix, so adding a
+  // variant does not mean re-shooting the four that already exist and
+  // filling a review with PNGs that differ only in gradient dithering.
+  const variantArg = args.find((a) => a.startsWith('--variant='));
+  const wanted = variantArg && variantArg.slice('--variant='.length);
+  const selected = wanted
+    ? variants.filter((v) => `${v.preset}-${v.lang ?? 'en'}`.includes(wanted))
+    : variants;
+  for (const v of selected) mkdirSync(v.dir, { recursive: true });
 
   console.log(
-    `\n── Components (${filtered.length} × ${variants.length} presets) ──────────────`,
+    `\n── Components (${filtered.length} × ${selected.length} variants) ─────────────`,
   );
 
   // Consistent breathing room kept around the measured content when cropping.
@@ -394,14 +424,14 @@ if (!screensOnly) {
     viewport: { width: 375, height: 600 },
     deviceScaleFactor: 1,
   });
-  for (const v of variants) {
+  for (const v of selected) {
     for (const c of filtered) {
       totalAttempts++;
       const h = c.fullScreen ? 812 : 600;
       await compPage.setViewportSize({ width: 375, height: h });
       const url =
         `http://localhost:${PORT}/index.html?component=${encodeURIComponent(c.name)}` +
-        `&preset=${v.preset}&dark=${v.dark}`;
+        `&preset=${v.preset}&dark=${v.dark}&lang=${v.lang ?? 'en'}`;
       try {
         await navigatePage(compPage, url);
         const file = join(v.dir, `${c.name}.png`);

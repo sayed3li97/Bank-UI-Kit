@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 
 import '../../src/common/bank_sheet.dart';
 import '../../src/models/models.dart';
-import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 // ---------------------------------------------------------------------------
 // Filter model
@@ -305,34 +305,16 @@ class _BankTransactionFilterSheetState
       '${dt.month.toString().padLeft(2, '0')}/'
       '${dt.year}';
 
-  String _categoryLabel(TransactionCategory cat) => switch (cat) {
-        TransactionCategory.groceries => 'Groceries',
-        TransactionCategory.dining => 'Dining',
-        TransactionCategory.transport => 'Transport',
-        TransactionCategory.entertainment => 'Entertainment',
-        TransactionCategory.utilities => 'Utilities',
-        TransactionCategory.health => 'Health',
-        TransactionCategory.shopping => 'Shopping',
-        TransactionCategory.travel => 'Travel',
-        TransactionCategory.education => 'Education',
-        TransactionCategory.subscription => 'Subscription',
-        TransactionCategory.transfer => 'Transfer',
-        TransactionCategory.income => 'Income',
-        TransactionCategory.investment => 'Investment',
-        TransactionCategory.creditPayment => 'Credit',
-        TransactionCategory.other => 'Other',
-      };
-
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
-    final scope = BankUiScope.of(context);
-    final s = scope.strings;
+    final strings = BankStrings.of(context);
 
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     final formatDate = widget.dateFormatter ?? _formatDate;
-    final categoryLabel = widget.categoryLabelBuilder ?? _categoryLabel;
+    final categoryLabel = widget.categoryLabelBuilder ??
+        (cat) => strings.categoryLabel(cat, short: true);
     final accent = widget.accentColor ?? bankTheme.primary;
 
     final range = _dateRange;
@@ -379,7 +361,7 @@ class _BankTransactionFilterSheetState
                     icon: Icon(widget.closeIcon ?? Icons.close),
                     color: bankTheme.onSurfaceVariant,
                     onPressed: () => Navigator.of(context).pop(),
-                    tooltip: s.cancel,
+                    tooltip: strings.actionCancel,
                   ),
                 ],
               ),
@@ -629,7 +611,7 @@ class _BankTransactionFilterSheetState
                 children: [
                   Semantics(
                     button: true,
-                    label: s.cancel,
+                    label: strings.actionCancel,
                     child: TextButton(
                       onPressed: _clearAll,
                       style: TextButton.styleFrom(

@@ -1,6 +1,6 @@
 # Localization, RTL, and calendar guide
 
-This document states what `bank_ui_kit` v0.1.0 does today for localization,
+This document states what `bank_ui_kit` v0.4.0 does today for localization,
 right-to-left layout, numerals, currency symbology, and calendars, and the
 dated plan for what it does not do yet. It follows the same rule as
 `doc/enterprise/accessibility-conformance.md`: every figure below is
@@ -8,131 +8,190 @@ measured against the source in this repository, and where the kit has not
 reached a stated target, this document says so and gives the committed
 milestone from `doc/enterprise/versioning-and-releases.md`.
 
-## String inventory
+## Message catalogue
 
-The kit contains no baked-in, unreplaceable copy. Every user-facing string
-sits in one of two overridable tiers:
+The kit ships a real message catalogue as of 0.4.0.
 
-1. Centralized strings, 55 fields. `BankUiStrings`
-   (`lib/src/scope/bank_ui_strings.dart`) carries 55 English-default fields
-   covering transaction statuses, account states, session-security dialogs,
-   and shared actions. Widgets resolve them through
-   `BankUiScope.of(context)` (`lib/src/scope/bank_ui_scope.dart`); a host
-   app supplies one translated instance and every consumer updates.
-2. Constructor defaults, 298 string literals across 62 widget files.
-   Measured as `this.<field> = '<literal>'` under `lib/src/` outside
-   `scope/`. 297 are user-facing English labels; the remaining one is the
-   non-linguistic `digitChar = '#'` mask token in
-   `lib/src/common/bank_masked_input_field.dart`. Of these, 25 are
-   `*Template` fields carrying `{token}` placeholders (for example
-   `counterTemplate = '{n} of {max} selected'` in
-   `BankCashbackCategoryPicker`), interpolated at 22 `replaceAll` sites.
+`lib/l10n/bank_ui_kit_en.arb` holds 301 messages, each with an
+`@description` for translation vendors and typed placeholders where the
+message takes arguments. `lib/l10n/bank_ui_kit_ar.arb` carries all 301 in
+Arabic. `flutter gen-l10n` (configured by `l10n.yaml`) compiles both into
+`lib/src/l10n/`, which is committed: a package ships its generated
+localizations rather than asking every host to run a codegen step.
 
-Known residue outside both tiers, listed so it can be closed rather than
-discovered: `BankDateFormatter.formatRelative`
-(`lib/src/common/money_formatter.dart`) hard-codes `just now`, `{n}m ago`,
-`{n}h ago`, `{n}d ago`, and the `DateFormat` patterns in the same file
-format month and weekday names in the `intl` default locale only.
+Hosts install it like any delegate:
 
-The externalization plan moves the 297 constructor defaults into
-`BankUiStrings`, organized by the existing 22 source domains, at v0.2.0
-(2026-08-31). Constructor parameters remain and keep highest precedence, so
-the resolution order becomes: explicit constructor argument, then
-`BankUiScope` strings, then English default. This is additive; no existing
-call site breaks. The `formatRelative` literals move in the same change.
+```dart
+MaterialApp(
+  localizationsDelegates: BankL10n.localizationsDelegates,
+  supportedLocales: BankL10n.supportedLocales,
+)
+```
 
-## ICU MessageFormat / ARB bridge
+Installing nothing renders exactly the English 0.3.0 rendered.
 
-Current position: templates use bare `{token}` placeholders with
-single-string substitution and no plural, select, or gender branches.
-`BankUiStrings.installmentMonths` (`'{n} months'`) documents that the host,
-not the package, performs interpolation. This placeholder syntax is the
-subset of ICU MessageFormat that ARB files and `gen-l10n` consume directly,
-so today's strings round-trip into an ARB file without rewriting.
+### Resolution order
 
-Committed direction, at v0.2.0 alongside the externalization:
+45 library files read copy through `BankStrings.of(context)`
+(`lib/src/l10n/bank_strings.dart`), which resolves three sources and
+returns the first that answers:
 
-- A generated `bank_ui_kit_en.arb` source-of-truth file with one entry per
-  `BankUiStrings` field, including `@` metadata (description, placeholder
-  types) for translation vendors.
-- A `BankUiStrings` factory that adopters wire to their `gen-l10n` output
-  (`AppLocalizations`), so the kit needs no `flutter_localizations`
-  dependency of its own and imposes no l10n toolchain on hosts that do not
-  want one. The zero-dependency `copyWith` path stays supported.
-- Count-bearing keys (`installmentMonths`, `expiresTemplate`,
-  `streakTemplate`, `errorsChipTemplate`, and peers) upgrade to ICU plural
-  syntax in the ARB while the Dart API keeps accepting preformatted
-  strings, so existing overrides keep working.
-- String-freeze process for vendor round trips: strings freeze at each
-  minor-release code cut (the dated milestones in
-  `doc/enterprise/versioning-and-releases.md`); the ARB diff since the
-  previous tag is the vendor handoff; translations land before tag; any
-  post-freeze string change moves to the next release. Key renames follow
-  the same deprecation grace window as API renames.
+1. a `BankUiStrings` field the host **changed** from its shipped default
+   and passed to `BankUiScope`;
+2. the translation for the ambient locale, when the host installed
+   `BankL10n.delegate`;
+3. the built-in English.
+
+The first rule is the one worth reading twice. A host that overrides two
+terms and leaves the rest alone keeps its two terms in every language and
+gets translations for everything else. Before 0.4.0 that was not
+expressible: `BankUiStrings` fields are non-nullable with English defaults,
+so a partial override was indistinguishable from a full one.
+
+`BankStrings.override(value, shipped)` is the primitive that makes it work,
+and it is public because widgets need it too: it returns `value` when the
+caller changed it from `shipped` and `null` when they did not. Its one
+false negative — a host that assigns exactly the shipped English — is
+indistinguishable from assigning nothing and renders the same English on an
+English device.
+
+### String inventory
+
+Two tiers, as before, now with a third source underneath them:
+
+1. **Centralized strings, 56 fields.** `BankUiStrings`
+   (`lib/src/scope/bank_ui_strings.dart`) still carries the English-default
+   fields covering transaction statuses, account states, session-security
+   dialogs, and shared actions. Every one now has a catalogue twin, so
+   leaving a field alone gets it translated.
+2. **Constructor defaults, 639 string literals across 117 files.** Measured
+   as `this.<field> = '<literal>'` under `lib/src/` outside `scope/`; 12
+   are non-linguistic tokens (`digitChar = '#'`, `'+{n}'`, `'●'`, `'0.00'`
+   and peers). Overriding them works exactly as it did in 0.3.0.
+3. **The catalogue**, consulted whenever the first two decline.
+
+**Known gap, stated rather than discovered:** those 639 defaults do not
+consult the catalogue yet, so a widget whose copy arrives only that way
+renders English in an Arabic app. Closing them needs no API change —
+`BankStrings.override` against a private constant is the whole pattern, and
+`BankUpdatePromptSheet`, `BankAppGateScreen`, `BankScaApprovalSheet` and
+`BankAlertPreferencesPanel` show it applied. The remaining files convert at
+v0.5.0 (2027-02-28).
+
+Residue closed in 0.4.0, listed here because the previous revision of this
+document promised it: `BankDateFormatter.formatRelative` no longer
+hard-codes `just now` / `{n}m ago` / `{n}h ago` / `{n}d ago`, and every
+`DateFormat` call in the kit now takes the ambient locale rather than
+formatting month and weekday names in the `intl` default.
+
+## ICU MessageFormat
+
+Count-bearing messages are ICU `plural` in the catalogue, which is what
+lets Arabic carry all six CLDR categories — `zero`, `one`, `two`, `few`
+(3–10), `many` (11–99), `other`. `test/localization_test.dart` asserts all
+six for `installmentMonths`.
+
+`BankUiStrings.installmentMonths` remains a `{n}` template and structurally
+cannot express six categories; a host that supplies one still gets
+substitution, and a host that does not gets the plural. That asymmetry is
+the reason the catalogue exists rather than more `String` fields.
+
+Escaping is off (`use-escaping: false` in `l10n.yaml`). No message in the
+catalogue needs a literal brace, and turning escaping on would make every
+"we can't" and "you're" an unmatched-quote lexing error for translators.
+
+### Freeze process
+
+Strings freeze at each minor-release code cut (the dated milestones in
+`doc/enterprise/versioning-and-releases.md`); the ARB diff since the
+previous tag is the vendor handoff; translations land before tag; any
+post-freeze string change moves to the next release. Key renames follow the
+same deprecation grace window as API renames.
+
+### CI gates
+
+Three, deliberately separate, in `.github/workflows/ci.yml`:
+
+- `dart run tool/check_l10n.dart` — fails on a message with no
+  `@description`, a key missing from any locale, a key present in a locale
+  but not the template, or a placeholder a translation dropped. A
+  translator can break this without touching Dart, which is why it does not
+  depend on codegen.
+- `flutter gen-l10n` followed by `git diff --exit-code` — proves the
+  committed Dart matches the ARB.
+- `dart run tool/generate_l10n_facade.dart --check` — proves the resolution
+  facade was regenerated after a catalogue change.
 
 ## Shipped-locale plan
 
-Current position: the package ships English defaults only. There are no ARB
-or translation files in the repository, and this document does not claim
-otherwise. The 10 tier-1 locales below ship as reviewed ARB files starting
-at v0.3.0 (2026-10-31) with Arabic first, completing by v0.5.0 (2027-02-28):
+Current position: **English and Arabic**, at full key parity.
 
-| Locale | Rationale |
-|---|---|
-| en | Source language, already complete in `BankUiStrings` |
-| ar | RTL, Eastern Arabic-Indic numerals, 6 CLDR plural categories; pairs with the existing Islamic-finance mode and GCC currency registry |
-| pl | Slavic plural rules (one/few/many/other); PLN already in `BankCurrencies` |
-| de | Tier-1 EU market |
-| fr | Tier-1 EU and North/West Africa |
-| es | Tier-1 EU and Latin America |
-| pt-BR | BRL already in `BankCurrencies` |
-| tr | TRY already in `BankCurrencies` |
-| zh-Hans | CJK coverage, zero-plural language |
-| ja | CJK coverage, zero-decimal JPY already modeled |
+The Arabic is machine-assisted and has **not** been reviewed by a native
+speaker or a banking-terminology reviewer. It is committed so the mechanism
+is exercised by a real second language — six plural categories,
+right-to-left script, Arabic comma — not because it is ready to put in
+front of customers. Treat it as a starting point for a translation vendor.
 
-Arabic and Polish are deliberate stress cases: together they exercise every
-CLDR plural category the other eight locales would miss.
+The remaining tier-1 locales ship as reviewed ARB files by v0.6.0
+(2027-04-30):
+
+| Locale | Status | Rationale |
+|---|---|---|
+| en | Shipped, source language | — |
+| ar | Shipped, machine-assisted, pending native review | RTL, Eastern Arabic-Indic numerals, 6 CLDR plural categories; pairs with the existing Islamic-finance mode and GCC currency registry |
+| pl | Planned | Slavic plural rules (one/few/many/other); PLN already in `BankCurrencies` |
+| de | Planned | Tier-1 EU market |
+| fr | Planned | Tier-1 EU and North/West Africa |
+| es | Planned | Tier-1 EU and Latin America |
+| pt-BR | Planned | BRL already in `BankCurrencies` |
+| tr | Planned | TRY already in `BankCurrencies` |
+| zh-Hans | Planned | CJK coverage, zero-plural language |
+| ja | Planned | CJK coverage, zero-decimal JPY already modeled |
+
+Arabic and Polish are the deliberate stress cases: together they exercise
+every CLDR plural category the other eight would miss.
+
+Country names, currency names, and Hijri month names stay English and are
+**not** in the catalogue. Those belong to CLDR, and shipping our own 249
+country names would be a worse asset than not shipping them.
 
 ## Per-script font stacks
 
-Current position: the package bundles three Latin
-families (Space Grotesk, Nunito, Fredoka) under `lib/src/assets/fonts/`.
+Current position: the package bundles four Latin families (Space Grotesk,
+Nunito, Fredoka, Noto Serif Display) plus glyph-coverage subsets for
+currency symbols, Arabic, and Devanagari under `lib/src/assets/fonts/`.
+
 The token text styles in `lib/src/theme/tokens.dart` intentionally omit
 `fontFamily`, so any widget outside a preset inherits the platform font,
 which already provides Arabic and CJK glyph fallback on iOS and Android.
 Presets apply their brand family through `BankThemeData.fontFamily`
 (`lib/src/theme/extensions.dart`), and Flutter falls back to platform fonts
-for glyphs the Latin families lack. There is no `fontFamilyFallback` token
-in `BankThemeData` today; the only fallback wiring in the repository is the
-screenshot harness (`example/lib/screenshot_harness.dart`), which applies
-`fontFamilyFallback: ['NotoSansArabic']` with the subset bundled in
-`example/pubspec.yaml`, because the headless capture browser cannot fetch
-the web engine's remote Noto fonts.
+for glyphs the Latin families lack.
 
-Committed direction, v0.2.0: a `fontFamilyFallback` field on
-`BankThemeData`, threaded through `preset.apply()` and
-`BankThemeData.custom()`, with documented per-script stacks: Arabic
-(Noto Sans Arabic, with Noto Naskh Arabic for long-form text) and CJK
-(Noto Sans SC/TC/JP), plus guidance on keeping tabular-figure numerals in
-the `numeralHero` through `numeralSmall` styles when a fallback engages.
+`kBankFontFallback` supplies the bundled coverage subsets, and
+`test/flutter_test_config.dart` registers them under their
+package-qualified names so goldens render real glyphs rather than tofu.
+
+Committed direction, v0.5.0: documented per-script stacks for long-form
+Arabic (Noto Naskh Arabic) and CJK (Noto Sans SC/TC/JP), plus guidance on
+keeping tabular-figure numerals in the `numeralHero` through `numeralSmall`
+styles when a fallback engages.
 
 ## Hijri (Umm al-Qura) dual-calendar support
 
-Current position: not implemented. All dates render Gregorian through
-`BankDateFormatter` (`lib/src/common/money_formatter.dart`). The Islamic
-banking domain ships today (`lib/src/islamic/bank_zakat_calculator.dart`,
-`lib/src/islamic/bank_donation_hub_card.dart`), and zakat's hawl period is
-defined on the lunar year, which is exactly where a Gregorian-only kit
-falls short for KSA and GCC deployments.
+Current position: implemented for conversion and dual rendering.
+`BankHijriDate` (`lib/src/common/bank_hijri_date.dart`) does tabular Umm
+al-Qura conversion inside the package, so behaviour does not depend on
+platform ICU versions, and `BankDateFormatter.formatDual` renders
+`30 Jun 2026 (15 Muharram 1448 AH)` with digits converted through
+`NumeralStyle`.
 
-Committed direction, v0.4.0 (2026-12-31): a `calendar` field on
-`BankUiScopeData` with `gregorian`, `hijriUmmAlQura`, and `dual` modes,
-backed by Umm al-Qura tabular conversion inside the package so behavior
-does not depend on platform ICU versions. First consumers:
-`BankTransactionGroupHeader` date headers, `BankStatementListTile` periods,
-and zakat due dates, with dual rendering in the form
-`15 Muharram 1448 AH (30 June 2026)` and month names sourced from
-`BankUiStrings` so they translate with everything else.
+Known gap: there is no `calendar` field on `BankUiScopeData`, so dual
+rendering is per-call rather than scope-wide, and Hijri month names are
+English transliterations passed as a `hijriMonthNames` argument rather than
+catalogue messages. Both close at v0.5.0 (2027-02-28), at which point
+`BankTransactionGroupHeader`, `BankStatementListTile`, and the zakat due
+date become the first scope-driven consumers.
 
 ## Arabic number formatting and the SAR symbol
 
@@ -140,52 +199,61 @@ and zakat due dates, with dual rendering in the form
 converts formatted output to Eastern Arabic-Indic digits after `intl`
 formatting, preserving structure; it is scope-wide via
 `BankUiScopeData.numeralStyle` and covered by `test/numeral_style_test.dart`
-and `test/money_test.dart`. Known limit: separators pass through
-unchanged, so output today uses U+002C and U+002E, not the Arabic decimal
-separator U+066B and thousands separator U+066C, because
-`BankMoneyFormatter` (`lib/src/common/money_formatter.dart`) calls
-`NumberFormat.decimalPatternDigits` without a locale. Committed at v0.2.0:
-a locale parameter on `BankMoneyFormatter.format` so `ar` output carries
-locale-correct separators, with the digit-conversion path unchanged.
+and `test/money_test.dart`.
 
-Currency symbology is registry-driven: 56 currencies in `BankCurrencies`
-(`lib/src/models/bank_currency.dart`) with ISO 4217 minor units (6 entries
-at three decimals, 6 at zero). The 10 Arabic-script symbols are wrapped in
-FSI/PDI directional isolates (U+2068/U+2069) via
-`BankCurrency.embeddableSymbol`, so they compose correctly inside LTR
-amounts. SAR defaults to the traditional abbreviation because the official
-riyal symbol (U+20C1, adopted by SAMA in 2025, Unicode 17) is still absent
-from most shipped fonts and would render as a placeholder box; apps whose
-bundled font carries the glyph opt in with one documented
-`BankCurrencies.register` call, quoted in the source at
-`lib/src/models/bank_currency.dart`.
+`BankMoneyFormatter.format` takes a `locale`, and kit widgets pass
+`context.bankLocale`, so grouping and separators follow the app locale
+(German `1.234,56`, French `1 234,56`, Indian lakh grouping `1,23,456`).
 
-## RTL verification status and golden-test evidence
+**Do not apply `NumeralStyle` to machine identifiers.** Arabic-Indic digits
+are bidi class AN, which UAX #9 rule W7 never retypes to L, so a card
+number or sort code rendered in Arabic-Indic digits reverses its group
+order in *both* directions and inside a directional isolate. No markup
+repairs it. `BankAccountNumberText` and `BankPhoneInputField` therefore
+render identifiers in ASCII digits regardless of scope numeral style;
+amounts, dates, and counts still convert. `test/bidi_identifier_test.dart`
+measures this with `getBoxesForRange`.
 
-What the source shows: 66 `EdgeInsetsDirectional` usages across 52 files;
-masked account numbers deliberately pinned LTR under RTL
-(`lib/src/accounts/bank_account_number_text.dart`,
-`bank_account_card.dart`, `bank_account_switcher.dart`,
-`bank_product_item_tile.dart`); direction-aware widgets that read
-`Directionality.of(context)`
+Currency symbology is registry-driven: 59 currencies in `BankCurrencies`
+(`lib/src/models/bank_currency.dart`) with ISO 4217 minor units. The
+Arabic-script symbols are wrapped in FSI/PDI directional isolates
+(U+2068/U+2069) via `BankCurrency.embeddableSymbol`, so they compose
+correctly inside LTR amounts. SAR defaults to the traditional abbreviation
+because the official riyal symbol (U+20C1, adopted by SAMA in 2025,
+Unicode 17) is still absent from most shipped fonts and would render as a
+placeholder box; apps whose bundled font carries the glyph opt in with one
+documented `BankCurrencies.register` call.
+
+## RTL verification status and evidence
+
+What the source shows: 107 `EdgeInsetsDirectional` usages across 61 files;
+grouped machine identifiers isolated with LRI/PDI or pinned LTR
+(`lib/src/common/bank_bidi.dart` and its call sites); direction-aware
+widgets that read `Directionality.of(context)`
 (`lib/src/onboarding/bank_step_progress_indicator.dart`,
 `lib/src/insights/bank_financial_health_score.dart`,
-`lib/src/onboarding/bank_onboarding_carousel.dart`).
-Six physical-edge sites remain
-(`bank_pin_keypad.dart`, `bank_portfolio_performance_chart.dart`,
-`bank_in_app_notification_center.dart`, `bank_plan_comparison_table.dart`
-twice, `bank_insight_card.dart`); all six convert to directional
-equivalents at v0.2.0.
+`lib/src/onboarding/bank_onboarding_carousel.dart`,
+`lib/src/common/bank_period_selector.dart`).
 
-What verification exists today: RTL review is manual,
-through the screenshot harness's `dir=rtl` query parameter
-(`example/lib/screenshot_harness.dart`) with the bundled NotoSansArabic
-fallback. The 6 files under `test/` (41 tests) pump LTR only, the
-checked-in `doc/screenshots/` set contains no RTL captures, and
-`tools/screenshots.mjs` does not yet drive `dir=rtl`. There are no golden
-tests in the repository yet; `alchemist ^0.10.0` is already in
-`pubspec.yaml` dev dependencies for this purpose. The committed evidence
-package lands with the v0.3.0 golden baseline (2026-10-31): an RTL golden
-matrix per preset for the money-rendering and form widgets, RTL variants in
-the Playwright capture matrix committed under `doc/screenshots/`, and an
-`ar` pseudo-locale smoke pass over the externalized `BankUiStrings`.
+Three files still use physical-edge insets
+(`bank_pin_keypad.dart`, `bank_portfolio_performance_chart.dart`,
+`bank_cashflow_chart.dart`); all three convert at v0.5.0.
+
+What verification exists today:
+
+- `test/golden/preset_goldens_test.dart` includes an RTL balance tile with
+  Arabic copy and a currency-and-script no-tofu case, rendered with the
+  bundled font fallbacks.
+- `test/bidi_identifier_test.dart` measures glyph positions under
+  `TextDirection.rtl` rather than asserting on strings, so it catches
+  reordering that a `contains` check would miss.
+- `test/localization_test.dart` pumps widgets under `Locale('ar')` with the
+  delegates installed and asserts both that Arabic renders and that English
+  is byte-for-byte unchanged.
+- The showcase (`example/lib/showcase/showcase.dart`) has a real language
+  switch: picking العربية changes the language *and* the direction, rather
+  than mirroring an English layout.
+
+Known gap: `doc/screenshots/` contains no RTL captures, and
+`tool/screenshots.mjs` does not drive the harness's `dir=rtl` parameter.
+An RTL capture matrix lands at v0.5.0.

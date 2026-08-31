@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_amount_input_field.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_hijri_date.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_summary_stack.dart';
@@ -379,9 +380,18 @@ class _BankZakatCalculatorState extends State<BankZakatCalculator> {
   String _hawlDateText(NumeralStyle numeralStyle) {
     final date = widget.hawlAnniversary!;
     if (widget.showHijriDates && BankHijriDate.supportsGregorian(date)) {
-      return BankDateFormatter.formatDual(date, numeralStyle: numeralStyle);
+      return BankDateFormatter.formatDual(
+        date,
+        numeralStyle: numeralStyle,
+        locale: context.bankLocale,
+      );
     }
-    return numeralStyle.convert(BankDateFormatter.formatFull(date));
+    return numeralStyle.convert(
+      BankDateFormatter.formatFull(
+        date,
+        locale: context.bankLocale,
+      ),
+    );
   }
 
   Widget _computationCard(BuildContext context, BankThemeData theme) {

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../src/common/bank_icon_spec.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 // ---------------------------------------------------------------------------
 // Enum
@@ -60,7 +61,8 @@ class BankReferralInviteCard extends StatelessWidget {
   final String expiredLabel;
 
   /// Replaces the generated invite-count line
-  /// (`'<n> friends invited [of <max>]'`). Supply for localisation.
+  /// (`'<n> friends invited [of <max>]'`), which is otherwise resolved
+  /// from the catalogue in the ambient language.
   final String? countLabel;
 
   /// Glyph next to the heading. Defaults to [BankIcons.gift].
@@ -113,6 +115,7 @@ class BankReferralInviteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
     final accent = accentColor ?? bankTheme.primary;
     final cardBg = backgroundColor ?? accent.withValues(alpha: 0.08);
     final cardRadius = radius ?? bankTheme.cardRadius;
@@ -192,7 +195,7 @@ class BankReferralInviteCard extends StatelessWidget {
 
                 // Referral count label
                 Text(
-                  countLabel ?? _countLabel,
+                  countLabel ?? _countLabelFrom(strings),
                   style: BankTokens.bodySmall.copyWith(
                     color: bankTheme.onSurfaceVariant,
                   ),
@@ -204,7 +207,7 @@ class BankReferralInviteCard extends StatelessWidget {
                 if (!_isExpired && onShare != null)
                   Semantics(
                     button: true,
-                    label: 'Share referral code',
+                    label: strings.referralShareCode,
                     child: SizedBox(
                       height: BankTokens.minTapTarget,
                       child: FilledButton.icon(
@@ -266,11 +269,16 @@ class BankReferralInviteCard extends StatelessWidget {
     );
   }
 
-  String get _countLabel {
-    final friendWord = referralCount == 1 ? 'friend' : 'friends';
-    final base = '$referralCount $friendWord invited';
-    if (maxReferrals != null) {
-      return '$base of $maxReferrals';
+  /// The invite-count line, in the ambient language.
+  ///
+  /// [BankStrings.referralFriendsInvited] is a real ICU plural, so a
+  /// language with more than two categories gets all of them; hand-built
+  /// `'friend'`/`'friends'` could only ever express two.
+  String _countLabelFrom(BankStrings strings) {
+    final base = strings.referralFriendsInvited(referralCount);
+    final max = maxReferrals;
+    if (max != null) {
+      return strings.referralProgress(base, '$max');
     }
     return base;
   }
@@ -421,7 +429,7 @@ class _ExpiredOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Offer expired',
+      label: BankStrings.of(context).offerExpired,
       child: Container(
         decoration: BoxDecoration(
           color: bankTheme.surface.withValues(alpha: 0.75),

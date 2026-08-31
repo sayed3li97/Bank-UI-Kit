@@ -54,10 +54,16 @@ Widget host(
   );
 }
 
-/// The first [Text] whose data equals [data].
+/// Every invisible directional control the kit wraps a machine identifier
+/// in for display (U+2066 LRI … U+2069 PDI, see `BankBidi`). A lookup by
+/// what the customer actually reads should not have to spell them.
+final RegExp _bidiControls = RegExp('[\u2066-\u2069]');
+
+/// The first [Text] whose visible data equals [data], directional controls
+/// discounted.
 Text textWidget(WidgetTester tester, String data) =>
     tester.widgetList<Text>(find.byType(Text)).firstWhere(
-          (t) => t.data == data,
+          (t) => t.data?.replaceAll(_bidiControls, '') == data,
           orElse: () => fail('no Text with data "$data"'),
         );
 

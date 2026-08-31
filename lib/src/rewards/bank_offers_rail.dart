@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../common/bank_emblem.dart';
 import '../common/bank_surface_depth.dart';
+import '../l10n/bank_strings.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -175,11 +176,10 @@ class BankOffersRail extends StatelessWidget {
   /// Height of the rail in logical pixels.
   final double height;
 
-  static String _defaultExpiryLabel(int daysLeft) {
-    if (daysLeft <= 0) return 'Ends today';
-    if (daysLeft == 1) return '1 day left';
-    return '$daysLeft days left';
-  }
+  static String Function(int) _defaultExpiryLabel(BankStrings strings) =>
+      (int daysLeft) => daysLeft <= 0
+          ? strings.offerEndsToday
+          : strings.offerDaysLeft(daysLeft);
 
   @override
   Widget build(BuildContext context) {
@@ -200,7 +200,8 @@ class BankOffersRail extends StatelessWidget {
             onTap: onTap,
             activateLabel: activateLabel,
             activatedLabel: activatedLabel,
-            expiryLabelBuilder: expiryLabelBuilder ?? _defaultExpiryLabel,
+            expiryLabelBuilder: expiryLabelBuilder ??
+                _defaultExpiryLabel(BankStrings.of(context)),
           );
         },
       ),

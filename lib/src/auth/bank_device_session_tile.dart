@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_format_context.dart';
 import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
 import '../theme/bank_theme_data.dart';
@@ -222,7 +223,10 @@ class _BankDeviceSessionTileState extends State<BankDeviceSessionTile> {
         widget.accentColor ?? (widget.flagged ? danger : theme.primary);
     final secondary = [
       if (session.location != null) session.location!,
-      BankDateFormatter.formatRelative(session.lastActiveAt),
+      BankDateFormatter.formatRelative(
+        session.lastActiveAt,
+        locale: context.bankLocale,
+      ),
     ].join(' · ');
 
     final showRevoke = widget.onRevoke != null && !session.isCurrentDevice;

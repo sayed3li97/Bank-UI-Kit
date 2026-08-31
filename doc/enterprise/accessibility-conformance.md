@@ -46,8 +46,8 @@ reason stated, rather than claiming credit the kit has not earned.
 
 ## Current position in one paragraph
 
-Screen-reader semantics are systematically built in: 285 `Semantics`
-constructors across 140 of the 224 library files, 142 `button` traits,
+Screen-reader semantics are systematically built in: 286 `Semantics`
+constructors across 140 of the 229 library files, 142 `button` traits,
 24 `selected`/`toggled` state traits, 10 `header` traits across 8 files, and
 live regions in 12 files. Those figures are counted the way
 [`acr/ACR.md`](./acr/ACR.md#2-source-inspection) states, by matching each
@@ -200,14 +200,14 @@ no YAML dependency — and enforces five properties:
 
 ### Committed additions
 
-1. Text-scale goldens (v0.4.0): golden baselines at `TextScaler` 1.0, 1.3,
-   1.5, and 2.0, on the v0.4.0 milestone dated 2026-12-31 in
+1. Text-scale goldens (v0.5.0): golden baselines at `TextScaler` 1.0, 1.3,
+   1.5, and 2.0, on the v0.5.0 milestone dated 2026-12-31 in
    `doc/enterprise/versioning-and-releases.md`. Components
    that clip or overflow at 2.0 fail the build.
-2. Keyboard-traversal assertions (v0.4.0), landing with the traversal groups
+2. Keyboard-traversal assertions (v0.5.0), landing with the traversal groups
    in gap G4.
 3. Rendered-pixel contrast for text over gradients and pattern overlays
-   (v0.4.0), extending the existing contrast gate.
+   (v0.5.0), extending the existing contrast gate.
 
 Items 1 and 2 were dated v0.3.0 in the previous edition. 0.3.0 has shipped
 without them, so they are re-dated here rather than left pointing at a
@@ -223,7 +223,7 @@ differently and mapped to individual EN 301 549 clauses, in
 gives that mapping, so the two documents can be diffed row by row instead of
 compared by eye.
 
-Every row that was still open when 0.3.0 shipped is dated v0.4.0, 2026-12-31.
+Every row that was still open when 0.3.0 shipped is dated v0.5.0, 2026-12-31.
 A v0.3.0 target was reachable only while 0.3.0 was unreleased; leaving one in
 place would point a reader at a version that has already shipped. This is the
 rule the ACR states for its own roadmap, applied here to the same gaps.
@@ -233,19 +233,19 @@ rule the ACR states for its own roadmap, applied here to the same gaps.
 | G1 | ~~Bloom light `onPrimary` on `primary` at 2.78:1~~ | — | Closed at v0.2.0; now 5.85:1 | — | Done |
 | G2 | ~~Heritage dark `onPrimary` on `primary` at 4.44:1~~ | — | Closed at v0.2.0; now 5.29:1 | — | Done |
 | G3 | ~~`positiveBalance` and `pending` failing on light surfaces~~ | — | Closed at v0.2.0; per-brightness variants, all ≥ 5.02:1 | — | Done |
-| G4 | No explicit focus traversal; zero `FocusTraversalGroup` in `lib/` | 7 | Repository-wide search | Traversal groups for keypads, sheets, and `BankBottomNavBar`; keyboard-order assertions in tests | v0.4.0, 2026-12-31 |
-| G5 | Fixed-height cells do not grow with text scale above roughly 1.5 | 5 | `lib/src/transfers/bank_amount_keypad.dart` (56 px keys), `lib/src/auth/bank_pin_keypad.dart` (fixed square) | Scale-aware minimum heights, verified by the 2.0-scale goldens | v0.4.0, 2026-12-31 |
-| G6 | Focus-ring and hairline contrast unmeasured | 6 | `BankTokens.focusRingOpacity = 0.4` composited over an unknown background | Measure the composited ring against every preset background; raise the opacity or use an opaque ring where it fails; add to the contrast gate | v0.4.0, 2026-12-31 |
-| G7 | No independent audit | 15 | This document | Audit plan below | v0.4.0, 2026-12-31 |
-| G8 | `BankTextField` label and error are unassociated sibling `Text` widgets, so assistive technology ties neither to the field | 2 | `lib/src/common/bank_text_field.dart` | Route both through `InputDecoration`, keeping the visual treatment; announce errors as a live region | v0.4.0, 2026-12-31 |
-| G9 | No screen-reader testing has ever been performed | 3 | `test/` contains no assistive-technology assertions, and none is possible in a headless suite | Manual TalkBack and VoiceOver passes over the example gallery in all four presets, findings filed as `accessibility` issues | v0.4.0, 2026-12-31 |
-| G10 | No input widget except `BankOtpInput` can declare an autofill purpose (WCAG 1.3.5 **Does Not Support**) | 1 | `AutofillHints` appears in one file | Optional `autofillHints` parameter on `BankTextField`, `BankPhoneInputField`, `BankAmountInputField`, `BankAddressForm` | v0.4.0, 2026-12-31 |
+| G4 | No explicit focus traversal; zero `FocusTraversalGroup` in `lib/` | 7 | Repository-wide search | Traversal groups for keypads, sheets, and `BankBottomNavBar`; keyboard-order assertions in tests | v0.5.0, 2026-12-31 |
+| G5 | Fixed-height cells do not grow with text scale above roughly 1.5 | 5 | `lib/src/transfers/bank_amount_keypad.dart` (56 px keys), `lib/src/auth/bank_pin_keypad.dart` (fixed square) | Scale-aware minimum heights, verified by the 2.0-scale goldens | v0.5.0, 2026-12-31 |
+| G6 | Focus-ring and hairline contrast unmeasured | 6 | `BankTokens.focusRingOpacity = 0.4` composited over an unknown background | Measure the composited ring against every preset background; raise the opacity or use an opaque ring where it fails; add to the contrast gate | v0.5.0, 2026-12-31 |
+| G7 | No independent audit | 15 | This document | Audit plan below | v0.5.0, 2026-12-31 |
+| G8 | `BankTextField` label and error are unassociated sibling `Text` widgets, so assistive technology ties neither to the field | 2 | `lib/src/common/bank_text_field.dart` | Route both through `InputDecoration`, keeping the visual treatment; announce errors as a live region | v0.5.0, 2026-12-31 |
+| G9 | No screen-reader testing has ever been performed | 3 | `test/` contains no assistive-technology assertions, and none is possible in a headless suite | Manual TalkBack and VoiceOver passes over the example gallery in all four presets, findings filed as `accessibility` issues | v0.5.0, 2026-12-31 |
+| G10 | No input widget except `BankOtpInput` can declare an autofill purpose (WCAG 1.3.5 **Does Not Support**) | 1 | `AutofillHints` appears in one file | Optional `autofillHints` parameter on `BankTextField`, `BankPhoneInputField`, `BankAmountInputField`, `BankAddressForm` | v0.5.0, 2026-12-31 |
 | G11 | ~~`BankSkeletonLoader` ignores the reduced-motion preference and shimmers regardless~~ | 4 | Closed at v0.3.0: `lib/src/states/bank_skeleton_loader.dart` reads `MediaQuery.maybeDisableAnimationsOf`, stops its controller, and drops the `ShaderMask` | — | Done |
-| G12 | `MediaQuery.boldText`, `highContrast`, and `accessibleNavigation` are read nowhere | 9 | Repository-wide search | Read them in the theme resolver; a high-contrast token variant per preset | v0.4.0, 2026-12-31 |
-| G13 | Section titles inside widget bodies lack the `header` trait; the kit carries 10 `header` traits across 8 files, against 173 widget classes | 10 | Named-argument count over every `Semantics` constructor in `lib/` | `header: true` on every widget rendering a section title | v0.4.0, 2026-12-31 |
-| G14 | The swipe-actioned row (`Dismissible`, **1 file**, `lib/src/notifications/bank_in_app_notification_center.dart`) has no keyboard or assistive-technology equivalent | 8 | Repository-wide search. The "4 files" this row printed at v0.3.0 came from a substring scan that also matched the unrelated `isDismissible` sheet parameter | Expose the same actions as semantics actions and as a visible affordance | v0.4.0, 2026-12-31 |
-| G15 | Four sliders in `BankLoanCalculatorCard` and `BankSavingsProjectionCard` sit inside `excludeSemantics: true`, so the limit they set can be neither read nor changed by assistive technology | 19 | `lib/src/credit/bank_loan_calculator_card.dart`, `lib/src/saving/bank_savings_projection_card.dart` | Apply the pattern the other three slider surfaces adopted in 0.3.0, and extend the slider gate in `test/accessibility_targets_test.dart` to both files | v0.4.0, 2026-12-31 |
-| G16 | Ten icon-only `IconButton`s expose no accessible name | 20 | `lib/src/business/bank_batch_payment_review_sheet.dart`, `lib/src/cards/bank_travel_notice_form.dart`, `lib/src/support/bank_help_faq_list.dart` (3), `lib/src/support/bank_dispute_wizard_sheet.dart` (3), `lib/src/support/bank_secure_message_thread.dart`, `lib/src/insights/bank_recurring_merchant_tile.dart` | A `tooltip` or a themed `semanticLabel` on each, plus a `labeledTapTargetGuideline` composition covering them | v0.4.0, 2026-12-31 |
+| G12 | `MediaQuery.boldText`, `highContrast`, and `accessibleNavigation` are read nowhere | 9 | Repository-wide search | Read them in the theme resolver; a high-contrast token variant per preset | v0.5.0, 2026-12-31 |
+| G13 | Section titles inside widget bodies lack the `header` trait; the kit carries 10 `header` traits across 8 files, against 173 widget classes | 10 | Named-argument count over every `Semantics` constructor in `lib/` | `header: true` on every widget rendering a section title | v0.5.0, 2026-12-31 |
+| G14 | The swipe-actioned row (`Dismissible`, **1 file**, `lib/src/notifications/bank_in_app_notification_center.dart`) has no keyboard or assistive-technology equivalent | 8 | Repository-wide search. The "4 files" this row printed at v0.3.0 came from a substring scan that also matched the unrelated `isDismissible` sheet parameter | Expose the same actions as semantics actions and as a visible affordance | v0.5.0, 2026-12-31 |
+| G15 | Four sliders in `BankLoanCalculatorCard` and `BankSavingsProjectionCard` sit inside `excludeSemantics: true`, so the limit they set can be neither read nor changed by assistive technology | 19 | `lib/src/credit/bank_loan_calculator_card.dart`, `lib/src/saving/bank_savings_projection_card.dart` | Apply the pattern the other three slider surfaces adopted in 0.3.0, and extend the slider gate in `test/accessibility_targets_test.dart` to both files | v0.5.0, 2026-12-31 |
+| G16 | Ten icon-only `IconButton`s expose no accessible name | 20 | `lib/src/business/bank_batch_payment_review_sheet.dart`, `lib/src/cards/bank_travel_notice_form.dart`, `lib/src/support/bank_help_faq_list.dart` (3), `lib/src/support/bank_dispute_wizard_sheet.dart` (3), `lib/src/support/bank_secure_message_thread.dart`, `lib/src/insights/bank_recurring_merchant_tile.dart` | A `tooltip` or a themed `semanticLabel` on each, plus a `labeledTapTargetGuideline` composition covering them | v0.5.0, 2026-12-31 |
 | G17 | ~~14 sheet bodies drew their own 40×4 grab bar with no semantics node~~ | 18 | Closed at v0.3.0: all 14 route through `BankSheetHandle`, gated by `test/sheet_handle_semantics_test.dart` | — | Done |
 
 ~~G-numbered rows struck through~~ are closed; they are kept so a reader can
@@ -284,14 +284,14 @@ the ACR depends on screen-reader behaviour**, because none has been tested.
 Status: **no external audit has been performed** as of v0.3.0. Everything in
 the ACR is a self-assessment by the maintainers. The committed plan:
 
-1. Internal pre-audit (by 2026-12-31, alongside v0.4.0): text-scale goldens
+1. Internal pre-audit (by 2026-12-31, alongside v0.5.0): text-scale goldens
    plus manual TalkBack and VoiceOver passes over the example screens in
    `example/lib/screens/`, with findings tracked as issues labeled
    `accessibility`. This closes G9 and converts the 11.5.2 clauses in the ACR
    from "declared" to "observed", in whichever direction the evidence points.
    It was dated alongside v0.3.0 in the previous edition and did not happen,
    so it moves rather than staying pinned to a released version.
-2. External audit (by 2026-12-31, alongside v0.4.0): a WCAG 2.1 AA and
+2. External audit (by 2026-12-31, alongside v0.5.0): a WCAG 2.1 AA and
    EN 301 549 assessment of the example gallery
    (`example/lib/gallery_main.dart`) by an independent accessibility firm,
    covering all four presets in both brightnesses on iOS and Android.

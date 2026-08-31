@@ -1,9 +1,9 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_emblem.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
@@ -351,8 +351,12 @@ class BankMoneyCircleCard extends StatelessWidget {
             .copyWith(color: theme.onSurface)
             .merge(amountStyle);
 
-    final nextCollectionText =
-        numerals.convert(BankDateFormatter.formatShort(nextCollectionDate));
+    final nextCollectionText = numerals.convert(
+      BankDateFormatter.formatShort(
+        nextCollectionDate,
+        locale: context.bankLocale,
+      ),
+    );
 
     String? cycleText;
     if (!completed) {
@@ -371,7 +375,13 @@ class BankMoneyCircleCard extends StatelessWidget {
       );
       myTurnText = numerals.convert(
         myTurnTemplate
-            .replaceAll('{month}', DateFormat('MMMM').format(turnMonth))
+            .replaceAll(
+              '{month}',
+              BankDateFormatter.patternFormat(
+                'MMMM',
+                locale: context.bankLocale,
+              ).format(turnMonth),
+            )
             .replaceAll('{n}', '${me.turnIndex}')
             .replaceAll('{total}', '$totalCycles'),
       );

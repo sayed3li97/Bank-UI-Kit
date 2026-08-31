@@ -89,11 +89,13 @@ class BankPrivacyToggle extends StatelessWidget {
     final scopeData = BankUiScope.of(context);
     final bankTheme = BankThemeData.of(context);
 
+    final strings = BankStrings.of(context);
+
     final privacyEnabled = overrideValue ?? scopeData.privacyEnabled;
 
     final semanticLabel = privacyEnabled
-        ? (showBalancesLabel ?? 'Show balances')
-        : (hideBalancesLabel ?? 'Hide balances');
+        ? (showBalancesLabel ?? strings.authShowBalances)
+        : (hideBalancesLabel ?? strings.authHideBalances);
 
     final resolvedIcon = privacyEnabled
         ? (hiddenIcon ?? BankIcons.visibilityOff)

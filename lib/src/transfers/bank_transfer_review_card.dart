@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_bidi.dart';
 import '../../src/common/bank_surface_depth.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
@@ -498,7 +499,10 @@ class _BeneficiaryHeader extends StatelessWidget {
               // Tabular numerals keep the digit groups from shifting
               // between one beneficiary and the next.
               Text(
-                beneficiary.maskedAccount,
+                // Last stop before the money moves: the mask is what the
+                // customer verifies, so its groups keep their written
+                // order whichever way the paragraph runs.
+                BankBidi.isolate(beneficiary.maskedAccount),
                 style: bankTheme.numeralSmall
                     .copyWith(color: bankTheme.onSurface)
                     .merge(maskStyle),

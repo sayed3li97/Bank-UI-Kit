@@ -145,6 +145,16 @@ class BankUiScope extends StatefulWidget {
     return inherited!.data;
   }
 
+  /// Returns the nearest [BankUiScopeData], or `null` when there is no
+  /// [BankUiScope] ancestor.
+  ///
+  /// Unlike [of] this never throws, so widgets that are usable outside a
+  /// scope can read host configuration when it exists and fall back to the
+  /// kit defaults when it does not. Descendants are rebuilt whenever the
+  /// data changes.
+  static BankUiScopeData? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_BankUiScopeInherited>()?.data;
+
   /// Returns the [BankUiScopeController] that allows callers to mutate the
   /// scope data without a full rebuild of the [BankUiScope] itself.
   ///

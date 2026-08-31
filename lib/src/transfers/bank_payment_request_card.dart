@@ -6,6 +6,7 @@ import '../../src/models/money.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 /// Incoming money-request card with accept or decline actions.
 class BankPaymentRequestCard extends StatelessWidget {
@@ -132,8 +133,8 @@ class BankPaymentRequestCard extends StatelessWidget {
     final displayAmount =
         scope.privacyEnabled ? scope.strings.balanceHidden : formatted;
 
-    final timeAgo =
-        timestampFormatter?.call(requestedAt) ?? _timeAgo(requestedAt);
+    final timeAgo = timestampFormatter?.call(requestedAt) ??
+        _timeAgo(requestedAt, BankStrings.of(context));
 
     final resolvedPadding = padding ?? const EdgeInsets.all(BankTokens.space4);
 
@@ -268,11 +269,12 @@ class BankPaymentRequestCard extends StatelessWidget {
     return Semantics(label: semanticLabel, child: card);
   }
 
-  String _timeAgo(DateTime date) {
-    final diff = DateTime.now().difference(date);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
-  }
+  /// Relative age of the request.
+  ///
+  /// Routed through [BankStrings.relativeTime] rather than the fourth
+  /// hand-rolled copy of the same ladder. That lower-cases the under-a-minute
+  /// case from `Just now` to `just now`, matching every other surface in the
+  /// kit.
+  String _timeAgo(DateTime date, BankStrings strings) =>
+      strings.relativeTime(date);
 }

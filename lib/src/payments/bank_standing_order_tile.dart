@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
+import '../l10n/bank_strings.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
@@ -317,23 +318,20 @@ class BankStandingOrderTile extends StatefulWidget {
     this.onResume,
     this.onSkipNext,
     this.onCancel,
-    this.pausedLabel = 'Paused',
-    this.failedLabel = 'Failed',
-    this.retryLabel = 'Retry payment',
-    this.pauseActionLabel = 'Pause',
-    this.resumeActionLabel = 'Resume',
-    this.skipNextActionLabel = 'Skip next payment',
-    this.cancelActionLabel = 'Cancel standing order',
-    this.skipConfirmTitle = 'Skip next payment?',
-    this.skipConfirmMessage =
-        'The next scheduled payment will be skipped. Later payments stay '
-            'on schedule.',
-    this.cancelConfirmTitle = 'Cancel standing order?',
-    this.cancelConfirmMessage =
-        'This permanently stops all future payments to this payee.',
-    this.confirmActionLabel = 'Confirm',
-    this.dismissActionLabel = 'Go back',
-    this.moreActionsLabel = 'More actions',
+    this.pausedLabel = _kPausedLabel,
+    this.failedLabel = _kFailedLabel,
+    this.retryLabel = _kRetryLabel,
+    this.pauseActionLabel = _kPauseActionLabel,
+    this.resumeActionLabel = _kResumeActionLabel,
+    this.skipNextActionLabel = _kSkipNextActionLabel,
+    this.cancelActionLabel = _kCancelActionLabel,
+    this.skipConfirmTitle = _kSkipConfirmTitle,
+    this.skipConfirmMessage = _kSkipConfirmMessage,
+    this.cancelConfirmTitle = _kCancelConfirmTitle,
+    this.cancelConfirmMessage = _kCancelConfirmMessage,
+    this.confirmActionLabel = _kConfirmActionLabel,
+    this.dismissActionLabel = _kDismissActionLabel,
+    this.moreActionsLabel = _kMoreActionsLabel,
     this.padding,
     this.leading,
     this.accentColor,
@@ -348,6 +346,24 @@ class BankStandingOrderTile extends StatefulWidget {
     this.moreIcon,
     this.semanticLabel,
   });
+
+  static const String _kPausedLabel = 'Paused';
+  static const String _kFailedLabel = 'Failed';
+  static const String _kRetryLabel = 'Retry payment';
+  static const String _kPauseActionLabel = 'Pause';
+  static const String _kResumeActionLabel = 'Resume';
+  static const String _kSkipNextActionLabel = 'Skip next payment';
+  static const String _kCancelActionLabel = 'Cancel standing order';
+  static const String _kSkipConfirmTitle = 'Skip next payment?';
+  static const String _kCancelConfirmTitle = 'Cancel standing order?';
+  static const String _kConfirmActionLabel = 'Confirm';
+  static const String _kDismissActionLabel = 'Go back';
+  static const String _kMoreActionsLabel = 'More actions';
+  static const String _kSkipConfirmMessage =
+      'The next scheduled payment will be skipped. Later payments stay '
+      'on schedule.';
+  static const String _kCancelConfirmMessage =
+      'This permanently stops all future payments to this payee.';
 
   @override
   State<BankStandingOrderTile> createState() => _BankStandingOrderTileState();
@@ -398,11 +414,40 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
     return (parts.first[0] + parts.last[0]).toUpperCase();
   }
 
+  /// Resolves a copy parameter whose default is the shipped English.
+  ///
+  /// Every label on this row goes through it, so the chip, the action
+  /// sheet and both dialogs are one language rather than a mix of the
+  /// keys that happened to exist when each was migrated.
+  String _resolve(String value, String shipped, String translated) =>
+      BankStrings.override(value, shipped) ?? translated;
+
   // ---------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------
 
   Future<void> _openActionSheet() async {
+    final strings = BankStrings.of(context);
+    final pauseLabel = _resolve(
+      widget.pauseActionLabel,
+      BankStandingOrderTile._kPauseActionLabel,
+      strings.standingOrderPause,
+    );
+    final resumeLabel = _resolve(
+      widget.resumeActionLabel,
+      BankStandingOrderTile._kResumeActionLabel,
+      strings.standingOrderResume,
+    );
+    final skipLabel = _resolve(
+      widget.skipNextActionLabel,
+      BankStandingOrderTile._kSkipNextActionLabel,
+      strings.standingOrderSkipAction,
+    );
+    final cancelLabel = _resolve(
+      widget.cancelActionLabel,
+      BankStandingOrderTile._kCancelActionLabel,
+      strings.standingOrderCancelAction,
+    );
     final action = await BankSheet.show<_TileAction>(
       context,
       // A short, fixed action menu: keep Material's height clamp.
@@ -416,26 +461,26 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
             if (_pauseAvailable)
               _SheetActionRow(
                 icon: widget.pauseIcon ?? Icons.pause_circle_outline,
-                label: widget.pauseActionLabel,
+                label: pauseLabel,
                 onTap: () => Navigator.of(sheetContext).pop(_TileAction.pause),
               ),
             if (_resumeAvailable)
               _SheetActionRow(
                 icon: widget.resumeIcon ?? Icons.play_circle_outline,
-                label: widget.resumeActionLabel,
+                label: resumeLabel,
                 onTap: () => Navigator.of(sheetContext).pop(_TileAction.resume),
               ),
             if (_skipAvailable)
               _SheetActionRow(
                 icon: widget.skipNextIcon ?? Icons.skip_next_outlined,
-                label: widget.skipNextActionLabel,
+                label: skipLabel,
                 onTap: () =>
                     Navigator.of(sheetContext).pop(_TileAction.skipNext),
               ),
             if (widget.onCancel != null)
               _SheetActionRow(
                 icon: widget.cancelIcon ?? Icons.delete_outline,
-                label: widget.cancelActionLabel,
+                label: cancelLabel,
                 destructive: true,
                 onTap: () => Navigator.of(sheetContext).pop(_TileAction.cancel),
               ),
@@ -460,9 +505,18 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
   }
 
   Future<void> _confirmSkipNext() async {
+    final strings = BankStrings.of(context);
     final confirmed = await _showConfirmDialog(
-      title: widget.skipConfirmTitle,
-      message: widget.skipConfirmMessage,
+      title: _resolve(
+        widget.skipConfirmTitle,
+        BankStandingOrderTile._kSkipConfirmTitle,
+        strings.standingOrderSkipTitle,
+      ),
+      message: _resolve(
+        widget.skipConfirmMessage,
+        BankStandingOrderTile._kSkipConfirmMessage,
+        strings.standingOrderSkipBody,
+      ),
       destructive: false,
     );
     if (confirmed != true || !mounted) return;
@@ -474,9 +528,18 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
   }
 
   Future<void> _confirmCancel() async {
+    final strings = BankStrings.of(context);
     final confirmed = await _showConfirmDialog(
-      title: widget.cancelConfirmTitle,
-      message: widget.cancelConfirmMessage,
+      title: _resolve(
+        widget.cancelConfirmTitle,
+        BankStandingOrderTile._kCancelConfirmTitle,
+        strings.standingOrderCancelTitle,
+      ),
+      message: _resolve(
+        widget.cancelConfirmMessage,
+        BankStandingOrderTile._kCancelConfirmMessage,
+        strings.standingOrderCancelBody,
+      ),
       destructive: true,
     );
     if (confirmed != true || !mounted) return;
@@ -489,6 +552,17 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
     required bool destructive,
   }) {
     final bankTheme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
+    final dismissLabel = _resolve(
+      widget.dismissActionLabel,
+      BankStandingOrderTile._kDismissActionLabel,
+      strings.actionGoBack,
+    );
+    final confirmLabel = _resolve(
+      widget.confirmActionLabel,
+      BankStandingOrderTile._kConfirmActionLabel,
+      strings.actionConfirm,
+    );
 
     return BankDialog.show<bool>(
       context,
@@ -507,7 +581,7 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(widget.dismissActionLabel),
+            child: Text(dismissLabel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -520,7 +594,7 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
                 BankTokens.minTapTarget,
               ),
             ),
-            child: Text(widget.confirmActionLabel),
+            child: Text(confirmLabel),
           ),
         ],
       ),
@@ -539,17 +613,44 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
 
     final isFailed = _order.state == BankStandingOrderState.failed;
     final isPaused = _order.state == BankStandingOrderState.paused;
 
+    // Every label the row paints resolves through `_resolve`, so the chip
+    // and the tooltips speak the same language as the action sheet.
+    final pausedLabel = _resolve(
+      widget.pausedLabel,
+      BankStandingOrderTile._kPausedLabel,
+      strings.standingOrderPaused,
+    );
+    final failedLabel = _resolve(
+      widget.failedLabel,
+      BankStandingOrderTile._kFailedLabel,
+      strings.standingOrderFailed,
+    );
+    final retryLabel = _resolve(
+      widget.retryLabel,
+      BankStandingOrderTile._kRetryLabel,
+      strings.standingOrderRetry,
+    );
+    final moreActionsLabel = _resolve(
+      widget.moreActionsLabel,
+      BankStandingOrderTile._kMoreActionsLabel,
+      strings.actionMoreActions,
+    );
+
     final nextDateText = BankDateFormatter.formatShort(_effectiveNextRun);
-    final scheduleText = '${_order.pattern.label} · next $nextDateText';
+    // BankRecurringPattern.label is documented English, kept for hosts that
+    // read it; what the row renders comes from the catalogue instead.
+    final scheduleText =
+        '${strings.frequencyLabel(_order.pattern)} · next $nextDateText';
 
     final stateSuffix = isPaused
-        ? ', ${widget.pausedLabel}'
+        ? ', $pausedLabel'
         : isFailed
-            ? ', ${widget.failedLabel}'
+            ? ', $failedLabel'
             : '';
 
     return Semantics(
@@ -626,7 +727,7 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
                             if (isPaused) ...[
                               const SizedBox(width: BankTokens.space2),
                               _StatusChip(
-                                label: widget.pausedLabel,
+                                label: pausedLabel,
                                 color: bankTheme.pending,
                                 chipRadius: bankTheme.chipRadius,
                               ),
@@ -634,7 +735,7 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
                             if (isFailed) ...[
                               const SizedBox(width: BankTokens.space2),
                               _StatusChip(
-                                label: widget.failedLabel,
+                                label: failedLabel,
                                 color: BankTokens.danger,
                                 chipRadius: bankTheme.chipRadius,
                               ),
@@ -672,7 +773,7 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
                   if (isFailed && widget.onResume != null)
                     IconButton(
                       onPressed: widget.onResume,
-                      tooltip: widget.retryLabel,
+                      tooltip: retryLabel,
                       icon: Icon(widget.retryIcon ?? Icons.refresh),
                       color: BankTokens.danger,
                       constraints: const BoxConstraints(
@@ -683,7 +784,7 @@ class _BankStandingOrderTileState extends State<BankStandingOrderTile> {
                   if (_hasSheetActions)
                     IconButton(
                       onPressed: _openActionSheet,
-                      tooltip: widget.moreActionsLabel,
+                      tooltip: moreActionsLabel,
                       icon: Icon(widget.moreIcon ?? Icons.more_vert),
                       color: bankTheme.onSurfaceVariant,
                       constraints: const BoxConstraints(

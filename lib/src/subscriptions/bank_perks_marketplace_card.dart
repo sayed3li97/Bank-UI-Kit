@@ -4,6 +4,7 @@ import '../../src/common/bank_surface_depth.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -185,6 +186,7 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
     final perk = widget.perk;
     final accent = widget.accentColor ?? bankTheme.primary;
     final cardRadius = widget.radius ?? bankTheme.cardRadius;
@@ -216,11 +218,14 @@ class _BankPerksMarketplaceCardState extends State<BankPerksMarketplaceCard> {
       );
     }
 
+    final activationText = perk.isActivated
+        ? strings.perkActivatedSpoken
+        : strings.perkNotActivatedSpoken;
     final semanticLabel = widget.semanticLabel ??
         '${perk.partnerName}: ${perk.title}. '
             '${perk.discountLabel != null ? '${perk.discountLabel!}. ' : ''}'
             '${expiryText.isNotEmpty ? '$expiryText. ' : ''}'
-            '${perk.isActivated ? 'Activated.' : 'Not activated.'}';
+            '$activationText';
 
     final depth = BankSurfaceDepth.resolve(
       bankTheme,
@@ -406,7 +411,7 @@ class _ActionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     if (perk.isActivated) {
       return Semantics(
-        label: 'Perk activated',
+        label: BankStrings.of(context).perkActivated,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

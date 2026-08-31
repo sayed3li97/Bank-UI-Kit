@@ -10,6 +10,10 @@
 // Component mode (new: renders one gallery entry with default params):
 //   index.html?component=BankBalanceText&preset=studio&dark=0
 //
+// Language:
+//   index.html?screen=home&lang=ar          Arabic copy, RTL layout
+//   index.html?screen=home&dir=rtl          English copy, mirrored layout
+//
 // This is NOT the app users run: see main.dart for the interactive gallery.
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
@@ -80,7 +84,12 @@ void main() {
   final params = Uri.base.queryParameters;
   final preset = _presetFromName(params['preset']);
   final dark = params['dark'] == '1';
-  final rtl = params['dir'] == 'rtl';
+  // `?lang=ar` is the honest RTL capture: it installs the kit's delegates so
+  // the copy is Arabic too. `?dir=rtl` stays supported for mirroring an
+  // English layout, which is a different thing worth being able to see.
+  final language = params['lang'] ?? 'en';
+  final locale = Locale(language);
+  final rtl = params['dir'] == 'rtl' || language == 'ar';
 
   final base = dark ? ThemeData.dark() : ThemeData.light();
   // The preset already wires the kit's bundled glyph-coverage fallback fonts
@@ -109,7 +118,13 @@ void main() {
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: theme,
-          home: _ComponentShotPage(entry: entry, params: defaultParams),
+          locale: locale,
+          localizationsDelegates: BankL10n.localizationsDelegates,
+          supportedLocales: BankL10n.supportedLocales,
+          home: Directionality(
+            textDirection: rtl ? TextDirection.rtl : TextDirection.ltr,
+            child: _ComponentShotPage(entry: entry, params: defaultParams),
+          ),
         ),
       ),
     );
@@ -134,6 +149,9 @@ void main() {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: theme,
+        locale: locale,
+        localizationsDelegates: BankL10n.localizationsDelegates,
+        supportedLocales: BankL10n.supportedLocales,
         home: Directionality(
           textDirection: rtl ? TextDirection.rtl : TextDirection.ltr,
           child: builder(),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
+import '../l10n/bank_strings.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/numeral_style.dart';
@@ -158,13 +160,13 @@ class BankPointsHubCard extends StatelessWidget {
     final depth = BankSurfaceDepth.resolve(theme);
 
     final formattedBalance = _formatPoints(pointsBalance, scope.numeralStyle);
-    final displayBalance =
-        hidden ? scope.strings.balanceHidden : formattedBalance;
+    final strings = BankStrings.of(context);
+    final displayBalance = hidden ? strings.balanceHidden : formattedBalance;
 
     return Semantics(
       container: true,
       label: hidden
-          ? 'Points balance hidden'
+          ? strings.pointsBalanceHiddenSpoken
           : 'Points balance: $formattedBalance $pointsLabel',
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -199,7 +201,7 @@ class BankPointsHubCard extends StatelessWidget {
               ],
               if (_hasExpiryChip) ...[
                 const SizedBox(height: BankTokens.space3),
-                _buildExpiryChip(theme, scope.numeralStyle),
+                _buildExpiryChip(context, theme, scope.numeralStyle),
               ],
               if (actions.isNotEmpty) ...[
                 const SizedBox(height: BankTokens.space4),
@@ -238,10 +240,17 @@ class BankPointsHubCard extends StatelessWidget {
     );
   }
 
-  Widget _buildExpiryChip(BankThemeData theme, NumeralStyle numeralStyle) {
+  Widget _buildExpiryChip(
+    BuildContext context,
+    BankThemeData theme,
+    NumeralStyle numeralStyle,
+  ) {
     final count = _formatPoints(expiringPoints!, numeralStyle);
     final date = numeralStyle.convert(
-      BankDateFormatter.formatShort(expiringOn!),
+      BankDateFormatter.formatShort(
+        expiringOn!,
+        locale: context.bankLocale,
+      ),
     );
     final message = '$count $pointsLabel $expireVerbLabel $date';
 

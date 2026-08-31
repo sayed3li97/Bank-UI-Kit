@@ -17,7 +17,7 @@
 title: bank_ui_kit Accessibility Conformance Report
 product:
   name: bank_ui_kit
-  version: "0.3.0"
+  version: "0.4.0"
   description: >-
     A themeable Flutter UI component library for mobile banking and fintech
     apps: 173 widget classes across four design presets (Studio, Bloom,
@@ -44,7 +44,7 @@ feedback: https://github.com/sayed3li97/bank-ui-kit/issues
 
 notes: >-
   SCOPE. This report covers the bank_ui_kit package as published to pub.dev at
-  version 0.3.0, evaluated as non-web software (EN 301 549 chapter 11) on the
+  version 0.4.0, evaluated as non-web software (EN 301 549 chapter 11) on the
   iOS and Android targets. Flutter web and desktop builds of the kit exist but
   were NOT evaluated and are out of scope for this edition; chapter 9 (Web) is
   reported as out of scope rather than as conforming.
@@ -103,15 +103,15 @@ evaluation_methods_used: >-
   the claims in this file against the code and the other gates on every
   run.
 
-  (2) Source inspection of all 224 library files for the mechanisms named in
+  (2) Source inspection of all 229 library files for the mechanisms named in
   the remarks below. COUNTING METHODOLOGY, stated so every figure in this
   report can be reproduced: "widget classes" are public classes extending
   StatelessWidget or StatefulWidget reachable from the package's exported
   libraries (core.dart, saving.dart, social.dart, investing.dart,
   credit.dart), which is 173; "library files" is every .dart file under lib/,
-  which is 224; a "Semantics constructor" is a literal Semantics( call in
+  which is 229; a "Semantics constructor" is a literal Semantics( call in
   lib/ matched on a word boundary so ExcludeSemantics(, MergeSemantics( and
-  BlockSemantics( are not swept in, of which there are 285 across 140 files;
+  BlockSemantics( are not swept in, of which there are 286 across 140 files;
   a "trait" is a named argument passed to one of those constructors, counted
   by matching the constructor's own parentheses rather than by grepping the
   argument name, giving 142 button, 10 header across 8
@@ -128,7 +128,7 @@ evaluation_methods_used: >-
   those understates it. lib/src/products/bank_e_signature_pad.dart names the
   preference in a doc comment only and is excluded).
 
-  (3) Manual code review of the mechanisms above across all 224 library files,
+  (3) Manual code review of the mechanisms above across all 229 library files,
   plus sighted visual review of the example gallery
   (example/lib/gallery_main.dart) in all four presets in both light and dark,
   evidenced by the rendered screenshots committed under doc/screenshots/. No
@@ -142,7 +142,7 @@ evaluation_methods_used: >-
 
 legal_disclaimer: >-
   This report is provided in good faith and describes the package as analysed
-  at version 0.3.0 on the date shown. It is a self-assessment, not a
+  at version 0.4.0 on the date shown. It is a self-assessment, not a
   legally-binding conformance claim, and it does not transfer any obligation
   under Directive (EU) 2019/882 (the European Accessibility Act) from the
   service provider to the package maintainers. Conformance of a deployed
@@ -225,7 +225,7 @@ chapters:
             adherence:
               level: partially-supports
               notes: >-
-                Mechanism: 285 Semantics constructors carry role and state
+                Mechanism: 286 Semantics constructors carry role and state
                 traits (142 button, 10 header, 24 selected/toggled); composite
                 tiles collapse to one announced node via
                 Semantics(label:, excludeSemantics: true), so
@@ -593,7 +593,7 @@ chapters:
             adherence:
               level: partially-supports
               notes: >-
-                Mechanism: 285 Semantics nodes supply name, role, and state —
+                Mechanism: 286 Semantics nodes supply name, role, and state —
                 142 button traits, 10 header traits, 24 selected/toggled traits
                 — and BankPressable emits button plus enabled/disabled for
                 every custom surface. Gate: labeledTapTargetGuideline in
@@ -1260,7 +1260,7 @@ chapters:
               level: partially-supports
               notes: >-
                 Interoperability rests on Flutter's platform accessibility
-                bridge, which this package feeds with 285 Semantics nodes
+                bridge, which this package feeds with 286 Semantics nodes
                 across 140 files. Gap: the bridge's output has not been
                 inspected on a device with assistive technology running.
       - num: "11.5.1"

@@ -5,6 +5,7 @@ import '../../src/common/bank_icon_spec.dart';
 import '../../src/common/bank_pressable.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 // ---------------------------------------------------------------------------
 // BankPinKeypad
@@ -175,6 +176,7 @@ class BankPinKeypad extends StatelessWidget {
   }
 
   Widget _buildBottomRow(BuildContext context, BankThemeData bankTheme) {
+    final strings = BankStrings.of(context);
     final resolvedKeySize = keySize ?? 64;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -182,7 +184,7 @@ class BankPinKeypad extends StatelessWidget {
         // Left: biometric or empty placeholder
         if (onBiometric != null)
           _ActionKey(
-            semanticLabel: biometricSemanticLabel ?? 'Use biometrics',
+            semanticLabel: biometricSemanticLabel ?? strings.authUseBiometrics,
             icon: biometricIcon ?? BankIcons.biometric,
             bankTheme: bankTheme,
             onTap: enabled ? onBiometric : null,
@@ -208,7 +210,7 @@ class BankPinKeypad extends StatelessWidget {
         const SizedBox(width: BankTokens.space3),
         // Right: delete
         _ActionKey(
-          semanticLabel: deleteSemanticLabel ?? 'Delete',
+          semanticLabel: deleteSemanticLabel ?? strings.authDeleteDigit,
           icon: deleteIcon ?? Icons.backspace_outlined,
           bankTheme: bankTheme,
           onTap: enabled ? onDelete : null,

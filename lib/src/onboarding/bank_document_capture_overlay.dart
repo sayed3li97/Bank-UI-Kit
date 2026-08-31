@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 // ---------------------------------------------------------------------------
 // Framing state enum
@@ -121,15 +122,18 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
   // Default status messages
   // ---------------------------------------------------------------------------
 
-  static String _defaultMessage(BankDocumentFramingState state) =>
+  static String _defaultMessage(
+    BankDocumentFramingState state,
+    BankStrings strings,
+  ) =>
       switch (state) {
-        BankDocumentFramingState.idle => 'Position your document in the frame',
-        BankDocumentFramingState.detecting => 'Keep the document in frame',
-        BankDocumentFramingState.aligned => 'Hold still…',
-        BankDocumentFramingState.tooClose => 'Move further away',
-        BankDocumentFramingState.tooFar => 'Move closer',
-        BankDocumentFramingState.badLighting => 'Improve lighting conditions',
-        BankDocumentFramingState.blurry => 'Hold the camera steady',
+        BankDocumentFramingState.idle => strings.captureFrameDocument,
+        BankDocumentFramingState.detecting => strings.captureKeepInFrame,
+        BankDocumentFramingState.aligned => strings.captureHoldStill,
+        BankDocumentFramingState.tooClose => strings.captureMoveFurther,
+        BankDocumentFramingState.tooFar => strings.captureMoveCloser,
+        BankDocumentFramingState.badLighting => strings.captureImproveLighting,
+        BankDocumentFramingState.blurry => strings.captureHoldSteady,
       };
 
   // ---------------------------------------------------------------------------
@@ -153,7 +157,8 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
-    final message = statusMessage ?? _defaultMessage(framingState);
+    final strings = BankStrings.of(context);
+    final message = statusMessage ?? _defaultMessage(framingState, strings);
     final isAligned = framingState == BankDocumentFramingState.aligned;
     final buttonColor = captureButtonColor ?? bankTheme.primary;
 
@@ -188,7 +193,7 @@ class BankDocumentCaptureOverlay extends StatelessWidget {
               if (isAligned && onCapture != null) ...[
                 Semantics(
                   button: true,
-                  label: captureSemanticLabel ?? 'Capture document',
+                  label: captureSemanticLabel ?? strings.captureTakePhoto,
                   child: GestureDetector(
                     onTap: onCapture,
                     child: Container(

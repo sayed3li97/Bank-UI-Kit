@@ -13,28 +13,45 @@ class ShowcaseSettings {
   const ShowcaseSettings({
     required this.preset,
     required this.dark,
-    required this.rtl,
+    required this.locale,
     required this.privacy,
   });
 
   final BankPreset preset;
   final bool dark;
-  final bool rtl;
+
+  /// The language the previewed app runs in.
+  ///
+  /// Drives both the kit's own copy and the reading direction: picking
+  /// Arabic is not a direction switch with English text in it, which is the
+  /// demo people have seen a hundred times and learned nothing from.
+  final Locale locale;
+
   final bool privacy;
+
+  /// Whether [locale] is written right to left.
+  bool get rtl =>
+      kShowcaseLocales.firstWhere((entry) => entry.locale == locale).rtl;
 
   ShowcaseSettings copyWith({
     BankPreset? preset,
     bool? dark,
-    bool? rtl,
+    Locale? locale,
     bool? privacy,
   }) =>
       ShowcaseSettings(
         preset: preset ?? this.preset,
         dark: dark ?? this.dark,
-        rtl: rtl ?? this.rtl,
+        locale: locale ?? this.locale,
         privacy: privacy ?? this.privacy,
       );
 }
+
+/// The languages the showcase can preview, in sidebar order.
+const List<({Locale locale, String label, bool rtl})> kShowcaseLocales = [
+  (locale: Locale('en'), label: 'English', rtl: false),
+  (locale: Locale('ar'), label: 'العربية', rtl: true),
+];
 
 const List<({BankPreset preset, String label, String blurb})> kPresets = [
   (preset: BankPreset.studio, label: 'Studio', blurb: 'Neutral & modern'),
@@ -64,16 +81,24 @@ class ThemedContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final base = settings.dark ? ThemeData.dark() : ThemeData.light();
     final themed = settings.preset.apply(base);
-    return Theme(
-      data: themed,
-      child: BankUiScope(
-        initialData: BankUiScopeData(
-          preset: settings.preset,
-          privacyEnabled: settings.privacy,
-        ),
-        child: Directionality(
-          textDirection: settings.rtl ? TextDirection.rtl : TextDirection.ltr,
-          child: child,
+    // Only the previewed content changes language. The surrounding chrome
+    // stays English so the two are legible side by side, which is also how a
+    // host app embeds the kit: one localised island inside its own shell.
+    return Localizations.override(
+      context: context,
+      locale: settings.locale,
+      delegates: BankL10n.localizationsDelegates,
+      child: Theme(
+        data: themed,
+        child: BankUiScope(
+          initialData: BankUiScopeData(
+            preset: settings.preset,
+            privacyEnabled: settings.privacy,
+          ),
+          child: Directionality(
+            textDirection: settings.rtl ? TextDirection.rtl : TextDirection.ltr,
+            child: child,
+          ),
         ),
       ),
     );
@@ -95,7 +120,7 @@ class _ShowcaseAppState extends State<ShowcaseApp> {
   ShowcaseSettings _settings = const ShowcaseSettings(
     preset: BankPreset.studio,
     dark: false,
-    rtl: false,
+    locale: Locale('en'),
     privacy: false,
   );
   int _section = 0;
@@ -107,6 +132,8 @@ class _ShowcaseAppState extends State<ShowcaseApp> {
     return MaterialApp(
       title: 'Bank UI Kit',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: BankL10n.localizationsDelegates,
+      supportedLocales: BankL10n.supportedLocales,
       theme: chrome,
       home: _ShowcaseShell(
         settings: _settings,
@@ -507,10 +534,12 @@ class _AppearanceControls extends StatelessWidget {
         ),
         const SizedBox(height: BankTokens.space3),
         _SegRow(
-          label: 'Direction',
-          options: const ['LTR', 'RTL'],
-          index: settings.rtl ? 1 : 0,
-          onChanged: (i) => onSettings(settings.copyWith(rtl: i == 1)),
+          label: 'Language',
+          options: [for (final entry in kShowcaseLocales) entry.label],
+          index: kShowcaseLocales
+              .indexWhere((entry) => entry.locale == settings.locale),
+          onChanged: (i) =>
+              onSettings(settings.copyWith(locale: kShowcaseLocales[i].locale)),
         ),
         const SizedBox(height: BankTokens.space3),
         Row(

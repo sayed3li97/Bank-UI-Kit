@@ -6,6 +6,7 @@ import '../../src/models/bank_insight.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/button_text_style.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 /// A swipeable AI-generated insight card with a labelled confidence meter.
 ///
@@ -136,19 +137,21 @@ class BankInsightCard extends StatelessWidget {
         InsightConfidence.low => theme.onSurfaceVariant,
       };
 
-  static String _defaultConfidenceLabel(InsightConfidence confidence) =>
+  static String _defaultConfidenceLabel(
+    InsightConfidence confidence,
+    BankStrings strings,
+  ) =>
       switch (confidence) {
-        InsightConfidence.high => 'High confidence',
-        InsightConfidence.medium => 'Medium confidence',
-        InsightConfidence.low => 'Low confidence',
+        InsightConfidence.high => strings.insightConfidenceHigh,
+        InsightConfidence.medium => strings.insightConfidenceMedium,
+        InsightConfidence.low => strings.insightConfidenceLow,
       };
 
-  Widget _confidenceMeter(Color color) => _ConfidenceMeter(
+  Widget _confidenceMeter(Color color, BankStrings strings) => _ConfidenceMeter(
         confidence: insight.confidence,
         color: color,
-        label: (confidenceLabelBuilder ?? _defaultConfidenceLabel)(
-          insight.confidence,
-        ),
+        label: confidenceLabelBuilder?.call(insight.confidence) ??
+            _defaultConfidenceLabel(insight.confidence, strings),
         semanticLabel: confidenceSemanticLabel,
         labelStyle: confidenceLabelStyle,
       );
@@ -156,6 +159,7 @@ class BankInsightCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
     final color = accentColor ?? _confidenceColor(insight.confidence, theme);
     final resolvedRadius = radius ?? theme.cardRadius;
     // One depth language for every card: token shadows resolved against the
@@ -259,7 +263,7 @@ class BankInsightCard extends StatelessWidget {
                     // it lays out at its natural width and the trailing button
                     // still sits flush with the content edge.
                     if (showConfidence)
-                      Expanded(child: _confidenceMeter(color))
+                      Expanded(child: _confidenceMeter(color, strings))
                     else
                       const Spacer(),
                     TextButton(
@@ -274,13 +278,13 @@ class BankInsightCard extends StatelessWidget {
                         foregroundColor: theme.primary,
                         textStyle: bankButtonTextStyle(context),
                       ),
-                      child: Text(actionLabel ?? 'View details'),
+                      child: Text(actionLabel ?? strings.actionViewDetails),
                     ),
                   ],
                 ),
               ] else if (showConfidence) ...[
                 const SizedBox(height: BankTokens.space2),
-                _confidenceMeter(color),
+                _confidenceMeter(color, strings),
               ],
             ],
           ),

@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../common/bank_bidi.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/money_formatter.dart';
+import '../l10n/bank_strings.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/button_text_style.dart';
 import '../theme/tokens.dart';
@@ -595,71 +598,59 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
         BankAppGateReason.queueFull => Icons.hourglass_top_outlined,
       };
 
-  String get _defaultTitle => switch (widget.reason) {
-        BankAppGateReason.maintenance => 'Maintenance in progress',
-        BankAppGateReason.offline => 'No internet connection',
-        BankAppGateReason.forceUpdate => 'Time to update',
+  String _defaultTitle(BankStrings strings) => switch (widget.reason) {
+        BankAppGateReason.maintenance => strings.gateMaintenanceTitle,
+        BankAppGateReason.offline => strings.gateOfflineTitle,
+        BankAppGateReason.forceUpdate => strings.gateForceUpdateTitle,
         BankAppGateReason.rootedDevice ||
         BankAppGateReason.emulatorDetected ||
         BankAppGateReason.tamperDetected =>
-          "We can't open the app",
+          strings.gateDeviceBlockedTitle,
         BankAppGateReason.vpnDetected ||
         BankAppGateReason.geoRestricted =>
-          "We can't log you in",
-        BankAppGateReason.clockSkew => 'Check your date and time',
-        BankAppGateReason.developerMode => 'Developer mode is on',
-        BankAppGateReason.queueFull => 'You are in the queue',
+          strings.gateSignInBlockedTitle,
+        BankAppGateReason.clockSkew => strings.gateClockSkewTitle,
+        BankAppGateReason.developerMode => strings.gateDeveloperModeTitle,
+        BankAppGateReason.queueFull => strings.gateQueueTitle,
       };
 
-  String get _defaultBody => switch (widget.reason) {
-        BankAppGateReason.maintenance =>
-          'We are making some important updates. We will be back as '
-              'soon as we can.',
-        BankAppGateReason.offline =>
-          'Your device seems to be offline. Check your Wi-Fi or '
-              'mobile data, then try again.',
-        BankAppGateReason.forceUpdate =>
-          'Update needed to keep your money safe. This version of the '
-              'app is no longer supported.',
+  String _defaultBody(BankStrings strings) => switch (widget.reason) {
+        BankAppGateReason.maintenance => strings.gateMaintenanceBody,
+        BankAppGateReason.offline => strings.gateOfflineBody,
+        BankAppGateReason.forceUpdate => strings.gateForceUpdateBody,
         BankAppGateReason.rootedDevice ||
         BankAppGateReason.emulatorDetected ||
         BankAppGateReason.tamperDetected =>
-          "We can't open the app on this device right now.",
+          strings.gateDeviceBlockedBody,
         BankAppGateReason.vpnDetected ||
         BankAppGateReason.geoRestricted =>
-          "We can't log you in right now, please try again later.",
-        BankAppGateReason.clockSkew =>
-          "Your device's clock looks wrong, so we can't connect "
-              'securely. Setting it back to automatic usually fixes '
-              'this.',
-        BankAppGateReason.developerMode =>
-          'For your security the app cannot run while developer mode '
-              'is switched on. Turning it off fixes this.',
-        BankAppGateReason.queueFull =>
-          'A lot of people are signing in right now, so we are '
-              'letting everyone in gradually.',
+          strings.gateSignInBlockedBody,
+        BankAppGateReason.clockSkew => strings.gateClockSkewBody,
+        BankAppGateReason.developerMode => strings.gateDeveloperModeBody,
+        BankAppGateReason.queueFull => strings.gateQueueBody,
       };
 
-  List<String>? get _defaultSteps => switch (widget.reason) {
-        BankAppGateReason.clockSkew => const [
-            'Open your device Settings',
-            'Go to Date and Time',
-            'Turn on Set automatically',
-            'Come back to the app',
+  List<String>? _defaultSteps(BankStrings strings) => switch (widget.reason) {
+        BankAppGateReason.clockSkew => [
+            strings.gateClockStep1,
+            strings.gateClockStep2,
+            strings.gateClockStep3,
+            strings.gateClockStep4,
           ],
-        BankAppGateReason.developerMode => const [
-            'Open your device Settings',
-            'Go to Developer options',
-            'Switch developer mode off',
-            'Come back to the app',
+        BankAppGateReason.developerMode => [
+            strings.gateDeveloperStep1,
+            strings.gateDeveloperStep2,
+            strings.gateDeveloperStep3,
+            strings.gateDeveloperStep4,
           ],
         _ => null,
       };
 
-  String? get _defaultMoneySafetyLine => switch (widget.reason) {
+  String? _defaultMoneySafetyLine(BankStrings strings) =>
+      switch (widget.reason) {
         BankAppGateReason.maintenance ||
         BankAppGateReason.offline =>
-          'Your money is safe.',
+          strings.gateMoneyIsSafe,
         _ => null,
       };
 
@@ -774,23 +765,43 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
   // Queue helpers
   // ---------------------------------------------------------------------------
 
-  String _defaultQueueLine(int position, Duration? wait) {
-    final base = 'You are number $position in line';
+  /// Resolves a copy parameter whose default is the shipped English.
+  ///
+  /// The six named constructors each bake the same `_k…` constant in as a
+  /// non-nullable default, so the widget cannot tell "the host chose this"
+  /// from "the host took the default" by nullability alone. Comparing
+  /// against the constant can, without changing a single signature.
+  String _resolve(String value, String shipped, String translated) =>
+      BankStrings.override(value, shipped) ?? translated;
+
+  String _defaultQueueLine(
+    BankStrings strings,
+    int position,
+    Duration? wait,
+  ) {
+    final base = strings.gateQueuePosition('$position');
     if (wait == null) {
       return base;
     }
-    return '$base, about ${_formatWait(wait)}';
+    return strings.gateQueuePositionWithEta(
+      base,
+      _formatWait(strings, wait),
+    );
   }
 
-  String _formatWait(Duration wait) {
+  /// Humanises [wait] for the queue line.
+  ///
+  /// Under an hour one plural message covers both the singular minute and
+  /// the plural one that the hand-written ladder used to spell out
+  /// separately, so those two branches collapse into a single call. An
+  /// hour or more stays a digits-and-units clock reading, which carries no
+  /// words to translate.
+  String _formatWait(BankStrings strings, Duration wait) {
     if (wait.inMinutes < 1) {
-      return 'less than a minute';
-    }
-    if (wait.inMinutes == 1) {
-      return '1 minute';
+      return strings.gateEtaLessThanMinute;
     }
     if (wait.inMinutes < 60) {
-      return '${wait.inMinutes} minutes';
+      return strings.gateEtaMinutes(wait.inMinutes);
     }
     final minutes = wait.inMinutes % 60;
     return '${wait.inHours}h ${minutes}m';
@@ -803,6 +814,7 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
     final resolvedDuration =
         widget.animationDuration ?? BankTokens.durationBase;
@@ -810,11 +822,11 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
     final entranceDuration =
         disableAnimations ? Duration.zero : resolvedDuration;
 
-    final resolvedTitle = widget.title ?? _defaultTitle;
-    final resolvedBody = widget.body ?? _defaultBody;
-    final resolvedSteps = widget.steps ?? _defaultSteps;
+    final resolvedTitle = widget.title ?? _defaultTitle(strings);
+    final resolvedBody = widget.body ?? _defaultBody(strings);
+    final resolvedSteps = widget.steps ?? _defaultSteps(strings);
     final resolvedSafetyLine =
-        widget.moneySafetyLine ?? _defaultMoneySafetyLine;
+        widget.moneySafetyLine ?? _defaultMoneySafetyLine(strings);
     final accent = widget.accentColor ??
         (_isAdversarialReason ? BankTokens.danger : theme.primary);
     final resolvedPadding = widget.padding ??
@@ -834,14 +846,14 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
     final showSecondary =
         widget.secondaryActionLabel != null && widget.onSecondaryAction != null;
     final supportRow = _buildSupportRow(theme);
-    final footer = _buildFooter(mutedSmall);
+    final footer = _buildFooter(mutedSmall, strings, context.bankLocale);
     final showStillWorking =
         widget.stillWorking != null && widget.stillWorking!.isNotEmpty;
 
     final content = <Widget>[
       const SizedBox(height: BankTokens.space6),
       const Spacer(),
-      Center(child: _buildHeader(accent)),
+      Center(child: _buildHeader(accent, strings)),
       const SizedBox(height: BankTokens.space6),
       Text(resolvedTitle, style: titleStyle, textAlign: TextAlign.center),
       const SizedBox(height: BankTokens.space3),
@@ -856,11 +868,17 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
       ],
       if (widget.resumesAt != null) ...[
         const SizedBox(height: BankTokens.space6),
-        _buildCountdown(theme, mutedSmall),
+        _buildCountdown(theme, mutedSmall, strings, context.bankLocale),
       ],
       if (widget.reason == BankAppGateReason.queueFull) ...[
         const SizedBox(height: BankTokens.space6),
-        _buildQueueBlock(theme, accent, disableAnimations, mutedSmall),
+        _buildQueueBlock(
+          strings,
+          theme,
+          accent,
+          disableAnimations,
+          mutedSmall,
+        ),
       ],
       if (resolvedSteps != null && resolvedSteps.isNotEmpty) ...[
         const SizedBox(height: BankTokens.space6),
@@ -868,15 +886,19 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
       ],
       if (showStillWorking) ...[
         const SizedBox(height: BankTokens.space6),
-        _buildStillWorkingCard(theme),
+        _buildStillWorkingCard(theme, strings),
       ],
       if (widget.referenceCode != null) ...[
         const SizedBox(height: BankTokens.space6),
-        Center(child: _buildReferenceChip(theme)),
+        Center(child: _buildReferenceChip(theme, strings)),
         const SizedBox(height: BankTokens.space2),
         ExcludeSemantics(
           child: Text(
-            widget.referenceCodeHint,
+            _resolve(
+              widget.referenceCodeHint,
+              BankAppGateScreen._kReferenceCodeHint,
+              strings.gateReferenceHint,
+            ),
             style: mutedSmall,
             textAlign: TextAlign.center,
           ),
@@ -943,7 +965,7 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
   // Sections
   // ---------------------------------------------------------------------------
 
-  Widget _buildHeader(Color accent) {
+  Widget _buildHeader(Color accent, BankStrings strings) {
     final illustration = widget.illustration;
     if (illustration != null) {
       return ConstrainedBox(
@@ -967,18 +989,32 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
     );
   }
 
-  Widget _buildCountdown(BankThemeData theme, TextStyle mutedSmall) {
+  Widget _buildCountdown(
+    BankThemeData theme,
+    TextStyle mutedSmall,
+    BankStrings strings,
+    String? locale,
+  ) {
     final resumesAt = widget.resumesAt!;
     final remaining = resumesAt.difference(_now);
     if (remaining <= Duration.zero) {
       return Text(
-        widget.overrunLabel,
+        _resolve(
+          widget.overrunLabel,
+          BankAppGateScreen._kOverrunLabel,
+          strings.gateTakingLonger,
+        ),
         style: BankTokens.bodyMedium.copyWith(color: theme.onSurfaceVariant),
         textAlign: TextAlign.center,
       );
     }
-    final backBy =
-        '${widget.backByLabel} ${BankDateFormatter.formatTime(resumesAt)}';
+    final backByLabel = _resolve(
+      widget.backByLabel,
+      BankAppGateScreen._kBackByLabel,
+      strings.gateBackByAround,
+    );
+    final backBy = '$backByLabel '
+        '${BankDateFormatter.formatTime(resumesAt, locale: locale)}';
     return Semantics(
       label: '$backBy. ${_formatCountdownMinutes(remaining)}',
       excludeSemantics: true,
@@ -1002,6 +1038,7 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
   }
 
   Widget _buildQueueBlock(
+    BankStrings strings,
     BankThemeData theme,
     Color accent,
     bool disableAnimations,
@@ -1013,7 +1050,11 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
     if (position != null) {
       final line =
           widget.queuePositionLine?.call(position, widget.estimatedWait) ??
-              _defaultQueueLine(position, widget.estimatedWait);
+              _defaultQueueLine(
+                strings,
+                position,
+                widget.estimatedWait,
+              );
       final positionText = Text(
         line,
         key: ValueKey<String>(line),
@@ -1054,7 +1095,11 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
     }
     children.add(
       Text(
-        widget.queueKeepPlaceLine,
+        _resolve(
+          widget.queueKeepPlaceLine,
+          BankAppGateScreen._kQueueKeepPlaceLine,
+          strings.gateQueueReassurance,
+        ),
         style: mutedSmall,
         textAlign: TextAlign.center,
       ),
@@ -1092,7 +1137,7 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
     );
   }
 
-  Widget _buildStillWorkingCard(BankThemeData theme) {
+  Widget _buildStillWorkingCard(BankThemeData theme, BankStrings strings) {
     final itemStyle = BankTokens.bodyMedium.copyWith(color: theme.onSurface);
     return SizedBox(
       width: double.infinity,
@@ -1107,7 +1152,11 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.stillWorkingTitle,
+                _resolve(
+                  widget.stillWorkingTitle,
+                  BankAppGateScreen._kStillWorkingTitle,
+                  strings.gateStillWorking,
+                ),
                 style: BankTokens.labelLarge.copyWith(color: theme.onSurface),
               ),
               for (final item in widget.stillWorking!)
@@ -1135,11 +1184,16 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
     );
   }
 
-  Widget _buildReferenceChip(BankThemeData theme) {
+  Widget _buildReferenceChip(BankThemeData theme, BankStrings strings) {
     final code = widget.referenceCode!;
+    final hint = _resolve(
+      widget.referenceCodeHint,
+      BankAppGateScreen._kReferenceCodeHint,
+      strings.gateReferenceHint,
+    );
     return Semantics(
       button: true,
-      label: '$code. ${widget.referenceCodeHint}',
+      label: '$code. $hint',
       excludeSemantics: true,
       child: Material(
         color: theme.surfaceVariant,
@@ -1174,7 +1228,11 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
                   if (_copied) ...[
                     const SizedBox(width: BankTokens.space1),
                     Text(
-                      widget.copiedLabel,
+                      _resolve(
+                        widget.copiedLabel,
+                        BankAppGateScreen._kCopiedLabel,
+                        strings.actionCopied,
+                      ),
                       style: BankTokens.labelMedium.copyWith(
                         color: BankTokens.success,
                       ),
@@ -1232,24 +1290,34 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
     if (label == null) {
       return null;
     }
+    // A support number is a grouped machine identifier, and UAX #9 rule N1
+    // reverses its groups in a right-to-left paragraph: `+973 1758 3300`
+    // renders as `3300 1758 973+`, a number that dials nothing. The spoken
+    // label keeps the clean string — a screen reader must not meet the
+    // isolate controls.
+    final displayLabel = BankBidi.isolate(label);
     final icon = Icon(
       widget.supportIcon ?? Icons.phone_outlined,
       size: 18,
       color: theme.onSurfaceVariant,
     );
     if (widget.onContactSupport == null) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          icon,
-          const SizedBox(width: BankTokens.space2),
-          Text(
-            label,
-            style: BankTokens.labelLarge.copyWith(
-              color: theme.onSurfaceVariant,
+      return Semantics(
+        label: label,
+        excludeSemantics: true,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            icon,
+            const SizedBox(width: BankTokens.space2),
+            Text(
+              displayLabel,
+              style: BankTokens.labelLarge.copyWith(
+                color: theme.onSurfaceVariant,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
     return Semantics(
@@ -1266,16 +1334,34 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
           textStyle: bankButtonTextStyle(context),
         ),
         icon: icon,
-        label: Text(label),
+        label: Text(displayLabel),
       ),
     );
   }
 
-  List<Widget> _buildFooter(TextStyle mutedSmall) {
+  List<Widget> _buildFooter(
+    TextStyle mutedSmall,
+    BankStrings strings,
+    String? locale,
+  ) {
+    final versionPrefix = _resolve(
+      widget.versionPrefix,
+      BankAppGateScreen._kVersionPrefix,
+      strings.labelVersion,
+    );
+    final lastUpdatedPrefix = _resolve(
+      widget.lastUpdatedPrefix,
+      BankAppGateScreen._kLastUpdatedPrefix,
+      strings.labelLastUpdated,
+    );
+    final lastUpdatedAt = widget.lastUpdatedAt;
+    final lastUpdatedTime = lastUpdatedAt == null
+        ? ''
+        : BankDateFormatter.formatTime(lastUpdatedAt, locale: locale);
     return <Widget>[
       if (widget.appVersion != null)
         Text(
-          '${widget.versionPrefix} ${widget.appVersion}',
+          '$versionPrefix ${widget.appVersion}',
           style: mutedSmall,
           textAlign: TextAlign.center,
         ),
@@ -1283,8 +1369,7 @@ class _BankAppGateScreenState extends State<BankAppGateScreen> {
         if (widget.appVersion != null)
           const SizedBox(height: BankTokens.space1),
         Text(
-          '${widget.lastUpdatedPrefix} '
-          '${BankDateFormatter.formatTime(widget.lastUpdatedAt!)}',
+          '$lastUpdatedPrefix $lastUpdatedTime',
           style: mutedSmall,
           textAlign: TextAlign.center,
         ),

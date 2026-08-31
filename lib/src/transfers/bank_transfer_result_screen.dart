@@ -351,6 +351,12 @@ class _SuccessContent extends StatelessWidget {
                 ),
                 SelectableText(
                   referenceNumber!,
+                  // Selectable, so the reference must stay byte-clean:
+                  // a directional isolate here would be selected and
+                  // pasted invisibly into whatever the customer quotes it
+                  // in. Pinning the paragraph fixes the group order of an
+                  // all-numeric reference without touching the string.
+                  textDirection: TextDirection.ltr,
                   style: BankTokens.bodySmall.copyWith(
                     color: bankTheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,

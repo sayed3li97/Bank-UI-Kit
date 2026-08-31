@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qr/qr.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_bidi.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_surface_depth.dart';
 import '../models/money.dart';
@@ -535,7 +536,10 @@ class BankMyQrCard extends StatelessWidget {
             if (accountMasked != null) ...[
               const SizedBox(height: 2),
               Text(
-                accountMasked!,
+                // Shown under the payee name for verification before the
+                // customer pays; centre-aligned, so pinning the paragraph
+                // to LTR would move it while the isolate does not.
+                BankBidi.isolate(accountMasked!),
                 style: BankTokens.bodySmall
                     .copyWith(color: theme.onSurfaceVariant)
                     .merge(subtitleStyle),

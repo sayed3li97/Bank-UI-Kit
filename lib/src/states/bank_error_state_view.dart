@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/button_text_style.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 /// Error state with a specific reason.
 ///
@@ -82,7 +83,7 @@ class BankErrorStateView extends StatelessWidget {
     required this.title,
     required this.message,
     super.key,
-    this.retryLabel = 'Retry',
+    this.retryLabel = _kRetryLabel,
     this.supportLabel,
     this.onRetry,
     this.onContactSupport,
@@ -95,9 +96,18 @@ class BankErrorStateView extends StatelessWidget {
     this.semanticLabel,
   });
 
+  static const String _kRetryLabel = 'Retry';
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
+
+    // The label arrives as a non-nullable String defaulted to the shipped
+    // English; `override` keeps a host's wording and otherwise falls back to
+    // the ambient language.
+    final retryLabel = BankStrings.override(this.retryLabel, _kRetryLabel) ??
+        strings.actionRetry;
 
     // Brightness of the painted surface picks the AA-safe danger variant.
     final surfaceBrightness =
@@ -176,7 +186,7 @@ class BankErrorStateView extends StatelessWidget {
               const SizedBox(height: BankTokens.space2),
               Semantics(
                 button: true,
-                label: supportLabel ?? 'Contact support',
+                label: supportLabel ?? strings.actionContactSupport,
                 child: TextButton(
                   onPressed: onContactSupport,
                   style: TextButton.styleFrom(
@@ -187,7 +197,7 @@ class BankErrorStateView extends StatelessWidget {
                     ),
                     textStyle: bankButtonTextStyle(context),
                   ),
-                  child: Text(supportLabel ?? 'Contact support'),
+                  child: Text(supportLabel ?? strings.actionContactSupport),
                 ),
               ),
             ],

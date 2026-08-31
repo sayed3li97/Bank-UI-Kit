@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   bank_ui_kit:
     path: ../
   decimal: ^3.0.0

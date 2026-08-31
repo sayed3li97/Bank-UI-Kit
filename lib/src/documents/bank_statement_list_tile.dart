@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/money_formatter.dart';
 import '../theme/bank_theme_data.dart';
@@ -260,8 +261,10 @@ class BankStatementListTile extends StatelessWidget {
     // Statement periods and issue dates arrive as date-only values, which
     // sit at midnight; printing their time claims a precision the document
     // does not have ("30 June 2026, 00:00").
-    final subtitle =
-        '${BankDateFormatter.formatLongOrDate(document.periodOrDate)}'
+    final subtitle = '${BankDateFormatter.formatLongOrDate(
+      document.periodOrDate,
+      locale: context.bankLocale,
+    )}'
         '$sizeSuffix';
 
     return Semantics(

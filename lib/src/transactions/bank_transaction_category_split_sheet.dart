@@ -9,6 +9,7 @@ import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 /// Split a single transaction's amount across multiple spending categories.
 class BankTransactionCategorySplitSheet extends StatefulWidget {
@@ -101,8 +102,8 @@ class BankTransactionCategorySplitSheet extends StatefulWidget {
     this.expandIcon,
     this.title = 'Split by category',
     this.totalLabel = 'Total: ',
-    this.addCategoryLabel = 'Add category',
-    this.addCategorySemanticLabel = 'Add category',
+    this.addCategoryLabel = _kAddCategoryLabel,
+    this.addCategorySemanticLabel = _kAddCategoryLabel,
     this.allocatedLabel = 'Allocated',
     this.addMoreHint = 'Add at least one more category to split',
     this.removeTooltip = 'Remove',
@@ -110,6 +111,8 @@ class BankTransactionCategorySplitSheet extends StatefulWidget {
     this.categorySemanticLabel = 'Category',
     this.categoryLabelBuilder,
   });
+
+  static const String _kAddCategoryLabel = 'Add category';
 
   /// Convenience helper to push the sheet.
   static Future<void> show(
@@ -218,36 +221,32 @@ class _BankTransactionCategorySplitSheetState
     widget.onConfirm(splits);
   }
 
-  String _categoryLabel(TransactionCategory cat) => switch (cat) {
-        TransactionCategory.groceries => 'Groceries',
-        TransactionCategory.dining => 'Dining',
-        TransactionCategory.transport => 'Transport',
-        TransactionCategory.entertainment => 'Entertainment',
-        TransactionCategory.utilities => 'Utilities',
-        TransactionCategory.health => 'Health',
-        TransactionCategory.shopping => 'Shopping',
-        TransactionCategory.travel => 'Travel',
-        TransactionCategory.education => 'Education',
-        TransactionCategory.subscription => 'Subscription',
-        TransactionCategory.transfer => 'Transfer',
-        TransactionCategory.income => 'Income',
-        TransactionCategory.investment => 'Investment',
-        TransactionCategory.creditPayment => 'Credit Payment',
-        TransactionCategory.other => 'Other',
-      };
-
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
-    final s = scope.strings;
+    final strings = BankStrings.of(context);
 
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom +
         MediaQuery.of(context).padding.bottom;
     final maxHeight =
         MediaQuery.of(context).size.height * (widget.maxHeightFraction ?? 0.88);
     final accent = widget.accentColor ?? bankTheme.primary;
-    final categoryLabel = widget.categoryLabelBuilder ?? _categoryLabel;
+    final categoryLabel = widget.categoryLabelBuilder ?? strings.categoryLabel;
+    // Both arrive as non-nullable Strings defaulted to the shipped English;
+    // `override` keeps a host's wording and otherwise falls back to the
+    // ambient language. The spoken label tracks the visible one, so a
+    // screen reader never reads English off an Arabic button.
+    final addCategoryLabel = BankStrings.override(
+          widget.addCategoryLabel,
+          BankTransactionCategorySplitSheet._kAddCategoryLabel,
+        ) ??
+        strings.categoryAdd;
+    final addCategorySemanticLabel = BankStrings.override(
+          widget.addCategorySemanticLabel,
+          BankTransactionCategorySplitSheet._kAddCategoryLabel,
+        ) ??
+        strings.categoryAdd;
 
     final formattedTotal = BankMoneyFormatter.format(
       amount: _totalAmount,
@@ -300,7 +299,7 @@ class _BankTransactionCategorySplitSheetState
                     icon: Icon(widget.closeIcon ?? Icons.close),
                     color: bankTheme.onSurfaceVariant,
                     onPressed: () => Navigator.of(context).pop(),
-                    tooltip: s.cancel,
+                    tooltip: strings.actionCancel,
                   ),
                 ],
               ),
@@ -345,7 +344,7 @@ class _BankTransactionCategorySplitSheetState
                       ),
                       child: Semantics(
                         button: true,
-                        label: widget.addCategorySemanticLabel,
+                        label: addCategorySemanticLabel,
                         child: OutlinedButton.icon(
                           onPressed: _addEntry,
                           icon: Icon(
@@ -354,7 +353,7 @@ class _BankTransactionCategorySplitSheetState
                             size: 18,
                           ),
                           label: Text(
-                            widget.addCategoryLabel,
+                            addCategoryLabel,
                             style: BankTokens.labelMedium.copyWith(
                               color: accent,
                             ),
@@ -459,7 +458,7 @@ class _BankTransactionCategorySplitSheetState
               ),
               child: Semantics(
                 button: true,
-                label: s.confirm,
+                label: strings.actionConfirm,
                 enabled: _isValid,
                 child: FilledButton(
                   onPressed: _isValid ? _confirm : null,
@@ -476,7 +475,7 @@ class _BankTransactionCategorySplitSheetState
                     ),
                   ),
                   child: Text(
-                    s.confirm,
+                    strings.actionConfirm,
                     style: BankTokens.labelLarge.copyWith(
                       color: bankTheme.onPrimary,
                     ),

@@ -4,6 +4,7 @@ import '../accounts/bank_balance_text.dart';
 import '../common/bank_emblem.dart';
 import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
+import '../l10n/bank_strings.dart';
 import '../models/money.dart';
 import '../models/transaction.dart';
 import '../payments/bank_standing_order_tile.dart';
@@ -65,14 +66,13 @@ class BankRecurringMerchantTile extends StatelessWidget {
     this.onTap,
     this.onCancelHelp,
     this.onBlock,
-    this.nextPrefix = 'next',
-    this.priceRiseLabel = 'Price rise',
-    this.cancelHelpLabel = 'How to cancel',
-    this.blockLabel = 'Block future payments',
-    this.blockConfirmTitle = 'Block this merchant?',
-    this.blockConfirmBody =
-        'Future charges from this merchant will be declined.',
-    this.cancelLabel = 'Cancel',
+    this.nextPrefix = _kNextPrefix,
+    this.priceRiseLabel = _kPriceRiseLabel,
+    this.cancelHelpLabel = _kCancelHelpLabel,
+    this.blockLabel = _kBlockLabel,
+    this.blockConfirmTitle = _kBlockConfirmTitle,
+    this.blockConfirmBody = _kBlockConfirmBody,
+    this.cancelLabel = _kCancelLabel,
     this.padding,
     this.height,
     this.leading,
@@ -84,6 +84,15 @@ class BankRecurringMerchantTile extends StatelessWidget {
     this.blockIcon,
     this.semanticLabel,
   });
+
+  static const String _kNextPrefix = 'next';
+  static const String _kPriceRiseLabel = 'Price rise';
+  static const String _kCancelHelpLabel = 'How to cancel';
+  static const String _kBlockLabel = 'Block future payments';
+  static const String _kBlockConfirmTitle = 'Block this merchant?';
+  static const String _kCancelLabel = 'Cancel';
+  static const String _kBlockConfirmBody =
+      'Future charges from this merchant will be declined.';
 
   final BankRecurringMerchant merchant;
 
@@ -141,6 +150,24 @@ class BankRecurringMerchantTile extends StatelessWidget {
 
   Future<void> _showActions(BuildContext context) async {
     final theme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
+    // Each label arrives as a non-nullable String defaulted to the shipped
+    // English; `override` keeps a host's wording and otherwise falls back to
+    // the ambient language. The whole sheet resolves together so the menu
+    // and the dialog it opens are never half-translated.
+    final cancelHelpLabel =
+        BankStrings.override(this.cancelHelpLabel, _kCancelHelpLabel) ??
+            strings.merchantHowToCancel;
+    final blockLabel = BankStrings.override(this.blockLabel, _kBlockLabel) ??
+        strings.merchantBlockAction;
+    final blockConfirmTitle =
+        BankStrings.override(this.blockConfirmTitle, _kBlockConfirmTitle) ??
+            strings.merchantBlockTitle;
+    final blockConfirmBody =
+        BankStrings.override(this.blockConfirmBody, _kBlockConfirmBody) ??
+            strings.merchantBlockNotice;
+    final cancelLabel = BankStrings.override(this.cancelLabel, _kCancelLabel) ??
+        strings.actionCancel;
     await BankSheet.show<void>(
       context,
       // A short, fixed action menu: keep Material's height clamp.
@@ -221,8 +248,18 @@ class BankRecurringMerchantTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final strings = BankStrings.of(context);
 
-    final cadenceLine = '${merchant.cadence.label} · $nextPrefix '
+    // BankRecurringPattern.label is documented English, kept for hosts that
+    // read it; what the row renders comes from the catalogue instead, so
+    // this cadence reads the same as the standing-order row's.
+    final nextPrefix = BankStrings.override(this.nextPrefix, _kNextPrefix) ??
+        strings.merchantNextPrefix;
+    final priceRiseLabel =
+        BankStrings.override(this.priceRiseLabel, _kPriceRiseLabel) ??
+            strings.merchantPriceRise;
+    final cadenceLine = '${strings.frequencyLabel(merchant.cadence)} '
+        '· $nextPrefix '
         '${BankDateFormatter.formatShort(merchant.nextExpectedDate)}';
     final hasActions = onCancelHelp != null || onBlock != null;
 

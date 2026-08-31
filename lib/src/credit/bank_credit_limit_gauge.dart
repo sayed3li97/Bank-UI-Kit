@@ -7,6 +7,7 @@ import '../../src/models/money.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 /// 270° arc gauge showing used credit vs total credit limit.
 class BankCreditLimitGauge extends StatelessWidget {
@@ -67,15 +68,19 @@ class BankCreditLimitGauge extends StatelessWidget {
     this.strokeWidth,
     this.accentColor,
     this.trackColor,
-    this.availableLabel = 'available',
-    this.usedLabel = 'Used',
-    this.limitLabel = 'Limit',
+    this.availableLabel = _kAvailableLabel,
+    this.usedLabel = _kUsedLabel,
+    this.limitLabel = _kLimitLabel,
     this.semanticLabel,
     this.amountStyle,
     this.subtitleStyle,
     this.legendLabelStyle,
     this.legendValueStyle,
   });
+
+  static const String _kAvailableLabel = 'available';
+  static const String _kUsedLabel = 'Used';
+  static const String _kLimitLabel = 'Limit';
 
   double get _fraction {
     final limit = creditLimit.amount.toDouble();
@@ -113,6 +118,21 @@ class BankCreditLimitGauge extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final strings = BankStrings.of(context);
+
+    // Each caption arrives as a non-nullable String defaulted to the shipped
+    // English, so `override` tells a host's wording from the default and the
+    // gauge speaks the device's language without the parameter changing type.
+    // All three resolve together: a legend whose "available" is translated
+    // while "Used" and "Limit" are not is a half-translated surface, which
+    // reads as a bug in the bank rather than as a missing translation.
+    final availableLabel =
+        BankStrings.override(this.availableLabel, _kAvailableLabel) ??
+            strings.labelAvailableLower;
+    final usedLabel =
+        BankStrings.override(this.usedLabel, _kUsedLabel) ?? strings.labelUsed;
+    final limitLabel = BankStrings.override(this.limitLabel, _kLimitLabel) ??
+        strings.labelLimit;
 
     final usedStr = BankMoneyFormatter.format(
       amount: usedAmount.amount,
@@ -146,8 +166,12 @@ class BankCreditLimitGauge extends StatelessWidget {
 
     return Semantics(
       label: semanticLabel ??
-          '${label ?? 'Credit limit'}: $usedStr used of $limitStr, '
-              '$availableStr available',
+          strings.a11yCreditLimit(
+            label ?? strings.creditLimit,
+            usedStr,
+            limitStr,
+            availableStr,
+          ),
       child: Column(
         children: [
           SizedBox(

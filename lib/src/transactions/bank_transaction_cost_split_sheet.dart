@@ -8,6 +8,7 @@ import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 // ---------------------------------------------------------------------------
 // Participant model
@@ -190,7 +191,7 @@ class _BankTransactionCostSplitSheetState
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
-    final s = scope.strings;
+    final strings = BankStrings.of(context);
 
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom +
         MediaQuery.of(context).padding.bottom;
@@ -243,7 +244,7 @@ class _BankTransactionCostSplitSheetState
                     icon: Icon(widget.closeIcon ?? Icons.close),
                     color: bankTheme.onSurfaceVariant,
                     onPressed: () => Navigator.of(context).pop(),
-                    tooltip: s.cancel,
+                    tooltip: strings.actionCancel,
                   ),
                 ],
               ),
@@ -281,10 +282,10 @@ class _BankTransactionCostSplitSheetState
                   Expanded(
                     child: Semantics(
                       button: true,
-                      label: s.splitEqually,
+                      label: strings.splitEqually,
                       selected: _equalSplit,
                       child: _ToggleButton(
-                        label: s.splitEqually,
+                        label: strings.splitEqually,
                         active: _equalSplit,
                         bankTheme: bankTheme,
                         activeColor: accent,
@@ -298,10 +299,10 @@ class _BankTransactionCostSplitSheetState
                   Expanded(
                     child: Semantics(
                       button: true,
-                      label: s.custom,
+                      label: strings.actionCustom,
                       selected: !_equalSplit,
                       child: _ToggleButton(
-                        label: s.custom,
+                        label: strings.actionCustom,
                         active: !_equalSplit,
                         bankTheme: bankTheme,
                         activeColor: accent,
@@ -394,7 +395,7 @@ class _BankTransactionCostSplitSheetState
               ),
               child: Semantics(
                 button: true,
-                label: s.confirm,
+                label: strings.actionConfirm,
                 enabled: _isValid,
                 child: FilledButton(
                   onPressed: _isValid ? _confirm : null,
@@ -411,7 +412,7 @@ class _BankTransactionCostSplitSheetState
                     ),
                   ),
                   child: Text(
-                    s.confirm,
+                    strings.actionConfirm,
                     style: BankTokens.labelLarge.copyWith(
                       color: bankTheme.onPrimary,
                     ),

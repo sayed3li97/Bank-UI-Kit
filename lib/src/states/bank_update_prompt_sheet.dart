@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
+import '../l10n/bank_strings.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/button_text_style.dart';
 import '../theme/tokens.dart';
@@ -267,7 +269,23 @@ class BankUpdatePromptSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
     final disableAnimations = MediaQuery.of(context).disableAnimations;
+
+    // Each of these arrives as a non-nullable String whose default is the
+    // shipped English. `BankStrings.override` separates "the host chose this
+    // wording" from "the host left the default alone", so the sheet speaks
+    // the device's language without any parameter changing type.
+    final title =
+        BankStrings.override(this.title, _defaultTitle) ?? strings.updateTitle;
+    final body =
+        BankStrings.override(this.body, _defaultBody) ?? strings.updateBody;
+    final updateLabel =
+        BankStrings.override(this.updateLabel, _defaultUpdateLabel) ??
+            strings.updateNow;
+    final notNowLabel =
+        BankStrings.override(this.notNowLabel, _defaultNotNowLabel) ??
+            strings.updateNotNow;
 
     final accent = accentColor ?? theme.primary;
     final resolvedPadding = padding ??
@@ -283,7 +301,7 @@ class BankUpdatePromptSheet extends StatelessWidget {
     final resolvedBodyStyle = BankTokens.bodyMedium
         .copyWith(color: theme.onSurfaceVariant)
         .merge(bodyStyle);
-    final versionLine = _versionLine();
+    final versionLine = _versionLine(strings);
     final resolvedHighlights = highlights;
 
     Widget content = Padding(
@@ -308,7 +326,12 @@ class BankUpdatePromptSheet extends StatelessWidget {
           ],
           if (unsupportedAfter != null) ...[
             const SizedBox(height: BankTokens.space4),
-            _buildUnsupportedStrip(theme, unsupportedAfter!),
+            _buildUnsupportedStrip(
+              theme,
+              unsupportedAfter!,
+              strings,
+              context.bankLocale,
+            ),
           ],
           const SizedBox(height: BankTokens.space6),
           Semantics(
@@ -458,11 +481,20 @@ class BankUpdatePromptSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildUnsupportedStrip(BankThemeData theme, DateTime date) {
-    final text = unsupportedAfterTemplate.replaceAll(
-      '{date}',
-      BankDateFormatter.formatFull(date),
+  Widget _buildUnsupportedStrip(
+    BankThemeData theme,
+    DateTime date,
+    BankStrings strings,
+    String? locale,
+  ) {
+    final formatted = BankDateFormatter.formatFull(date, locale: locale);
+    final override = BankStrings.override(
+      unsupportedAfterTemplate,
+      _defaultUnsupportedAfterTemplate,
     );
+    final text = override != null
+        ? override.replaceAll('{date}', formatted)
+        : strings.updateSunset(formatted);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: BankTokens.warning.withValues(alpha: 0.12),
@@ -490,14 +522,24 @@ class BankUpdatePromptSheet extends StatelessWidget {
     );
   }
 
-  String? _versionLine() {
+  String? _versionLine(BankStrings strings) {
     final available = availableVersion;
     final installed = installedVersion;
+    final availableOverride = BankStrings.override(
+      availableVersionTemplate,
+      _defaultAvailableVersionTemplate,
+    );
+    final installedOverride = BankStrings.override(
+      installedVersionTemplate,
+      _defaultInstalledVersionTemplate,
+    );
     final segments = <String>[
       if (available != null)
-        availableVersionTemplate.replaceAll('{version}', available),
+        availableOverride?.replaceAll('{version}', available) ??
+            strings.updateVersion(available),
       if (installed != null)
-        installedVersionTemplate.replaceAll('{version}', installed),
+        installedOverride?.replaceAll('{version}', installed) ??
+            strings.updateCurrentVersion(installed),
     ];
     if (segments.isEmpty) return null;
     return segments.join(', ');

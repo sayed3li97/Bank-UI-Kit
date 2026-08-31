@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../common/bank_bidi.dart';
 import '../common/bank_emblem.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
+import '../l10n/bank_strings.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
@@ -77,6 +79,17 @@ typedef BankScaApproveCallback = Future<bool> Function(
 /// );
 /// ```
 class BankScaApprovalSheet extends StatefulWidget {
+  // The shipped English for each copy parameter, kept as a constant so
+  // `BankStrings.override` can tell a host's wording from the default.
+  static const String _kTitle = 'Confirm payment';
+  static const String _kRejectLabel = 'Reject payment';
+  static const String _kUsePinLabel = 'Use PIN instead';
+  static const String _kUseBiometricLabel = 'Use biometrics instead';
+  static const String _kPushWaitingLabel =
+      'Approve this payment in your authenticator';
+  static const String _kExpiresPrefix = 'Expires in';
+  static const String _kAmountSemanticPrefix = 'Amount';
+
   const BankScaApprovalSheet({
     required this.amount,
     required this.payeeName,
@@ -88,12 +101,12 @@ class BankScaApprovalSheet extends StatefulWidget {
     this.expiresAt,
     this.methods = const {BankScaMethod.biometric, BankScaMethod.pin},
     this.pinLength = 4,
-    this.title = 'Confirm payment',
-    this.rejectLabel = 'Reject payment',
-    this.usePinLabel = 'Use PIN instead',
-    this.useBiometricLabel = 'Use biometrics instead',
-    this.pushWaitingLabel = 'Approve this payment in your authenticator',
-    this.expiresPrefix = 'Expires in',
+    this.title = _kTitle,
+    this.rejectLabel = _kRejectLabel,
+    this.usePinLabel = _kUsePinLabel,
+    this.useBiometricLabel = _kUseBiometricLabel,
+    this.pushWaitingLabel = _kPushWaitingLabel,
+    this.expiresPrefix = _kExpiresPrefix,
     this.expiryWarningThreshold = const Duration(minutes: 1),
     this.padding,
     this.amountStyle,
@@ -103,7 +116,7 @@ class BankScaApprovalSheet extends StatefulWidget {
     this.successColor,
     this.accentColor,
     this.rejectColor,
-    this.amountSemanticPrefix = 'Amount',
+    this.amountSemanticPrefix = _kAmountSemanticPrefix,
   });
 
   /// The exact amount being authorized. Never privacy-masked here.
@@ -208,12 +221,12 @@ class BankScaApprovalSheet extends StatefulWidget {
       BankScaMethod.pin,
     },
     int pinLength = 4,
-    String title = 'Confirm payment',
-    String rejectLabel = 'Reject payment',
-    String usePinLabel = 'Use PIN instead',
-    String useBiometricLabel = 'Use biometrics instead',
-    String pushWaitingLabel = 'Approve this payment in your authenticator',
-    String expiresPrefix = 'Expires in',
+    String title = _kTitle,
+    String rejectLabel = _kRejectLabel,
+    String usePinLabel = _kUsePinLabel,
+    String useBiometricLabel = _kUseBiometricLabel,
+    String pushWaitingLabel = _kPushWaitingLabel,
+    String expiresPrefix = _kExpiresPrefix,
     Duration expiryWarningThreshold = const Duration(minutes: 1),
     EdgeInsetsGeometry? padding,
     TextStyle? amountStyle,
@@ -223,7 +236,7 @@ class BankScaApprovalSheet extends StatefulWidget {
     Color? successColor,
     Color? accentColor,
     Color? rejectColor,
-    String amountSemanticPrefix = 'Amount',
+    String amountSemanticPrefix = _kAmountSemanticPrefix,
     Color? backgroundColor,
     BorderRadius? sheetRadius,
     bool? showHandle,
@@ -395,11 +408,30 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
       _remaining > Duration.zero &&
       _remaining <= widget.expiryWarningThreshold;
 
+  /// Resolves a copy parameter whose default is the shipped English.
+  ///
+  /// The parameter is non-nullable, so nullability cannot say whether the
+  /// host chose this wording; comparing against the constant can, and does
+  /// so without changing the sheet's signature.
+  String _resolve(String value, String shipped, String translated) =>
+      BankStrings.override(value, shipped) ?? translated;
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final strings = BankStrings.of(context);
     final accent = widget.accentColor ?? theme.primary;
+    final expiresPrefix = _resolve(
+      widget.expiresPrefix,
+      BankScaApprovalSheet._kExpiresPrefix,
+      strings.scaExpiresIn,
+    );
+    final amountPrefix = _resolve(
+      widget.amountSemanticPrefix,
+      BankScaApprovalSheet._kAmountSemanticPrefix,
+      strings.labelAmount,
+    );
 
     // Dynamic linking: the approved amount is always visible, never masked.
     final formattedAmount = BankMoneyFormatter.format(
@@ -421,19 +453,23 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             _Header(
-              title: widget.title,
+              title: _resolve(
+                widget.title,
+                BankScaApprovalSheet._kTitle,
+                strings.scaConfirmPayment,
+              ),
               theme: theme,
               accent: accent,
               expiryChip: widget.expiresAt == null
                   ? null
-                  : '${widget.expiresPrefix} ${_formatRemaining()}',
+                  : '$expiresPrefix ${_formatRemaining()}',
               expiringSoon: _expiringSoon,
               titleStyle: widget.titleStyle,
               icon: widget.headerIcon,
             ),
             const SizedBox(height: BankTokens.space4),
             Semantics(
-              label: '${widget.amountSemanticPrefix}: $formattedAmount',
+              label: '$amountPrefix: $formattedAmount',
               excludeSemantics: true,
               child: Text(
                 formattedAmount,
@@ -467,7 +503,7 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
                 ),
               )
             else
-              _methodWidget(theme, accent),
+              _methodWidget(theme, accent, strings),
             if (!_succeeded) ...[
               const SizedBox(height: BankTokens.space3),
               if (_alternate != null && !_busy)
@@ -480,8 +516,16 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
                   }),
                   child: Text(
                     _alternate == BankScaMethod.pin
-                        ? widget.usePinLabel
-                        : widget.useBiometricLabel,
+                        ? _resolve(
+                            widget.usePinLabel,
+                            BankScaApprovalSheet._kUsePinLabel,
+                            strings.scaUsePinInstead,
+                          )
+                        : _resolve(
+                            widget.useBiometricLabel,
+                            BankScaApprovalSheet._kUseBiometricLabel,
+                            strings.scaUseBiometricsInstead,
+                          ),
                     style: BankTokens.labelLarge.copyWith(color: accent),
                   ),
                 ),
@@ -493,7 +537,11 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
                         Navigator.of(context).pop(false);
                       },
                 child: Text(
-                  widget.rejectLabel,
+                  _resolve(
+                    widget.rejectLabel,
+                    BankScaApprovalSheet._kRejectLabel,
+                    strings.scaRejectPayment,
+                  ),
                   style: BankTokens.labelLarge.copyWith(
                     color: widget.rejectColor ?? theme.negativeBalance,
                   ),
@@ -506,7 +554,11 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
     );
   }
 
-  Widget _methodWidget(BankThemeData theme, Color accent) {
+  Widget _methodWidget(
+    BankThemeData theme,
+    Color accent,
+    BankStrings strings,
+  ) {
     switch (_method) {
       case BankScaMethod.biometric:
         return BankBiometricPromptButton(
@@ -558,7 +610,11 @@ class _BankScaApprovalSheetState extends State<BankScaApprovalSheet> {
               ),
               const SizedBox(height: BankTokens.space4),
               Text(
-                widget.pushWaitingLabel,
+                _resolve(
+                  widget.pushWaitingLabel,
+                  BankScaApprovalSheet._kPushWaitingLabel,
+                  strings.scaAuthenticatorPrompt,
+                ),
                 style: BankTokens.bodyMedium
                     .copyWith(color: theme.onSurfaceVariant),
                 textAlign: TextAlign.center,
@@ -678,7 +734,13 @@ class _PayeeRow extends StatelessWidget {
               // payment reference.
               if (accountMasked != null)
                 Text(
-                  accountMasked!,
+                  // The one string on this sheet the customer is asked to
+                  // check character by character before approving, so its
+                  // groups keep their order in an Arabic paragraph. The
+                  // payment reference below is left alone: it is as often
+                  // free-form remittance text as it is a token, and an
+                  // isolate around prose changes how that prose lays out.
+                  BankBidi.isolate(accountMasked!),
                   style: theme.numeralSmall.copyWith(color: theme.onSurface),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

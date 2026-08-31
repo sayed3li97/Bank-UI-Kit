@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/numeral_style.dart';
 import '../theme/tokens.dart';
+import 'bank_bidi.dart';
 import 'bank_country_flag.dart';
 import 'bank_country_picker.dart';
 import 'bank_text_field.dart';
@@ -19,8 +19,13 @@ import 'bank_text_field.dart';
 /// `inputFormatters` upstream: this widget deliberately avoids a
 /// libphonenumber dependency.
 ///
-/// Digits display through the ambient [NumeralStyle] while the emitted
-/// value is always ASCII.
+/// Digits stay Western in the field and in the dial code, whatever the
+/// ambient [NumeralStyle] is, and the emitted value is always ASCII. A
+/// phone number is a machine identifier: its groups have to survive an
+/// RTL paragraph, and Arabic-Indic digits (bidi class AN) reverse group
+/// order in *any* paragraph direction — see [BankBidi]. The field's
+/// paragraph is pinned left-to-right rather than isolated, because its
+/// buffer is what the user selects and copies.
 ///
 /// ```dart
 /// BankPhoneInputField(
@@ -143,7 +148,6 @@ class _BankPhoneInputFieldState extends State<BankPhoneInputField> {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final numeralStyle = BankUiScope.of(context).numeralStyle;
 
     return BankTextField(
       controller: _controller,
@@ -154,13 +158,20 @@ class _BankPhoneInputFieldState extends State<BankPhoneInputField> {
       errorText: widget.errorText,
       enabled: widget.enabled,
       keyboardType: TextInputType.phone,
-      inputFormatters: [_PhoneGroupingFormatter(numeralStyle)],
+      // `555 123 4567` is three numbers separated by neutrals: in an RTL
+      // paragraph rule N1 resolves those gaps to R and rule L2 reverses
+      // the groups, so the customer proof-reads their own number with the
+      // blocks in the wrong order. An editable buffer cannot carry an
+      // isolate (it would be selected, copied and pasted invisibly), so
+      // the paragraph is pinned instead — the same treatment
+      // [BankMaskedInputField] gives an IBAN or a PAN.
+      textDirection: TextDirection.ltr,
+      inputFormatters: const [_PhoneGroupingFormatter()],
       onChanged: (_) => _emit(),
       prefixIcon: _CountryAffordance(
         country: _country,
         enabled: widget.enabled,
         theme: theme,
-        numeralStyle: numeralStyle,
         onTap: _pickCountry,
         dialCodeStyle: widget.dialCodeStyle,
         dropdownIcon: widget.dropdownIcon,
@@ -174,7 +185,6 @@ class _CountryAffordance extends StatelessWidget {
     required this.country,
     required this.enabled,
     required this.theme,
-    required this.numeralStyle,
     required this.onTap,
     this.dialCodeStyle,
     this.dropdownIcon,
@@ -183,7 +193,6 @@ class _CountryAffordance extends StatelessWidget {
   final BankCountry country;
   final bool enabled;
   final BankThemeData theme;
-  final NumeralStyle numeralStyle;
   final VoidCallback onTap;
 
   /// Merged over the computed dial-code style.
@@ -218,7 +227,13 @@ class _CountryAffordance extends StatelessWidget {
               ),
               const SizedBox(width: BankTokens.space1),
               Text(
-                numeralStyle.convert(country.dialCode),
+                // `+966` in an RTL row renders as `966+` unisolated: the
+                // leading `+` is a neutral between the paragraph and a
+                // number, and rule N1 hands it to the number's side. The
+                // affordance sits inside a field whose direction is the
+                // ambient one, so the isolate — not a pinned paragraph —
+                // is what scopes the fix to the dial code.
+                BankBidi.isolate(country.dialCode),
                 style: BankTokens.bodyLarge
                     .copyWith(
                       color: enabled ? theme.onSurface : theme.onSurfaceVariant,
@@ -239,12 +254,15 @@ class _CountryAffordance extends StatelessWidget {
 }
 
 /// Strips separators, normalizes Arabic-Indic digits to ASCII, caps at
-/// 15 digits (the E.164 maximum), groups 3-3-4-style for display, and
-/// re-renders through the ambient [NumeralStyle].
+/// 15 digits (the E.164 maximum) and groups 3-3-4-style for display.
+///
+/// The grouped display stays in Western digits on purpose: this is the
+/// same string the user proof-reads against an SMS and copies into
+/// another form, and Arabic-Indic digits (class AN) would reverse its
+/// groups in every paragraph direction. Arabic-Indic input is still
+/// accepted — [normalizeDigits] folds it to ASCII.
 class _PhoneGroupingFormatter extends TextInputFormatter {
-  _PhoneGroupingFormatter(this.numeralStyle);
-
-  final NumeralStyle numeralStyle;
+  const _PhoneGroupingFormatter();
 
   static const _easternZero = 0x0660;
   static const _extendedZero = 0x06F0;
@@ -283,7 +301,7 @@ class _PhoneGroupingFormatter extends TextInputFormatter {
     TextEditingValue newValue,
   ) {
     final digits = normalizeDigits(newValue.text);
-    final display = numeralStyle.convert(groupAscii(digits));
+    final display = groupAscii(digits);
     return TextEditingValue(
       text: display,
       selection: TextSelection.collapsed(offset: display.length),

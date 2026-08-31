@@ -125,9 +125,12 @@ class BankBalanceText extends StatelessWidget {
       compact: compact,
     );
 
-    final displayText = hidden ? data.strings.balanceHidden : formattedBalance;
+    final strings = BankStrings.of(context);
+    final displayText = hidden ? strings.balanceHidden : formattedBalance;
     final resolvedSemanticLabel = semanticLabel ??
-        (hidden ? 'Balance hidden' : 'Balance: $formattedBalance');
+        (hidden
+            ? strings.balanceHiddenSpoken
+            : strings.a11yBalanceIs(formattedBalance));
 
     final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     final animate = animateChanges && !hidden && !reduceMotion;

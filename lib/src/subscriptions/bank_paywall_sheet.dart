@@ -6,6 +6,7 @@ import '../../src/common/money_formatter.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 import 'bank_plan_comparison_table.dart';
 
 /// Upsell bottom sheet shown when a free-tier user attempts to access a
@@ -94,15 +95,21 @@ class BankPaywallSheet extends StatelessWidget {
     this.headerIcon,
     this.titleStyle,
     this.descriptionStyle,
-    this.headlineTemplate = 'Upgrade to access {feature}',
-    this.dismissLabel = 'Maybe later',
-    this.upgradeLabel = 'Upgrade',
-    this.currentPlanLabel = 'Current plan',
-    this.perMonthLabel = '/mo',
+    this.headlineTemplate = _kHeadlineTemplate,
+    this.dismissLabel = _kDismissLabel,
+    this.upgradeLabel = _kUpgradeLabel,
+    this.currentPlanLabel = _kCurrentPlanLabel,
+    this.perMonthLabel = _kPerMonthLabel,
     this.header,
     this.footer,
     this.semanticLabel,
   });
+
+  static const String _kHeadlineTemplate = 'Upgrade to access {feature}';
+  static const String _kDismissLabel = 'Maybe later';
+  static const String _kUpgradeLabel = 'Upgrade';
+  static const String _kCurrentPlanLabel = 'Current plan';
+  static const String _kPerMonthLabel = '/mo';
 
   // ---------------------------------------------------------------------------
   // Convenience factory
@@ -124,11 +131,11 @@ class BankPaywallSheet extends StatelessWidget {
     IconData? headerIcon,
     TextStyle? titleStyle,
     TextStyle? descriptionStyle,
-    String headlineTemplate = 'Upgrade to access {feature}',
-    String dismissLabel = 'Maybe later',
-    String upgradeLabel = 'Upgrade',
-    String currentPlanLabel = 'Current plan',
-    String perMonthLabel = '/mo',
+    String headlineTemplate = _kHeadlineTemplate,
+    String dismissLabel = _kDismissLabel,
+    String upgradeLabel = _kUpgradeLabel,
+    String currentPlanLabel = _kCurrentPlanLabel,
+    String perMonthLabel = _kPerMonthLabel,
     Widget? header,
     Widget? footer,
     String? semanticLabel,
@@ -172,6 +179,7 @@ class BankPaywallSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final strings = BankStrings.of(context);
     final accent = accentColor ?? bankTheme.primary;
     final resolvedPadding = padding ??
         const EdgeInsets.fromLTRB(
@@ -180,7 +188,24 @@ class BankPaywallSheet extends StatelessWidget {
           BankTokens.space4,
           BankTokens.space4,
         );
-    final headline = headlineTemplate.replaceAll('{feature}', featureName);
+    // Each of these arrives as a non-nullable String defaulted to the shipped
+    // English, through this constructor or through `show`. `override` keeps a
+    // host's wording and otherwise falls back to the ambient language.
+    final headline = BankStrings.override(headlineTemplate, _kHeadlineTemplate)
+            ?.replaceAll('{feature}', featureName) ??
+        strings.paywallUpgradeTo(featureName);
+    final dismissLabel =
+        BankStrings.override(this.dismissLabel, _kDismissLabel) ??
+            strings.paywallMaybeLater;
+    final upgradeLabel =
+        BankStrings.override(this.upgradeLabel, _kUpgradeLabel) ??
+            strings.paywallUpgrade;
+    final currentPlanLabel =
+        BankStrings.override(this.currentPlanLabel, _kCurrentPlanLabel) ??
+            strings.paywallCurrentPlan;
+    final perMonthLabel =
+        BankStrings.override(this.perMonthLabel, _kPerMonthLabel) ??
+            strings.perMonthShort;
 
     return Semantics(
       label: semanticLabel ?? 'Upgrade required to access $featureName',
@@ -296,7 +321,7 @@ class BankPaywallSheet extends StatelessWidget {
                 Center(
                   child: Semantics(
                     button: true,
-                    label: 'Dismiss upgrade prompt',
+                    label: strings.paywallDismiss,
                     child: TextButton(
                       onPressed: onDismiss ?? () => Navigator.of(context).pop(),
                       style: TextButton.styleFrom(

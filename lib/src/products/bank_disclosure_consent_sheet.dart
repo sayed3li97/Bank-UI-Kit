@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../common/bank_control_theme.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_sheet.dart';
+import '../l10n/bank_strings.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -153,9 +154,9 @@ class BankDisclosureConsentSheet extends StatefulWidget {
     required this.onChanged,
     required this.onAgree,
     super.key,
-    this.title = 'Review and agree',
+    this.title = _kTitle,
     this.subtitle,
-    this.continueLabel = 'Agree and continue',
+    this.continueLabel = _kContinueLabel,
     this.requiredBadgeLabel = 'Required',
     this.footerText,
     this.header,
@@ -179,6 +180,9 @@ class BankDisclosureConsentSheet extends StatefulWidget {
     this.animationDuration,
     this.animationCurve,
   });
+
+  static const String _kTitle = 'Review and agree';
+  static const String _kContinueLabel = 'Agree and continue';
 
   /// Disclosure panels rendered as the accordion, in order.
   final List<BankDisclosure> disclosures;
@@ -293,9 +297,9 @@ class BankDisclosureConsentSheet extends StatefulWidget {
     required List<BankConsentItem> consents,
     required ValueChanged<Set<String>> onChanged,
     required VoidCallback onAgree,
-    String title = 'Review and agree',
+    String title = _kTitle,
     String? subtitle,
-    String continueLabel = 'Agree and continue',
+    String continueLabel = _kContinueLabel,
     Widget? header,
     Widget? footer,
     String? footerText,
@@ -388,6 +392,7 @@ class _BankDisclosureConsentSheetState
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final maxHeight = MediaQuery.sizeOf(context).height * 0.9;
     final accent = widget.accentColor ?? theme.primary;
@@ -396,12 +401,25 @@ class _BankDisclosureConsentSheetState
     final curve = widget.animationCurve ?? BankTokens.curveStandard;
     final contentPadding = widget.padding ??
         const EdgeInsets.symmetric(horizontal: BankTokens.space4);
+    // Both arrive as non-nullable Strings defaulted to the shipped English,
+    // through this constructor or through `show`. `override` keeps a host's
+    // wording and otherwise falls back to the ambient language.
+    final title = BankStrings.override(
+          widget.title,
+          BankDisclosureConsentSheet._kTitle,
+        ) ??
+        strings.disclosureReviewAndAgree;
+    final continueLabel = BankStrings.override(
+          widget.continueLabel,
+          BankDisclosureConsentSheet._kContinueLabel,
+        ) ??
+        strings.disclosureAgreeAndContinue;
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
       child: Semantics(
         container: true,
-        label: widget.semanticLabel ?? widget.title,
+        label: widget.semanticLabel ?? title,
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: maxHeight),
           child: DecoratedBox(
@@ -416,7 +434,7 @@ class _BankDisclosureConsentSheetState
               children: [
                 if (widget.showHandle) _sheetHandleBar,
                 _Heading(
-                  title: widget.title,
+                  title: title,
                   subtitle: widget.subtitle,
                   titleStyle: widget.titleStyle,
                   subtitleStyle: widget.subtitleStyle,
@@ -474,7 +492,7 @@ class _BankDisclosureConsentSheetState
                   ),
                 ),
                 _ContinueBar(
-                  label: widget.continueLabel,
+                  label: continueLabel,
                   enabled: _canContinue,
                   onAgree: widget.onAgree,
                   padding: contentPadding,
