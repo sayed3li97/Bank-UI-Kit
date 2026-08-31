@@ -25,13 +25,22 @@ enum BankConnectivityStatus {
 ///
 /// Driven by [BankConnectivityStatus], it distinguishes the user's own
 /// connection being down ([BankConnectivityStatus.deviceOffline], neutral
-/// [BankThemeData.surfaceVariant] background), a bank-side problem
-/// ([BankConnectivityStatus.serviceDegraded], [BankTokens.warning] tint and
-/// a 3 px warning start border), and a transient success state
+/// tint), a bank-side problem ([BankConnectivityStatus.serviceDegraded],
+/// warning tint), and a transient success state
 /// ([BankConnectivityStatus.reconnected], positive tint) that fades out
 /// after [reconnectedDisplayDuration] and then calls [onDismissed].
 /// The offline and degraded variants never auto-dismiss and expose no close
 /// button, because the condition, not the user, ends them.
+///
+/// Colours follow the same rule as the kit's toast banner: a neutral
+/// [BankThemeData.surface] card washed with the status colour at
+/// [BankTokens.alphaSoft] and wrapped in a [BankTokens.hairlineWidth]
+/// hairline, never a full-saturation slab — the status is carried by the
+/// leading glyph, which switches to its dark-surface variant so it stays AA
+/// on either ground. Every line of the text stack shares one start edge; the
+/// staleness and retry adornments trail their text rather than indenting it,
+/// and the leading glyph is optically centred on the first title line at any
+/// text scale.
 ///
 /// Optional extras:
 /// - [lastSyncedAt] renders a staleness line using
@@ -152,14 +161,15 @@ class BankConnectivityBanner extends StatefulWidget {
   /// [BankThemeData.cardRadius].
   final BorderRadius? radius;
 
-  /// Overrides the per-status background colour.
+  /// Overrides the ground. Defaults to [BankThemeData.surface] washed with the
+  /// status accent at [BankTokens.alphaSoft].
   final Color? backgroundColor;
 
   /// Overrides the text colour (title and body).
   final Color? foregroundColor;
 
-  /// Overrides the per-status accent used by the icon, the degraded start
-  /// border, and the retry progress indicator.
+  /// Overrides the per-status accent used by the leading glyph, the surface
+  /// tint, and the retry progress indicator.
   final Color? accentColor;
 
   /// Overrides the per-status leading glyph.
@@ -370,19 +380,26 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
         BankConnectivityStatus.reconnected => BankIcons.success,
       };
 
-  Color _defaultAccent(BankThemeData theme) => switch (widget.status) {
+  /// Warning ink that stays AA on a surface of brightness [b].
+  Color _warning(Brightness b) =>
+      b == Brightness.dark ? BankTokens.warningDark : BankTokens.warning;
+
+  Color _defaultAccent(BankThemeData theme, Brightness surfaceBrightness) =>
+      switch (widget.status) {
         BankConnectivityStatus.deviceOffline => theme.onSurfaceVariant,
-        BankConnectivityStatus.serviceDegraded => BankTokens.warning,
+        BankConnectivityStatus.serviceDegraded => _warning(surfaceBrightness),
         BankConnectivityStatus.reconnected => theme.positiveBalance,
       };
 
+  /// The neutral card ground washed with the status colour — the same
+  /// treatment the toast banner uses, so a degraded state never arrives as a
+  /// saturated slab across the top of the screen. Blended rather than
+  /// translucent so the banner stays opaque over whatever it covers.
   Color _defaultBackground(BankThemeData theme, Color accent) =>
-      switch (widget.status) {
-        BankConnectivityStatus.deviceOffline => theme.surfaceVariant,
-        BankConnectivityStatus.serviceDegraded =>
-          accent.withValues(alpha: 0.12),
-        BankConnectivityStatus.reconnected => accent.withValues(alpha: 0.12),
-      };
+      Color.alphaBlend(
+        accent.withValues(alpha: BankTokens.alphaSoft),
+        theme.surface,
+      );
 
   String _countdownText(int seconds) =>
       widget.formatRetryCountdown?.call(seconds) ?? 'Retrying in ${seconds}s';
@@ -391,7 +408,7 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
   // Sub-builders
   // ---------------------------------------------------------------------
 
-  Widget? _buildStalenessLine(Color bodyColor) {
+  Widget? _buildStalenessLine(Color bodyColor, Brightness surfaceBrightness) {
     final lastSynced = widget.lastSyncedAt;
     if (lastSynced == null) return null;
 
@@ -401,25 +418,20 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
         ? BankDateFormatter.formatLong(lastSynced)
         : BankDateFormatter.formatRelative(lastSynced, now: now);
     final text = '${widget.lastSyncedPrefix}$formatted';
-    final color = isStale ? BankTokens.warning : bodyColor;
+    final color = isStale ? _warning(surfaceBrightness) : bodyColor;
     final icon = isStale ? BankIcons.warning : BankIcons.schedule;
+    final style = BankTokens.bodySmall.copyWith(color: color);
 
     // Relative-time text updates every tick; expose a single coarse label
     // that only changes when the formatted string itself changes.
     return Semantics(
       label: text,
       child: ExcludeSemantics(
-        child: Row(
-          children: [
-            Icon(icon, size: 14, color: color),
-            const SizedBox(width: BankTokens.space1),
-            Flexible(
-              child: Text(
-                text,
-                style: BankTokens.bodySmall.copyWith(color: color),
-              ),
-            ),
-          ],
+        child: _AdornedLine(
+          style: style,
+          adornmentExtent: BankTokens.iconXSmall,
+          adornment: Icon(icon, size: BankTokens.iconXSmall, color: color),
+          child: Text(text, style: style),
         ),
       ),
     );
@@ -436,24 +448,16 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
     if (next == null) return null;
 
     if (_autoRetrying) {
-      return Row(
-        children: [
-          SizedBox(
-            width: 14,
-            height: 14,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: accent,
-            ),
-          ),
-          const SizedBox(width: BankTokens.space2),
-          Flexible(
-            child: Text(
-              widget.retryingLabel,
-              style: BankTokens.bodySmall.copyWith(color: bodyColor),
-            ),
-          ),
-        ],
+      final style = BankTokens.bodySmall.copyWith(color: bodyColor);
+      return _AdornedLine(
+        style: style,
+        adornmentExtent: BankTokens.iconXSmall,
+        adornment: SizedBox(
+          width: BankTokens.iconXSmall,
+          height: BankTokens.iconXSmall,
+          child: CircularProgressIndicator(strokeWidth: 2, color: accent),
+        ),
+        child: Text(widget.retryingLabel, style: style),
       );
     }
 
@@ -529,7 +533,12 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
 
-    final accent = widget.accentColor ?? _defaultAccent(theme);
+    // The painted ground decides which semantic variant reads AA and how
+    // strong the hairline has to be.
+    final surfaceBrightness =
+        ThemeData.estimateBrightnessForColor(theme.surface);
+    final accent =
+        widget.accentColor ?? _defaultAccent(theme, surfaceBrightness);
     final background =
         widget.backgroundColor ?? _defaultBackground(theme, accent);
     final resolvedRadius = widget.radius ?? theme.cardRadius;
@@ -547,7 +556,7 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
         .copyWith(color: bodyColor)
         .merge(widget.messageStyle);
 
-    final stalenessLine = _buildStalenessLine(bodyColor);
+    final stalenessLine = _buildStalenessLine(bodyColor, surfaceBrightness);
     final retryLine = _buildRetryLine(accent, bodyColor);
 
     final showRetry = widget.onRetry != null;
@@ -559,21 +568,27 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
       decoration: BoxDecoration(
         color: background,
         borderRadius: resolvedRadius,
-        border: widget.status == BankConnectivityStatus.serviceDegraded
-            ? BorderDirectional(
-                start: BorderSide(color: accent, width: 3),
-              )
-            : null,
+        border: Border.all(
+          color: BankTokens.hairlineColor(theme.onSurface, surfaceBrightness),
+          // Matches BorderSide's default today; keep the token as the source
+          // of truth for hairline geometry.
+          // ignore: avoid_redundant_argument_values
+          width: BankTokens.hairlineWidth,
+        ),
       ),
       child: Padding(
         padding: resolvedPadding,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              widget.statusIcon ?? _defaultIcon,
-              color: accent,
-              size: 24,
+            _LineAlignedGlyph(
+              style: resolvedTitleStyle,
+              extent: BankTokens.iconMedium,
+              child: Icon(
+                widget.statusIcon ?? _defaultIcon,
+                color: accent,
+                size: BankTokens.iconMedium,
+              ),
             ),
             const SizedBox(width: BankTokens.space3),
             Expanded(
@@ -632,6 +647,89 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
           child: banner,
         ),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Layout helpers
+// ---------------------------------------------------------------------------
+
+/// Drops [child] onto the optical centre of the first line of text set in
+/// [style].
+///
+/// A glyph that merely top-aligns against a text column sits high: the line
+/// box is taller than the glyph, and the gap widens with the reader's text
+/// scale — which the glyph does not follow. Measuring the line from the style
+/// and the ambient text scale keeps the two centred on each other at every
+/// scale.
+class _LineAlignedGlyph extends StatelessWidget {
+  const _LineAlignedGlyph({
+    required this.style,
+    required this.extent,
+    required this.child,
+  });
+
+  /// Style of the line the glyph sits on.
+  final TextStyle style;
+
+  /// Height of [child], which is assumed square and non-scaling.
+  final double extent;
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final lineExtent =
+        MediaQuery.textScalerOf(context).scale(style.fontSize ?? 14) *
+            (style.height ?? 1);
+    final offset = (lineExtent - extent) / 2;
+    return Padding(
+      padding: EdgeInsetsDirectional.only(top: offset > 0 ? offset : 0),
+      child: child,
+    );
+  }
+}
+
+/// One supporting line of the banner's text stack: the copy on the stack's
+/// shared start edge with its adornment trailing.
+///
+/// The adornment trails rather than leads because a leading glyph would indent
+/// this line's text past the title and message above it — the banner's text
+/// block has exactly one start edge, and a status glyph is not a reason to
+/// break it.
+class _AdornedLine extends StatelessWidget {
+  const _AdornedLine({
+    required this.style,
+    required this.adornment,
+    required this.adornmentExtent,
+    required this.child,
+  });
+
+  /// Style the copy is set in; drives the adornment's vertical alignment.
+  final TextStyle style;
+
+  final Widget adornment;
+
+  /// Height of [adornment].
+  final double adornmentExtent;
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(child: child),
+        const SizedBox(width: BankTokens.space2),
+        _LineAlignedGlyph(
+          style: style,
+          extent: adornmentExtent,
+          child: adornment,
+        ),
+      ],
     );
   }
 }

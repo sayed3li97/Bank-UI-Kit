@@ -39,6 +39,7 @@
   "fontFamily": "packages/bank_ui_kit/SpaceGrotesk",
   "useGlow": true,
   "cardPattern": "mesh",
+  "gradientReach": "hero",
   "accentGradient": {
     "type": "linear",
     "begin": [

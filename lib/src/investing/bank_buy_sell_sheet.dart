@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../src/common/bank_segmented_control.dart';
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/asset_quote.dart';
 import '../../src/models/money.dart';
@@ -55,7 +57,7 @@ class BankBuySellSheet extends StatefulWidget {
   /// 'Amount (CURRENCY)'.
   final String? amountLabel;
 
-  /// Limit price field label. Defaults to 'Limit Price'.
+  /// Limit price field label. Defaults to 'Limit price'.
   final String limitPriceLabel;
 
   /// Estimated units template; `{units}` and `{symbol}` are
@@ -66,10 +68,10 @@ class BankBuySellSheet extends StatefulWidget {
   /// to 'Available: {amount}'.
   final String availableTemplate;
 
-  /// Submit caption when buying. Defaults to 'Review Buy'.
+  /// Submit caption when buying. Defaults to 'Review buy'.
   final String reviewBuyLabel;
 
-  /// Submit caption when selling. Defaults to 'Review Sell'.
+  /// Submit caption when selling. Defaults to 'Review sell'.
   final String reviewSellLabel;
 
   const BankBuySellSheet({
@@ -88,11 +90,11 @@ class BankBuySellSheet extends StatefulWidget {
     this.marketLabel = 'Market',
     this.limitLabel = 'Limit',
     this.amountLabel,
-    this.limitPriceLabel = 'Limit Price',
+    this.limitPriceLabel = 'Limit price',
     this.estimateTemplate = '≈ {units} {symbol}',
     this.availableTemplate = 'Available: {amount}',
-    this.reviewBuyLabel = 'Review Buy',
-    this.reviewSellLabel = 'Review Sell',
+    this.reviewBuyLabel = 'Review buy',
+    this.reviewSellLabel = 'Review sell',
   });
 
   static Future<void> show(
@@ -102,10 +104,11 @@ class BankBuySellSheet extends StatefulWidget {
     Future<void> Function(BankOrderSide, BankOrderType, double, double?)?
         onSubmit,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankBuySellSheet(
           quote: quote,
           initialSide: initialSide,
@@ -170,30 +173,28 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: BankTokens.space4),
-                  decoration: BoxDecoration(
-                    color: widget.handleColor ?? theme.outline,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
+              // The body paints its own surface and is presented with
+              // `showHandle: false`, so the handle — and the semantics that
+              // announce it — belong here. The enclosing padding already
+              // supplies the gap above, so the margin only reserves the one
+              // below.
+              BankSheetHandle(
+                color: widget.handleColor ?? theme.outline,
+                margin: const EdgeInsets.only(bottom: BankTokens.space4),
               ),
-              SegmentedButton<BankOrderSide>(
+              BankSegmentedControl<BankOrderSide>(
                 segments: [
-                  ButtonSegment(
+                  BankSegmentItem<BankOrderSide>(
                     value: BankOrderSide.buy,
-                    label: Text(widget.buyLabel),
+                    label: widget.buyLabel,
                   ),
-                  ButtonSegment(
+                  BankSegmentItem<BankOrderSide>(
                     value: BankOrderSide.sell,
-                    label: Text(widget.sellLabel),
+                    label: widget.sellLabel,
                   ),
                 ],
-                selected: {_side},
-                onSelectionChanged: (s) => setState(() => _side = s.first),
+                selected: _side,
+                onChanged: (value) => setState(() => _side = value),
               ),
               const SizedBox(height: BankTokens.space4),
               Row(
@@ -233,20 +234,19 @@ class _BankBuySellSheetState extends State<BankBuySellSheet> {
               ),
               const SizedBox(height: BankTokens.space4),
               if (widget.allowLimitOrder) ...[
-                SegmentedButton<BankOrderType>(
+                BankSegmentedControl<BankOrderType>(
                   segments: [
-                    ButtonSegment(
+                    BankSegmentItem<BankOrderType>(
                       value: BankOrderType.market,
-                      label: Text(widget.marketLabel),
+                      label: widget.marketLabel,
                     ),
-                    ButtonSegment(
+                    BankSegmentItem<BankOrderType>(
                       value: BankOrderType.limit,
-                      label: Text(widget.limitLabel),
+                      label: widget.limitLabel,
                     ),
                   ],
-                  selected: {_orderType},
-                  onSelectionChanged: (s) =>
-                      setState(() => _orderType = s.first),
+                  selected: _orderType,
+                  onChanged: (value) => setState(() => _orderType = value),
                 ),
                 const SizedBox(height: BankTokens.space3),
               ],

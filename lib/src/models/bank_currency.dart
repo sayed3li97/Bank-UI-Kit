@@ -11,6 +11,16 @@
 ///   fraction.
 /// - Arabic-script symbols are wrapped in Unicode directional isolates
 ///   when composed, so they render correctly inside LTR layouts.
+///
+/// ## Spacing is a rendering decision, not decoration
+///
+/// [spaceBetweenSymbolAndAmount] is set from each market's CLDR pattern,
+/// but it also carries a typographic job: symbols that fall outside the
+/// Latin brand font (`₫`, `฿`, `د.ب`) are painted from a bundled Noto
+/// fallback, and a fallback glyph butted straight against brand-font
+/// digits shows the seam between the two faces. Where the market's own
+/// convention already puts a space there, the gap does both jobs at
+/// once.
 class BankCurrency {
   const BankCurrency({
     required this.code,
@@ -43,10 +53,23 @@ class BankCurrency {
 
   /// Symbol is written in an RTL script and needs directional
   /// isolation when embedded in LTR text.
+  ///
+  /// Arabic markers are Arabic-Letter (AL) characters under the Unicode
+  /// bidirectional algorithm, and AL retypes every European digit that
+  /// follows it as an *Arabic* number \u2014 which changes how the grouping
+  /// and decimal separators resolve. Isolating the marker keeps the
+  /// digits European wherever the money lands.
   final bool symbolIsRtlScript;
 
   /// The symbol as it should be embedded in composed strings:
   /// RTL-script symbols are wrapped in FSI/PDI isolates.
+  ///
+  /// Use this for a symbol standing on its own — an input prefix, an axis
+  /// label. `BankMoneyFormatter` composes its own marker unit instead,
+  /// because a symbol next to an amount also carries the gap that separates
+  /// it from the digits, and that gap has to sit *outside* the isolate: a
+  /// no-break space enclosed with an Arabic marker resolves right-to-left
+  /// along with it and reorders to the marker's far side.
   String get embeddableSymbol =>
       symbolIsRtlScript ? '\u2068$symbol\u2069' : symbol;
 }
@@ -320,12 +343,18 @@ abstract final class BankCurrencies {
       name: 'Sri Lankan Rupee',
       spaceBetweenSymbolAndAmount: true,
     ),
+    // The dong sign is the kit's clearest fallback-font case: '₫' comes
+    // from the bundled Noto currency subset, so glued to brand-font
+    // digits ('1.000₫') it reads as two typefaces colliding. Vietnam's
+    // own convention (CLDR vi: `#,##0 ¤`) puts a space there, which is
+    // also what separates the two faces.
     'VND': BankCurrency(
       code: 'VND',
       symbol: '₫',
       name: 'Vietnamese Dong',
       decimalDigits: 0,
       symbolBeforeAmount: false,
+      spaceBetweenSymbolAndAmount: true,
     ),
     'IDR': BankCurrency(
       code: 'IDR',

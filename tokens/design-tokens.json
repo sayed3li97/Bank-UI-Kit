@@ -26,6 +26,46 @@
     "networkMastercardBlend": { "$type": "color", "$value": "#FF5F00", "$description": "Mastercard brand mark: the overlapping-lens blend colour." },
     "networkAmexBlue": { "$type": "color", "$value": "#2E77BC", "$description": "American Express brand blue." }
   },
+  "neutral": {
+    "$description": "The achromatic ramp every surface, ink, and border role is cut from. Ordered by luminance: 0 is white, 950 is near-black. Brands override the roles below, never the ramp.",
+    "0": { "$type": "color", "$value": "#FFFFFF" },
+    "50": { "$type": "color", "$value": "#F5F5F5" },
+    "100": { "$type": "color", "$value": "#F2F2F7" },
+    "200": { "$type": "color", "$value": "#E5E5EA" },
+    "300": { "$type": "color", "$value": "#D1D1D6" },
+    "400": { "$type": "color", "$value": "#AEAEB2" },
+    "500": { "$type": "color", "$value": "#8E8E93" },
+    "600": { "$type": "color", "$value": "#636366" },
+    "700": { "$type": "color", "$value": "#48484A" },
+    "800": { "$type": "color", "$value": "#3A3A3C" },
+    "900": { "$type": "color", "$value": "#2C2C2E" },
+    "950": { "$type": "color", "$value": "#1C1C1E" }
+  },
+  "surface": {
+    "$description": "Three surface tiers, light and dark. Light surfaces gain a tier from shadow, so base and raised share one white; dark surfaces gain it from lightness, because a shadow is invisible on near-black.",
+    "sunken": { "$type": "color", "$value": "#F2F2F7", "$description": "The app canvas everything else sits on (neutral-100)." },
+    "sunkenDark": { "$type": "color", "$value": "#1C1C1E", "$description": "Dark-mode app canvas (neutral-950)." },
+    "base": { "$type": "color", "$value": "#FFFFFF", "$description": "Default card / tile surface, one tier above the canvas (neutral-0)." },
+    "baseDark": { "$type": "color", "$value": "#2C2C2E", "$description": "Dark-mode card / tile surface (neutral-900)." },
+    "raised": { "$type": "color", "$value": "#FFFFFF", "$description": "Sheets, menus, popovers floating above a card. Identical to base on light: the tier reads through the shadow, not a tint." },
+    "raisedDark": { "$type": "color", "$value": "#3A3A3C", "$description": "Dark-mode floating surface (neutral-800) — lighter than base, because dark surfaces cannot borrow depth from a shadow." }
+  },
+  "ink": {
+    "$description": "On-surface ink tiers. Three levels of emphasis is the whole vocabulary — a fourth grey is how hierarchy turns to mud.",
+    "strong": { "$type": "color", "$value": "#1C1C1E", "$description": "Primary ink: titles, amounts, body copy (neutral-950)." },
+    "strongDark": { "$type": "color", "$value": "#F5F5F5", "$description": "Dark-mode primary ink (neutral-50)." },
+    "muted": { "$type": "color", "$value": "#636366", "$description": "Secondary ink: captions, metadata, supporting copy (neutral-600, AA on surface.base)." },
+    "mutedDark": { "$type": "color", "$value": "#AEAEB2", "$description": "Dark-mode secondary ink (neutral-400, AA on surface.baseDark)." },
+    "faint": { "$type": "color", "$value": "#8E8E93", "$description": "Tertiary ink: placeholders and disabled labels (neutral-500). Below AA for body text by design — never use it for content." },
+    "faintDark": { "$type": "color", "$value": "#8E8E93", "$description": "Dark-mode tertiary ink. The same mid-grey works both ways: it is the one rung equidistant from both canvases." }
+  },
+  "border": {
+    "$description": "Opaque outlines for components, and the translucent hairline used for rules between them.",
+    "outline": { "$type": "color", "$value": "#E5E5EA", "$description": "Component outline: inputs, chips, unselected containers (neutral-200)." },
+    "outlineDark": { "$type": "color", "$value": "#48484A", "$description": "Dark-mode component outline (neutral-700)." },
+    "divider": { "$type": "color", "$value": "#1C1C1E14", "$description": "Rule between rows: primary ink at 8 % alpha. Translucent so it picks up whatever brand surface is behind it." },
+    "dividerDark": { "$type": "color", "$value": "#F5F5F524", "$description": "Dark-mode rule: primary ink at 14 % alpha — low-luminance contrast compresses, so dark needs more alpha for the same perceived separation." }
+  },
   "interaction": {
     "stateLayerHoverOpacity": { "$type": "number", "$value": 0.08, "$description": "Hover state-layer opacity over interactive surfaces (M3-aligned)." },
     "stateLayerPressedOpacity": { "$type": "number", "$value": 0.12, "$description": "Pressed state-layer opacity over interactive surfaces." },
@@ -37,6 +77,16 @@
   },
   "effect": {
     "frozenCardSaturation": { "$type": "number", "$value": 0.35, "$description": "Saturation multiplier for frozen card faces (desaturated, not greyed out)." }
+  },
+  "opacity": {
+    "$description": "The alpha ladder. Every translucent tint and ink in the kit picks a rung here instead of inventing a decimal, so \"a slightly stronger wash\" is a step, not a guess.",
+    "faint": { "$type": "number", "$value": 0.06, "$description": "Barely-there wash: card-face pattern inks, decorative tints." },
+    "subtle": { "$type": "number", "$value": 0.08, "$description": "Hairline-strength wash: dividers on light surfaces, resting brand tints." },
+    "soft": { "$type": "number", "$value": 0.1, "$description": "Resting fill of a tinted container (a brand-coloured chip or badge at rest)." },
+    "muted": { "$type": "number", "$value": 0.12, "$description": "Selected / pressed fill of a tinted container." },
+    "strong": { "$type": "number", "$value": 0.16, "$description": "Emphasised tinted fill — the loudest a translucent brand wash gets before it should become an opaque colour instead." },
+    "scrim": { "$type": "number", "$value": 0.5, "$description": "Half-strength: scrims behind modals, and ink that is deliberately recessive." },
+    "secondaryInk": { "$type": "number", "$value": 0.7, "$description": "Supporting ink on a brand-coloured surface (card-face micro-labels), where a separate grey would fight the fill." }
   },
   "space": {
     "1": { "$type": "dimension", "$value": "4px" },
@@ -57,14 +107,45 @@
     "xLarge": { "$type": "dimension", "$value": "28px" },
     "full": { "$type": "dimension", "$value": "999px", "$description": "Fully-pill / circular shapes (chips, FABs)." }
   },
+  "icon": {
+    "$description": "The icon-size ladder. Six rungs, each paired to a text role. The off-ladder 18 px and 22 px values still scattered through the widget layer collapse onto small/medium and medium/large respectively.",
+    "xSmall": { "$type": "dimension", "$value": "14px", "$description": "Inline with bodySmall / caption: chevrons and status pips inside dense rows." },
+    "small": { "$type": "dimension", "$value": "16px", "$description": "Inline with bodyMedium: leading glyphs in list rows and chips." },
+    "medium": { "$type": "dimension", "$value": "20px", "$description": "The default UI icon: list-tile trailing affordances, button leading icons." },
+    "large": { "$type": "dimension", "$value": "24px", "$description": "App-bar actions and primary controls (Material's own default)." },
+    "xLarge": { "$type": "dimension", "$value": "32px", "$description": "Feature glyphs inside avatars, emblems, and quick-action rings." },
+    "hero": { "$type": "dimension", "$value": "40px", "$description": "Empty-state and success illustrations — the only rung that carries a screen on its own." }
+  },
   "duration": {
     "fast": { "$type": "duration", "$value": "150ms" },
     "base": { "$type": "duration", "$value": "250ms" },
     "slow": { "$type": "duration", "$value": "400ms" },
     "xSlow": { "$type": "duration", "$value": "600ms" }
   },
+  "lineHeight": {
+    "$description": "Line-height multipliers. Every text style names a rung so vertical rhythm is a decision, not whatever metrics the loaded font happens to ship.",
+    "tight": { "$type": "number", "$value": 1.1, "$description": "Hero numerals: a balance figure is one line, so leading is dead space." },
+    "snug": { "$type": "number", "$value": 1.2, "$description": "Headlines and large numerals — display text that rarely wraps." },
+    "normal": { "$type": "number", "$value": 1.3, "$description": "Labels, captions, and small numerals: single-line UI text." },
+    "relaxed": { "$type": "number", "$value": 1.4, "$description": "bodySmall — dense supporting copy." },
+    "loose": { "$type": "number", "$value": 1.5, "$description": "bodyMedium — the default reading measure." },
+    "airy": { "$type": "number", "$value": 1.6, "$description": "bodyLarge — long-form copy (terms, disclosures)." }
+  },
+  "tracking": {
+    "$description": "Letter-spacing for the cases that need it. Positive tracking is reserved for ALL-CAPS runs and grouped digits: on sentence-case text it looks loose, and it breaks cursive joining in Arabic script.",
+    "caps": { "$type": "dimension", "$value": "0.8px", "$description": "The standard ALL-CAPS micro-label (section headers, status pills) at caption / labelSmall size." },
+    "capsWide": { "$type": "dimension", "$value": "1.2px", "$description": "ALL-CAPS micro-labels on a card face, where the fill is large and the label needs to read as engraved." },
+    "numeralGroup": { "$type": "dimension", "$value": "2.4px", "$description": "Grouped digit runs — card numbers, reference and voucher codes — where the space is the grouping." }
+  },
   "size": {
     "minTapTarget": { "$type": "dimension", "$value": "44px", "$description": "Minimum touch/tap target (WCAG 2.5.5 AAA / iOS HIG)." },
     "tileCompactBreakpoint": { "$type": "dimension", "$value": "168px", "$description": "Below this available width, metric tiles switch to their compact layout." }
+  },
+  "elevationTier": {
+    "$description": "The depth ladder, as ranks rather than pixels: which surfaces may sit above which. The shadow each rank resolves to is brightness- and brand-dependent (see BankThemeData.shadowFor), but the ordering is global, so a Figma frame and a Flutter widget agree on what floats over what.",
+    "flat": { "$type": "number", "$value": 0, "$description": "Inset or flush surfaces, separated by a hairline alone." },
+    "card": { "$type": "number", "$value": 1, "$description": "Resting cards and tiles." },
+    "floating": { "$type": "number", "$value": 2, "$description": "Sheets, pickers, popovers — surfaces that overlay resting content." },
+    "hero": { "$type": "number", "$value": 3, "$description": "Payment-card faces and feature banners: the one surface per screen allowed to sit highest." }
   }
 }

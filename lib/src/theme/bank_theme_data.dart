@@ -5,6 +5,57 @@ import 'package:flutter/material.dart';
 import 'card_pattern.dart';
 import 'tokens.dart';
 
+/// How far off the page a surface sits.
+///
+/// The ranks are global (see [BankTokens.elevationTierFlat] and friends) so a
+/// design file and a widget agree on what floats over what; the *shadow* each
+/// rank resolves to is brightness- and brand-dependent, which is what
+/// [BankThemeData.shadowFor] is for.
+enum BankElevationTier {
+  /// Inset or flush surfaces, separated by a hairline alone.
+  flat,
+
+  /// Resting cards and tiles.
+  card,
+
+  /// Sheets, pickers, popovers — surfaces that overlay resting content.
+  floating,
+
+  /// Payment-card faces and feature banners: the one surface per screen
+  /// allowed to sit highest.
+  hero;
+
+  /// The global stacking rank of this tier, from the DTCG token source.
+  int get rank => switch (this) {
+        BankElevationTier.flat => BankTokens.elevationTierFlat,
+        BankElevationTier.card => BankTokens.elevationTierCard,
+        BankElevationTier.floating => BankTokens.elevationTierFloating,
+        BankElevationTier.hero => BankTokens.elevationTierHero,
+      };
+}
+
+/// How prominent a surface is, for the purpose of deciding whether it may
+/// carry [BankThemeData.accentGradient] at full strength.
+///
+/// A signature gradient is a finite resource: painted on every component
+/// family it stops reading as *the* brand moment and starts reading as
+/// wallpaper. Declaring a role at the call site lets the brand — not the
+/// widget — decide how loud that surface is allowed to be. See
+/// [BankThemeData.gradientReach].
+enum BankGradientRole {
+  /// The one signature surface on a screen: a payment-card face, the balance
+  /// hero, an onboarding splash.
+  hero,
+
+  /// Supporting brand surfaces: section headers, promo strips, feature
+  /// banners. Loud, but not the thing the screen is about.
+  accent,
+
+  /// Incidental decoration: icon rings, avatars, progress fills, chips.
+  /// Numerous by nature, which is exactly why they should not shout.
+  incidental,
+}
+
 /// A [ThemeExtension] that carries every Bank UI Kit design decision:
 /// brand colours, semantic colours, shape radii, elevation levels,
 /// numeral typography, and optional glow / gradient decorations.
@@ -116,6 +167,8 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
     this.stateLayerFocusOpacity = BankTokens.stateLayerFocusOpacity,
     this.disabledOpacity = BankTokens.disabledOpacity,
     this.pressScale = BankTokens.pressScale,
+    this.shadowTint,
+    this.gradientReach = BankGradientRole.incidental,
   });
 
   // ---------------------------------------------------------------------------
@@ -197,6 +250,8 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
     double stateLayerFocusOpacity = BankTokens.stateLayerFocusOpacity,
     double disabledOpacity = BankTokens.disabledOpacity,
     double pressScale = BankTokens.pressScale,
+    Color? shadowTint,
+    BankGradientRole gradientReach = BankGradientRole.incidental,
   }) {
     final isDark = brightness == Brightness.dark;
 
@@ -217,20 +272,26 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
       primary: primary,
       primaryVariant: primaryVariant ?? derivedPrimaryVariant,
       onPrimary: onPrimary ?? derivedOnPrimary,
+      // Neutral defaults come straight off the token surface / ink / border
+      // roles, so a custom brand inherits the same tier ladder the presets
+      // override rather than a private set of greys.
       surface: surface ??
-          (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFFFFFF)),
+          (isDark ? BankTokens.surfaceBaseDark : BankTokens.surfaceBase),
       surfaceVariant: surfaceVariant ??
-          (isDark ? const Color(0xFF3A3A3C) : const Color(0xFFF2F2F7)),
+          // Light gains its subordinate fill by going *down* a tier (the
+          // canvas); dark gains it by going up, because a shadow cannot
+          // separate two near-black surfaces.
+          (isDark ? BankTokens.surfaceRaisedDark : BankTokens.surfaceSunken),
       onSurface: onSurface ??
-          (isDark ? const Color(0xFFF5F5F5) : const Color(0xFF1C1C1E)),
+          (isDark ? BankTokens.inkStrongDark : BankTokens.inkStrong),
       onSurfaceVariant: onSurfaceVariant ??
-          (isDark ? const Color(0xFFAEAEB2) : const Color(0xFF636366)),
+          (isDark ? BankTokens.inkMutedDark : BankTokens.inkMuted),
       background: background ??
-          (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7)),
+          (isDark ? BankTokens.surfaceSunkenDark : BankTokens.surfaceSunken),
       onBackground: onBackground ??
-          (isDark ? const Color(0xFFF5F5F5) : const Color(0xFF1C1C1E)),
+          (isDark ? BankTokens.inkStrongDark : BankTokens.inkStrong),
       outline: outline ??
-          (isDark ? const Color(0xFF48484A) : const Color(0xFFE5E5EA)),
+          (isDark ? BankTokens.borderOutlineDark : BankTokens.borderOutline),
       // Financial colours are brightness-aware so custom brands stay legible
       // (WCAG AA) in both modes without the caller having to tune them.
       positiveBalance: positiveBalance ??
@@ -269,6 +330,8 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
       stateLayerFocusOpacity: stateLayerFocusOpacity,
       disabledOpacity: disabledOpacity,
       pressScale: pressScale,
+      shadowTint: shadowTint,
+      gradientReach: gradientReach,
     );
   }
 
@@ -302,7 +365,24 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
 
   /// Optional accent gradient used across interactive surfaces.
   /// `null` in Studio and Bloom presets.
+  ///
+  /// How widely it may be painted is [gradientReach]'s decision, not the
+  /// gradient's — resolve it through [gradientFor] rather than reading this
+  /// field directly.
   final Gradient? accentGradient;
+
+  /// The least prominent [BankGradientRole] that still receives
+  /// [accentGradient] at full strength. Roles below it get a low-alpha tint
+  /// derived from the same stops.
+  ///
+  /// Defaults to [BankGradientRole.incidental] — every role paints at full
+  /// strength — which is the historical behaviour and stays correct for a
+  /// brand whose gradient is quiet enough to repeat. Brands with a
+  /// high-contrast signature gradient set this to [BankGradientRole.hero] (as
+  /// Voltage does) so the violet→cyan sweep marks the card face and nothing
+  /// else, and the ten other component families that used to paint it get a
+  /// tint of the same hues instead.
+  final BankGradientRole gradientReach;
 
   /// Dedicated card-face surface gradient for payment-card widgets.
   ///
@@ -338,6 +418,18 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
   final double elevationLow;
   final double elevationMedium;
   final double elevationHigh;
+
+  /// The ink this brand's depth shadows are cast in, or `null` for the kit
+  /// default (a blue-grey on light backgrounds, pure black on dark ones).
+  ///
+  /// Shadow *geometry* is shared across brands so surfaces agree on how far
+  /// off the page they sit; only the hue is brand-specific. A warm palette
+  /// under a cool grey shadow reads as a foreign cast — which is the whole
+  /// reason Bloom sets this.
+  ///
+  /// Presets also feed this into [ColorScheme.shadow] so Material's own
+  /// elevation shadows ([Card], [Material], [AppBar]) pick up the same ink.
+  final Color? shadowTint;
 
   // ---------------------------------------------------------------------------
   // Numeral typography
@@ -402,6 +494,126 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
   static BankThemeData of(BuildContext context) =>
       Theme.of(context).extension<BankThemeData>()!;
 
+  // ---------------------------------------------------------------------------
+  // Depth
+  // ---------------------------------------------------------------------------
+
+  /// The box shadow a surface at [tier] casts under this brand.
+  ///
+  /// [brightness] is the brightness of what the surface sits *on*, not of the
+  /// surface itself: a light-ink shadow vanishes against a near-black canvas,
+  /// so dark canvases get the pure-black occlusion variants. It defaults to
+  /// the brightness of [background].
+  ///
+  /// When [shadowTint] is set the token shadows are re-inked with it, keeping
+  /// their alpha, blur, and offset — so a brand changes the *colour* of its
+  /// light, never the distance.
+  List<BoxShadow> shadowFor(
+    BankElevationTier tier, {
+    Brightness? brightness,
+  }) {
+    final b = brightness ?? ThemeData.estimateBrightnessForColor(background);
+    final base = switch (tier) {
+      BankElevationTier.flat => const <BoxShadow>[],
+      BankElevationTier.card => BankTokens.shadowCardFor(b),
+      BankElevationTier.floating => BankTokens.shadowFloatingFor(b),
+      BankElevationTier.hero => BankTokens.shadowHeroFor(b),
+    };
+    final tint = shadowTint;
+    if (tint == null || base.isEmpty) return base;
+    return BankTokens.tintShadows(base, tint);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Gradient policy
+  // ---------------------------------------------------------------------------
+
+  /// Whether a surface at [role] may paint [accentGradient] at full strength.
+  bool paintsFullGradientAt(BankGradientRole role) =>
+      accentGradient != null && role.index <= gradientReach.index;
+
+  /// The gradient a surface at [role] should paint, or `null` when this brand
+  /// has no accent gradient at all.
+  ///
+  /// At or above [gradientReach] this is [accentGradient] itself. Below it,
+  /// the same stops come back at a low alpha — [BankTokens.alphaStrong] for
+  /// [BankGradientRole.accent], [BankTokens.alphaSoft] for
+  /// [BankGradientRole.incidental] — so the surface still carries the brand's
+  /// hue travel without competing with the hero.
+  ///
+  /// A demoted gradient is translucent, so it composites over whatever is
+  /// behind it and its content must switch inks accordingly — see
+  /// [onGradientFor].
+  Gradient? gradientFor(BankGradientRole role) {
+    final gradient = accentGradient;
+    if (gradient == null) return null;
+    if (paintsFullGradientAt(role)) return gradient;
+    return _fadeGradient(
+      gradient,
+      role == BankGradientRole.incidental
+          ? BankTokens.alphaSoft
+          : BankTokens.alphaStrong,
+    );
+  }
+
+  /// The ink to place on whatever [gradientFor] returned for [role].
+  ///
+  /// A full-strength gradient is an opaque brand fill and takes [onPrimary]; a
+  /// demoted one is a wash over the ambient surface and takes [onSurface].
+  /// Getting this wrong is how a demoted gradient ends up with white-on-white
+  /// labels, so callers should always pair the two.
+  Color onGradientFor(BankGradientRole role) =>
+      paintsFullGradientAt(role) ? onPrimary : onSurface;
+
+  /// Scales every stop of [gradient] to [alpha] of its current opacity,
+  /// preserving geometry.
+  ///
+  /// Flutter's gradients have no shared `copyWith`, hence the switch. A
+  /// gradient subclass outside the three built-ins degrades to a linear sweep
+  /// of the same faded stops rather than silently painting at full strength.
+  static Gradient _fadeGradient(Gradient gradient, double alpha) {
+    final faded = [
+      for (final c in gradient.colors) c.withValues(alpha: c.a * alpha),
+    ];
+    return switch (gradient) {
+      LinearGradient(:final begin, :final end, :final tileMode) =>
+        LinearGradient(
+          begin: begin,
+          end: end,
+          colors: faded,
+          stops: gradient.stops,
+          tileMode: tileMode,
+          transform: gradient.transform,
+        ),
+      RadialGradient(:final center, :final radius, :final tileMode) =>
+        RadialGradient(
+          center: center,
+          radius: radius,
+          colors: faded,
+          stops: gradient.stops,
+          tileMode: tileMode,
+          focal: gradient.focal,
+          focalRadius: gradient.focalRadius,
+          transform: gradient.transform,
+        ),
+      SweepGradient(:final center, :final startAngle, :final endAngle) =>
+        SweepGradient(
+          center: center,
+          startAngle: startAngle,
+          endAngle: endAngle,
+          colors: faded,
+          stops: gradient.stops,
+          tileMode: gradient.tileMode,
+          transform: gradient.transform,
+        ),
+      _ => LinearGradient(
+          colors: faded,
+          stops: gradient.stops,
+          transform: gradient.transform,
+        ),
+    };
+  }
+
   /// Re-applies [displayFontFamily] to the display / large-headline slots of
   /// [textTheme] (displayLarge/Medium/Small and headlineLarge/Medium).
   ///
@@ -457,6 +669,7 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
           if (glowColor != null) 'glowColor': _hex(glowColor!),
           if (cardPatternColor != null)
             'cardPatternColor': _hex(cardPatternColor!),
+          if (shadowTint != null) 'shadowTint': _hex(shadowTint!),
         },
         'radius': {
           'card': cardRadius.topLeft.x,
@@ -481,6 +694,8 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
         'useGlow': useGlow,
         if (cardPattern != BankCardPattern.none)
           'cardPattern': cardPattern.name,
+        if (gradientReach != BankGradientRole.incidental)
+          'gradientReach': gradientReach.name,
         if (accentGradient is LinearGradient)
           'accentGradient': _gradientToJson(accentGradient! as LinearGradient),
         if (cardSurfaceGradient is LinearGradient)
@@ -522,14 +737,14 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
     return BankThemeData(
       primary: c('primary', const Color(0xFF000000)),
       primaryVariant: c('primaryVariant', const Color(0xFF000000)),
-      onPrimary: c('onPrimary', const Color(0xFFFFFFFF)),
-      surface: c('surface', const Color(0xFFFFFFFF)),
-      surfaceVariant: c('surfaceVariant', const Color(0xFFF2F2F7)),
-      onSurface: c('onSurface', const Color(0xFF1C1C1E)),
-      onSurfaceVariant: c('onSurfaceVariant', const Color(0xFF636366)),
-      background: c('background', const Color(0xFFF2F2F7)),
-      onBackground: c('onBackground', const Color(0xFF1C1C1E)),
-      outline: c('outline', const Color(0xFFE5E5EA)),
+      onPrimary: c('onPrimary', BankTokens.neutral0),
+      surface: c('surface', BankTokens.surfaceBase),
+      surfaceVariant: c('surfaceVariant', BankTokens.surfaceSunken),
+      onSurface: c('onSurface', BankTokens.inkStrong),
+      onSurfaceVariant: c('onSurfaceVariant', BankTokens.inkMuted),
+      background: c('background', BankTokens.surfaceSunken),
+      onBackground: c('onBackground', BankTokens.inkStrong),
+      outline: c('outline', BankTokens.borderOutline),
       positiveBalance: c('positiveBalance', BankTokens.positiveBalance),
       negativeBalance: c('negativeBalance', BankTokens.negativeBalance),
       pending: c('pending', BankTokens.pending),
@@ -576,6 +791,13 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
           i('stateLayerFocusOpacity', BankTokens.stateLayerFocusOpacity),
       disabledOpacity: i('disabledOpacity', BankTokens.disabledOpacity),
       pressScale: i('pressScale', BankTokens.pressScale),
+      shadowTint: colors['shadowTint'] is String
+          ? _parseHex(colors['shadowTint'] as String)
+          : null,
+      gradientReach: json['gradientReach'] is String
+          ? BankGradientRole.values.asNameMap()[json['gradientReach']] ??
+              BankGradientRole.incidental
+          : BankGradientRole.incidental,
     );
   }
 
@@ -667,6 +889,8 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
     double? stateLayerFocusOpacity,
     double? disabledOpacity,
     double? pressScale,
+    Color? shadowTint,
+    BankGradientRole? gradientReach,
   }) {
     return BankThemeData(
       primary: primary ?? this.primary,
@@ -710,6 +934,8 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
           stateLayerFocusOpacity ?? this.stateLayerFocusOpacity,
       disabledOpacity: disabledOpacity ?? this.disabledOpacity,
       pressScale: pressScale ?? this.pressScale,
+      shadowTint: shadowTint ?? this.shadowTint,
+      gradientReach: gradientReach ?? this.gradientReach,
     );
   }
 
@@ -770,6 +996,10 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
       )!,
       disabledOpacity: lerpDouble(disabledOpacity, other.disabledOpacity, t)!,
       pressScale: lerpDouble(pressScale, other.pressScale, t)!,
+      shadowTint: Color.lerp(shadowTint, other.shadowTint, t),
+      // A reach is a policy, not a quantity: half a tier is meaningless, so
+      // it snaps at the midpoint like the other enum-valued fields.
+      gradientReach: t < 0.5 ? gradientReach : other.gradientReach,
     );
   }
 
@@ -818,7 +1048,9 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
         other.stateLayerPressedOpacity == stateLayerPressedOpacity &&
         other.stateLayerFocusOpacity == stateLayerFocusOpacity &&
         other.disabledOpacity == disabledOpacity &&
-        other.pressScale == pressScale;
+        other.pressScale == pressScale &&
+        other.shadowTint == shadowTint &&
+        other.gradientReach == gradientReach;
   }
 
   @override
@@ -861,6 +1093,8 @@ class BankThemeData extends ThemeExtension<BankThemeData> {
         stateLayerFocusOpacity,
         disabledOpacity,
         pressScale,
+        shadowTint,
+        gradientReach,
       ]);
 
   @override

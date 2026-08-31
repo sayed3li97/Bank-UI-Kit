@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../src/common/bank_icon_spec.dart';
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
@@ -121,10 +122,12 @@ class BankAccountSwitcher extends StatelessWidget {
     required List<BankAccount> accounts,
     String? selectedAccountId,
   }) =>
-      showModalBottomSheet<BankAccount>(
-        context: context,
+      BankSheet.show<BankAccount>(
+        context,
+        // The switcher paints its own rounded ground and drag handle, so the
+        // branded surface only contributes the scrim, motion, and insets.
         backgroundColor: Colors.transparent,
-        isScrollControlled: true,
+        showHandle: false,
         builder: (_) => BankAccountSwitcher(
           accounts: accounts,
           selectedAccountId: selectedAccountId,
@@ -144,19 +147,12 @@ class BankAccountSwitcher extends StatelessWidget {
     final screenHeight = MediaQuery.sizeOf(context).height;
     final maxSheetHeight = screenHeight * (maxHeightFraction ?? 0.70);
 
-    // The drag-handle bar at the top of the sheet.
-    final Widget handleBar = Center(
-      child: Container(
-        width: 40,
-        height: 4,
-        margin: const EdgeInsets.symmetric(vertical: BankTokens.space3),
-        decoration: BoxDecoration(
-          color: handleColor ?? bankTheme.outline,
-          borderRadius:
-              const BorderRadius.all(Radius.circular(BankTokens.radiusFull)),
-        ),
-      ),
-    );
+    // The drag-handle bar at the top of the sheet. This body paints its own
+    // surface and is presented with `showHandle: false`, so the handle — and
+    // the semantics that announce it — belong here rather than to the
+    // wrapping surface.
+    final Widget handleBar =
+        BankSheetHandle(color: handleColor ?? bankTheme.outline);
 
     return Container(
       constraints: BoxConstraints(maxHeight: maxSheetHeight),

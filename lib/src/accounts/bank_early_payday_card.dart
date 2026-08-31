@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_control_theme.dart';
+import '../common/bank_gradient_surface.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
@@ -88,8 +90,12 @@ class BankEarlyPaydayCard extends StatelessWidget {
   /// date and switch. Defaults to the theme `primary`.
   final Color? accentColor;
 
-  /// Overrides the tint-band gradient. Defaults to the theme
-  /// `accentGradient` when the preset provides one.
+  /// Overrides the tint-band gradient. Defaults to the brand gradient
+  /// resolved at [BankGradientRole.accent] when the preset provides one.
+  ///
+  /// The band is a 4 px strip, so a brand whose [BankThemeData.gradientReach]
+  /// rations [BankGradientRole.accent] gets the flat [accentColor] here
+  /// rather than a wash too faint to read as a stripe.
   final Gradient? gradient;
 
   /// Overrides the leading calendar glyph. Defaults to
@@ -285,8 +291,15 @@ class BankEarlyPaydayCard extends StatelessWidget {
     final theme = BankThemeData.of(context);
     final accent = accentColor ?? theme.primary;
 
-    // Accent tint band running along the start edge of the card.
-    final bandGradient = gradient ?? theme.accentGradient;
+    // Accent tint band running along the start edge of the card. A strip is
+    // a supporting brand surface, so it resolves at BankGradientRole.accent;
+    // rationed down, a 4 px wash would vanish, so the band falls back to the
+    // flat accent instead of painting an unreadable gradient.
+    final bandGradient = BankGradientSurface.resolve(
+      theme,
+      BankGradientRole.accent,
+      override: gradient,
+    ).opaqueGradient;
     final bandDecoration = bandGradient != null
         ? BoxDecoration(gradient: bandGradient)
         : BoxDecoration(color: accent);
@@ -336,10 +349,12 @@ class BankEarlyPaydayCard extends StatelessWidget {
                 height: BankTokens.minTapTarget,
                 child: Semantics(
                   label: title,
-                  child: Switch(
-                    value: enabled,
-                    onChanged: onChanged,
-                    activeThumbColor: accent,
+                  child: SwitchTheme(
+                    data: BankControlTheme.switchTheme(theme, accent: accent),
+                    child: Switch(
+                      value: enabled,
+                      onChanged: onChanged,
+                    ),
                   ),
                 ),
               ),

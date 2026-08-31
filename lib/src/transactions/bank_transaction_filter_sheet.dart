@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../src/common/bank_sheet.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
@@ -102,16 +103,16 @@ class BankTransactionFilterSheet extends StatefulWidget {
   /// Overrides the close button glyph. Defaults to [Icons.close].
   final IconData? closeIcon;
 
-  /// Overrides the sheet title. Defaults to 'Filter Transactions'.
+  /// Overrides the sheet title. Defaults to 'Filter transactions'.
   final String title;
 
   /// Overrides the category section heading. Defaults to 'Category'.
   final String categorySectionLabel;
 
-  /// Overrides the date section heading. Defaults to 'Date Range'.
+  /// Overrides the date section heading. Defaults to 'Date range'.
   final String dateRangeSectionLabel;
 
-  /// Overrides the amount section heading. Defaults to 'Amount Range'.
+  /// Overrides the amount section heading. Defaults to 'Amount range'.
   final String amountRangeSectionLabel;
 
   /// Overrides the empty from-date button text. Defaults to 'From'.
@@ -135,7 +136,7 @@ class BankTransactionFilterSheet extends StatefulWidget {
   /// Overrides the maximum amount field label. Defaults to 'Max'.
   final String maxLabel;
 
-  /// Overrides the clear-all button text. Defaults to 'Clear All'.
+  /// Overrides the clear-all button text. Defaults to 'Clear all'.
   final String clearAllLabel;
 
   /// Overrides the apply button text. Defaults to 'Apply'.
@@ -163,10 +164,10 @@ class BankTransactionFilterSheet extends StatefulWidget {
     this.accentColor,
     this.titleStyle,
     this.closeIcon,
-    this.title = 'Filter Transactions',
+    this.title = 'Filter transactions',
     this.categorySectionLabel = 'Category',
-    this.dateRangeSectionLabel = 'Date Range',
-    this.amountRangeSectionLabel = 'Amount Range',
+    this.dateRangeSectionLabel = 'Date range',
+    this.amountRangeSectionLabel = 'Amount range',
     this.fromLabel = 'From',
     this.toLabel = 'To',
     this.fromDateSemanticLabel = 'From date',
@@ -174,7 +175,7 @@ class BankTransactionFilterSheet extends StatefulWidget {
     this.clearDatesLabel = 'Clear dates',
     this.minLabel = 'Min',
     this.maxLabel = 'Max',
-    this.clearAllLabel = 'Clear All',
+    this.clearAllLabel = 'Clear all',
     this.applyLabel = 'Apply',
     this.applySemanticLabel = 'Apply filters',
     this.categoryLabelBuilder,
@@ -186,10 +187,11 @@ class BankTransactionFilterSheet extends StatefulWidget {
     BuildContext context, {
     BankTransactionFilter? initial,
   }) =>
-      showModalBottomSheet<BankTransactionFilter>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<BankTransactionFilter>(
+        context,
+        // The sheet body paints its own ground and handle.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (ctx) => BankTransactionFilterSheet(
           initial: initial,
           onApply: (f) => Navigator.of(ctx).pop(f),
@@ -349,19 +351,13 @@ class _BankTransactionFilterSheetState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle
-            Padding(
-              padding: const EdgeInsets.only(top: BankTokens.space2),
-              child: Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: widget.handleColor ?? bankTheme.outline,
-                    borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-                  ),
-                ),
-              ),
+            // Handle. The body paints its own surface and is presented with
+            // `showHandle: false`, so the handle — and the semantics that
+            // announce it — belong here. The margin keeps the existing rhythm:
+            // the title padding below already supplies the gap underneath.
+            BankSheetHandle(
+              color: widget.handleColor ?? bankTheme.outline,
+              margin: const EdgeInsets.only(top: BankTokens.space2),
             ),
             // Title
             Padding(

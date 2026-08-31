@@ -18,6 +18,22 @@ import '../common/bank_format_context.dart';
 /// Displays the beneficiary, amount, fee, exchange rate (for international
 /// transfers), estimated arrival time, and an optional [additionalInfo] slot.
 ///
+/// ## Hierarchy
+///
+/// The card carries three tiers, because a review screen has exactly one
+/// question to answer — *am I sending the right money to the right place?*
+///
+/// 1. **The amount** is the hero: a [BankThemeData.numeralLarge] figure under
+///    a caps micro-label, not one more label/value row. Set at the same
+///    optical weight as "Arrives", it forces the customer to read the whole
+///    card to find the number they came to check.
+/// 2. **The destination mask** is a verification affordance, so it is set in
+///    tabular numerals at body size in the full [BankThemeData.onSurface]
+///    ink. A masked account nobody can read verifies nothing; this is the
+///    one caption-sized string on the card that must never be caption-sized.
+/// 3. **Everything else** — fee, rate, arrival — recedes to small muted
+///    labels against body-size values.
+///
 /// ```dart
 /// BankTransferReviewCard(
 ///   amount: Money.fromDouble(500, 'GBP'),
@@ -90,23 +106,34 @@ class BankTransferReviewCard extends StatelessWidget {
   /// (BankTokens.headlineSmall in onSurface).
   final TextStyle? titleStyle;
 
-  /// Merged over the account details style
+  /// Merged over the bank-name line under the account mask
   /// (BankTokens.bodySmall in onSurfaceVariant).
   final TextStyle? subtitleStyle;
 
-  /// Merged over each row label style
-  /// (BankTokens.bodyMedium in onSurfaceVariant).
+  /// Merged over the account-mask line (theme numeralSmall in onSurface).
+  ///
+  /// Separate from [subtitleStyle] because the mask and the bank name are
+  /// no longer the same tier: the mask is the string the customer checks
+  /// the transfer against, the bank name is context.
+  final TextStyle? maskStyle;
+
+  /// Merged over each supporting row's label style
+  /// (BankTokens.bodySmall in onSurfaceVariant).
   final TextStyle? labelStyle;
 
   /// Merged over each plain row value style
   /// (BankTokens.bodyMedium, w500).
   final TextStyle? valueStyle;
 
-  /// Merged over the highlighted money styles of the amount and
-  /// "They receive" rows (theme numeralMedium).
+  /// Merged over the highlighted money styles of the hero amount (theme
+  /// numeralLarge) and the "They receive" row (theme numeralMedium).
   final TextStyle? amountStyle;
 
-  /// Label of the amount row. Defaults to `'Amount'`.
+  /// Label of the hero amount block, rendered as an ALL-CAPS micro-label.
+  /// Defaults to `'Amount'`.
+  ///
+  /// Pass it in sentence case as written in the host's copy deck; the card
+  /// applies the casing, the way it applies the type style.
   final String amountLabel;
 
   /// Label of the fee row. Defaults to `'Fee'`.
@@ -142,8 +169,9 @@ class BankTransferReviewCard extends StatelessWidget {
   /// Defaults to the theme primary.
   final Color? accentColor;
 
-  /// Overrides the color of the free fee value. Defaults to
-  /// BankTokens.positiveBalance.
+  /// Overrides the color of the free fee value. Defaults to the theme's
+  /// [BankThemeData.positiveBalance], which is brightness-corrected per
+  /// preset — the raw token is a light-surface green.
   final Color? freeColor;
 
   /// When non-null, wraps the card in a [Semantics] label. Defaults to no
@@ -169,6 +197,7 @@ class BankTransferReviewCard extends StatelessWidget {
     this.header,
     this.titleStyle,
     this.subtitleStyle,
+    this.maskStyle,
     this.labelStyle,
     this.valueStyle,
     this.amountStyle,
@@ -257,6 +286,16 @@ class BankTransferReviewCard extends StatelessWidget {
           : BankSurfaceDepthTier.card,
     );
 
+    // The kit's hairline, derived from the ambient ink, rather than an
+    // ad-hoc alpha on the outline: it holds the same perceived weight on a
+    // light card and a dark one.
+    final hairline = BankTokens.hairlineColor(
+      bankTheme.onSurface,
+      ThemeData.estimateBrightnessForColor(
+        backgroundColor ?? bankTheme.surface,
+      ),
+    );
+
     final card = Container(
       margin: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -281,26 +320,24 @@ class BankTransferReviewCard extends StatelessWidget {
                   bankTheme: bankTheme,
                   titleStyle: titleStyle,
                   subtitleStyle: subtitleStyle,
+                  maskStyle: maskStyle,
                   verifiedIcon: verifiedIcon ?? Icons.verified_outlined,
                   accentColor: accentColor ?? bankTheme.primary,
                 ),
             const SizedBox(height: BankTokens.space4),
-            Divider(color: bankTheme.outline.withValues(alpha: 0.4), height: 1),
+            Divider(color: hairline, height: BankTokens.hairlineWidth),
             const SizedBox(height: BankTokens.space4),
             // ----------------------------------------------------------------
-            // Amount row
+            // Hero amount — the one figure the customer opened this card for
             // ----------------------------------------------------------------
-            _ReviewRow(
+            _HeroAmount(
               label: amountLabel,
               value: _formatMoney(context, amount, scope),
               bankTheme: bankTheme,
-              valueStyle: bankTheme.numeralMedium.copyWith(
-                color: bankTheme.onSurface,
-              ),
               labelStyle: labelStyle,
               valueOverride: amountStyle,
             ),
-            const SizedBox(height: BankTokens.space3),
+            const SizedBox(height: BankTokens.space4),
             // ----------------------------------------------------------------
             // Fee row
             // ----------------------------------------------------------------
@@ -309,7 +346,7 @@ class BankTransferReviewCard extends StatelessWidget {
               value: _isFree ? freeLabel : _formatMoney(context, fee!, scope),
               bankTheme: bankTheme,
               valueColor: _isFree
-                  ? (freeColor ?? BankTokens.positiveBalance)
+                  ? (freeColor ?? bankTheme.positiveBalance)
                   : bankTheme.onSurface,
               labelStyle: labelStyle,
               valueOverride: valueStyle,
@@ -362,10 +399,7 @@ class BankTransferReviewCard extends StatelessWidget {
             // ----------------------------------------------------------------
             if (additionalInfo != null) ...[
               const SizedBox(height: BankTokens.space4),
-              Divider(
-                color: bankTheme.outline.withValues(alpha: 0.4),
-                height: 1,
-              ),
+              Divider(color: hairline, height: BankTokens.hairlineWidth),
               const SizedBox(height: BankTokens.space4),
               additionalInfo!,
             ],
@@ -390,6 +424,7 @@ class _BeneficiaryHeader extends StatelessWidget {
     required this.bankTheme,
     required this.titleStyle,
     required this.subtitleStyle,
+    required this.maskStyle,
     required this.verifiedIcon,
     required this.accentColor,
   });
@@ -399,6 +434,7 @@ class _BeneficiaryHeader extends StatelessWidget {
   final BankThemeData bankTheme;
   final TextStyle? titleStyle;
   final TextStyle? subtitleStyle;
+  final TextStyle? maskStyle;
   final IconData verifiedIcon;
   final Color accentColor;
 
@@ -449,28 +485,94 @@ class _BeneficiaryHeader extends StatelessWidget {
                     const SizedBox(width: BankTokens.space1),
                     Icon(
                       verifiedIcon,
-                      size: 14,
+                      size: BankTokens.iconXSmall,
                       color: accentColor,
                     ),
                   ],
                 ],
               ),
               const SizedBox(height: BankTokens.space1),
+              // The mask gets its own line and full ink: joined onto the
+              // bank name in caption grey it was the smallest thing on a
+              // card whose whole job is letting the customer verify it.
+              // Tabular numerals keep the digit groups from shifting
+              // between one beneficiary and the next.
               Text(
-                [
-                  beneficiary.maskedAccount,
-                  if (beneficiary.bankName != null) beneficiary.bankName!,
-                ].join(' · '),
-                style: BankTokens.bodySmall
-                    .copyWith(color: bankTheme.onSurfaceVariant)
-                    .merge(subtitleStyle),
+                beneficiary.maskedAccount,
+                style: bankTheme.numeralSmall
+                    .copyWith(color: bankTheme.onSurface)
+                    .merge(maskStyle),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
+              if (beneficiary.bankName != null)
+                Text(
+                  beneficiary.bankName!,
+                  style: BankTokens.bodySmall
+                      .copyWith(color: bankTheme.onSurfaceVariant)
+                      .merge(subtitleStyle),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Hero amount
+// ---------------------------------------------------------------------------
+
+/// The transfer amount, set as the card's single hero figure: a caps
+/// micro-label above a large numeral, left-aligned so the digits start on
+/// the reading edge in both directions rather than hugging a trailing edge
+/// the eye has to hunt for.
+class _HeroAmount extends StatelessWidget {
+  const _HeroAmount({
+    required this.label,
+    required this.value,
+    required this.bankTheme,
+    this.labelStyle,
+    this.valueOverride,
+  });
+
+  final String label;
+  final String value;
+  final BankThemeData bankTheme;
+  final TextStyle? labelStyle;
+  final TextStyle? valueOverride;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      // Announced as the same label/value pair as the rows below it, so
+      // the visual promotion does not change what a screen reader hears.
+      label: '$label: $value',
+      excludeSemantics: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: BankTokens.captionCaps
+                .copyWith(color: bankTheme.onSurfaceVariant)
+                .merge(labelStyle),
+          ),
+          const SizedBox(height: BankTokens.space1),
+          Text(
+            value,
+            style: bankTheme.numeralLarge
+                .copyWith(color: bankTheme.onSurface)
+                .merge(valueOverride),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -512,11 +614,17 @@ class _ReviewRow extends StatelessWidget {
       excludeSemantics: true,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        // Label and value are now different sizes, so aligning their tops
+        // would leave the two strings visibly off the same line. Baseline
+        // alignment keeps the row reading as one line of text.
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
         children: [
+          // Supporting labels sit a step below their values: with both at
+          // body size the fee row read as loudly as the amount.
           Text(
             label,
-            style: BankTokens.bodyMedium
+            style: BankTokens.bodySmall
                 .copyWith(color: bankTheme.onSurfaceVariant)
                 .merge(labelStyle),
           ),

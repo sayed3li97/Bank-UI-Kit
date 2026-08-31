@@ -5,6 +5,7 @@ import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/numeral_style.dart';
 import '../theme/tokens.dart';
+import 'bank_pressable.dart';
 
 /// Granularity of the time period navigated by a [BankPeriodSelector].
 enum BankPeriodUnit {
@@ -20,20 +21,27 @@ enum BankPeriodUnit {
 
 /// Prev/next time-period navigator for statements, insights and budgets.
 ///
-/// Renders a row with a back chevron, a centred period label, and a
-/// forward chevron. Hosts keep the current [period] in their own state and
-/// receive the previous/next period through [onChanged]: the widget itself
-/// is stateless with respect to the selected period (controlled component).
+/// Renders a back chevron, the period label, and a forward chevron as one
+/// content-sized cluster. Hosts keep the current [period] in their own state
+/// and receive the previous/next period through [onChanged]: the widget
+/// itself is stateless with respect to the selected period (controlled
+/// component).
 ///
 /// Typical placement is as the header above a spending breakdown chart or
 /// a budget gauge, so users can page through months, quarters or years.
 ///
 /// Behaviour:
+/// - The row sizes to its content and centres itself in whatever width it
+///   is given. Stretching the label to fill the line pushes the chevrons to
+///   opposite screen edges, which turns one control into two unrelated ones
+///   with ~140 px of dead space between them and the thing they operate on.
 /// - The label is formatted per [unit] (`March 2026` / `Q1 2026` / `2026`)
 ///   and digits follow the ambient [NumeralStyle] from [BankUiScope]
 ///   (Eastern Arabic-Indic digits in Arabic-script locales).
-/// - Chevrons dim to 40% opacity and stop responding at [minPeriod] /
-///   [maxPeriod] bounds (compared at [unit] granularity).
+/// - Each chevron is a [BankTokens.minTapTarget]-square tinted disc — a
+///   target you can see and hit — and dims to the theme's disabled opacity,
+///   stopping at the [minPeriod] / [maxPeriod] bounds (compared at [unit]
+///   granularity).
 /// - Chevrons flip for right-to-left locales, and their semantic labels
 ///   stay direction-agnostic ("Previous month" / "Next month").
 /// - The label crossfades over 150 ms with a short horizontal slide that
@@ -101,9 +109,15 @@ class BankPeriodSelector extends StatefulWidget {
   /// [Icons.chevron_right], mirrored in RTL). Overrides are not mirrored.
   final IconData? nextIcon;
 
-  /// Overrides [BankThemeData.onSurface] as the chevron colour (the
-  /// disabled state keeps its 40 % opacity treatment).
+  /// Overrides [BankThemeData.onSurface] as the chevron glyph colour (the
+  /// disabled state keeps the theme's disabled-opacity treatment).
   final Color? foregroundColor;
+
+  /// Overrides the resting fill of the chevron discs. Defaults to the glyph
+  /// colour at [BankTokens.alphaSubtle], which reads as a target on any
+  /// brand surface in either brightness. Pass [Colors.transparent] for the
+  /// old bare-glyph look.
+  final Color? chevronBackgroundColor;
 
   /// Overrides [BankTokens.durationFast] for the label transition.
   final Duration? animationDuration;
@@ -126,6 +140,7 @@ class BankPeriodSelector extends StatefulWidget {
     this.previousIcon,
     this.nextIcon,
     this.foregroundColor,
+    this.chevronBackgroundColor,
     this.animationDuration,
     this.animationCurve,
   });
@@ -261,7 +276,10 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
 
     Widget labelArea = ConstrainedBox(
       constraints: const BoxConstraints(minHeight: BankTokens.minTapTarget),
-      child: Center(child: label),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: BankTokens.space2),
+        child: Center(widthFactor: 1, child: label),
+      ),
     );
 
     if (widget.onTapLabel != null) {
@@ -277,6 +295,11 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
     }
 
     return Row(
+      // Content-sized and centred: the chevrons belong next to the label
+      // they page, not pinned to the far edges of whatever width the host
+      // happens to hand over.
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _PeriodChevron(
           icon: widget.previousIcon ??
@@ -284,16 +307,18 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
           semanticLabel: widget.previousSemanticLabel ?? _defaultPreviousLabel,
           enabled: canGoBack,
           color: widget.foregroundColor,
+          backgroundColor: widget.chevronBackgroundColor,
           onPressed: () =>
               widget.onChanged(_shift(normalized, widget.unit, -1)),
         ),
-        Expanded(child: labelArea),
+        Flexible(child: labelArea),
         _PeriodChevron(
           icon: widget.nextIcon ??
               (isRtl ? Icons.chevron_left : Icons.chevron_right),
           semanticLabel: widget.nextSemanticLabel ?? _defaultNextLabel,
           enabled: canGoForward,
           color: widget.foregroundColor,
+          backgroundColor: widget.chevronBackgroundColor,
           onPressed: () => widget.onChanged(_shift(normalized, widget.unit, 1)),
         ),
       ],
@@ -305,16 +330,23 @@ class _BankPeriodSelectorState extends State<BankPeriodSelector> {
 // Private chevron button
 // ---------------------------------------------------------------------------
 
-/// Directional navigation chevron with a 44 px tap target that dims to
-/// 40% opacity when disabled at a period bound.
+/// Directional navigation chevron: a [BankTokens.minTapTarget]-square tinted
+/// disc that dims to the theme's disabled opacity at a period bound.
+///
+/// Built on [BankPressable] rather than [IconButton] so the disc carries the
+/// kit's own hover / press / keyboard-focus grammar, and so the visible
+/// target and the tappable one are the same 44 px shape.
 class _PeriodChevron extends StatelessWidget {
   final IconData icon;
   final String semanticLabel;
   final bool enabled;
   final VoidCallback onPressed;
 
-  /// Overrides [BankThemeData.onSurface] as the chevron colour.
+  /// Overrides [BankThemeData.onSurface] as the chevron glyph colour.
   final Color? color;
+
+  /// Overrides the resting disc fill.
+  final Color? backgroundColor;
 
   const _PeriodChevron({
     required this.icon,
@@ -322,26 +354,30 @@ class _PeriodChevron extends StatelessWidget {
     required this.enabled,
     required this.onPressed,
     this.color,
+    this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final fg = color ?? theme.onSurface;
+    final fill =
+        backgroundColor ?? fg.withValues(alpha: BankTokens.alphaSubtle);
 
-    return Semantics(
-      button: true,
+    return BankPressable(
+      // Always wired: BankPressable needs a handler to apply the disabled
+      // treatment, and gates the tap itself on [enabled].
+      onTap: onPressed,
       enabled: enabled,
-      label: semanticLabel,
-      child: IconButton(
-        onPressed: enabled ? onPressed : null,
-        icon: Icon(icon),
-        color: fg,
-        disabledColor: fg.withValues(alpha: 0.4),
-        constraints: const BoxConstraints(
-          minWidth: BankTokens.minTapTarget,
-          minHeight: BankTokens.minTapTarget,
-        ),
+      borderRadius: BorderRadius.circular(BankTokens.radiusFull),
+      semanticLabel: semanticLabel,
+      excludeSemantics: true,
+      child: Container(
+        width: BankTokens.minTapTarget,
+        height: BankTokens.minTapTarget,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(color: fill, shape: BoxShape.circle),
+        child: Icon(icon, size: BankTokens.iconMedium, color: fg),
       ),
     );
   }

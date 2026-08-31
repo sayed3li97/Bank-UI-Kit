@@ -405,7 +405,22 @@ if (!screensOnly) {
       try {
         await navigatePage(compPage, url);
         const file = join(v.dir, `${c.name}.png`);
-        const clip = await contentClip(compPage, 375, h);
+        let viewportH = h;
+        let clip = await contentClip(compPage, 375, viewportH);
+        // Content measured *strictly* taller than the viewport is being cut
+        // off at the bottom (a long form such as the zakat calculator). Retry
+        // once at a viewport that fits it plus the crop padding so the widget
+        // is captured whole. Entries that fill the viewport exactly measure
+        // == viewportH and are deliberately left alone.
+        const measured = await compPage.evaluate(
+          () => window.__bankShotContentHeight,
+        );
+        if (Number.isFinite(measured) && measured > viewportH) {
+          viewportH = Math.ceil(measured) + CROP_PAD * 2;
+          await compPage.setViewportSize({ width: 375, height: viewportH });
+          await navigatePage(compPage, url);
+          clip = await contentClip(compPage, 375, viewportH);
+        }
         await compPage.screenshot(clip ? { path: file, clip } : { path: file });
         totalOk++;
         console.log(`✓ ${v.preset}/${c.name}.png`);

@@ -22,16 +22,33 @@ const List<String> kBankFontFallback = [
 
 /// Design tokens for the Bank UI Kit design system.
 ///
-/// The scalar tokens (colour roles, spacing, radius, motion durations, and the
-/// minimum tap target) are **generated** from the platform-neutral W3C DTCG
+/// The scalar tokens are **generated** from the platform-neutral W3C DTCG
 /// source at `tokens/design-tokens.json` — the single source of truth that also
 /// feeds Figma and other platforms. Regenerate with
-/// `dart run tool/generate_tokens.dart`; CI fails if the two drift.
+/// `dart run tool/generate_tokens.dart`; CI fails if the two drift. The
+/// generated region covers:
+///
+/// - semantic colour roles (balances, status, card networks);
+/// - the achromatic [neutral0]–[neutral950] ramp, and the
+///   surface / ink / border roles cut from it ([surfaceBase], [inkMuted],
+///   [borderOutline], …) — so a widget needing "one tier above the canvas"
+///   names the tier instead of reaching for a hex;
+/// - the [space1]–[space16] grid, radius tiers, and the
+///   [iconXSmall]–[iconHero] size ladder;
+/// - motion durations, the [lineHeightTight]–[lineHeightAiry] ladder, and
+///   [trackingCaps] / [trackingCapsWide] / [trackingNumeralGroup];
+/// - the [alphaFaint]–[alphaSecondaryInk] ladder, so a translucent wash picks
+///   a rung rather than inventing a decimal;
+/// - the [elevationTierFlat]–[elevationTierHero] stacking ranks.
 ///
 /// Composite tokens (easing curves, text styles, numeral styles, and elevation
 /// shadows) are hand-authored below the generated region and reference the
 /// generated values. Per-brand theme tokens are serialised separately via
 /// `BankThemeData.toJson` into `tokens/themes/` (see `test/theme_export_test`).
+///
+/// The surface / ink / border roles here are the *neutral* defaults a brand
+/// starts from: `BankThemeData.custom` seeds its palette from them, and every
+/// preset overrides them with its own brand-tinted equivalents.
 class BankTokens {
   const BankTokens._();
 
@@ -112,6 +129,78 @@ class BankTokens {
   /// American Express brand blue.
   static const Color networkAmexBlue = Color(0xFF2E77BC);
 
+  // Neutral ramp
+  static const Color neutral0 = Color(0xFFFFFFFF);
+  static const Color neutral50 = Color(0xFFF5F5F5);
+  static const Color neutral100 = Color(0xFFF2F2F7);
+  static const Color neutral200 = Color(0xFFE5E5EA);
+  static const Color neutral300 = Color(0xFFD1D1D6);
+  static const Color neutral400 = Color(0xFFAEAEB2);
+  static const Color neutral500 = Color(0xFF8E8E93);
+  static const Color neutral600 = Color(0xFF636366);
+  static const Color neutral700 = Color(0xFF48484A);
+  static const Color neutral800 = Color(0xFF3A3A3C);
+  static const Color neutral900 = Color(0xFF2C2C2E);
+  static const Color neutral950 = Color(0xFF1C1C1E);
+
+  // Surface tiers
+  /// The app canvas everything else sits on (neutral-100).
+  static const Color surfaceSunken = Color(0xFFF2F2F7);
+
+  /// Dark-mode app canvas (neutral-950).
+  static const Color surfaceSunkenDark = Color(0xFF1C1C1E);
+
+  /// Default card / tile surface, one tier above the canvas (neutral-0).
+  static const Color surfaceBase = Color(0xFFFFFFFF);
+
+  /// Dark-mode card / tile surface (neutral-900).
+  static const Color surfaceBaseDark = Color(0xFF2C2C2E);
+
+  /// Sheets, menus, popovers floating above a card. Identical to base on light:
+  /// the tier reads through the shadow, not a tint.
+  static const Color surfaceRaised = Color(0xFFFFFFFF);
+
+  /// Dark-mode floating surface (neutral-800) — lighter than base, because dark
+  /// surfaces cannot borrow depth from a shadow.
+  static const Color surfaceRaisedDark = Color(0xFF3A3A3C);
+
+  // On-surface ink tiers
+  /// Primary ink: titles, amounts, body copy (neutral-950).
+  static const Color inkStrong = Color(0xFF1C1C1E);
+
+  /// Dark-mode primary ink (neutral-50).
+  static const Color inkStrongDark = Color(0xFFF5F5F5);
+
+  /// Secondary ink: captions, metadata, supporting copy (neutral-600, AA on
+  /// surface.base).
+  static const Color inkMuted = Color(0xFF636366);
+
+  /// Dark-mode secondary ink (neutral-400, AA on surface.baseDark).
+  static const Color inkMutedDark = Color(0xFFAEAEB2);
+
+  /// Tertiary ink: placeholders and disabled labels (neutral-500). Below AA for
+  /// body text by design — never use it for content.
+  static const Color inkFaint = Color(0xFF8E8E93);
+
+  /// Dark-mode tertiary ink. The same mid-grey works both ways: it is the one
+  /// rung equidistant from both canvases.
+  static const Color inkFaintDark = Color(0xFF8E8E93);
+
+  // Border & divider roles
+  /// Component outline: inputs, chips, unselected containers (neutral-200).
+  static const Color borderOutline = Color(0xFFE5E5EA);
+
+  /// Dark-mode component outline (neutral-700).
+  static const Color borderOutlineDark = Color(0xFF48484A);
+
+  /// Rule between rows: primary ink at 8 % alpha. Translucent so it picks up
+  /// whatever brand surface is behind it.
+  static const Color borderDivider = Color(0x141C1C1E);
+
+  /// Dark-mode rule: primary ink at 14 % alpha — low-luminance contrast
+  /// compresses, so dark needs more alpha for the same perceived separation.
+  static const Color borderDividerDark = Color(0x24F5F5F5);
+
   // Spacing (4 pt grid)
   static const double space1 = 4;
   static const double space2 = 8;
@@ -133,11 +222,64 @@ class BankTokens {
   /// Fully-pill / circular shapes (chips, FABs).
   static const double radiusFull = 999;
 
+  // Icon size ladder
+  /// Inline with bodySmall / caption: chevrons and status pips inside dense
+  /// rows.
+  static const double iconXSmall = 14;
+
+  /// Inline with bodyMedium: leading glyphs in list rows and chips.
+  static const double iconSmall = 16;
+
+  /// The default UI icon: list-tile trailing affordances, button leading icons.
+  static const double iconMedium = 20;
+
+  /// App-bar actions and primary controls (Material's own default).
+  static const double iconLarge = 24;
+
+  /// Feature glyphs inside avatars, emblems, and quick-action rings.
+  static const double iconXLarge = 32;
+
+  /// Empty-state and success illustrations — the only rung that carries a
+  /// screen on its own.
+  static const double iconHero = 40;
+
   // Motion: durations
   static const Duration durationFast = Duration(milliseconds: 150);
   static const Duration durationBase = Duration(milliseconds: 250);
   static const Duration durationSlow = Duration(milliseconds: 400);
   static const Duration durationXSlow = Duration(milliseconds: 600);
+
+  // Typography: line-height ladder
+  /// Hero numerals: a balance figure is one line, so leading is dead space.
+  static const double lineHeightTight = 1.1;
+
+  /// Headlines and large numerals — display text that rarely wraps.
+  static const double lineHeightSnug = 1.2;
+
+  /// Labels, captions, and small numerals: single-line UI text.
+  static const double lineHeightNormal = 1.3;
+
+  /// bodySmall — dense supporting copy.
+  static const double lineHeightRelaxed = 1.4;
+
+  /// bodyMedium — the default reading measure.
+  static const double lineHeightLoose = 1.5;
+
+  /// bodyLarge — long-form copy (terms, disclosures).
+  static const double lineHeightAiry = 1.6;
+
+  // Typography: tracking (letter-spacing)
+  /// The standard ALL-CAPS micro-label (section headers, status pills) at
+  /// caption / labelSmall size.
+  static const double trackingCaps = 0.8;
+
+  /// ALL-CAPS micro-labels on a card face, where the fill is large and the
+  /// label needs to read as engraved.
+  static const double trackingCapsWide = 1.2;
+
+  /// Grouped digit runs — card numbers, reference and voucher codes — where the
+  /// space is the grouping.
+  static const double trackingNumeralGroup = 2.4;
 
   // Accessibility & sizing
   /// Minimum touch/tap target (WCAG 2.5.5 AAA / iOS HIG).
@@ -168,9 +310,49 @@ class BankTokens {
   /// Scale applied to a pressable surface while pressed.
   static const double pressScale = 0.98;
 
+  // Alpha ladder
+  /// Barely-there wash: card-face pattern inks, decorative tints.
+  static const double alphaFaint = 0.06;
+
+  /// Hairline-strength wash: dividers on light surfaces, resting brand tints.
+  static const double alphaSubtle = 0.08;
+
+  /// Resting fill of a tinted container (a brand-coloured chip or badge at
+  /// rest).
+  static const double alphaSoft = 0.1;
+
+  /// Selected / pressed fill of a tinted container.
+  static const double alphaMuted = 0.12;
+
+  /// Emphasised tinted fill — the loudest a translucent brand wash gets before
+  /// it should become an opaque colour instead.
+  static const double alphaStrong = 0.16;
+
+  /// Half-strength: scrims behind modals, and ink that is deliberately
+  /// recessive.
+  static const double alphaScrim = 0.5;
+
+  /// Supporting ink on a brand-coloured surface (card-face micro-labels), where
+  /// a separate grey would fight the fill.
+  static const double alphaSecondaryInk = 0.7;
+
   // Visual effects
   /// Saturation multiplier for frozen card faces (desaturated, not greyed out).
   static const double frozenCardSaturation = 0.35;
+
+  // Elevation tiers (stacking ranks)
+  /// Inset or flush surfaces, separated by a hairline alone.
+  static const int elevationTierFlat = 0;
+
+  /// Resting cards and tiles.
+  static const int elevationTierCard = 1;
+
+  /// Sheets, pickers, popovers — surfaces that overlay resting content.
+  static const int elevationTierFloating = 2;
+
+  /// Payment-card faces and feature banners: the one surface per screen allowed
+  /// to sit highest.
+  static const int elevationTierHero = 3;
 
   // --- END GENERATED TOKENS ---
 
@@ -193,6 +375,12 @@ class BankTokens {
   // Font files are registered in pubspec.yaml but may be stubs in CI.
   // All styles intentionally omit `fontFamily` so the system font is used,
   // making every constant truly `const` and safe to reference from tests.
+  //
+  // Every style pins `height` to a rung of the line-height ladder. Left
+  // unset, Flutter falls back to the loaded font's own metrics, so the same
+  // 18 px headline occupies a different box under Space Grotesk, Nunito, and
+  // whatever the host device substitutes — which is why vertical rhythm used
+  // to drift between presets rather than within one.
   // ---------------------------------------------------------------------------
 
   static const TextStyle displayLarge = TextStyle(
@@ -200,6 +388,7 @@ class BankTokens {
     fontSize: 48,
     fontWeight: FontWeight.w700,
     letterSpacing: -1.5,
+    height: lineHeightTight,
   );
 
   static const TextStyle displayMedium = TextStyle(
@@ -207,6 +396,7 @@ class BankTokens {
     fontSize: 36,
     fontWeight: FontWeight.w700,
     letterSpacing: -1,
+    height: lineHeightTight,
   );
 
   static const TextStyle headlineLarge = TextStyle(
@@ -214,6 +404,7 @@ class BankTokens {
     fontSize: 28,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.5,
+    height: lineHeightSnug,
   );
 
   static const TextStyle headlineMedium = TextStyle(
@@ -221,6 +412,7 @@ class BankTokens {
     fontSize: 22,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.3,
+    height: lineHeightSnug,
   );
 
   static const TextStyle headlineSmall = TextStyle(
@@ -228,6 +420,7 @@ class BankTokens {
     fontSize: 18,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
+    height: lineHeightNormal,
   );
 
   static const TextStyle bodyLarge = TextStyle(
@@ -256,6 +449,7 @@ class BankTokens {
     fontSize: 14,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.1,
+    height: lineHeightSnug,
   );
 
   static const TextStyle labelMedium = TextStyle(
@@ -263,6 +457,7 @@ class BankTokens {
     fontSize: 12,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.1,
+    height: lineHeightNormal,
   );
 
   static const TextStyle labelSmall = TextStyle(
@@ -270,6 +465,7 @@ class BankTokens {
     fontSize: 11,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.4,
+    height: lineHeightNormal,
   );
 
   /// Hero monetary numeral: large balance displays.
@@ -278,7 +474,7 @@ class BankTokens {
     fontSize: 44,
     fontWeight: FontWeight.w600,
     letterSpacing: -1.2,
-    height: 1.1,
+    height: lineHeightTight,
     fontFeatures: [
       FontFeature.tabularFigures(),
       FontFeature.liningFigures(),
@@ -291,6 +487,7 @@ class BankTokens {
     fontSize: 24,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.4,
+    height: lineHeightSnug,
     fontFeatures: [
       FontFeature.tabularFigures(),
       FontFeature.liningFigures(),
@@ -302,6 +499,7 @@ class BankTokens {
     fontFamilyFallback: kBankFontFallback,
     fontSize: 18,
     fontWeight: FontWeight.w500,
+    height: lineHeightSnug,
     fontFeatures: [
       FontFeature.tabularFigures(),
       FontFeature.liningFigures(),
@@ -313,6 +511,7 @@ class BankTokens {
     fontFamilyFallback: kBankFontFallback,
     fontSize: 14,
     fontWeight: FontWeight.w500,
+    height: lineHeightNormal,
     fontFeatures: [
       FontFeature.tabularFigures(),
       FontFeature.liningFigures(),
@@ -322,13 +521,39 @@ class BankTokens {
   /// Sentence-case caption for compact metric tiles and dense metadata.
   ///
   /// Deliberately tracks at `0`: extra letter-spacing is reserved for
-  /// all-caps micro-labels ([labelSmall]) — positive tracking on sentence-case
+  /// all-caps micro-labels ([captionCaps]) — positive tracking on sentence-case
   /// text looks loose, and it breaks cursive joining in Arabic script.
   static const TextStyle caption = TextStyle(
     fontFamilyFallback: kBankFontFallback,
     fontSize: 11,
     fontWeight: FontWeight.w600,
     letterSpacing: 0,
+    height: lineHeightNormal,
+  );
+
+  /// [caption] prepared for an ALL-CAPS micro-label: section headers, status
+  /// pills, and the "AVAILABLE BALANCE" class of label.
+  ///
+  /// Exists so the eight hand-rolled `letterSpacing` values that used to sit
+  /// on top of [caption] collapse to one decision. Pair it with an uppercased
+  /// string — tracking this positive on sentence case reads as a mistake, and
+  /// on Arabic script it severs the cursive joins.
+  static const TextStyle captionCaps = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    letterSpacing: trackingCaps,
+    height: lineHeightNormal,
+  );
+
+  /// [captionCaps] widened for a micro-label sitting on a card face, where the
+  /// fill is large and the label needs to read as engraved rather than typed.
+  static const TextStyle captionCapsWide = TextStyle(
+    fontFamilyFallback: kBankFontFallback,
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    letterSpacing: trackingCapsWide,
+    height: lineHeightNormal,
   );
 
   // ---------------------------------------------------------------------------
@@ -435,6 +660,27 @@ class BankTokens {
   /// [shadowHeroDark] on dark surfaces, [shadowHero] on light ones.
   static List<BoxShadow> shadowHeroFor(Brightness b) =>
       b == Brightness.dark ? shadowHeroDark : shadowHero;
+
+  /// Re-inks [shadows] with [tint], preserving each layer's alpha, blur, and
+  /// offset.
+  ///
+  /// A brand's shadow ink is the one part of the lighting model that is
+  /// legitimately brand-specific — a warm palette casts a warm shadow, and the
+  /// default blue-grey reads as a foreign cool cast under it. The *geometry*
+  /// stays shared, so surfaces still agree on how far off the page they sit;
+  /// only the hue moves. Alpha is taken from the original layer, never from
+  /// [tint], so a caller cannot accidentally make the shadow opaque by
+  /// passing a solid colour.
+  static List<BoxShadow> tintShadows(List<BoxShadow> shadows, Color tint) => [
+        for (final s in shadows)
+          BoxShadow(
+            color: tint.withValues(alpha: s.color.a),
+            blurRadius: s.blurRadius,
+            spreadRadius: s.spreadRadius,
+            offset: s.offset,
+            blurStyle: s.blurStyle,
+          ),
+      ];
 
   // ---------------------------------------------------------------------------
   // Hairlines

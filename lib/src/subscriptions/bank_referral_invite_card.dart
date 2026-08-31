@@ -47,16 +47,16 @@ class BankReferralInviteCard extends StatelessWidget {
   /// monospace).
   final TextStyle? codeStyle;
 
-  /// Card heading. Defaults to `'Invite Friends'`.
+  /// Card heading. Defaults to `'Invite friends'`.
   final String title;
 
-  /// Share button label. Defaults to `'Share Invite'`.
+  /// Share button label. Defaults to `'Share invite'`.
   final String shareLabel;
 
   /// Rewarded overlay badge text. Defaults to `'Rewarded'`.
   final String rewardedLabel;
 
-  /// Expired overlay text. Defaults to `'Offer Expired'`.
+  /// Expired overlay text. Defaults to `'Offer expired'`.
   final String expiredLabel;
 
   /// Replaces the generated invite-count line
@@ -95,10 +95,10 @@ class BankReferralInviteCard extends StatelessWidget {
     this.accentColor,
     this.titleStyle,
     this.codeStyle,
-    this.title = 'Invite Friends',
-    this.shareLabel = 'Share Invite',
+    this.title = 'Invite friends',
+    this.shareLabel = 'Share invite',
     this.rewardedLabel = 'Rewarded',
-    this.expiredLabel = 'Offer Expired',
+    this.expiredLabel = 'Offer expired',
     this.countLabel,
     this.giftIcon,
     this.shareIcon,

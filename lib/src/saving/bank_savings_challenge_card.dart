@@ -127,7 +127,9 @@ class BankSavingsChallengeCard extends StatefulWidget {
   final Color? accentColor;
 
   /// Overrides the card shadow. Defaults to the theme glow when
-  /// enabled, else [BankTokens.shadowCard]; pass `const []` to
+  /// enabled, else the card-tier shadow for the theme background
+  /// brightness, re-inked with [BankThemeData.shadowTint] when the brand
+  /// defines one; pass `const []` to
   /// flatten.
   final List<BoxShadow>? shadow;
 
@@ -451,7 +453,7 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
                   spreadRadius: -4,
                 ),
               ]
-            : BankTokens.shadowCard);
+            : theme.shadowFor(BankElevationTier.card));
 
     return Semantics(
       label: semanticLabel,

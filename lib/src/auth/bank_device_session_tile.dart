@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
@@ -173,8 +174,8 @@ class _BankDeviceSessionTileState extends State<BankDeviceSessionTile> {
 
   Future<void> _confirmRevoke() async {
     final theme = BankThemeData.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
+    final confirmed = await BankDialog.show<bool>(
+      context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: theme.surface,
         title: Text(

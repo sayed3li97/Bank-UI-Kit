@@ -51,10 +51,10 @@ class BankTransferResultScreen extends StatelessWidget {
   /// Called when the primary "Done" button is tapped.
   final VoidCallback onDone;
 
-  /// When non-null, a secondary "Share Receipt" button is shown.
+  /// When non-null, a secondary "Share receipt" button is shown.
   final VoidCallback? onShareReceipt;
 
-  /// When non-null, a secondary "New Transfer" button is shown.
+  /// When non-null, a secondary "New transfer" button is shown.
   final VoidCallback? onNewTransfer;
 
   /// Overrides the screen background color. Defaults to the theme background.
@@ -130,10 +130,10 @@ class BankTransferResultScreen extends StatelessWidget {
   /// `'Reference number: '`.
   final String referenceSemanticPrefix;
 
-  /// Label of the share-receipt button. Defaults to `'Share Receipt'`.
+  /// Label of the share-receipt button. Defaults to `'Share receipt'`.
   final String shareReceiptLabel;
 
-  /// Label of the new-transfer button. Defaults to `'New Transfer'`.
+  /// Label of the new-transfer button. Defaults to `'New transfer'`.
   final String newTransferLabel;
 
   /// Label of the primary done button. Defaults to `'Done'`.
@@ -170,8 +170,8 @@ class BankTransferResultScreen extends StatelessWidget {
     this.toLabel = 'To',
     this.referenceLabel = 'Ref: ',
     this.referenceSemanticPrefix = 'Reference number: ',
-    this.shareReceiptLabel = 'Share Receipt',
-    this.newTransferLabel = 'New Transfer',
+    this.shareReceiptLabel = 'Share receipt',
+    this.newTransferLabel = 'New transfer',
     this.doneLabel = 'Done',
   });
 

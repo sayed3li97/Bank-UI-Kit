@@ -81,8 +81,11 @@ class BankDisposableCardTile extends StatefulWidget {
   /// [BankThemeData.cardRadius].
   final BorderRadius? radius;
 
-  /// Overrides the background gradient. Defaults to the desaturated theme
-  /// accent gradient.
+  /// Overrides the background gradient. Defaults to the desaturated brand
+  /// gradient resolved at [BankGradientRole.hero].
+  ///
+  /// A card face is a hero surface, so it keeps the brand gradient at full
+  /// strength under every [BankThemeData.gradientReach] setting.
   final Gradient? gradient;
 
   /// Overrides the on-gradient content colour. Defaults to
@@ -227,7 +230,8 @@ class _BankDisposableCardTileState extends State<BankDisposableCardTile> {
   }
 
   Gradient _washedGradient(BankThemeData theme) {
-    final base = theme.accentGradient;
+    // A disposable card is still a card face: hero tier, never rationed.
+    final base = theme.gradientFor(BankGradientRole.hero);
     final colors = base?.colors ?? [theme.primary, theme.primaryVariant];
     return LinearGradient(
       begin: AlignmentDirectional.topStart,

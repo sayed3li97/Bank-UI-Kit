@@ -6,14 +6,25 @@ on:
   pull_request:
     branches: [main]
 
+# Least privilege by default. No job here writes to the repository; the SBOM
+# job below narrows further to a read-only grant of its own.
+permissions:
+  contents: read
+
 jobs:
   analyze-and-test:
     name: Analyze & Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Actions are pinned by commit SHA, not by tag, so a compromised or
+      # retagged release cannot silently enter this build (OpenSSF Scorecard,
+      # Pinned-Dependencies). The trailing comment records the tag the SHA
+      # belongs to; update both together.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: '3.44.4'
           channel: stable
@@ -36,7 +47,7 @@ jobs:
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: coverage
           path: coverage/lcov.info
@@ -46,9 +57,11 @@ jobs:
     name: Build example (web)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: '3.44.4'
           channel: stable
@@ -66,3 +79,21 @@ jobs:
           --release
           --no-web-resources-cdn
           --no-tree-shake-icons
+
+  # The bill of materials is produced on every push and pull request, not only
+  # at release, so a dependency entering the closure is visible in the diff's
+  # own CI run rather than discovered months later at intake.
+  #
+  # `audit: true` scans that same bill of materials against OSV.dev and fails
+  # this build on a known advisory affecting a runtime dependency — the check
+  # SECURITY.md commits to. Development-only findings warn instead: they are
+  # real, but nothing in `dev_dependencies` reaches an adopting bank's app.
+  sbom:
+    name: SBOM
+    permissions:
+      contents: read
+    uses: ./.github/workflows/sbom.yml
+    with:
+      flutter-version: '3.44.4'
+      audit: true
+      audit-fail-on: runtime

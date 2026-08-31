@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../common/bank_gradient_surface.dart';
 import '../common/bank_surface_depth.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
@@ -204,13 +205,19 @@ class BankAssistantPanel extends StatefulWidget {
   /// [BankThemeData.primary].
   final Color? accentColor;
 
-  /// Overrides the default avatar gradient. Defaults to
-  /// [BankThemeData.accentGradient]; when both are null the avatar is
-  /// filled with the accent colour.
+  /// Overrides the default avatar gradient. Defaults to the brand gradient
+  /// resolved at [BankGradientRole.incidental]; when both are null the
+  /// avatar is filled with the accent colour.
+  ///
+  /// An avatar is incidental decoration, so a brand whose
+  /// [BankThemeData.gradientReach] stops higher up gets the same hues here as
+  /// a low-alpha wash, and the glyph switches to [BankThemeData.onSurface] to
+  /// stay legible on it.
   final Gradient? gradient;
 
-  /// Overrides the panel shadow. Defaults to [BankTokens.shadowCardFor] of
-  /// the theme background brightness; pass `const []` to flatten.
+  /// Overrides the panel shadow. Defaults to the card-tier shadow for the
+  /// theme background brightness, re-inked with [BankThemeData.shadowTint]
+  /// when the brand defines one; pass `const []` to flatten.
   final List<BoxShadow>? shadow;
 
   /// Overrides the panel outline. Defaults on dark surfaces to a
@@ -345,7 +352,15 @@ class _BankAssistantPanelState extends State<BankAssistantPanel>
 
   Widget _defaultAvatar(BankThemeData theme, Color accent) {
     final size = widget.avatarSize ?? 48;
-    final avatarGradient = widget.gradient ?? theme.accentGradient;
+    // An avatar is incidental decoration, so gradientReach may ration it
+    // down to a wash. Ink follows the fill: resolving the two separately is
+    // how a demoted gradient ends up with onPrimary glyphs on a pale disc.
+    final avatar = BankGradientSurface.resolve(
+      theme,
+      BankGradientRole.incidental,
+      override: widget.gradient,
+    );
+    final avatarGradient = avatar.gradient;
     return SizedBox(
       width: size,
       height: size,
@@ -359,7 +374,7 @@ class _BankAssistantPanelState extends State<BankAssistantPanel>
           child: Icon(
             widget.avatarIcon ?? Icons.auto_awesome,
             size: size * 0.5,
-            color: theme.onPrimary,
+            color: avatarGradient == null ? theme.onPrimary : avatar.foreground,
           ),
         ),
       ),

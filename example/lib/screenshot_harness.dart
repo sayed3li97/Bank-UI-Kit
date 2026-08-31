@@ -177,9 +177,31 @@ class _ComponentShotPage extends StatelessWidget {
     }
 
     if (entry.isFullScreen) {
+      // `isFullScreen` means "let this entry span the full container width"
+      // (list tiles, banners, app bars — see GalleryEntry.isFullScreen): it is
+      // a width directive, not a height one. Handing the child the whole
+      // viewport height stretched every root `Column` (which defaults to
+      // MainAxisSize.max) and every `Align` to 812 px, so the bounds reporter
+      // measured the stretched box and the capture kept a huge empty void
+      // below the widget.
+      //
+      // Keep the full-bleed width but hand the child an *unbounded* height so
+      // it settles at its intrinsic height and the driver can crop to it.
+      // Loosening alone is not enough: a `Column` with MainAxisSize.max still
+      // consumes a loose maxHeight, so the constraint has to be removed.
+      // Entries whose canonical surface really is a whole screen opt out via
+      // `fillsViewport` and keep the bounded full-viewport layout, which their
+      // root `Expanded`/`ListView` children require.
       return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
-        body: child,
+        body: entry.fillsViewport
+            ? child
+            : ConstraintsTransformBox(
+                alignment: Alignment.topCenter,
+                constraintsTransform:
+                    ConstraintsTransformBox.heightUnconstrained,
+                child: child,
+              ),
       );
     }
 

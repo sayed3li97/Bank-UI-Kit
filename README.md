@@ -9,11 +9,13 @@ servicing, as composable Flutter widgets. One codebase,
 four built-in themes, your backend.
 
 [![CI](https://github.com/sayed3li97/bank-ui-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/sayed3li97/bank-ui-kit/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/sayed3li97/bank-ui-kit/badge)](https://scorecard.dev/viewer/?uri=github.com/sayed3li97/bank-ui-kit)
+[![pub package](https://img.shields.io/pub/v/bank_ui_kit.svg)](https://pub.dev/packages/bank_ui_kit)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Flutter](https://img.shields.io/badge/Flutter-3.27%2B-027DFD.svg)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.44%2B-027DFD.svg)](https://flutter.dev)
 [![style: flutter_lints](https://img.shields.io/badge/style-flutter__lints-40c4ff.svg)](https://pub.dev/packages/flutter_lints)
 
-**147+ components** · **23 banking domains** · **4 built-in themes** · **built toward WCAG 2.1 AA** · **RTL + Arabic-Indic numerals**
+**173 components** · **23 modules** · **4 built-in themes** · **WCAG 2.1 AA gates enforced in CI** · **RTL + Arabic-Indic numerals**
 
 ### [▶ Try the live demo](https://sayed3li97.github.io/Bank-UI-Kit/)
 
@@ -44,7 +46,18 @@ Browse every component and the full Meridian flagship app in your browser: switc
 
 ## Contents
 
-- [Why Bank UI Kit](#why-bank-ui-kit)
+**Evaluating it**
+
+- [What it is](#what-it-is)
+- [Enterprise readiness](#enterprise-readiness)
+- [How it compares](#how-it-compares)
+- [Design tokens: one source, every consumer](#design-tokens-one-source-every-consumer)
+- [Accessibility, enforced in CI](#accessibility-enforced-in-ci)
+- [Supply chain and provenance](#supply-chain-and-provenance)
+- [Stability: what can change under you](#stability-what-can-change-under-you)
+
+**Building with it**
+
 - [Install](#install)
 - [Quick start](#quick-start)
 - [Design presets](#design-presets)
@@ -54,70 +67,96 @@ Browse every component and the full Meridian flagship app in your browser: switc
 - [Component catalogue](#component-catalogue)
 - [Full API reference](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/component-reference.md)
 - [Cross-cutting features](#cross-cutting-features)
-- [Architecture & principles](#architecture--principles)
+- [Architecture and principles](#architecture-and-principles)
 - [Running the example](#running-the-example)
 - [Contributing](#contributing)
 - [License](#license)
 
 ---
 
-## Why Bank UI Kit
+## What it is
 
-The kit covers accounts, payments,
-cards, onboarding and KYC, PFM and insights, lending, rewards, Islamic
-banking, business-banking approvals, disputes, secure messaging, and
-statements: 140+ components across 22 domains, benchmarked against 21
-of the world's leading banking apps so every surface they ship, you
-can too.
+A component library, not a screen template. You compose the widgets into an
+app you already own rather than copying whole screens out of a starter
+project. The kit covers accounts, payments, cards, onboarding and KYC, PFM
+and insights, lending, rewards, Islamic banking, business-banking approvals,
+disputes, secure messaging, and statements: 173 components across 23
+modules, benchmarked against 21 of the world's leading banking apps.
 
-It ships compliance-ready patterns: PSD2-style dynamic-linking approval,
-open-banking consent management, deposit-protection notices, IBAN and
-PAN checksum validation, semantics on every control, 44 px touch
-targets, and RTL with Arabic-Indic numeral rendering. The
-kit implements the UX pattern; your bank provides the regulated
-controls behind it. The division of responsibility is written down in
-[doc/enterprise/compliance-matrix.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/compliance-matrix.md),
-and the accessibility position (verified vs on the roadmap) in
-[doc/enterprise/accessibility-conformance.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/accessibility-conformance.md).
+It is backend-agnostic by construction. Data goes in through constructors,
+events come out through callbacks, and nothing in `lib/` opens a network
+connection, writes to disk, or depends on a state-management package. The
+headless flow controllers are `ChangeNotifier` state machines that own step
+state and nothing else. Your core banking APIs stay yours.
 
-Four built-in themes run on one theming engine. Every widget reads its
-colour, shape, depth, and numeral typography from `BankThemeData`
-tokens. Ship the included presets, or derive a complete brand theme
-from a single primary colour.
+Everything visible is a token. Colour, shape, depth, motion, and numeral
+typography come from `BankThemeData` and `BankTokens`, which are generated
+from a platform-neutral token file and serialise back to JSON. That is what
+makes a rebrand a constructor argument instead of a fork.
 
-The kit is backend-agnostic: pure props and callbacks, plus headless flow
-controllers (`ChangeNotifier` state machines) that never touch the
-network. Your core banking APIs stay yours. One caveat, stated plainly:
-widgets that accept image URLs resolve them with Flutter's standard
-network image provider, and injectable image resolution is on the roadmap
-so fully air-gapped builds need no source changes.
+---
+
+## Enterprise readiness
+
+The questions below are the ones that come up at bank and agency intake, in
+roughly the order they get asked. Each answer links to the document or the
+workflow file that carries the evidence, so you can check the claim rather
+than take it.
+
+| Question at intake | Where this project stands | Evidence |
+|---|---|---|
+| Is there an accessibility conformance report? | Yes. WCAG 2.1 A and AA plus EN 301 549 V3.2.1, per component, with the gaps named rather than smoothed over. Self-assessed, not third-party audited, and it says so on its first page | [ACR](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/acr/ACR.md) · [`openacr.yaml`](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/acr/openacr.yaml) |
+| Is accessibility tested, or only asserted? | Enforced in CI. A contrast gate across every preset in light and dark, a 44 px tap-target gate, an accessible-label gate, and golden regression across preset, brightness, and direction. A failure breaks the build | [`ci.yml`](.github/workflows/ci.yml) · `test/accessibility_*_test.dart` |
+| Who carries the regulatory obligation? | The bank does. The kit implements the UX pattern; the regulated control behind it stays yours. The split is written down line by line | [compliance matrix](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/compliance-matrix.md) |
+| Can you produce an SBOM? | On every commit and every release, in SPDX 2.3 and CycloneDX 1.6 from one resolution, scanned against OSV, and byte-reproducible from the commit plus the lockfile shipped with it | [supply chain](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/supply-chain.md) · [`sbom.yml`](.github/workflows/sbom.yml) |
+| Is the release chain attested? | Publishing runs over OIDC with no stored credential, bound to a tag ref. Release artifacts carry a Sigstore-backed SLSA build provenance attestation. Every GitHub Action is pinned by commit SHA | [`release.yml`](.github/workflows/release.yml) · [`publish.yml`](.github/workflows/publish.yml) |
+| Is there a published OpenSSF Scorecard? | Yes, refreshed weekly and on branch-protection changes, with the SARIF kept as a build artifact | [Scorecard viewer](https://scorecard.dev/viewer/?uri=github.com/sayed3li97/bank-ui-kit) · [`scorecard.yml`](.github/workflows/scorecard.yml) |
+| What can change under us, and with how much warning? | A written dependency contract: what counts as breaking for a UI kit including default visual values, the deprecation window, pinning guidance, and the 1.0 gate with the status of each criterion | [stability and support](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/stability-and-support.md) |
+| What happens if the project stops? | One maintainer today, stated plainly. MIT, no private infrastructure, vendorable as a path dependency, and the design tokens are portable JSON that outlive the Dart code | [stability and support](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/stability-and-support.md), continuity section · [GOVERNANCE.md](GOVERNANCE.md) |
+| How do we report a vulnerability? | Private GitHub advisory or email, with severity clocks adjusted for a UI library, where on-screen leakage of financial data is treated one band higher than raw CVSS | [SECURITY.md](SECURITY.md) |
+| Does it work in our markets? | RTL-first on every widget, four numeral scripts, locale-aware money for every currency the kit knows, and Hijri calendar support | [localization and RTL](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/localization-and-rtl.md) |
+
+### Where this project is honest about its gaps
+
+It is version 0.3.0, which means pre-1.0 minors are permitted to break you,
+so pin exactly. It has one maintainer, so the bus factor is one. The
+accessibility report is a self-assessment and no independent firm has
+audited it. Those facts are why the documents above exist, and each document
+names the mitigation available to an adopter rather than an aspiration.
+
+### The enterprise documentation set
+
+[stability and support](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/stability-and-support.md) ·
+[versioning and releases](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/versioning-and-releases.md) ·
+[supply chain](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/supply-chain.md) ·
+[compliance matrix](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/compliance-matrix.md) ·
+[accessibility conformance](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/accessibility-conformance.md) ·
+[ACR](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/acr/ACR.md) ·
+[design tokens](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/design-tokens.md) ·
+[integration playbook](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/integration-playbook.md) ·
+[white-label guide](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/white-label-guide.md) ·
+[localization and RTL](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/localization-and-rtl.md)
 
 ### How it compares
 
 | | Bank UI Kit | Typical screen-template kits |
 |---|---|---|
 | **Integration model** | Compose into any existing app | Copy-paste whole screens |
-| **Design tokens** | Platform-neutral **W3C DTCG `tokens.json`** generates the Dart tokens (CI-enforced) + `toJson`/`fromJson` for Figma & remote branding | Hard-coded values |
+| **Design tokens** | Platform-neutral **W3C DTCG `tokens.json`** generates the Dart tokens (CI-enforced) + `toJson`/`fromJson` for Figma and remote branding | Hard-coded values |
 | **Theming** | 4 presets + fully custom themes, runtime-switchable | Fork the package |
 | **RTL support** | First-class, every widget | Mirror-on-demand or none |
 | **Localization** | Locale-aware money (German `1.234,56`, French `1 234,56`, Indian lakh) + 4 numeral scripts + Hijri calendar | English only |
-| **Accessibility** | WCAG 2.1 AA **enforced in CI**: contrast gate across every preset, tap-target & label gates, semantics | Not specified |
+| **Accessibility** | WCAG 2.1 AA **enforced in CI**: contrast gate across every preset, tap-target and label gates, semantics | Not specified |
+| **Conformance evidence** | Published ACR (WCAG 2.1 AA, EN 301 549) + machine-readable OpenACR | None |
+| **Supply chain** | SBOM on every commit, OSV scan, SLSA provenance, published Scorecard | None |
 | **Visual regression** | Golden tests pin every preset × light/dark | None |
 | **State management** | Agnostic (pure props + callbacks) | Tied to the template's choice |
 | **Money** | Lossless `Decimal`-backed `Money` type | `double` |
-| **Tests** | 339+ unit, widget, golden & a11y tests | None |
+| **Tests** | 487 unit, widget, golden, and accessibility test cases | None |
 
-### One token change rebrands every surface
+---
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/diagrams/architecture-flow.svg" width="880" alt="Design tokens flow into four presets, into 140+ components, into your app" />
-</p>
-
-Tokens set color, shape, depth, and numeral typography once. Presets are
-just token sets: swap one and every component follows, light and dark,
-LTR and RTL. Your rebrand is a single constructor argument rather than a multi-quarter project.
-
-### Design tokens: one source, every consumer
+## Design tokens: one source, every consumer
 
 The tokens are **not** Dart constants that only Flutter can read. The source
 of truth is a platform-neutral [W3C DTCG](https://tr.designtokens.org/format/)
@@ -136,9 +175,9 @@ dart run tool/generate_tokens.dart          # regenerate tokens.dart from JSON
 dart run tool/generate_tokens.dart --check   # CI drift guard
 ```
 
-And any **brand** round-trips to/from JSON. These are the same tokens a Figma library or
-an iOS/Android app would consume, or that a server could deliver for remote
-re-branding:
+And any **brand** round-trips to and from JSON. These are the same tokens a Figma
+library or an iOS/Android app would consume, or that a server could deliver for
+remote re-branding:
 
 ```dart
 final json = BankPreset.heritage.apply(base).extension<BankThemeData>()!.toJson();
@@ -148,7 +187,99 @@ final brand = BankThemeData.fromJson(json);   // lossless round-trip
 
 All four presets are exported to [`tokens/themes/`](tokens/themes/) as
 Figma-Variables-ready token sets. The same source feeds Flutter, Figma, and
-native apps, which is what makes this a design system rather than only a widget library.
+native apps, which is what makes this a design system rather than only a widget
+library. It is also the reason your design decisions survive independently of
+this package: those files carry no dependency on Flutter, on Dart, or on the
+kit. Full pipeline in
+[doc/enterprise/design-tokens.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/design-tokens.md).
+
+### One token change rebrands every surface
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/diagrams/architecture-flow.svg" width="880" alt="Design tokens flow into four presets, into 173 components, into your app" />
+</p>
+
+Tokens set colour, shape, depth, and numeral typography once. Presets are
+just token sets: swap one and every component follows, light and dark,
+LTR and RTL. Your rebrand is a single constructor argument rather than a
+multi-quarter project.
+
+---
+
+## Accessibility, enforced in CI
+
+Accessibility here is a build gate, not a section in a sales deck. Every
+push runs:
+
+- a **WCAG contrast** test (92 cases) covering every text pair and
+  financial colour across all four presets in light and dark;
+- **tap-target** (44 px) and **accessible-label** guideline checks on
+  interactive widgets;
+- **golden** visual-regression across preset × brightness × direction.
+
+The conformance position, including what is verified, what is the host app's
+responsibility, and what is still a gap with a remediation date, is written
+down in
+[doc/enterprise/accessibility-conformance.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/accessibility-conformance.md).
+The formal report a procurement team files is the
+[ACR](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/acr/ACR.md),
+with a machine-readable
+[OpenACR](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/acr/openacr.yaml)
+source of truth beside it.
+
+Both are self-assessments. No independent accessibility firm has assessed
+this package, and neither document pretends otherwise.
+
+Regenerate goldens with `flutter test --update-goldens`.
+
+---
+
+## Supply chain and provenance
+
+Every commit and every release produces a Software Bill of Materials in both
+SPDX 2.3 and CycloneDX 1.6, generated from one dependency resolution so the
+two formats cannot disagree. The generator derives its timestamps from the
+commit rather than the clock, and ships the resolved `pubspec.lock` inside
+the artifact, so re-running it on the same commit gives byte-identical
+documents. The same document is scanned against OSV, and a known advisory
+affecting a runtime dependency fails the build.
+
+Releases publish to pub.dev over OIDC through Dart's trusted-publishing
+workflow, with no credential stored in the repository or in Actions secrets,
+and the artifacts attached to each GitHub Release carry a Sigstore-backed
+SLSA build provenance attestation. Every third-party GitHub Action is pinned
+by commit SHA rather than by tag.
+
+Details, and how to verify any of it yourself, are in
+[doc/enterprise/supply-chain.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/supply-chain.md).
+
+---
+
+## Stability: what can change under you
+
+The package is at 0.3.0. Under SemVer a 0.x minor may break you, so **pin
+exactly** until 1.0:
+
+```yaml
+dependencies:
+  bank_ui_kit: 0.3.0   # exact, no caret, while the package is pre-1.0
+```
+
+For a UI kit the interesting breakage is not a deleted method. It is a
+default colour, size, elevation, font, or motion value moving, which changes
+what ships to customers without a single analyzer warning and fails your own
+golden tests. This project treats those as breaking changes and says so. The
+[stability and support](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/stability-and-support.md)
+policy lists them item by item, and names the three releases that have already
+changed visual defaults.
+
+The rest of the dependency contract, including the deprecation window, the
+procedure for retiring a visual default, the supported-version policy, the
+1.0 criteria with the current status of each, and the continuity story for a
+single-maintainer project, is in
+[doc/enterprise/stability-and-support.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/stability-and-support.md).
+Release mechanics and the roadmap are in
+[doc/enterprise/versioning-and-releases.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/versioning-and-releases.md).
 
 ---
 
@@ -156,10 +287,23 @@ native apps, which is what makes this a design system rather than only a widget 
 
 ```yaml
 dependencies:
+  bank_ui_kit: 0.3.0   # exact, no caret, while the package is pre-1.0
+```
+
+Or take it straight from git, which is also the vendoring path if you mirror
+the repository into internal hosting:
+
+```yaml
+dependencies:
   bank_ui_kit:
     git:
       url: https://github.com/sayed3li97/bank-ui-kit.git
+      ref: v0.3.0
 ```
+
+Pin exactly either way until 1.0, and read
+[what can change under you](#stability-what-can-change-under-you) before you
+take the upgrade.
 
 Import only the modules you use:
 
@@ -383,7 +527,7 @@ headless controller owns the state machine:
 
 The same composition pattern covers every core journey. The full
 catalogue of 25 journey blueprints (triggers, steps, variants, error
-states) lives in [docs/banking-journeys.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/banking-journeys.md).
+states) lives in [doc/banking-journeys.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/banking-journeys.md).
 
 | Journey | Chain of kit components |
 |---|---|
@@ -398,10 +542,10 @@ states) lives in [docs/banking-journeys.md](https://raw.githubusercontent.com/sa
 
 ## Component catalogue
 
-147+ widgets across 23 modules. Each screenshot below is a live render of that module's
+173 widgets across 23 modules. Each screenshot below is a live render of that module's
 showcase screen (Studio preset, light mode) from the example app.
 
-For the full parameter-level API reference (every constructor argument, type, required/optional status, and default value) see **[docs/component-reference.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/component-reference.md)**.
+For the full parameter-level API reference (every constructor argument, type, required/optional status, and default value) see **[doc/component-reference.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/component-reference.md)**.
 
 ### States & feedback
 `BankSkeletonLoader` · `BankEmptyStateView` · `BankErrorStateView` · `BankSuccessAnimation` · `BankToastBanner` · `BankFraudAlertBanner` · `BankAppGateScreen` (11 gate reasons: maintenance, force update, root/VPN blocks, waiting room) · `BankConnectivityBanner` · `BankServiceStatusList` · `BankUpdatePromptSheet`
@@ -597,7 +741,7 @@ BankBalanceText(money: account.balance) // shows '••••' when privacy is 
 widget level. It is defense in depth, not capture protection: pair it
 with platform `FLAG_SECURE` (Android) and screen-capture protection
 (iOS) per the recipes in
-[docs/enterprise/integration-playbook.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/integration-playbook.md).
+[doc/enterprise/integration-playbook.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/integration-playbook.md).
 
 ### Currency-correct money display
 Every amount renders through a currency engine that knows each
@@ -644,36 +788,42 @@ BankUiScope(initialData: BankUiScopeData(islamicFinanceMode: true), child: ...)
 
 ### Localization
 Locale-aware number formatting (above) plus injectable copy: ships English
-strings and overrides any subset via `BankUiStrings`.
+strings and overrides any subset via `BankUiStrings`. The full position,
+including what the kit does not translate for you, is in
+[doc/enterprise/localization-and-rtl.md](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/localization-and-rtl.md).
 
 ### RTL
 Every widget is built RTL-first with directional geometry throughout;
 widget-test coverage runs under `TextDirection.rtl`, and an LTR/RTL **golden
 test** pins the mirrored layout so it can't regress.
 
-### Accessibility, enforced in CI
-Accessibility is a build gate here, and every push runs:
-- a **WCAG contrast** test (89 assertions) covering every text pair and
-  financial colour across all four presets × light/dark;
-- **tap-target** (44 px) and **accessible-label** guideline checks on
-  interactive widgets;
-- **golden** visual-regression across presets × brightness × direction.
+### Air-gapped and offline builds
+Widgets that take an image URL resolve it through
+`BankUiScopeData.imageResolver` when one is set, so a deployment with no
+outbound network can supply its own `ImageProvider` (asset, cache, or
+internal CDN) without touching kit source. Fonts are bundled, not fetched, so
+the numeral scripts and currency glyphs render with no CDN.
 
-Regenerate goldens with `flutter test --update-goldens`.
+### Accessibility
+See [Accessibility, enforced in CI](#accessibility-enforced-in-ci) above for
+the gates, and the
+[ACR](https://raw.githubusercontent.com/sayed3li97/bank-ui-kit/main/doc/enterprise/acr/ACR.md)
+for the per-component conformance position.
 
 ---
 
-## Architecture & principles
+## Architecture and principles
 
 - Widgets read colours, radii, spacing, elevation, and
   numeral typography from `BankThemeData` / `BankTokens`, never from hard-coded values. The scalar
   tokens are generated from a W3C DTCG `tokens.json` (CI-enforced), and any brand
-  serialises to/from JSON. See [Design tokens: one source, every consumer](#design-tokens-one-source-every-consumer).
+  serialises to and from JSON. See [Design tokens: one source, every consumer](#design-tokens-one-source-every-consumer).
 - Widgets are state-management agnostic: data comes in via the constructor and events go out
   via callbacks, with no provider/bloc/riverpod coupling in `lib/`.
 - The `Money` type wraps `Decimal`, so no `double` ever touches an amount.
-- The headless flow controllers `BankKycFlowController`, `BankTransferFlowController`, and
-  `BankIncomeSorterController` own multi-step flow state so you can swap the visual layer.
+- The headless flow controllers `BankKycFlowController`, `BankTransferFlowController`,
+  `BankIncomeSorterController`, `BankApplicationController`, and
+  `BankDisputeFlowController` own multi-step flow state so you can swap the visual layer.
 - Widgets expose `Widget? illustration` slots and the kit bundles
   no raster/vector art, so you bring your own imagery.
 
@@ -696,7 +846,7 @@ The example app ships two entry points:
 
 | Entry point | Launch command | What it shows |
 |---|---|---|
-| **Component gallery** | `flutter run -t lib/gallery_main.dart` | 119 components with live parameter controls, preset/dark-mode switching, and search |
+| **Component gallery** | `flutter run -t lib/gallery_main.dart` | Every component with live parameter controls, preset/dark-mode switching, and search |
 | **Demo dashboard** | `flutter run` | Revolut-style demo app under the Studio preset |
 
 ```bash
@@ -740,7 +890,8 @@ core banking stays yours.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md).
 In short: `flutter analyze` and `flutter test` must be green, and every change must work
-across all four presets, both brightnesses, and RTL.
+across all four presets, both brightnesses, and RTL. How changes are reviewed
+and who decides is in [GOVERNANCE.md](GOVERNANCE.md).
 
 ---
 

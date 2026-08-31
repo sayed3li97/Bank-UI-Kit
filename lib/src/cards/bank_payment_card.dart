@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_gradient_surface.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_pressable.dart';
+import '../common/bank_surface_depth.dart';
 import '../models/models.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/card_pattern.dart';
@@ -111,9 +113,12 @@ class BankPaymentCard extends StatelessWidget {
   /// touching the card UI. Receives the base surface as its child.
   final Widget Function(BuildContext context, Widget child)? surfaceBuilder;
 
-  /// Base gradient. Defaults to [BankThemeData.cardSurfaceGradient], then
-  /// [BankThemeData.accentGradient] (or a primary gradient) when both this
-  /// and [backgroundColor] are null.
+  /// Base gradient. Defaults to [BankThemeData.cardSurfaceGradient], then the
+  /// brand gradient resolved at [BankGradientRole.hero] (or a primary
+  /// gradient) when both this and [backgroundColor] are null.
+  ///
+  /// The card face is a hero surface, so it keeps the brand gradient at full
+  /// strength under every [BankThemeData.gradientReach] setting.
   final Gradient? gradient;
 
   /// Flat base colour, used when [gradient] is null.
@@ -147,8 +152,9 @@ class BankPaymentCard extends StatelessWidget {
   /// Inner padding. Defaults to [BankTokens.space5].
   final EdgeInsetsGeometry? padding;
 
-  /// Card shadow. Defaults to [BankTokens.shadowFloatingFor] of the theme
-  /// background brightness; pass `const []` to flatten.
+  /// Card shadow. Defaults to the floating-tier shadow for the theme
+  /// background brightness, re-inked with [BankThemeData.shadowTint] when the
+  /// brand defines one; pass `const []` to flatten.
   final List<BoxShadow>? shadow;
 
   /// Aspect ratio (width / height). Defaults to [kBankCardAspectRatio] (1.586).
@@ -204,18 +210,22 @@ class BankPaymentCard extends StatelessWidget {
     final cardRadius = radius ?? theme.cardRadius;
     final showScrim = scrim ?? (artwork != null);
 
+    // A payment-card face is the screen's one signature surface, so it
+    // resolves at BankGradientRole.hero — the tier no gradientReach policy
+    // ever rations down.
+    final face = BankGradientSurface.resolve(
+      theme,
+      BankGradientRole.hero,
+      override: theme.cardSurfaceGradient,
+      fallback: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [theme.primary, theme.primaryVariant],
+      ),
+    );
     final baseDecoration = BoxDecoration(
       color: gradient == null ? (backgroundColor ?? theme.primary) : null,
-      gradient: gradient ??
-          (backgroundColor == null
-              ? (theme.cardSurfaceGradient ??
-                  theme.accentGradient ??
-                  LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [theme.primary, theme.primaryVariant],
-                  ))
-              : null),
+      gradient: gradient ?? (backgroundColor == null ? face.gradient : null),
     );
 
     Widget base = DecoratedBox(decoration: baseDecoration);
@@ -279,10 +289,11 @@ class BankPaymentCard extends StatelessWidget {
     final decorated = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: cardRadius,
-        boxShadow: shadow ??
-            BankTokens.shadowFloatingFor(
-              ThemeData.estimateBrightnessForColor(theme.background),
-            ),
+        boxShadow: BankSurfaceDepth.resolve(
+          theme,
+          shadow: shadow,
+          tier: BankSurfaceDepthTier.floating,
+        ).shadow,
       ),
       child: ClipRRect(borderRadius: cardRadius, child: stack),
     );

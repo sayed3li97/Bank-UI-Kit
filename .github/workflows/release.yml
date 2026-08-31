@@ -1,4 +1,6 @@
-# Turns a version bump merged to main into a published pub.dev release.
+# Turns a version bump merged to main into a published pub.dev release, with
+# the supply-chain artifacts an enterprise intake process expects attached to
+# the GitHub Release.
 #
 # On every push to main this reads the version from pubspec.yaml. If no
 # `v<version>` tag exists yet (that is, the merge actually bumped the
@@ -11,34 +13,64 @@
 # start publish.yml with `gh workflow run publish.yml --ref v<version>`.
 # The ref must be the tag, never a branch: pub.dev's trusted publishing
 # only accepts an OIDC token whose ref has refType "tag".
+#
+# Two jobs then run alongside that publish and never block it: `sbom` builds
+# the bill of materials for the released commit, and `provenance` signs those
+# files with a Sigstore-backed SLSA build provenance attestation and uploads
+# them as release assets. Publishing to pub.dev is untouched by both — it
+# still happens in publish.yml, over OIDC, with no stored credentials.
 name: Release on version bump
 
 on:
   push:
     branches: [main]
 
+# Least privilege by default; each job widens only what it needs. Scorecard's
+# Token-Permissions check reads the workflow-level grant, and a job that only
+# reads should not inherit write.
 permissions:
-  contents: write # create the release and tag
-  actions: write # dispatch publish.yml
+  contents: read
 
 jobs:
   release:
     name: Release when the version is new
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release and tag
+      actions: write # dispatch publish.yml
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      package: ${{ steps.release.outputs.package }}
+      version: ${{ steps.release.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      # Pinned by commit SHA rather than tag so a retagged release cannot
+      # change what runs here (OpenSSF Scorecard, Pinned-Dependencies). The
+      # trailing comment records the tag the SHA belongs to; update together.
+      #
+      # Credentials stay persisted here, unlike the other workflows: the step
+      # below talks to the remote with `git ls-remote origin`.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
 
       - name: Create release and dispatch publish when the version is new
+        id: release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           version="$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | tr -d '[:space:]')"
+          package="$(grep '^name:' pubspec.yaml | sed 's/name:[[:space:]]*//' | tr -d '[:space:]')"
           tag="v${version}"
+          {
+            echo "package=${package}"
+            echo "version=${version}"
+            echo "tag=${tag}"
+          } >> "${GITHUB_OUTPUT}"
 
           if git ls-remote --tags origin "refs/tags/${tag}" | grep -q "refs/tags/${tag}$"; then
             echo "Tag ${tag} already exists; no version bump to release."
+            echo "released=false" >> "${GITHUB_OUTPUT}"
             exit 0
           fi
 
@@ -63,3 +95,106 @@ jobs:
           # the OIDC token pub.dev receives has refType "tag".
           gh workflow run publish.yml --ref "${tag}"
           echo "Dispatched publish.yml against ${tag}."
+
+          echo "released=true" >> "${GITHUB_OUTPUT}"
+
+  # Builds the SBOM from the released commit. `github.sha` here is the same
+  # commit the tag points at (the release above targets ${GITHUB_SHA}), so no
+  # ref needs to be passed through.
+  sbom:
+    name: SBOM
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/sbom.yml
+    with:
+      flutter-version: '3.44.4'
+      artifact-name: sbom-${{ needs.release.outputs.tag }}
+      # Release SBOMs outlive CI ones: an adopting bank's ICT asset inventory
+      # (DORA Article 8) is kept for years, so the durable copy is the release
+      # asset and this artifact is only the hand-off between jobs.
+      retention-days: '90'
+      # Record the vulnerability posture at the moment of release, but never
+      # gate on it. By the time this job runs the version is already being
+      # published to pub.dev, so failing here would produce a release with no
+      # signed artifacts rather than a release that was stopped.
+      audit: true
+      audit-fail-on: never
+
+  provenance:
+    name: Sign and attach the release artifacts
+    needs: [release, sbom]
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # upload the release assets
+      id-token: write # mint the Sigstore OIDC token
+      attestations: write # persist the attestation on this repository
+    steps:
+      - name: Download the SBOM built for this commit
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ needs.sbom.outputs.artifact-name }}
+          path: release-assets
+
+      # pub.dev builds and stores the package archive itself, so this workflow
+      # cannot attest that archive as its own build output without misstating
+      # who built it. What it can do honestly is record the digest pub.dev
+      # reports, inside a file that IS attested below — giving a reviewer a
+      # signed, repository-issued statement of the digest to compare against
+      # whatever they download. Best effort: publish.yml runs in parallel, so
+      # if pub.dev has not served the version yet the release proceeds without
+      # this file.
+      - name: Record the pub.dev archive digest
+        continue-on-error: true
+        env:
+          PACKAGE: ${{ needs.release.outputs.package }}
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          url="https://pub.dev/api/packages/${PACKAGE}/versions/${VERSION}"
+          for _ in $(seq 1 30); do
+            code="$(curl -sSL --max-time 30 -o response.json -w '%{http_code}' "${url}" || true)"
+            if [ "${code}" = "200" ]; then
+              digest="$(node -e 'const r=require("fs").readFileSync("response.json","utf8");process.stdout.write(String(JSON.parse(r).archive_sha256 ?? ""))')"
+              if [ -n "${digest}" ]; then
+                printf '%s  %s-%s.tar.gz\n' "${digest}" "${PACKAGE}" "${VERSION}" \
+                  > release-assets/pubdev-archive.sha256
+                cat release-assets/pubdev-archive.sha256
+                exit 0
+              fi
+            fi
+            sleep 20
+          done
+          echo "::warning::pub.dev has not served ${PACKAGE} ${VERSION} within 10 minutes; this release will not carry a pub.dev archive digest."
+          exit 1
+
+      # Every asset, not just the two SBOM documents: `pubspec.lock` and the
+      # OSV report are evidence too, and a reviewer who verifies the manifest
+      # should not have to work out which files it deliberately omits.
+      # SHA256SUMS itself is excluded for the obvious reason.
+      - name: Compute checksums for the release assets
+        run: |
+          cd release-assets
+          find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%P\n' \
+            | LC_ALL=C sort \
+            | xargs -r sha256sum -- > SHA256SUMS
+          cat SHA256SUMS
+
+      # Produces an in-toto SLSA v1 provenance statement per file, signed with
+      # a short-lived Sigstore certificate and stored on this repository's
+      # attestations endpoint. Verified with:
+      #   gh attestation verify <file> --repo <owner>/<repo>
+      - name: Generate SLSA build provenance for the release assets
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: 'release-assets/*'
+
+      - name: Attach the assets to the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release.outputs.tag }}
+        run: |
+          gh release upload "${TAG}" release-assets/* \
+            --clobber \
+            --repo "${GITHUB_REPOSITORY}"

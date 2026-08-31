@@ -13,6 +13,7 @@ export 'bank_pressable.dart';
 export 'bank_quick_actions_grid.dart';
 export 'bank_segmented_control.dart';
 export 'bank_shariah_badge.dart';
+export 'bank_sheet.dart';
 export 'bank_status_tracker.dart';
 export 'bank_summary_stack.dart';
 export 'bank_text_field.dart';

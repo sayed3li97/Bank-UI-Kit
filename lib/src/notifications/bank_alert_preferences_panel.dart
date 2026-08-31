@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_control_theme.dart';
 import '../common/bank_icon_spec.dart';
 import '../models/bank_notification.dart';
 import '../theme/bank_theme_data.dart';
@@ -391,13 +392,18 @@ class _PreferenceRow extends StatelessWidget {
               child: Center(
                 child: Semantics(
                   label: '$label, ${channel.name}',
-                  child: Switch(
-                    value: pref.locked || pref.valueFor(channel),
-                    activeThumbColor: thumbColor,
-                    activeTrackColor: trackColor,
-                    onChanged: pref.locked
-                        ? null
-                        : (value) => onChanged(pref.type, channel, value),
+                  child: SwitchTheme(
+                    data: BankControlTheme.switchTheme(
+                      theme,
+                      accent: trackColor,
+                      onAccent: thumbColor,
+                    ),
+                    child: Switch(
+                      value: pref.locked || pref.valueFor(channel),
+                      onChanged: pref.locked
+                          ? null
+                          : (value) => onChanged(pref.type, channel, value),
+                    ),
                   ),
                 ),
               ),

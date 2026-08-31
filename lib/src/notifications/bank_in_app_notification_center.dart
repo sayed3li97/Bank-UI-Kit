@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 
-import '../../src/models/bank_notification.dart';
-import '../../src/theme/bank_theme_data.dart';
-import '../../src/theme/tokens.dart';
+import '../common/bank_emblem.dart';
+import '../common/bank_pressable.dart';
+import '../models/bank_notification.dart';
+import '../theme/bank_theme_data.dart';
+import '../theme/tokens.dart';
 
 /// A scrollable notification feed with read/unread states and swipe-to-dismiss.
+///
+/// Unread is encoded by **one** device, not three: a marker dot in the row's
+/// semantic accent, backed by a heavier title. Rows deliberately do not take a
+/// full-bleed colour wash — a per-row wash turns a feed into a striped block,
+/// fights every accent inside the row, and duplicates what the dot already
+/// says. Pass [unreadTintColor] to opt back into a wash.
 class BankInAppNotificationCenter extends StatelessWidget {
   final List<BankNotification> notifications;
   final void Function(BankNotification)? onNotificationTap;
@@ -52,16 +60,19 @@ class BankInAppNotificationCenter extends StatelessWidget {
   /// Per-type accent overrides, merged over the built-in mapping.
   final Map<BankNotificationType, Color> typeColors;
 
-  /// Fill behind unread tiles. Defaults to the theme primary at 4%
-  /// opacity.
+  /// Fill behind unread tiles.
+  ///
+  /// Defaults to no fill: unread is carried by the marker dot and the heavier
+  /// title, and a per-row wash on top of those is the third encoding of one
+  /// bit. Set it to restore a wash — [BankEmblem.fillFor] gives one at the
+  /// kit's standard strength.
   final Color? unreadTintColor;
 
   /// Accent of the swipe-to-dismiss affordance. Defaults to
-  /// [BankTokens.investmentLoss].
+  /// [BankThemeData.negativeBalance], so it tracks brightness.
   final Color? dismissColor;
 
-  /// Divider color between tiles. Defaults to the theme outline at
-  /// 50% opacity.
+  /// Divider color between tiles. Defaults to the theme hairline.
   final Color? dividerColor;
 
   /// Merged over the computed tile title style (labelMedium).
@@ -70,7 +81,7 @@ class BankInAppNotificationCenter extends StatelessWidget {
   /// Merged over the computed tile body style (bodySmall).
   final TextStyle? bodyStyle;
 
-  /// Merged over the computed timestamp style (labelSmall).
+  /// Merged over the computed timestamp style ([BankTokens.caption]).
   final TextStyle? timeStyle;
 
   /// Overrides each tile's padding. Defaults to [BankTokens.space4]
@@ -119,7 +130,7 @@ class BankInAppNotificationCenter extends StatelessWidget {
               children: [
                 Icon(
                   emptyIcon ?? Icons.notifications_none_rounded,
-                  size: 48,
+                  size: BankTokens.iconHero,
                   color: theme.onSurfaceVariant,
                 ),
                 const SizedBox(height: BankTokens.space3),
@@ -132,6 +143,9 @@ class BankInAppNotificationCenter extends StatelessWidget {
             ),
           );
     }
+
+    final surfaceBrightness =
+        ThemeData.estimateBrightnessForColor(theme.surface);
 
     return Column(
       children: [
@@ -146,7 +160,7 @@ class BankInAppNotificationCenter extends StatelessWidget {
               children: [
                 Text(
                   '$unreadCount $unreadSuffix',
-                  style: BankTokens.labelSmall
+                  style: BankTokens.caption
                       .copyWith(color: theme.onSurfaceVariant),
                 ),
                 const Spacer(),
@@ -154,7 +168,7 @@ class BankInAppNotificationCenter extends StatelessWidget {
                   TextButton(
                     onPressed: onMarkAllRead,
                     style: TextButton.styleFrom(
-                      minimumSize: const Size(0, 32),
+                      minimumSize: const Size(0, BankTokens.minTapTarget),
                       padding: const EdgeInsets.symmetric(
                         horizontal: BankTokens.space3,
                       ),
@@ -168,8 +182,10 @@ class BankInAppNotificationCenter extends StatelessWidget {
           child: ListView.separated(
             itemCount: notifications.length,
             separatorBuilder: (_, __) => Divider(
-              height: 1,
-              color: dividerColor ?? theme.outline.withValues(alpha: 0.5),
+              height: BankTokens.hairlineWidth,
+              thickness: BankTokens.hairlineWidth,
+              color: dividerColor ??
+                  BankTokens.hairlineColor(theme.onSurface, surfaceBrightness),
             ),
             itemBuilder: (context, index) {
               final notification = notifications[index];
@@ -177,7 +193,9 @@ class BankInAppNotificationCenter extends StatelessWidget {
                 notification: notification,
                 theme: theme,
                 center: this,
-                onTap: () => onNotificationTap?.call(notification),
+                onTap: onNotificationTap == null
+                    ? null
+                    : () => onNotificationTap!(notification),
                 onDismiss:
                     onDismiss != null ? () => onDismiss!(notification) : null,
               );
@@ -217,14 +235,17 @@ class _NotificationTile extends StatelessWidget {
         BankNotificationType.priceAlert => Icons.show_chart_rounded,
       };
 
+  /// Semantic accent per type, taken from the *theme's* brightness-aware
+  /// financial colours rather than the light-surface tokens — the light red
+  /// used to stay put on a near-black feed and fall under AA.
   static Color _colorFor(BankNotificationType type, BankThemeData theme) =>
       switch (type) {
         BankNotificationType.security ||
         BankNotificationType.fraud =>
-          BankTokens.investmentLoss,
+          theme.negativeBalance,
         BankNotificationType.payment ||
         BankNotificationType.transfer =>
-          BankTokens.investmentGain,
+          theme.positiveBalance,
         _ => theme.primary,
       };
 
@@ -232,100 +253,90 @@ class _NotificationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = center.typeColors[notification.type] ??
         _colorFor(notification.type, theme);
-    final dismissAccent = center.dismissColor ?? BankTokens.investmentLoss;
+    final markerInk = BankEmblem.inkFor(theme, accent);
+    final dismissAccent = center.dismissColor ?? theme.negativeBalance;
+    final unread = !notification.isRead;
 
-    final Widget tile = Semantics(
-      label: '${notification.isRead ? '' : center.unreadSemanticPrefix}'
-          '${notification.title}. '
-          '${notification.body}',
-      button: true,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          color: notification.isRead
-              ? Colors.transparent
-              : center.unreadTintColor ?? theme.primary.withValues(alpha: 0.04),
-          padding: center.itemPadding ??
-              const EdgeInsets.symmetric(
-                horizontal: BankTokens.space4,
-                vertical: BankTokens.space3,
-              ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: accent.withValues(alpha: 0.12),
-                ),
-                child: Icon(
-                  center.typeIcons[notification.type] ??
-                      _iconFor(notification.type),
-                  size: 20,
-                  color: accent,
-                ),
-              ),
-              const SizedBox(width: BankTokens.space3),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    final Widget row = Container(
+      color: unread ? center.unreadTintColor : null,
+      padding: center.itemPadding ??
+          const EdgeInsets.symmetric(
+            horizontal: BankTokens.space4,
+            vertical: BankTokens.space3,
+          ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          BankEmblem(
+            icon: center.typeIcons[notification.type] ??
+                _iconFor(notification.type),
+            tier: BankEmblemSize.medium,
+            tintColor: accent,
+          ),
+          const SizedBox(width: BankTokens.space3),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            notification.title,
-                            style: BankTokens.labelMedium
-                                .copyWith(
-                                  color: theme.onSurface,
-                                  fontWeight: notification.isRead
-                                      ? FontWeight.normal
-                                      : FontWeight.w600,
-                                )
-                                .merge(center.titleStyle),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                    Expanded(
+                      child: Text(
+                        notification.title,
+                        style: BankTokens.labelMedium
+                            .copyWith(
+                              color: theme.onSurface,
+                              fontWeight:
+                                  unread ? FontWeight.w600 : FontWeight.normal,
+                            )
+                            .merge(center.titleStyle),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (unread) ...[
+                      const SizedBox(width: BankTokens.space2),
+                      Container(
+                        width: BankTintChip.dotSize,
+                        height: BankTintChip.dotSize,
+                        decoration: BoxDecoration(
+                          color: markerInk,
+                          shape: BoxShape.circle,
                         ),
-                        if (!notification.isRead)
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: theme.primary,
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      notification.body,
-                      style: BankTokens.bodySmall
-                          .copyWith(color: theme.onSurfaceVariant)
-                          .merge(center.bodyStyle),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _timeAgo(notification.receivedAt),
-                      style: BankTokens.labelSmall
-                          .copyWith(
-                            color: theme.onSurfaceVariant,
-                            fontSize: 11,
-                          )
-                          .merge(center.timeStyle),
-                    ),
+                      ),
+                    ],
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: BankTokens.space1),
+                Text(
+                  notification.body,
+                  style: BankTokens.bodySmall
+                      .copyWith(color: theme.onSurfaceVariant)
+                      .merge(center.bodyStyle),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: BankTokens.space1),
+                Text(
+                  _timeAgo(notification.receivedAt),
+                  style: BankTokens.caption
+                      .copyWith(color: theme.onSurfaceVariant)
+                      .merge(center.timeStyle),
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
+    );
+
+    final Widget tile = BankPressable(
+      onTap: onTap,
+      semanticLabel: '${unread ? center.unreadSemanticPrefix : ''}'
+          '${notification.title}. '
+          '${notification.body}',
+      excludeSemantics: true,
+      child: row,
     );
 
     if (onDismiss == null) return tile;
@@ -335,11 +346,12 @@ class _NotificationTile extends StatelessWidget {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: AlignmentDirectional.centerEnd,
-        color: dismissAccent.withValues(alpha: 0.12),
-        padding: const EdgeInsets.only(right: BankTokens.space4),
+        color: BankEmblem.fillFor(theme, dismissAccent),
+        padding: const EdgeInsetsDirectional.only(end: BankTokens.space4),
         child: Icon(
           center.dismissIcon ?? Icons.delete_outline_rounded,
-          color: dismissAccent,
+          size: BankTokens.iconLarge,
+          color: BankEmblem.inkFor(theme, dismissAccent),
         ),
       ),
       onDismissed: (_) => onDismiss!(),

@@ -157,7 +157,8 @@ class BankCashbackCategoryPicker extends StatefulWidget {
   final Color? backgroundColor;
 
   /// Overrides the category-card shadow. Defaults to
-  /// [BankTokens.shadowCardFor] of the theme background brightness; pass
+  /// the card-tier shadow for the theme background brightness, re-inked
+  /// with [BankThemeData.shadowTint] when the brand defines one; pass
   /// `const []` to flatten the cards.
   final List<BoxShadow>? shadow;
 
@@ -406,7 +407,11 @@ class _CategoryCard extends StatelessWidget {
     final card = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: cardRadius,
-        boxShadow: shadow ?? BankTokens.shadowCardFor(backgroundBrightness),
+        boxShadow: shadow ??
+            theme.shadowFor(
+              BankElevationTier.card,
+              brightness: backgroundBrightness,
+            ),
       ),
       child: Material(
         color: selected

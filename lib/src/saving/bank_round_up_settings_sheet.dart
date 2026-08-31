@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_control_theme.dart';
 import '../../src/common/bank_icon_spec.dart';
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
@@ -11,27 +13,15 @@ import '../../src/theme/tokens.dart';
 // Sheet handle bar helper
 // ---------------------------------------------------------------------------
 
-class _SheetHandleBar extends StatelessWidget {
-  const _SheetHandleBar();
-
-  @override
-  Widget build(BuildContext context) {
-    final bankTheme = BankThemeData.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(top: BankTokens.space2),
-      child: Center(
-        child: Container(
-          width: 40,
-          height: 4,
-          decoration: BoxDecoration(
-            color: bankTheme.outline,
-            borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          ),
-        ),
-      ),
-    );
-  }
-}
+/// The grab handle for the sheet body, which paints its own surface and so
+/// presents itself with `showHandle: false`.
+///
+/// [BankSheetHandle] carries the [Semantics] the affordance needs; the margin
+/// keeps the body's existing rhythm, where the title padding below supplies the
+/// gap the handle would otherwise reserve.
+const Widget _sheetHandleBar = BankSheetHandle(
+  margin: EdgeInsets.only(top: BankTokens.space2),
+);
 
 // ---------------------------------------------------------------------------
 // Multiplier chip
@@ -135,7 +125,7 @@ class BankRoundUpSettingsSheet extends StatefulWidget {
   /// Invoked when the user picks a destination pot. `null` when deselected.
   final ValueChanged<String?> onPotSelected;
 
-  /// Heading of the sheet. Defaults to 'Round Up Spare Change'.
+  /// Heading of the sheet. Defaults to 'Round up spare change'.
   final String title;
 
   /// Label above the multiplier chips. Defaults to 'Round up by'.
@@ -165,11 +155,11 @@ class BankRoundUpSettingsSheet extends StatefulWidget {
   final String multiplierSemanticTemplate;
 
   /// Switch semantics while round-ups are on. Defaults to
-  /// 'Round Up enabled'.
+  /// 'Round up enabled'.
   final String enabledSemanticLabel;
 
   /// Switch semantics while round-ups are off. Defaults to
-  /// 'Round Up disabled'.
+  /// 'Round up disabled'.
   final String disabledSemanticLabel;
 
   /// Explanation shown at the bottom; `{multiplier}` is substituted
@@ -224,7 +214,7 @@ class BankRoundUpSettingsSheet extends StatefulWidget {
     required this.onPotSelected,
     super.key,
     this.selectedPotId,
-    this.title = 'Round Up Spare Change',
+    this.title = 'Round up spare change',
     this.multiplierSectionLabel = 'Round up by',
     this.potSectionLabel = 'Save to',
     this.emptyPotsLabel = 'No savings pots available. Create a pot first.',
@@ -232,8 +222,8 @@ class BankRoundUpSettingsSheet extends StatefulWidget {
     this.potSemanticTemplate = '{pot}, goal {amount}',
     this.multiplierTemplate = '{n}×',
     this.multiplierSemanticTemplate = '{n}x multiplier',
-    this.enabledSemanticLabel = 'Round Up enabled',
-    this.disabledSemanticLabel = 'Round Up disabled',
+    this.enabledSemanticLabel = 'Round up enabled',
+    this.disabledSemanticLabel = 'Round up disabled',
     this.explanationTemplate = 'We\'ll round up every purchase to the '
         'nearest £1 and save the difference{multiplier} automatically.',
     this.radius,
@@ -265,10 +255,11 @@ class BankRoundUpSettingsSheet extends StatefulWidget {
     required ValueChanged<String?> onPotSelected,
     String? selectedPotId,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankRoundUpSettingsSheet(
           isEnabled: isEnabled,
           multiplier: multiplier,
@@ -341,7 +332,7 @@ class _BankRoundUpSettingsSheetState extends State<BankRoundUpSettingsSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _SheetHandleBar(),
+            _sheetHandleBar,
             // ── Title ─────────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -370,10 +361,15 @@ class _BankRoundUpSettingsSheetState extends State<BankRoundUpSettingsSheet> {
                         ? widget.enabledSemanticLabel
                         : widget.disabledSemanticLabel,
                     toggled: _isEnabled,
-                    child: Switch(
-                      value: _isEnabled,
-                      onChanged: _handleToggle,
-                      activeThumbColor: accent,
+                    child: SwitchTheme(
+                      data: BankControlTheme.switchTheme(
+                        bankTheme,
+                        accent: accent,
+                      ),
+                      child: Switch(
+                        value: _isEnabled,
+                        onChanged: _handleToggle,
+                      ),
                     ),
                   ),
                 ],

@@ -13,11 +13,25 @@ import '../tokens.dart';
 /// - Fully-pill buttons and chips (999 px radius)
 /// - Glow-based depth: all Material elevations are 0
 /// - `useGlow` = `true` with a 20 % violet glow colour
+/// - Gradient reach is [BankGradientRole.hero]: the violet→cyan sweep marks
+///   the hero surface and nothing else
 class BankVoltageTheme {
   const BankVoltageTheme._();
 
   // ---------------------------------------------------------------------------
   // Shared gradient
+  //
+  // Voltage's whole identity is one high-contrast 135° sweep, which is exactly
+  // why it is rationed. Painted at full strength on card faces *and* icon
+  // rings *and* avatars *and* progress fills *and* section headers, the sweep
+  // stops meaning "this is the important thing" and becomes the wallpaper the
+  // important thing is lost in — and because both stops are saturated, ten of
+  // them on one screen also leave nowhere for a status colour to be read.
+  //
+  // `gradientReach: hero` makes that a rule the theme enforces rather than a
+  // convention each widget has to remember: hero surfaces get the sweep,
+  // everything below gets the same two hues at 10–16 % alpha over the ambient
+  // surface (see BankThemeData.gradientFor).
   // ---------------------------------------------------------------------------
 
   static const LinearGradient _accentGradient = LinearGradient(
@@ -69,6 +83,7 @@ class BankVoltageTheme {
         cardSurfaceGradient: _accentGradient,
         cardPattern: BankCardPattern.mesh,
         cardPatternColor: _meshInk,
+        gradientReach: BankGradientRole.hero,
       );
 
   // ---------------------------------------------------------------------------
@@ -108,6 +123,7 @@ class BankVoltageTheme {
         cardSurfaceGradient: _accentGradient,
         cardPattern: BankCardPattern.mesh,
         cardPatternColor: _meshInk,
+        gradientReach: BankGradientRole.hero,
       );
 
   // ---------------------------------------------------------------------------
@@ -131,12 +147,18 @@ class BankVoltageTheme {
       onPrimary: bank.onPrimary,
       surface: bank.surface,
       onSurface: bank.onSurface,
+      // Material paints its elevation shadows from ColorScheme.shadow; a
+      // brand that tints its depth ink must reach Material too, or the two
+      // depth systems cast different-coloured light. Null keeps M3's black.
+      shadow: bank.shadowTint,
     );
 
     final themed = base.copyWith(
       colorScheme: colorScheme,
       scaffoldBackgroundColor: bank.background,
       cardColor: bank.surface,
+      // Pre-M3 widgets read ThemeData.shadowColor instead; keep both in step.
+      shadowColor: bank.shadowTint,
       extensions: <ThemeExtension<dynamic>>[bank],
     );
 

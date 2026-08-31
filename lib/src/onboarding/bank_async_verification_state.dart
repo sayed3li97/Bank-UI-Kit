@@ -13,9 +13,9 @@ import '../../src/theme/tokens.dart';
 /// - An animated pulsing document icon.
 /// - Three sequentially-pulsing dots indicating "processing".
 /// - A title, body message, and optional estimated-time chip.
-/// - Optional "Check Status" and "Contact Support" action buttons.
+/// - Optional "Check status" and "Contact support" action buttons.
 class BankAsyncVerificationState extends StatefulWidget {
-  /// Primary heading. Defaults to `'Verification Under Review'`.
+  /// Primary heading. Defaults to `'Verification under review'`.
   final String title;
 
   /// Body message describing the review process.
@@ -29,17 +29,17 @@ class BankAsyncVerificationState extends StatefulWidget {
   /// is rendered instead.
   final Widget? customIllustration;
 
-  /// Called when the user taps the "Check Status" button. `null` hides it.
+  /// Called when the user taps the "Check status" button. `null` hides it.
   final VoidCallback? onCheckStatus;
 
-  /// Called when the user taps the "Contact Support" button. `null` hides it.
+  /// Called when the user taps the "Contact support" button. `null` hides it.
   final VoidCallback? onContactSupport;
 
-  /// Label of the check-status button. Defaults to 'Check Status'.
+  /// Label of the check-status button. Defaults to 'Check status'.
   final String checkStatusLabel;
 
   /// Label of the contact-support button. Defaults to
-  /// 'Contact Support'.
+  /// 'Contact support'.
   final String contactSupportLabel;
 
   /// Prefix inside the estimated-time chip. Defaults to 'Estimated:'.
@@ -82,15 +82,15 @@ class BankAsyncVerificationState extends StatefulWidget {
 
   const BankAsyncVerificationState({
     super.key,
-    this.title = 'Verification Under Review',
+    this.title = 'Verification under review',
     this.message = 'We\'re reviewing your documents. '
         'This usually takes 1–2 business days.',
     this.estimatedTime,
     this.customIllustration,
     this.onCheckStatus,
     this.onContactSupport,
-    this.checkStatusLabel = 'Check Status',
-    this.contactSupportLabel = 'Contact Support',
+    this.checkStatusLabel = 'Check status',
+    this.contactSupportLabel = 'Contact support',
     this.estimatedPrefix = 'Estimated:',
     this.illustrationIcon,
     this.estimatedTimeIcon,

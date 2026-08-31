@@ -46,7 +46,7 @@ class BankLivenessCheckOverlay extends StatefulWidget {
   /// [state] == [BankLivenessState.retry].
   final VoidCallback? onRetry;
 
-  /// Retry button label. Defaults to 'Try Again'.
+  /// Retry button label. Defaults to 'Try again'.
   final String retryLabel;
 
   /// Retry button glyph. Defaults to [Icons.refresh].
@@ -94,7 +94,7 @@ class BankLivenessCheckOverlay extends StatefulWidget {
     this.instruction,
     this.detectionProgress = 0,
     this.onRetry,
-    this.retryLabel = 'Try Again',
+    this.retryLabel = 'Try again',
     this.retryIcon,
     this.successIcon,
     this.idleRingColor,

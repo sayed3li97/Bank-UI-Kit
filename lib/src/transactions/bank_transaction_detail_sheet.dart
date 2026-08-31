@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../src/common/bank_icon_spec.dart';
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
@@ -69,7 +70,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
   final String paidByLabel;
 
   /// Overrides the splits section heading. Defaults to
-  /// 'Category Breakdown'.
+  /// 'Category breakdown'.
   final String categoryBreakdownLabel;
 
   /// Overrides the category display name. Defaults to built-in
@@ -108,7 +109,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
     this.referenceLabel = 'Reference',
     this.noteLabel = 'Note',
     this.paidByLabel = 'Paid by',
-    this.categoryBreakdownLabel = 'Category Breakdown',
+    this.categoryBreakdownLabel = 'Category breakdown',
     this.categoryLabelBuilder,
     this.disputeIcon,
     this.shareIcon,
@@ -123,10 +124,11 @@ class BankTransactionDetailSheet extends StatelessWidget {
     VoidCallback? onDispute,
     VoidCallback? onShare,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankTransactionDetailSheet(
           transaction: transaction,
           mapPreview: mapPreview,
@@ -213,19 +215,13 @@ class BankTransactionDetailSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle bar
-          Padding(
-            padding: const EdgeInsets.only(top: BankTokens.space2),
-            child: Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: handleColor ?? bankTheme.outline,
-                  borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-                ),
-              ),
-            ),
+          // Handle bar. The body paints its own surface and is presented with
+          // `showHandle: false`, so the handle — and the semantics that
+          // announce it — belong here. The margin keeps the existing rhythm:
+          // the scroll view's own top padding supplies the gap underneath.
+          BankSheetHandle(
+            color: handleColor ?? bankTheme.outline,
+            margin: const EdgeInsets.only(top: BankTokens.space2),
           ),
           // Scrollable body
           Flexible(

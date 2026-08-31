@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_gradient_surface.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/button_text_style.dart';
 import '../theme/tokens.dart';
@@ -210,14 +211,19 @@ class BankProductCard extends StatelessWidget {
   final Color? accentColor;
 
   /// Overrides the gradient painted behind the identity header when
-  /// [highlighted]. Defaults to the theme `accentGradient`, or a gradient
-  /// derived from the accent color.
+  /// [highlighted]. Defaults to the brand gradient resolved at
+  /// [BankGradientRole.accent], or a gradient derived from the accent color.
+  ///
+  /// A promo header is a supporting brand surface, so a brand whose
+  /// [BankThemeData.gradientReach] stops at [BankGradientRole.hero] gets the
+  /// same hues here as a low-alpha wash, and the identity keeps its
+  /// [BankThemeData.onSurface] inks.
   final Gradient? gradient;
 
   /// Overrides the card shadow. Defaults to the floating shadow when
-  /// [highlighted], otherwise the resting card shadow, each resolved for
-  /// the theme background brightness ([BankTokens.shadowFloatingFor] /
-  /// [BankTokens.shadowCardFor]). Pass `const []` to flatten.
+  /// [highlighted], otherwise the resting card shadow, each resolved for the
+  /// theme background brightness and re-inked with [BankThemeData.shadowTint]
+  /// when the brand defines one. Pass `const []` to flatten.
   final List<BoxShadow>? shadow;
 
   /// Overrides the card outline. Non-highlighted cards default on dark
@@ -322,9 +328,26 @@ class BankProductCard extends StatelessWidget {
     final backgroundBrightness =
         ThemeData.estimateBrightnessForColor(theme.background);
     final resolvedShadow = shadow ??
-        (highlighted
-            ? BankTokens.shadowFloatingFor(backgroundBrightness)
-            : BankTokens.shadowCardFor(backgroundBrightness));
+        theme.shadowFor(
+          highlighted ? BankElevationTier.floating : BankElevationTier.card,
+          brightness: backgroundBrightness,
+        );
+
+    // The promo header of a highlighted card is a supporting brand surface,
+    // not the screen's hero: it resolves at BankGradientRole.accent so
+    // gradientReach can ration it down to a wash.
+    final headerSurface = highlighted
+        ? BankGradientSurface.resolve(
+            theme,
+            BankGradientRole.accent,
+            override: gradient,
+            fallback: LinearGradient(
+              colors: [accent, theme.primaryVariant],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          )
+        : null;
 
     // Highlighted cards keep the accent border; plain cards get a dark
     // hairline (or an invisible border of the same width on light
@@ -361,21 +384,15 @@ class BankProductCard extends StatelessWidget {
         leadingIcon: leadingIcon,
         accent: accent,
         theme: theme,
-        onGradient: highlighted,
+        // Ink follows the fill: a rationed wash is translucent over the
+        // card surface, so the identity keeps its onSurface inks there.
+        onGradient: headerSurface != null && !headerSurface.demoted,
         titleStyle: titleStyle,
         subtitleStyle: subtitleStyle,
       );
     }
 
-    final headerGradient = highlighted
-        ? (gradient ??
-            theme.accentGradient ??
-            LinearGradient(
-              colors: [accent, theme.primaryVariant],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ))
-        : null;
+    final headerGradient = headerSurface?.gradient;
 
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.start,

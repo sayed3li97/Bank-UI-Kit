@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_gradient_surface.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
@@ -138,7 +139,8 @@ class BankPreapprovedLoanCard extends StatefulWidget {
   final Color? backgroundColor;
 
   /// Overrides the card shadow. Defaults to the hero shadow appropriate
-  /// for the theme background brightness ([BankTokens.shadowHeroFor]);
+  /// for the theme background brightness, re-inked with
+  /// [BankThemeData.shadowTint] when the brand defines one;
   /// pass `const []` to flatten.
   final List<BoxShadow>? shadow;
 
@@ -149,8 +151,12 @@ class BankPreapprovedLoanCard extends StatefulWidget {
   /// identical across brightness. Pass `const Border()` to remove it.
   final BoxBorder? border;
 
-  /// Overrides the header strip gradient. Defaults to the theme
-  /// accentGradient (falling back to primary tones).
+  /// Overrides the header strip gradient. Defaults to the brand gradient
+  /// resolved at [BankGradientRole.accent] (falling back to primary tones).
+  ///
+  /// A header strip is a supporting brand surface, so a brand whose
+  /// [BankThemeData.gradientReach] stops at [BankGradientRole.hero] gets the
+  /// same hues here as a low-alpha wash, with [BankThemeData.onSurface] ink.
   final Gradient? gradient;
 
   /// Accent for the monthly figure, selected chip, and CTA. Defaults
@@ -294,9 +300,16 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
     final monthly =
         Money.fromDouble(_monthlyPayment, widget.maxAmount.currencyCode);
 
-    final gradient = widget.gradient ??
-        theme.accentGradient ??
-        LinearGradient(colors: [theme.primary, theme.primaryVariant]);
+    // A header strip is a supporting brand surface, not the screen's hero:
+    // it resolves at BankGradientRole.accent so gradientReach can ration it.
+    final headerSurface = BankGradientSurface.resolve(
+      theme,
+      BankGradientRole.accent,
+      override: widget.gradient,
+      fallback: LinearGradient(
+        colors: [theme.primary, theme.primaryVariant],
+      ),
+    );
     final accent = widget.accentColor ?? theme.primary;
     final resolvedRadius = widget.radius ?? theme.cardRadius;
 
@@ -328,15 +341,18 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
         color: resolvedSurface,
         borderRadius: resolvedRadius,
         border: resolvedBorder,
-        boxShadow:
-            widget.shadow ?? BankTokens.shadowHeroFor(backgroundBrightness),
+        boxShadow: widget.shadow ??
+            theme.shadowFor(
+              BankElevationTier.hero,
+              brightness: backgroundBrightness,
+            ),
       ),
       child: ClipRRect(
         borderRadius: resolvedRadius,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            widget.header ?? _header(theme, gradient),
+            widget.header ?? _header(theme, headerSurface),
             Padding(
               padding:
                   widget.padding ?? const EdgeInsets.all(BankTokens.space4),
@@ -452,9 +468,12 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
   }
 
   /// Gradient strip carrying the title and the offer badge.
-  Widget _header(BankThemeData theme, Gradient gradient) {
+  Widget _header(BankThemeData theme, BankGradientSurface surface) {
+    // Ink follows the fill: a full-strength gradient takes onPrimary, a
+    // rationed wash takes onSurface. Never resolve the two separately.
+    final onHeader = surface.foreground;
     return DecoratedBox(
-      decoration: BoxDecoration(gradient: gradient),
+      decoration: BoxDecoration(gradient: surface.gradient),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: BankTokens.space4,
@@ -467,7 +486,7 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
                 widget.title,
                 style: BankTokens.headlineSmall
                     .copyWith(
-                      color: theme.onPrimary,
+                      color: onHeader,
                       fontFamily: theme.fontFamily,
                     )
                     .merge(widget.titleStyle),
@@ -476,7 +495,7 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
             const SizedBox(width: BankTokens.space2),
             DecoratedBox(
               decoration: BoxDecoration(
-                color: theme.onPrimary.withValues(alpha: 0.16),
+                color: onHeader.withValues(alpha: 0.16),
                 borderRadius: theme.chipRadius,
               ),
               child: Padding(
@@ -490,13 +509,12 @@ class _BankPreapprovedLoanCardState extends State<BankPreapprovedLoanCard> {
                     Icon(
                       widget.badgeIcon ?? BankIcons.success,
                       size: 14,
-                      color: theme.onPrimary,
+                      color: onHeader,
                     ),
                     const SizedBox(width: BankTokens.space1),
                     Text(
                       widget.badgeLabel,
-                      style: BankTokens.labelSmall
-                          .copyWith(color: theme.onPrimary),
+                      style: BankTokens.labelSmall.copyWith(color: onHeader),
                     ),
                   ],
                 ),

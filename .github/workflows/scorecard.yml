@@ -1,0 +1,69 @@
+# Runs the OpenSSF Scorecard against this repository and publishes the result.
+#
+# Why it exists: FINOS, the banking industry's open-source readiness body,
+# tells bank OSPOs to gate intake on a published Scorecard, and a bank's own
+# reviewers use it as the first cheap signal before reading any code. The run
+# is scheduled as well as push-driven so the score reflects repository state
+# (branch protection, maintenance, token hygiene) and not only code changes.
+#
+# `publish_results: true` sends the result to the public Scorecard API, which
+# is what makes the README badge and https://scorecard.dev/viewer resolve.
+# Nothing about the repository's contents is disclosed that is not already
+# public.
+#
+# This file follows the constraints the Scorecard API enforces on the
+# producing workflow — no workflow-level env, defaults, or write permissions,
+# and only the analysis job may hold `id-token: write`. Keep them when
+# editing, or the API rejects the results and the run fails.
+name: OpenSSF Scorecard
+
+on:
+  push:
+    branches: [main]
+  # Several checks (Branch-Protection above all) score repository settings
+  # rather than code, so a settings change should re-score without waiting a
+  # week. This is one of the four triggers the Scorecard API accepts from a
+  # workflow that publishes results.
+  branch_protection_rule:
+  schedule:
+    # Weekly, Tuesday 04:27 UTC. Off the hour on purpose: scheduled runs that
+    # queue on the hour are the ones GitHub delays or drops under load.
+    - cron: '27 4 * * 2'
+
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # upload the SARIF to the code-scanning dashboard
+      id-token: write # OIDC token proving the run to the Scorecard API
+    steps:
+      # Pinned by commit SHA rather than tag so a retagged release cannot
+      # change what runs here. Trailing comments record the tag.
+      - name: Check out the repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      # Keeps the raw result reachable for five days without a Security-tab
+      # permission, which is how an external reviewer reads it.
+      - name: Upload the SARIF as a build artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: scorecard-results
+          path: results.sarif
+          retention-days: 5
+
+      - name: Upload the SARIF to code scanning
+        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4.37.8
+        with:
+          sarif_file: results.sarif

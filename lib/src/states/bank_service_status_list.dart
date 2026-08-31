@@ -165,7 +165,9 @@ class BankServiceStatusList extends StatelessWidget {
   /// Overrides the card background. Defaults to [BankThemeData.surface].
   final Color? backgroundColor;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
+  /// Overrides the card shadow. Defaults to the card-tier shadow for the
+  /// theme background brightness, re-inked with [BankThemeData.shadowTint]
+  /// when the brand defines one;
   /// passing `const []` flattens the card.
   final List<BoxShadow>? shadow;
 
@@ -402,7 +404,7 @@ class BankServiceStatusList extends StatelessWidget {
         padding ?? const EdgeInsetsDirectional.all(BankTokens.space4);
     final resolvedRadius = radius ?? theme.cardRadius;
     final resolvedBackground = backgroundColor ?? theme.surface;
-    final resolvedShadow = shadow ?? BankTokens.shadowCard;
+    final resolvedShadow = shadow ?? theme.shadowFor(BankElevationTier.card);
     final divider = Divider(
       height: 1,
       thickness: 1,

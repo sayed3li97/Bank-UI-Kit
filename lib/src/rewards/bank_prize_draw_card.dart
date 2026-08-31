@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
+import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
@@ -14,9 +16,10 @@ import '../theme/tokens.dart';
 /// A single upcoming draw shown inside [BankPrizeDrawCard].
 ///
 /// Describes one prize event of a prize-linked savings programme: what
-/// can be won ([prizeLabel]), when the draw happens ([drawDate]), and
-/// the deposit cutoff for entering it ([lastDepositDate]). Grand draws
-/// ([isGrand]) receive an accent star badge in the list.
+/// can be won ([prizeAmount] or [prizeLabel]), when the draw happens
+/// ([drawDate]), and the deposit cutoff for entering it
+/// ([lastDepositDate]). Grand draws ([isGrand]) receive an accent star
+/// badge in the list.
 @immutable
 class BankPrizeDraw {
   /// Stable identifier of the draw.
@@ -24,7 +27,20 @@ class BankPrizeDraw {
 
   /// User-facing prize description, e.g. `'USD 500,000'` or
   /// `'Porsche 911 Carrera S'`.
+  ///
+  /// Used verbatim when [prizeAmount] is null. Prefer [prizeAmount] for
+  /// cash prizes and keep this for prizes that are not money.
   final String prizeLabel;
+
+  /// The prize as money, for cash prizes.
+  ///
+  /// A pre-formatted [prizeLabel] hides the one thing a prize list has to
+  /// make obvious: GCC programmes routinely run a USD grand prize inside a
+  /// BHD account, and two hand-written strings give the card no way to
+  /// know the rows disagree. Passing [Money] lets the card detect the mix
+  /// and switch the whole list to ISO codes, and it gets each currency's
+  /// own minor units and grouping for free.
+  final Money? prizeAmount;
 
   /// Date on which the draw takes place.
   final DateTime drawDate;
@@ -42,6 +58,7 @@ class BankPrizeDraw {
     required this.prizeLabel,
     required this.drawDate,
     required this.lastDepositDate,
+    this.prizeAmount,
     this.isGrand = false,
   });
 
@@ -51,14 +68,21 @@ class BankPrizeDraw {
     return other is BankPrizeDraw &&
         other.id == id &&
         other.prizeLabel == prizeLabel &&
+        other.prizeAmount == prizeAmount &&
         other.drawDate == drawDate &&
         other.lastDepositDate == lastDepositDate &&
         other.isGrand == isGrand;
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, prizeLabel, drawDate, lastDepositDate, isGrand);
+  int get hashCode => Object.hash(
+        id,
+        prizeLabel,
+        prizeAmount,
+        drawDate,
+        lastDepositDate,
+        isGrand,
+      );
 
   @override
   String toString() =>
@@ -97,7 +121,8 @@ class BankPrizeDraw {
 ///     ),
 ///     BankPrizeDraw(
 ///       id: 'may',
-///       prizeLabel: 'USD 500,000',
+///       prizeLabel: 'Cash prize',
+///       prizeAmount: Money.fromDouble(500000, 'USD'),
 ///       drawDate: DateTime(2026, 5, 13),
 ///       lastDepositDate: DateTime(2026, 5, 1),
 ///     ),
@@ -162,6 +187,21 @@ class BankPrizeDrawCard extends StatelessWidget {
   /// `'Grand draw'`.
   final String grandLabel;
 
+  /// Whether monetary prizes render with their ISO 4217 code
+  /// (`USD 500,000`) instead of their symbol (`$500,000`).
+  ///
+  /// Null — the default — decides per card: the code appears as soon as the
+  /// visible prizes involve more than one currency, or any prize is in a
+  /// currency other than the [balance]'s. A symbol is a shorthand that only
+  /// works when everything on screen shares it; the moment a list mixes
+  /// currencies, `$500,000` and `1,000.000` sitting one under the other are
+  /// two figures the customer has no way to compare.
+  ///
+  /// Force it `true` for a programme that is always multi-currency, or
+  /// `false` to keep symbols under a host-supplied disambiguation of its
+  /// own.
+  final bool? useIsoCurrencyCodes;
+
   /// Called when the primary Add money button is tapped. When `null`,
   /// the button renders disabled.
   final VoidCallback? onAddMoney;
@@ -203,8 +243,9 @@ class BankPrizeDrawCard extends StatelessWidget {
   /// Defaults to the theme [BankThemeData.primary].
   final Color? accentColor;
 
-  /// Overrides the card shadow. Defaults to [BankTokens.shadowCard];
-  /// pass `const []` to flatten the card.
+  /// Overrides the card shadow. Defaults to the resting-card shadow for
+  /// the theme background's brightness ([BankTokens.shadowCardFor]); pass
+  /// `const []` to flatten the card.
   final List<BoxShadow>? shadow;
 
   /// Merged over the computed heading style
@@ -248,6 +289,7 @@ class BankPrizeDrawCard extends StatelessWidget {
     this.countdownDaysTemplate = 'Draw in {days} days',
     this.countdownHoursTemplate = 'Draw in {hours}h {minutes}m',
     this.grandLabel = 'Grand draw',
+    this.useIsoCurrencyCodes,
     this.onAddMoney,
     this.onSendGift,
     this.onViewWinners,
@@ -317,6 +359,20 @@ class BankPrizeDrawCard extends StatelessWidget {
   bool get _belowMinDeposit =>
       minDeposit != null && balance.amount < minDeposit!.amount;
 
+  /// Whether [visible]'s cash prizes need ISO codes to be told apart.
+  ///
+  /// True as soon as the rows involve a second currency — either between
+  /// themselves or against the account they are being won into.
+  bool _needsIsoCodes(List<BankPrizeDraw> visible) {
+    if (useIsoCurrencyCodes != null) return useIsoCurrencyCodes!;
+    final codes = {
+      for (final draw in visible)
+        if (draw.prizeAmount != null) draw.prizeAmount!.currencyCode,
+    };
+    if (codes.isEmpty) return false;
+    return codes.length > 1 || !codes.contains(balance.currencyCode);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
@@ -329,6 +385,11 @@ class BankPrizeDrawCard extends StatelessWidget {
     );
     final countdown = _countdownLabel(now, scope.numeralStyle);
     final visible = _sortedDraws;
+    final useIsoCodes = _needsIsoCodes(visible);
+    // One gutter width for every row, so the prize column starts at the
+    // same x whether or not the row carries a grand badge — the badge used
+    // to shunt its own row's text sideways past its neighbours'.
+    final hasGrandDraw = visible.any((draw) => draw.isGrand);
 
     String? eligibilityHint;
     if (_belowMinDeposit) {
@@ -336,11 +397,13 @@ class BankPrizeDrawCard extends StatelessWidget {
         amount: minDeposit!.amount,
         currencyCode: minDeposit!.currencyCode,
         numeralStyle: scope.numeralStyle,
+        locale: context.bankLocale,
       );
       eligibilityHint = minDepositTemplate.replaceFirst('{amount}', minAmount);
     }
 
-    final summary = semanticLabel ?? _summary(scope, entriesText, countdown);
+    final summary = semanticLabel ??
+        _summary(scope, entriesText, countdown, context.bankLocale);
 
     final resolvedTitleStyle = BankTokens.headlineSmall
         .copyWith(color: theme.onSurface)
@@ -350,6 +413,15 @@ class BankPrizeDrawCard extends StatelessWidget {
     final resolvedEntriesStyle =
         theme.numeralHero.copyWith(color: theme.onSurface).merge(entriesStyle);
 
+    // One depth language for every card: token shadows resolved against the
+    // theme background brightness, plus the dark-surface hairline. The raw
+    // light-ink shadow this used to paint is invisible on a dark canvas.
+    final depth = BankSurfaceDepth.resolve(
+      theme,
+      surfaceColor: backgroundColor,
+      shadow: shadow,
+    );
+
     return Semantics(
       container: true,
       label: summary,
@@ -357,7 +429,8 @@ class BankPrizeDrawCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor ?? theme.surface,
           borderRadius: radius ?? theme.cardRadius,
-          boxShadow: shadow ?? BankTokens.shadowCard,
+          boxShadow: depth.shadow,
+          border: depth.border,
         ),
         child: Padding(
           padding: padding ?? const EdgeInsets.all(BankTokens.space5),
@@ -418,6 +491,8 @@ class BankPrizeDrawCard extends StatelessWidget {
                     grandBadgeIcon: grandBadgeIcon ?? BankIcons.watchlistFilled,
                     accent: accent,
                     numeralStyle: scope.numeralStyle,
+                    reserveBadgeGutter: hasGrandDraw,
+                    useIsoCode: useIsoCodes,
                   ),
                 ],
               ],
@@ -438,6 +513,7 @@ class BankPrizeDrawCard extends StatelessWidget {
     BankUiScopeData scope,
     String entriesText,
     String? countdown,
+    String? locale,
   ) {
     final balanceText = scope.privacyEnabled
         ? scope.strings.balanceHidden
@@ -445,6 +521,7 @@ class BankPrizeDrawCard extends StatelessWidget {
             amount: balance.amount,
             currencyCode: balance.currencyCode,
             numeralStyle: scope.numeralStyle,
+            locale: locale,
           );
     final buffer = StringBuffer()
       ..write('$title. ')
@@ -653,6 +730,14 @@ class _DrawRow extends StatelessWidget {
   final Color accent;
   final NumeralStyle numeralStyle;
 
+  /// Whether to hold the badge gutter open on rows without a badge, so the
+  /// prize column of a mixed list starts on one edge.
+  final bool reserveBadgeGutter;
+
+  /// Whether monetary prizes render with their ISO code instead of their
+  /// symbol.
+  final bool useIsoCode;
+
   const _DrawRow({
     required this.draw,
     required this.cutoffTemplate,
@@ -660,7 +745,14 @@ class _DrawRow extends StatelessWidget {
     required this.grandBadgeIcon,
     required this.accent,
     required this.numeralStyle,
+    required this.reserveBadgeGutter,
+    required this.useIsoCode,
   });
+
+  /// The badge box's edge: the glyph plus its padding on both sides. The
+  /// blank gutter has to match it exactly or it fixes nothing.
+  static const double _badgeExtent =
+      BankTokens.iconSmall + BankTokens.space1 * 2;
 
   @override
   Widget build(BuildContext context) {
@@ -674,10 +766,22 @@ class _DrawRow extends StatelessWidget {
         BankDateFormatter.formatShort(draw.lastDepositDate),
       ),
     );
+    final prize = draw.prizeAmount == null
+        ? draw.prizeLabel
+        : BankMoneyFormatter.format(
+            amount: draw.prizeAmount!.amount,
+            currencyCode: draw.prizeAmount!.currencyCode,
+            numeralStyle: numeralStyle,
+            // The app's locale, not the ambient Intl one: a de-DE reader
+            // handed US grouping reads `500,000` as five hundred.
+            locale: context.bankLocale,
+            trimZeroCents: true,
+            useIsoCode: useIsoCode,
+          );
 
     final label = draw.isGrand
-        ? '$grandLabel. ${draw.prizeLabel}, $drawDate. $cutoff'
-        : '${draw.prizeLabel}, $drawDate. $cutoff';
+        ? '$grandLabel. $prize, $drawDate. $cutoff'
+        : '$prize, $drawDate. $cutoff';
 
     return Semantics(
       label: label,
@@ -685,26 +789,32 @@ class _DrawRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (draw.isGrand) ...[
+            if (draw.isGrand)
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.12),
+                  color: accent.withValues(alpha: BankTokens.alphaMuted),
                   borderRadius: theme.chipRadius,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(BankTokens.space1),
-                  child: Icon(grandBadgeIcon, size: 16, color: accent),
+                  child: Icon(
+                    grandBadgeIcon,
+                    size: BankTokens.iconSmall,
+                    color: accent,
+                  ),
                 ),
-              ),
+              )
+            else if (reserveBadgeGutter)
+              const SizedBox(width: _badgeExtent),
+            if (draw.isGrand || reserveBadgeGutter)
               const SizedBox(width: BankTokens.space3),
-            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    draw.prizeLabel,
+                    prize,
                     style:
                         BankTokens.labelLarge.copyWith(color: theme.onSurface),
                     maxLines: 2,
@@ -723,6 +833,7 @@ class _DrawRow extends StatelessWidget {
             Text(
               drawDate,
               style: theme.numeralSmall.copyWith(color: theme.onSurface),
+              textAlign: TextAlign.end,
             ),
           ],
         ),

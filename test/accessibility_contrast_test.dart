@@ -124,6 +124,52 @@ void main() {
     });
   });
 
+  group('Filled primary CTA reads as enabled (audit #47)', () {
+    // Studio dark used to pair near-black ink (#1C1C1E — literally the page
+    // background colour) with a washed mid-teal fill. Both halves cleared AA
+    // on their own, which is exactly why AA alone did not catch it: a washed
+    // mid-tone under dark ink is how Material renders a *disabled* filled
+    // button, so the screen's one action read as unavailable.
+    //
+    // The pair is therefore held to AAA rather than AA, and the fill is
+    // required to separate from what it sits on. Studio is the preset with a
+    // solid-fill CTA on an opaque canvas in both modes; Voltage and Bloom
+    // paint their CTAs on gradients and glows, which is a different problem
+    // with a different measurement, so they are not swept in here.
+    const aaaText = 7.0;
+
+    for (final entry in {
+      'studio.light': BankStudioTheme.light(),
+      'studio.dark': BankStudioTheme.dark(),
+    }.entries) {
+      test('${entry.key}: CTA fill separates from surface and background', () {
+        _expectContrast(
+          entry.value.primary,
+          entry.value.surface,
+          aaLargeOrNonText,
+          '${entry.key} primary fill does not separate from surface',
+        );
+        _expectContrast(
+          entry.value.primary,
+          entry.value.background,
+          aaLargeOrNonText,
+          '${entry.key} primary fill does not separate from background',
+        );
+      });
+    }
+
+    test('studio.dark: CTA label clears AAA on its fill', () {
+      final t = BankStudioTheme.dark();
+      _expectContrast(
+        t.onPrimary,
+        t.primary,
+        aaaText,
+        'studio.dark CTA label is back below AAA — the pair that reads as '
+        'disabled scrapes AA, so AA is not the bar that protects it',
+      );
+    });
+  });
+
   group('WCAG contrast — muted "frozen" state meets non-text AA (>= 3:1)', () {
     _allThemes().forEach((name, t) {
       test('$name: frozen vs surface', () {

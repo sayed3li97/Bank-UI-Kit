@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../common/bank_icon_spec.dart';
+import '../common/bank_sheet.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -277,8 +278,8 @@ class _BankPanicFreezeButtonState extends State<BankPanicFreezeButton>
   Future<void> _onUnfreezePressed() async {
     if (_busy) return;
     final theme = BankThemeData.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
+    final confirmed = await BankDialog.show<bool>(
+      context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: theme.surface,
         shape: RoundedRectangleBorder(borderRadius: theme.cardRadius),

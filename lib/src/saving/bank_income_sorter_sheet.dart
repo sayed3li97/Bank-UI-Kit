@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../src/common/bank_control_theme.dart';
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/controllers/bank_income_sorter_controller.dart';
 import '../../src/models/savings_pot.dart';
@@ -14,7 +16,7 @@ class BankIncomeSorterSheet extends StatefulWidget {
   final BankIncomeSorterController controller;
   final VoidCallback? onDismiss;
 
-  /// Heading of the sheet. Defaults to 'Income Received'.
+  /// Heading of the sheet. Defaults to 'Income received'.
   final String title;
 
   /// Label of the remaining row. Defaults to 'Remaining'.
@@ -66,7 +68,7 @@ class BankIncomeSorterSheet extends StatefulWidget {
     required this.controller,
     super.key,
     this.onDismiss,
-    this.title = 'Income Received',
+    this.title = 'Income received',
     this.remainingLabel = 'Remaining',
     this.addPotLabel = 'Add pot',
     this.repeatLabel = 'Repeat this split automatically next time',
@@ -86,10 +88,11 @@ class BankIncomeSorterSheet extends StatefulWidget {
     BuildContext context, {
     required BankIncomeSorterController controller,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankIncomeSorterSheet(controller: controller),
       );
 
@@ -183,91 +186,105 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
       ),
       child: SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _Handle(theme: theme),
-            Padding(
-              padding: resolvedPadding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.title,
-                    style: BankTokens.headlineSmall
-                        .copyWith(color: theme.onSurface)
-                        .merge(widget.titleStyle),
-                  ),
-                  const SizedBox(height: BankTokens.space1),
-                  Text(
-                    incomingFormatted,
-                    style: BankTokens.numeralHero
-                        .copyWith(color: accent)
-                        .merge(widget.amountStyle),
-                  ),
-                  const SizedBox(height: BankTokens.space4),
-                  ...List.generate(ctrl.entries.length, (i) {
-                    final entry = ctrl.entries[i];
-                    return _EntryRow(
-                      key: ValueKey(entry.potId),
-                      entry: entry,
-                      amountController: _controllers[i],
-                      onChanged: (value) {
-                        final updated = entry.copyWith(fractionOrFixed: value);
-                        widget.controller.updateEntry(i, updated);
-                      },
-                      onDelete: () => widget.controller.removeEntry(i),
+        // Ink splashes paint on the nearest Material ancestor. The decorated
+        // Container above is opaque and this body is presented with
+        // `backgroundColor: Colors.transparent`, so BankSheetSurface adds no
+        // Material of its own — without a transparent one *inside* the painted
+        // ground, the SwitchListTile below would splash behind it, invisibly.
+        child: Material(
+          type: MaterialType.transparency,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // The body paints its own surface and is presented with
+              // `showHandle: false`, so the handle — and its semantics — belong
+              // here rather than to the wrapping surface.
+              BankSheetHandle(color: theme.outline),
+              Padding(
+                padding: resolvedPadding,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: BankTokens.headlineSmall
+                          .copyWith(color: theme.onSurface)
+                          .merge(widget.titleStyle),
+                    ),
+                    const SizedBox(height: BankTokens.space1),
+                    Text(
+                      incomingFormatted,
+                      style: BankTokens.numeralHero
+                          .copyWith(color: accent)
+                          .merge(widget.amountStyle),
+                    ),
+                    const SizedBox(height: BankTokens.space4),
+                    ...List.generate(ctrl.entries.length, (i) {
+                      final entry = ctrl.entries[i];
+                      return _EntryRow(
+                        key: ValueKey(entry.potId),
+                        entry: entry,
+                        amountController: _controllers[i],
+                        onChanged: (value) {
+                          final updated =
+                              entry.copyWith(fractionOrFixed: value);
+                          widget.controller.updateEntry(i, updated);
+                        },
+                        onDelete: () => widget.controller.removeEntry(i),
+                        theme: theme,
+                        scope: scope,
+                        removeTooltip: widget.removeEntryTooltip,
+                        removeIcon: widget.removeEntryIcon,
+                      );
+                    }),
+                    const SizedBox(height: BankTokens.space2),
+                    _RemainingRow(
+                      label: widget.remainingLabel,
+                      amount: remainingFormatted,
+                      isValid: ctrl.isValid,
                       theme: theme,
-                      scope: scope,
-                      removeTooltip: widget.removeEntryTooltip,
-                      removeIcon: widget.removeEntryIcon,
-                    );
-                  }),
-                  const SizedBox(height: BankTokens.space2),
-                  _RemainingRow(
-                    label: widget.remainingLabel,
-                    amount: remainingFormatted,
-                    isValid: ctrl.isValid,
-                    theme: theme,
-                  ),
-                  if (availablePots.isNotEmpty) ...[
+                    ),
+                    if (availablePots.isNotEmpty) ...[
+                      const SizedBox(height: BankTokens.space3),
+                      TextButton.icon(
+                        onPressed: () => _showPotPicker(context, availablePots),
+                        icon: Icon(widget.addPotIcon ?? Icons.add),
+                        label: Text(widget.addPotLabel),
+                      ),
+                    ],
                     const SizedBox(height: BankTokens.space3),
-                    TextButton.icon(
-                      onPressed: () => _showPotPicker(context, availablePots),
-                      icon: Icon(widget.addPotIcon ?? Icons.add),
-                      label: Text(widget.addPotLabel),
+                    SwitchTheme(
+                      data: BankControlTheme.switchTheme(theme, accent: accent),
+                      child: SwitchListTile(
+                        value: ctrl.saveForNext,
+                        onChanged: widget.controller.setSaveForNext,
+                        title: Text(
+                          widget.repeatLabel,
+                          style: BankTokens.bodyMedium
+                              .copyWith(color: theme.onSurface),
+                        ),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    const SizedBox(height: BankTokens.space4),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: FilledButton(
+                        onPressed: ctrl.isValid
+                            ? () {
+                                ctrl.confirm();
+                                Navigator.of(context).pop();
+                              }
+                            : null,
+                        child: Text(widget.confirmLabel),
+                      ),
                     ),
                   ],
-                  const SizedBox(height: BankTokens.space3),
-                  SwitchListTile(
-                    value: ctrl.saveForNext,
-                    onChanged: widget.controller.setSaveForNext,
-                    title: Text(
-                      widget.repeatLabel,
-                      style: BankTokens.bodyMedium
-                          .copyWith(color: theme.onSurface),
-                    ),
-                    activeThumbColor: accent,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  const SizedBox(height: BankTokens.space4),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: FilledButton(
-                      onPressed: ctrl.isValid
-                          ? () {
-                              ctrl.confirm();
-                              Navigator.of(context).pop();
-                            }
-                          : null,
-                      child: Text(widget.confirmLabel),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -277,8 +294,11 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
     BuildContext context,
     List<SavingsPot> pots,
   ) async {
-    final picked = await showModalBottomSheet<SavingsPot>(
-      context: context,
+    final picked = await BankSheet.show<SavingsPot>(
+      context,
+      // A short, fixed list: keep Material's height clamp rather than growing
+      // the sheet to fit.
+      isScrollControlled: false,
       builder: (_) => ListView(
         shrinkWrap: true,
         children: pots
@@ -293,24 +313,6 @@ class _BankIncomeSorterSheetState extends State<BankIncomeSorterSheet> {
     );
     if (picked != null) _addPot(picked);
   }
-}
-
-class _Handle extends StatelessWidget {
-  const _Handle({required this.theme});
-  final BankThemeData theme;
-
-  @override
-  Widget build(BuildContext context) => Center(
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: BankTokens.space3),
-          width: 40,
-          height: 4,
-          decoration: BoxDecoration(
-            color: theme.outline,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-      );
 }
 
 class _EntryRow extends StatelessWidget {

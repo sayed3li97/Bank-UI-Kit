@@ -14,7 +14,13 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
 }
 
 Future<void> _loadBundledFonts() async {
-  const families = <String, List<String>>{
+  // Brand faces are registered twice, under the bare family name and under
+  // the package-qualified name. The presets emit the qualified form (a preset
+  // sets `fontFamily: 'packages/bank_ui_kit/SpaceGrotesk'`), so registering
+  // only the bare name silently drops every preset-themed widget test back to
+  // the one-em-per-glyph fallback test font, which is roughly double the real
+  // advance width and quietly invalidates any width-sensitive assertion.
+  const brandFaces = <String, List<String>>{
     'SpaceGrotesk': [
       'lib/src/assets/fonts/SpaceGrotesk-Regular.ttf',
       'lib/src/assets/fonts/SpaceGrotesk-Medium.ttf',
@@ -32,6 +38,17 @@ Future<void> _loadBundledFonts() async {
       'lib/src/assets/fonts/Fredoka-Medium.ttf',
       'lib/src/assets/fonts/Fredoka-SemiBold.ttf',
     ],
+    'NotoSerifDisplay': [
+      'lib/src/assets/fonts/NotoSerifDisplay-Regular.ttf',
+      'lib/src/assets/fonts/NotoSerifDisplay-SemiBold.ttf',
+    ],
+  };
+
+  final families = <String, List<String>>{
+    for (final entry in brandFaces.entries) ...{
+      entry.key: entry.value,
+      'packages/bank_ui_kit/${entry.key}': entry.value,
+    },
     // Glyph-coverage fallbacks (currency symbols, Arabic, Devanagari) so
     // goldens render real glyphs instead of tofu. Registered under the
     // package-qualified names used by kBankFontFallback.

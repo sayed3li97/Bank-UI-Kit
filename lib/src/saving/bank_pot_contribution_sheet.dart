@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
@@ -13,27 +14,15 @@ import '../../src/theme/tokens.dart';
 // Sheet handle bar
 // ---------------------------------------------------------------------------
 
-class _SheetHandleBar extends StatelessWidget {
-  const _SheetHandleBar();
-
-  @override
-  Widget build(BuildContext context) {
-    final bankTheme = BankThemeData.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(top: BankTokens.space2),
-      child: Center(
-        child: Container(
-          width: 40,
-          height: 4,
-          decoration: BoxDecoration(
-            color: bankTheme.outline,
-            borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          ),
-        ),
-      ),
-    );
-  }
-}
+/// The grab handle for the sheet body, which paints its own surface and so
+/// presents itself with `showHandle: false`.
+///
+/// [BankSheetHandle] carries the [Semantics] the affordance needs; the margin
+/// keeps the body's existing rhythm, where the title padding below supplies the
+/// gap the handle would otherwise reserve.
+const Widget _sheetHandleBar = BankSheetHandle(
+  margin: EdgeInsets.only(top: BankTokens.space2),
+);
 
 // ---------------------------------------------------------------------------
 // Inline number pad
@@ -252,7 +241,7 @@ class BankPotContributionSheet extends StatefulWidget {
   final String goalSavedTemplate;
 
   /// Caption of the confirm button in contribution mode. Defaults to
-  /// 'Add Money'.
+  /// 'Add money'.
   final String addButtonLabel;
 
   /// Caption of the confirm button in withdrawal mode. Defaults to
@@ -326,7 +315,7 @@ class BankPotContributionSheet extends StatefulWidget {
     this.maxAvailableTemplate = 'Cannot exceed available balance of {amount}',
     this.availableTemplate = 'Available: {amount}',
     this.goalSavedTemplate = 'Goal: {target} · Saved: {saved}',
-    this.addButtonLabel = 'Add Money',
+    this.addButtonLabel = 'Add money',
     this.withdrawButtonLabel = 'Withdraw',
     this.confirmContributionSemanticLabel = 'Confirm contribution',
     this.confirmWithdrawalSemanticLabel = 'Confirm withdrawal',
@@ -353,10 +342,11 @@ class BankPotContributionSheet extends StatefulWidget {
     Money? availableBalance,
     VoidCallback? onCancel,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankPotContributionSheet(
           pot: pot,
           isWithdrawal: isWithdrawal,
@@ -555,7 +545,7 @@ class _BankPotContributionSheetState extends State<BankPotContributionSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _SheetHandleBar(),
+            _sheetHandleBar,
 
             // ── Title ────────────────────────────────────────────────────
             Padding(

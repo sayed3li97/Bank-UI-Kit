@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_control_theme.dart';
 import '../common/bank_icon_spec.dart';
+import '../common/bank_sheet.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -298,10 +300,12 @@ class BankDisclosureConsentSheet extends StatefulWidget {
     Widget? footer,
     String? footerText,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle
+        // (BankDisclosureConsentSheet.showHandle).
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankDisclosureConsentSheet(
           disclosures: disclosures,
           consents: consents,
@@ -410,7 +414,7 @@ class _BankDisclosureConsentSheetState
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (widget.showHandle) const _SheetHandleBar(),
+                if (widget.showHandle) _sheetHandleBar,
                 _Heading(
                   title: widget.title,
                   subtitle: widget.subtitle,
@@ -489,27 +493,15 @@ class _BankDisclosureConsentSheetState
 // Sub-widgets
 // ---------------------------------------------------------------------------
 
-class _SheetHandleBar extends StatelessWidget {
-  const _SheetHandleBar();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = BankThemeData.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(top: BankTokens.space2),
-      child: Center(
-        child: Container(
-          width: 40,
-          height: 4,
-          decoration: BoxDecoration(
-            color: theme.outline,
-            borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-          ),
-        ),
-      ),
-    );
-  }
-}
+/// The grab handle for the sheet body, which paints its own surface and so
+/// presents itself with `showHandle: false`.
+///
+/// [BankSheetHandle] carries the [Semantics] the affordance needs; the margin
+/// keeps the body's existing rhythm, where the heading padding below supplies
+/// the gap the handle would otherwise reserve.
+const Widget _sheetHandleBar = BankSheetHandle(
+  margin: EdgeInsets.only(top: BankTokens.space2),
+);
 
 class _Heading extends StatelessWidget {
   const _Heading({
@@ -753,17 +745,28 @@ class _ConsentRow extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Checkbox(
-                  value: ticked,
-                  onChanged: onChanged,
-                  activeColor: accent,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
+                CheckboxTheme(
+                  data: BankControlTheme.checkboxTheme(theme, accent: accent),
+                  child: Checkbox(
+                    value: ticked,
+                    onChanged: onChanged,
+                    // The box is independently tappable, so it is a target in
+                    // its own right and has to clear [BankTokens.minTapTarget]
+                    // (44) on both axes. Material's padded tap target is 48;
+                    // both knobs are passed explicitly so an ambient
+                    // `ThemeData.materialTapTargetSize` or a compact
+                    // `VisualDensity` (which is what shrank this box to 32)
+                    // cannot pull a consent control back under the floor.
+                    materialTapTargetSize: MaterialTapTargetSize.padded,
+                    visualDensity: VisualDensity.standard,
+                  ),
                 ),
                 const SizedBox(width: BankTokens.space3),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(top: BankTokens.space2),
+                    // Optically centres the first label line on the tick box,
+                    // which now reserves the full tap-target height.
+                    padding: const EdgeInsets.only(top: BankTokens.space3),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

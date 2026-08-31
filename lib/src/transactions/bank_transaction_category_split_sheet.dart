@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../src/common/bank_icon_spec.dart';
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
@@ -50,13 +51,13 @@ class BankTransactionCategorySplitSheet extends StatefulWidget {
   /// Overrides the dropdown glyph. Defaults to [BankIcons.expand].
   final IconData? expandIcon;
 
-  /// Overrides the sheet title. Defaults to 'Split by Category'.
+  /// Overrides the sheet title. Defaults to 'Split by category'.
   final String title;
 
   /// Overrides the total prefix. Defaults to 'Total: '.
   final String totalLabel;
 
-  /// Overrides the add-category button text. Defaults to 'Add Category'.
+  /// Overrides the add-category button text. Defaults to 'Add category'.
   final String addCategoryLabel;
 
   /// Overrides the add-category semantics. Defaults to 'Add category'.
@@ -98,9 +99,9 @@ class BankTransactionCategorySplitSheet extends StatefulWidget {
     this.addIcon,
     this.deleteIcon,
     this.expandIcon,
-    this.title = 'Split by Category',
+    this.title = 'Split by category',
     this.totalLabel = 'Total: ',
-    this.addCategoryLabel = 'Add Category',
+    this.addCategoryLabel = 'Add category',
     this.addCategorySemanticLabel = 'Add category',
     this.allocatedLabel = 'Allocated',
     this.addMoreHint = 'Add at least one more category to split',
@@ -116,10 +117,11 @@ class BankTransactionCategorySplitSheet extends StatefulWidget {
     required Transaction transaction,
     required ValueChanged<List<TransactionSplit>> onConfirm,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankTransactionCategorySplitSheet(
           transaction: transaction,
           onConfirm: onConfirm,
@@ -270,19 +272,13 @@ class _BankTransactionCategorySplitSheetState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle
-            Padding(
-              padding: const EdgeInsets.only(top: BankTokens.space2),
-              child: Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: widget.handleColor ?? bankTheme.outline,
-                    borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-                  ),
-                ),
-              ),
+            // Handle. The body paints its own surface and is presented with
+            // `showHandle: false`, so the handle — and the semantics that
+            // announce it — belong here. The margin keeps the existing rhythm:
+            // the title row padding below already supplies the gap underneath.
+            BankSheetHandle(
+              color: widget.handleColor ?? bankTheme.outline,
+              margin: const EdgeInsets.only(top: BankTokens.space2),
             ),
             // Title row
             Padding(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../src/auth/bank_pin_dots.dart';
 import '../../src/auth/bank_pin_keypad.dart';
+import '../../src/common/bank_sheet.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 
@@ -106,9 +107,9 @@ class BankTransactionPinSheet extends StatefulWidget {
     required Future<bool> Function(String) onSubmit,
     int pinLength = 6,
   }) =>
-      showModalBottomSheet<bool>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<bool>(
+        context,
+        // The sheet body paints its own ground and handle.
         backgroundColor: Colors.transparent,
         isDismissible: false,
         enableDrag: false,

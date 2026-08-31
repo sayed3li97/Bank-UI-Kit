@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_segmented_control.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
@@ -24,8 +25,8 @@ enum BankTransferTiming {
 // BankScheduledTransferToggle
 // ---------------------------------------------------------------------------
 
-/// Instant / Later / Recurring selector for a transfer, built on Flutter's
-/// built-in [SegmentedButton].
+/// Instant / Later / Recurring selector for a transfer, built on
+/// [BankSegmentedControl].
 ///
 /// When [BankTransferTiming.later] is selected and [onDateChanged] is
 /// non-null, a date-and-time picker row is shown below the segmented button.
@@ -180,54 +181,29 @@ class BankScheduledTransferToggle extends StatelessWidget {
         // ----------------------------------------------------------------
         // Segmented button
         // ----------------------------------------------------------------
-        Semantics(
-          label: semanticLabel ?? 'Transfer timing: ${selected.name}',
-          child: SegmentedButton<BankTransferTiming>(
-            segments: [
-              ButtonSegment<BankTransferTiming>(
-                value: BankTransferTiming.instant,
-                label: Text(instantLabel),
-                icon: Icon(instantIcon ?? Icons.bolt_outlined, size: 18),
-              ),
-              ButtonSegment<BankTransferTiming>(
-                value: BankTransferTiming.later,
-                label: Text(laterLabel),
-                icon: Icon(laterIcon ?? Icons.schedule_outlined, size: 18),
-              ),
-              ButtonSegment<BankTransferTiming>(
-                value: BankTransferTiming.recurring,
-                label: Text(recurringLabel),
-                icon: Icon(recurringIcon ?? Icons.repeat, size: 18),
-              ),
-            ],
-            selected: {selected},
-            onSelectionChanged: (selection) {
-              if (selection.isNotEmpty) {
-                onChanged(selection.first);
-              }
-            },
-            style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.resolveWith(
-                (states) => states.contains(WidgetState.selected)
-                    ? resolvedAccent
-                    : bankTheme.surface,
-              ),
-              foregroundColor: WidgetStateProperty.resolveWith(
-                (states) => states.contains(WidgetState.selected)
-                    ? bankTheme.onPrimary
-                    : bankTheme.onSurface,
-              ),
-              side: WidgetStateProperty.all(
-                BorderSide(color: bankTheme.outline.withValues(alpha: 0.5)),
-              ),
-              shape: WidgetStateProperty.all(
-                RoundedRectangleBorder(borderRadius: resolvedRadius),
-              ),
-              minimumSize: WidgetStateProperty.all(
-                const Size(0, BankTokens.minTapTarget),
-              ),
+        BankSegmentedControl<BankTransferTiming>(
+          segments: [
+            BankSegmentItem<BankTransferTiming>(
+              value: BankTransferTiming.instant,
+              label: instantLabel,
+              icon: instantIcon ?? Icons.bolt_outlined,
             ),
-          ),
+            BankSegmentItem<BankTransferTiming>(
+              value: BankTransferTiming.later,
+              label: laterLabel,
+              icon: laterIcon ?? Icons.schedule_outlined,
+            ),
+            BankSegmentItem<BankTransferTiming>(
+              value: BankTransferTiming.recurring,
+              label: recurringLabel,
+              icon: recurringIcon ?? Icons.repeat,
+            ),
+          ],
+          selected: selected,
+          onChanged: onChanged,
+          selectedColor: resolvedAccent,
+          radius: resolvedRadius,
+          semanticLabel: semanticLabel ?? 'Transfer timing: ${selected.name}',
         ),
         // ----------------------------------------------------------------
         // "Later": date + time picker row

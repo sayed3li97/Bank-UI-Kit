@@ -17,7 +17,7 @@ class BankUiScopeData {
   final NumeralStyle numeralStyle;
 
   /// When `true`, labels such as APR are replaced with Islamic-finance
-  /// equivalents (e.g. "Profit Rate") sourced from [strings].
+  /// equivalents (e.g. "Profit rate") sourced from [strings].
   final bool islamicFinanceMode;
 
   /// Maps an image URL to the [ImageProvider] used to load it.

@@ -126,7 +126,7 @@ class BankCardPinManager extends StatefulWidget {
   /// Semantics label of the back button. Defaults to `'Go back'`.
   final String backSemanticLabel;
 
-  /// Heading of the success view. Defaults to `'PIN Changed'`.
+  /// Heading of the success view. Defaults to `'PIN changed'`.
   final String successTitle;
 
   /// Body text of the success view. Defaults to
@@ -171,7 +171,7 @@ class BankCardPinManager extends StatefulWidget {
     this.newPinStepLabel = 'Step 2 of 3',
     this.confirmPinStepLabel = 'Step 3 of 3',
     this.backSemanticLabel = 'Go back',
-    this.successTitle = 'PIN Changed',
+    this.successTitle = 'PIN changed',
     this.successMessage = 'Your card PIN has been updated successfully.',
     this.successSemanticLabel = 'PIN changed successfully',
     this.semanticLabel,

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_gradient_surface.dart';
 import '../../src/common/bank_icon_spec.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
@@ -224,14 +225,19 @@ class BankSavingsPotCard extends StatelessWidget {
   /// the theme primary colour.
   final Color? accentColor;
 
-  /// Overrides the progress ring gradient. Defaults to the theme
-  /// accentGradient.
+  /// Overrides the progress ring gradient. Defaults to the brand gradient
+  /// resolved at [BankGradientRole.incidental].
+  ///
+  /// The ring encodes progress rather than decorating, so a brand whose
+  /// [BankThemeData.gradientReach] rations [BankGradientRole.incidental] gets
+  /// the flat [accentColor] arc here instead of a wash too faint to read
+  /// against the track.
   final Gradient? gradient;
 
   /// Overrides the card shadow. Defaults to the theme glow when
   /// enabled, else the resting card shadow for the ambient background
-  /// brightness ([BankTokens.shadowCardFor]); pass `const []` to
-  /// flatten.
+  /// brightness, re-inked with [BankThemeData.shadowTint] when the brand
+  /// defines one; pass `const []` to flatten.
   final List<BoxShadow>? shadow;
 
   /// Merged over the computed pot-name style ([BankTokens.labelLarge]
@@ -353,7 +359,10 @@ class BankSavingsPotCard extends StatelessWidget {
                   spreadRadius: -4,
                 ),
               ]
-            : BankTokens.shadowCardFor(backgroundBrightness));
+            : bankTheme.shadowFor(
+                BankElevationTier.card,
+                brightness: backgroundBrightness,
+              ));
 
     final Widget card = Container(
       constraints: const BoxConstraints(minHeight: 120),
@@ -410,7 +419,15 @@ class BankSavingsPotCard extends StatelessWidget {
                                 : 0.10,
                           ),
                           progressColor: accent,
-                          gradient: gradient ?? bankTheme.accentGradient,
+                          // Incidental decoration by role, but the arc is a
+                          // data encoding: a rationed 10% stroke would be
+                          // unreadable, so a demoted brand gradient degrades
+                          // to the flat accent rather than a wash.
+                          gradient: BankGradientSurface.resolve(
+                            bankTheme,
+                            BankGradientRole.incidental,
+                            override: gradient,
+                          ).opaqueGradient,
                         ),
                         child: Center(
                           child: Text(

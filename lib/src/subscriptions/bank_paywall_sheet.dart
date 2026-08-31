@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/bank_surface_depth.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/scope/bank_ui_scope.dart';
@@ -11,7 +12,7 @@ import 'bank_plan_comparison_table.dart';
 /// paid-only feature.
 ///
 /// Present with [BankPaywallSheet.show] or push an instance via
-/// [showModalBottomSheet] directly.
+/// [BankSheet.show] directly.
 class BankPaywallSheet extends StatelessWidget {
   final String featureName;
   final String description;
@@ -132,10 +133,11 @@ class BankPaywallSheet extends StatelessWidget {
     Widget? footer,
     String? semanticLabel,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle bar.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankPaywallSheet(
           featureName: featureName,
           description: description,
@@ -195,18 +197,14 @@ class BankPaywallSheet extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Handle bar
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: BankTokens.space6),
-                    decoration: BoxDecoration(
-                      color: bankTheme.outline.withValues(alpha: 0.4),
-                      borderRadius:
-                          BorderRadius.circular(BankTokens.radiusFull),
-                    ),
-                  ),
+                // Handle bar. The body paints its own surface and is presented
+                // with `showHandle: false`, so the handle — and the semantics
+                // that announce it — belong here. The enclosing padding already
+                // supplies the gap above, so the margin only reserves the one
+                // below.
+                BankSheetHandle(
+                  color: bankTheme.outline.withValues(alpha: 0.4),
+                  margin: const EdgeInsets.only(bottom: BankTokens.space6),
                 ),
 
                 if (header != null) ...[

@@ -5,6 +5,7 @@ import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/extensions.dart';
 import '../theme/tokens.dart';
+import 'bank_gradient_surface.dart';
 import 'bank_icon_spec.dart';
 import 'bank_pressable.dart';
 import 'bank_surface_depth.dart';
@@ -167,8 +168,10 @@ class BankQuickActionsGrid extends StatefulWidget {
   /// in [BankThemeData.onSurface]).
   final TextStyle? labelStyle;
 
-  /// Overrides the icon circle shadow. Defaults to [BankTokens.shadowCardFor]
-  /// of the theme background brightness; pass `const []` to flatten it.
+  /// Overrides the icon circle shadow. Defaults to the card-tier shadow for
+  /// the theme background brightness, re-inked with
+  /// [BankThemeData.shadowTint] when the brand defines one; pass `const []`
+  /// to flatten it.
   final List<BoxShadow>? shadow;
 
   /// Overrides the icon circle outline. Defaults on dark surfaces to a
@@ -177,8 +180,13 @@ class BankQuickActionsGrid extends StatefulWidget {
   /// `const Border()` to remove it.
   final BoxBorder? border;
 
-  /// Overrides [BankThemeData.accentGradient] for the icon ring. When set,
-  /// the ring is drawn under every preset, not just Voltage.
+  /// Overrides the icon ring gradient. When set, the ring is drawn under
+  /// every preset, not just Voltage.
+  ///
+  /// The default is the brand gradient resolved at
+  /// [BankGradientRole.incidental]: an icon ring is decoration repeated
+  /// across a grid, so a brand whose [BankThemeData.gradientReach] stops
+  /// higher up gets the same hues here as a low-alpha wash.
   final Gradient? ringGradient;
 
   /// Overrides the badge chip fill. Defaults to [BankThemeData.primary].
@@ -423,9 +431,7 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
                       spreadRadius: -4,
                     ),
                   ]
-                : BankTokens.shadowFloatingFor(
-                    ThemeData.estimateBrightnessForColor(theme.background),
-                  ),
+                : theme.shadowFor(BankElevationTier.floating),
           ),
           child: Material(
             type: MaterialType.transparency,
@@ -538,7 +544,13 @@ class _BankQuickActionsGridState extends State<BankQuickActionsGrid>
     IconData icon,
   ) {
     final scope = BankUiScope.of(context);
-    final gradient = widget.ringGradient ?? theme.accentGradient;
+    // An icon ring is incidental decoration — numerous by nature, which is
+    // exactly why gradientReach is allowed to ration it down to a wash.
+    final gradient = BankGradientSurface.resolve(
+      theme,
+      BankGradientRole.incidental,
+      override: widget.ringGradient,
+    ).gradient;
     final showRing = widget.ringGradient != null ||
         (scope.preset == BankPreset.voltage && gradient != null);
 

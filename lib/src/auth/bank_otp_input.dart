@@ -48,12 +48,22 @@ class BankOtpInputController {
 /// platform SMS autofill (`AutofillHints.oneTimeCode`) works out of the box
 /// and a pasted code distributes across the boxes automatically.
 ///
-/// Visual behaviour:
-/// - The focused box gets a [BankThemeData.primary] border; all boxes use
-///   [BankThemeData.chipRadius].
-/// - When [error] flips to `true`, boxes turn [BankTokens.danger] and the
-///   row plays a short ±4 px horizontal shake (300 ms), skipped when
-///   [MediaQuery.disableAnimationsOf] is `true`.
+/// Visual behaviour — one state, one signal:
+/// - The **fill** never moves. It is [BankThemeData.surfaceVariant] whether a
+///   box is empty, filled, or active, so the fill cannot be mistaken for a
+///   state.
+/// - The **active** box (the one the next digit lands in) is marked by a
+///   focus ring drawn *outside* its border, in the
+///   [BankTokens.focusRingWidth] grammar the rest of the kit uses. Its
+///   border and fill stay put, so focus reads as one added mark rather than
+///   as two simultaneous swaps.
+/// - **Filled** is encoded by the digit itself, never by colour.
+/// - When [error] flips to `true`, every border thickens to
+///   [BankTokens.focusRingWidth] in [BankTokens.danger] and the row plays a
+///   short ±4 px horizontal shake (300 ms), skipped when
+///   [MediaQuery.disableAnimationsOf] is `true`. The thickening is the point:
+///   under a colour-vision deficiency the weight change still reads.
+/// - All boxes use [BankThemeData.chipRadius].
 /// - Digits are displayed using the ambient [NumeralStyle] from
 ///   [BankUiScope], while [onCompleted] and [onChanged] always report ASCII
 ///   digits.
@@ -124,8 +134,12 @@ class BankOtpInput extends StatefulWidget {
   /// [BankTokens.space12].
   final double? boxSize;
 
-  /// Overrides the gap between code boxes. Defaults to
+  /// Overrides the visible gap between code boxes. Defaults to
   /// [BankTokens.space2].
+  ///
+  /// Every box reserves room for its focus ring on both sides, so gaps
+  /// narrower than that reservation render as the reservation itself — the
+  /// ring is never allowed to collide with the neighbouring box.
   final double? boxSpacing;
 
   /// Overrides the box corner radius. Defaults to
@@ -136,12 +150,15 @@ class BankOtpInput extends StatefulWidget {
   /// [BankThemeData.surfaceVariant].
   final Color? backgroundColor;
 
-  /// Overrides the resting box border colour. Defaults to
-  /// [BankThemeData.outline].
+  /// Overrides the box border colour, which is the same in every non-error
+  /// state. Defaults to [BankThemeData.outline].
   final Color? borderColor;
 
-  /// Overrides the focused box border colour. Defaults to
+  /// Overrides the colour of the active box's focus ring. Defaults to
   /// [BankThemeData.primary].
+  ///
+  /// Named for the border it used to recolour; since the border no longer
+  /// moves on focus, this inks the ring instead.
   final Color? focusedBorderColor;
 
   /// Overrides the error border and digit colour. Defaults to
@@ -200,6 +217,14 @@ class BankOtpInput extends StatefulWidget {
 
 class _BankOtpInputState extends State<BankOtpInput> {
   static const double _boxSize = BankTokens.space12;
+
+  /// Breathing room between a box and its focus ring, matching
+  /// `BankPressable`'s ring geometry.
+  static const double _ringGap = 1;
+
+  /// Space reserved around every box for the ring, focused or not, so the
+  /// row's geometry never shifts when focus moves between cells.
+  static const double _ringInset = BankTokens.focusRingWidth + _ringGap;
 
   final TextEditingController _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
@@ -307,9 +332,14 @@ class _BankOtpInputState extends State<BankOtpInput> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: List.generate(widget.length, (index) {
+          // Each box already reserves _ringInset on both sides, so the
+          // explicit gap is reduced by that much and the *visible* rhythm
+          // stays the requested spacing.
+          final spacing = widget.boxSpacing ?? BankTokens.space2;
+          final gap = spacing - 2 * _ringInset;
           return Padding(
             padding: EdgeInsets.only(
-              left: index == 0 ? 0 : widget.boxSpacing ?? BankTokens.space2,
+              left: index == 0 || gap <= 0 ? 0 : gap,
             ),
             child: _buildBox(theme, numeralStyle, text, index),
           );
@@ -408,33 +438,36 @@ class _BankOtpInputState extends State<BankOtpInput> {
     final resolvedError = widget.errorColor ?? BankTokens.danger;
     final resolvedFill = widget.backgroundColor ?? theme.surfaceVariant;
     final resolvedBoxSize = widget.boxSize ?? _boxSize;
+    final resolvedRadius = widget.radius ?? theme.chipRadius;
+    final duration = widget.animationDuration ?? BankTokens.durationFast;
+    final curve = widget.animationCurve ?? BankTokens.curveStandard;
 
-    final Color borderColor;
-    if (widget.error) {
-      borderColor = resolvedError;
-    } else if (isFocused) {
-      borderColor = widget.focusedBorderColor ?? theme.primary;
-    } else {
-      borderColor = widget.borderColor ?? theme.outline;
-    }
+    // Only the error state touches the border: focus is the ring below, and
+    // the fill is the same in every state, so no two signals ever encode the
+    // same thing.
+    final borderColor =
+        widget.error ? resolvedError : (widget.borderColor ?? theme.outline);
 
     final textColor = widget.enabled
         ? (widget.error ? resolvedError : theme.onSurface)
         : theme.onSurfaceVariant;
 
-    return AnimatedContainer(
-      duration: widget.animationDuration ?? BankTokens.durationFast,
-      curve: widget.animationCurve ?? BankTokens.curveStandard,
+    final box = AnimatedContainer(
+      duration: duration,
+      curve: curve,
       width: resolvedBoxSize,
       height: resolvedBoxSize,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color:
-            widget.enabled ? resolvedFill : resolvedFill.withValues(alpha: 0.5),
-        borderRadius: widget.radius ?? theme.chipRadius,
+        color: widget.enabled
+            ? resolvedFill
+            : resolvedFill.withValues(alpha: BankTokens.alphaScrim),
+        borderRadius: resolvedRadius,
         border: Border.all(
           color: borderColor,
-          width: isFocused || widget.error ? 2 : 1,
+          width: widget.error
+              ? BankTokens.focusRingWidth
+              : BankTokens.hairlineWidth,
         ),
       ),
       child: Text(
@@ -442,6 +475,38 @@ class _BankOtpInputState extends State<BankOtpInput> {
         style: theme.numeralLarge
             .copyWith(color: textColor)
             .merge(widget.digitStyle),
+      ),
+    );
+
+    return SizedBox(
+      width: resolvedBoxSize + 2 * _ringInset,
+      height: resolvedBoxSize + 2 * _ringInset,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: AnimatedOpacity(
+                opacity: isFocused ? 1 : 0,
+                duration: duration,
+                curve: curve,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    // Concentric with the box: the ring's radius grows by
+                    // exactly the gap it sits at.
+                    borderRadius: resolvedRadius +
+                        const BorderRadius.all(Radius.circular(_ringInset)),
+                    border: Border.all(
+                      color: widget.focusedBorderColor ?? theme.primary,
+                      width: BankTokens.focusRingWidth,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          box,
+        ],
       ),
     );
   }

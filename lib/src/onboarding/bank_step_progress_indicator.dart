@@ -1,7 +1,26 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
-import '../../src/theme/bank_theme_data.dart';
-import '../../src/theme/tokens.dart';
+import '../common/bank_icon_spec.dart';
+import '../common/bank_pressable.dart';
+import '../common/bank_sheet.dart';
+import '../theme/bank_theme_data.dart';
+import '../theme/tokens.dart';
+
+/// Which steps of a [BankStepProgressIndicator] render their help affordance.
+enum BankStepHelpVisibility {
+  /// Only the step the user is on.
+  ///
+  /// The default: one glyph per stepper keeps the row legible at eight steps
+  /// on a 320 px screen, and the live step is the only one whose question the
+  /// applicant is actually being asked right now.
+  currentStep,
+
+  /// Every step that carries help copy — for a review screen where the user
+  /// looks back at what each step asked for.
+  allSteps,
+}
 
 /// Numbered step progress indicator. RTL-aware: steps flow right-to-left
 /// when [Directionality] is RTL.
@@ -11,6 +30,34 @@ import '../../src/theme/tokens.dart';
 /// label, and each connector is drawn as two half-lines inside the
 /// neighbouring cells, so labels get the full cell width instead of the
 /// bubble width and never break mid-word for realistic label lengths.
+///
+/// ### Step-level help
+///
+/// Pass [stepHelp] to give a step a "why do we ask this?" affordance — the
+/// disclosure a regulated origination or KYC flow owes the applicant at the
+/// moment it asks for a document or an identifier, rather than in a policy
+/// page they will never open:
+///
+/// ```dart
+/// BankStepProgressIndicator(
+///   totalSteps: 3,
+///   currentStep: 2,
+///   showLabels: true,
+///   labels: const ['Identity', 'Income', 'Review'],
+///   stepHelp: const [
+///     'We check your ID against the national register — a legal requirement '
+///         'before we can open an account.',
+///     'Your income tells us which products you can afford to be offered.',
+///     '',
+///   ],
+/// )
+/// ```
+///
+/// The affordance sits *under* the step label, not beside it: a cell is as
+/// narrow as ~40 px in an eight-step stepper on a small screen, so an inline
+/// control would take back exactly the width the equal-flex cell layout gave
+/// the label, and labels would break mid-word again. Stacking spends height,
+/// which the stepper has.
 class BankStepProgressIndicator extends StatelessWidget {
   final int totalSteps;
   final int currentStep; // 1-indexed
@@ -68,6 +115,32 @@ class BankStepProgressIndicator extends StatelessWidget {
   /// Overrides the semantics label. Defaults to 'Step X of Y'.
   final String? semanticLabel;
 
+  /// Optional per-step explanatory copy. Index `i` belongs to step `i + 1`;
+  /// a missing or empty entry leaves that step without an affordance.
+  ///
+  /// Opt-in: with [stepHelp] null the stepper renders exactly as before.
+  final List<String>? stepHelp;
+
+  /// Which steps render their [stepHelp] affordance. Defaults to
+  /// [BankStepHelpVisibility.currentStep].
+  final BankStepHelpVisibility helpVisibility;
+
+  /// Called when the user opens a step's help, with the 1-indexed step and
+  /// its copy.
+  ///
+  /// When null the widget presents the copy itself in a [BankSheet] titled
+  /// with the step's label, so [stepHelp] alone is a working affordance.
+  /// Provide it to route the disclosure somewhere else — an analytics event,
+  /// a full compliance screen, an in-app help centre.
+  final void Function(int step, String helpText)? onStepHelp;
+
+  /// Screen-reader label and tooltip for the help affordance, and the sheet
+  /// title for steps with no label. Defaults to 'Why do we ask this?'.
+  final String helpLabel;
+
+  /// Glyph for the help affordance. Defaults to [BankIcons.info].
+  final IconData? helpIcon;
+
   const BankStepProgressIndicator({
     required this.totalSteps,
     required this.currentStep,
@@ -88,6 +161,11 @@ class BankStepProgressIndicator extends StatelessWidget {
     this.labelMaxLines = 2,
     this.labelMaxWidth,
     this.semanticLabel,
+    this.stepHelp,
+    this.helpVisibility = BankStepHelpVisibility.currentStep,
+    this.onStepHelp,
+    this.helpLabel = 'Why do we ask this?',
+    this.helpIcon,
   })  : assert(totalSteps > 0, 'totalSteps must be positive'),
         assert(
           currentStep >= 1 && currentStep <= totalSteps,
@@ -116,6 +194,46 @@ class BankStepProgressIndicator extends StatelessWidget {
     // Build the list of step indices in display order.
     final indices = List<int>.generate(totalSteps, (i) => i + 1);
     final displayIndices = isRtl ? indices.reversed.toList() : indices;
+
+    /// Label slot of [step]: null when labels are hidden, and an empty string
+    /// for a step the caller did not name — the empty line keeps every cell
+    /// the same height so the bubbles stay on one baseline.
+    String? labelFor(int step) {
+      final all = labels;
+      if (!showLabels || all == null) return null;
+      return step - 1 < all.length ? all[step - 1] : '';
+    }
+
+    /// Help copy of [step], or null when the step has none.
+    String? helpFor(int step) {
+      final all = stepHelp;
+      if (all == null || step - 1 >= all.length) return null;
+      final copy = all[step - 1];
+      return copy.isEmpty ? null : copy;
+    }
+
+    Widget? helpActionFor(int step) {
+      if (helpVisibility == BankStepHelpVisibility.currentStep &&
+          step != currentStep) {
+        return null;
+      }
+      final copy = helpFor(step);
+      if (copy == null) return null;
+      return _StepHelpAction(
+        step: step,
+        helpText: copy,
+        stepLabel: labels != null && step - 1 < labels!.length
+            ? labels![step - 1]
+            : null,
+        label: helpLabel,
+        icon: helpIcon ?? BankIcons.info,
+        // The glyph inherits the step's own state colour, so an affordance on
+        // the live step reads as live rather than as decoration.
+        color:
+            step == currentStep ? resolvedActive : resolvedInactiveForeground,
+        onStepHelp: onStepHelp,
+      );
+    }
 
     // A connector between two steps is completed once the later of the two
     // steps has been reached; computing it order-independently keeps LTR
@@ -151,11 +269,8 @@ class BankStepProgressIndicator extends StatelessWidget {
                         displayIndices[i],
                         displayIndices[i + 1],
                       ),
-                label: (showLabels && labels != null)
-                    ? ((displayIndices[i] - 1) < labels!.length
-                        ? labels![displayIndices[i] - 1]
-                        : '')
-                    : null,
+                label: labelFor(displayIndices[i]),
+                helpAction: helpActionFor(displayIndices[i]),
                 labelStyle: resolvedLabelStyle,
                 labelMaxLines: labelMaxLines,
                 labelMaxWidth: labelMaxWidth,
@@ -191,6 +306,7 @@ class _StepCell extends StatelessWidget {
     required this.leadingConnectorCompleted,
     required this.trailingConnectorCompleted,
     required this.label,
+    required this.helpAction,
     required this.labelStyle,
     required this.labelMaxLines,
     required this.labelMaxWidth,
@@ -219,6 +335,10 @@ class _StepCell extends StatelessWidget {
 
   /// Label text, or `null` when labels are hidden.
   final String? label;
+
+  /// The step's help affordance, or `null` when it has none.
+  final Widget? helpAction;
+
   final TextStyle labelStyle;
   final int labelMaxLines;
   final double? labelMaxWidth;
@@ -303,7 +423,106 @@ class _StepCell extends StatelessWidget {
           const SizedBox(height: BankTokens.space2),
           labelWidget,
         ],
+        if (helpAction != null) ...[
+          const SizedBox(height: BankTokens.space1),
+          helpAction!,
+        ],
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Step help affordance
+// ---------------------------------------------------------------------------
+
+/// The per-step "why do we ask this?" button.
+///
+/// The tap target is a full [BankTokens.minTapTarget] square wherever the cell
+/// is wide enough to hold one; in a stepper dense enough that the cell is
+/// narrower, [SizedBox] clamps it to the cell rather than overflowing the row,
+/// which is the widest target the layout can honestly offer.
+class _StepHelpAction extends StatelessWidget {
+  const _StepHelpAction({
+    required this.step,
+    required this.helpText,
+    required this.stepLabel,
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onStepHelp,
+  });
+
+  final int step;
+  final String helpText;
+
+  /// The step's own label, used as the sheet title when the widget presents
+  /// the copy itself.
+  final String? stepLabel;
+
+  /// Screen-reader label and tooltip.
+  final String label;
+
+  final IconData icon;
+  final Color color;
+  final void Function(int step, String helpText)? onStepHelp;
+
+  void _open(BuildContext context) {
+    final handler = onStepHelp;
+    if (handler != null) {
+      handler(step, helpText);
+      return;
+    }
+    final theme = BankThemeData.of(context);
+    unawaited(
+      BankSheet.show<void>(
+        context,
+        title:
+            (stepLabel != null && stepLabel!.isNotEmpty) ? stepLabel! : label,
+        builder: (_) => Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            BankTokens.space4,
+            0,
+            BankTokens.space4,
+            BankTokens.space6,
+          ),
+          child: Text(
+            helpText,
+            style: BankTokens.bodyMedium.copyWith(color: theme.onSurface),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // The stepper's own 'Step X of Y' annotation absorbs every non-boundary
+    // descendant into one node; without this container the button's label and
+    // tap action would be swallowed by it and the affordance would be
+    // unreachable by assistive technology.
+    return Semantics(
+      container: true,
+      child: Tooltip(
+        message: label,
+        // BankPressable already names the button; a tooltip node on top of it
+        // would have a screen reader read the same sentence twice.
+        excludeFromSemantics: true,
+        child: BankPressable(
+          onTap: () => _open(context),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(BankTokens.radiusFull),
+          ),
+          semanticLabel: label,
+          child: SizedBox(
+            width: BankTokens.minTapTarget,
+            height: BankTokens.minTapTarget,
+            child: Center(
+              child: Icon(icon, size: BankTokens.iconSmall, color: color),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

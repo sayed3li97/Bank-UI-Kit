@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_control_theme.dart';
 import '../../src/common/bank_icon_spec.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
@@ -40,7 +41,7 @@ class BankCardControlsPanel extends StatelessWidget {
   /// Called when the user taps "Change PIN". No-op when `null`.
   final VoidCallback? onChangePinTap;
 
-  /// Called when the user taps "Report Lost or Stolen". No-op when `null`.
+  /// Called when the user taps "Report lost or stolen". No-op when `null`.
   final VoidCallback? onReportLostOrStolen;
 
   /// Overrides the outer padding around the panel. Defaults to none.
@@ -92,48 +93,53 @@ class BankCardControlsPanel extends StatelessWidget {
   /// Trailing chevron of the action rows. Defaults to [BankIcons.forward].
   final IconData forwardIcon;
 
-  /// Label of the freeze toggle. Defaults to `'Freeze Card'`.
+  /// Label of the freeze toggle. Defaults to `'Freeze card'`.
   final String freezeLabel;
 
   /// Subtitle of the freeze toggle. Defaults to
   /// `'Temporarily block all transactions'`.
   final String freezeSubtitle;
 
-  /// Label of the online payments toggle. Defaults to `'Online Payments'`.
+  /// Label of the online payments toggle. Defaults to `'Online payments'`.
   final String onlinePaymentsLabel;
 
   /// Subtitle of the online payments toggle. Defaults to
   /// `'Allow card-not-present purchases'`.
   final String onlinePaymentsSubtitle;
 
-  /// Label of the contactless toggle. Defaults to `'Contactless Payments'`.
+  /// Label of the contactless toggle. Defaults to `'Contactless payments'`.
   final String contactlessLabel;
 
   /// Subtitle of the contactless toggle. Defaults to `'Tap-to-pay via NFC'`.
   final String contactlessSubtitle;
 
   /// Label of the international toggle. Defaults to
-  /// `'International Payments'`.
+  /// `'International payments'`.
   final String internationalLabel;
 
   /// Subtitle of the international toggle. Defaults to
   /// `'Use card outside home country'`.
   final String internationalSubtitle;
 
-  /// Heading of the spend-limit row. Defaults to `'Spend Limit'`.
+  /// Heading of the spend-limit row. Defaults to `'Spend limit'`.
   final String spendLimitLabel;
 
   /// Text shown when no spend limit is set. Defaults to `'No limit'`.
   final String noLimitLabel;
 
-  /// Overrides the spend-limit row semantics label. Defaults to
-  /// `'Spend limit: <current value>'`.
+  /// Overrides the accessible name of the spend-limit slider. Defaults to
+  /// [spendLimitLabel].
+  ///
+  /// The current limit is not part of the name: it is announced as the
+  /// slider's *value*, together with the values an increase or a decrease
+  /// would land on, so assistive technology can adjust the limit rather than
+  /// only read it.
   final String? spendLimitSemanticLabel;
 
   /// Label of the change PIN action row. Defaults to `'Change PIN'`.
   final String changePinLabel;
 
-  /// Label of the report action row. Defaults to `'Report Lost or Stolen'`.
+  /// Label of the report action row. Defaults to `'Report lost or stolen'`.
   final String reportLostOrStolenLabel;
 
   /// Semantics value announced for a toggle that is on. Defaults to
@@ -177,19 +183,19 @@ class BankCardControlsPanel extends StatelessWidget {
     this.changePinIcon = BankIcons.lock,
     this.reportLostOrStolenIcon = BankIcons.warning,
     this.forwardIcon = BankIcons.forward,
-    this.freezeLabel = 'Freeze Card',
+    this.freezeLabel = 'Freeze card',
     this.freezeSubtitle = 'Temporarily block all transactions',
-    this.onlinePaymentsLabel = 'Online Payments',
+    this.onlinePaymentsLabel = 'Online payments',
     this.onlinePaymentsSubtitle = 'Allow card-not-present purchases',
-    this.contactlessLabel = 'Contactless Payments',
+    this.contactlessLabel = 'Contactless payments',
     this.contactlessSubtitle = 'Tap-to-pay via NFC',
-    this.internationalLabel = 'International Payments',
+    this.internationalLabel = 'International payments',
     this.internationalSubtitle = 'Use card outside home country',
-    this.spendLimitLabel = 'Spend Limit',
+    this.spendLimitLabel = 'Spend limit',
     this.noLimitLabel = 'No limit',
     this.spendLimitSemanticLabel,
     this.changePinLabel = 'Change PIN',
-    this.reportLostOrStolenLabel = 'Report Lost or Stolen',
+    this.reportLostOrStolenLabel = 'Report lost or stolen',
     this.enabledSemanticValue = 'enabled',
     this.disabledSemanticValue = 'disabled',
     this.semanticLabel,
@@ -379,67 +385,81 @@ class _ControlRow extends StatelessWidget {
         .copyWith(color: bankTheme.onSurfaceVariant)
         .merge(subtitleStyle);
 
-    return Semantics(
-      label: label,
-      value: value ? enabledValue : disabledValue,
-      toggled: value,
-      excludeSemantics: true,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => onChanged(!value),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 56),
-            child: Padding(
-              padding: resolvedPadding,
-              child: Row(
-                children: [
-                  // Icon
-                  SizedBox(
-                    width: 40,
-                    height: 40,
-                    child: Center(
-                      child: Icon(
-                        icon,
-                        size: 22,
-                        color: iconColor ?? bankTheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: BankTokens.space3),
-
-                  // Label + subtitle
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          label,
-                          style: resolvedLabelStyle,
+    // The row is one control: its name, its on/off value, and the tap that
+    // flips it belong on a single node. Excluding the whole subtree (as this
+    // row used to) took the tap action with it, leaving a toggle assistive
+    // technology could read but never operate; the exclusion now sits inside
+    // the InkWell, over the painted copy and the switch, which would only
+    // repeat what the node already says.
+    return MergeSemantics(
+      child: Semantics(
+        label: label,
+        value: value ? enabledValue : disabledValue,
+        toggled: value,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => onChanged(!value),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 56),
+              child: Padding(
+                padding: resolvedPadding,
+                child: ExcludeSemantics(
+                  child: Row(
+                    children: [
+                      // Icon
+                      SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Center(
+                          child: Icon(
+                            icon,
+                            size: 22,
+                            color: iconColor ?? bankTheme.onSurfaceVariant,
+                          ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle,
-                          style: resolvedSubtitleStyle,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Switch: min 44×44 via SizedBox wrapper
-                  SizedBox(
-                    height: BankTokens.minTapTarget,
-                    child: Center(
-                      child: Switch(
-                        value: value,
-                        onChanged: onChanged,
-                        activeThumbColor: activeColor,
                       ),
-                    ),
+                      const SizedBox(width: BankTokens.space3),
+
+                      // Label + subtitle
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              label,
+                              style: resolvedLabelStyle,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle,
+                              style: resolvedSubtitleStyle,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Switch: min 44×44 via SizedBox wrapper
+                      SizedBox(
+                        height: BankTokens.minTapTarget,
+                        child: Center(
+                          child: SwitchTheme(
+                            data: BankControlTheme.switchTheme(
+                              bankTheme,
+                              accent: activeColor,
+                            ),
+                            child: Switch(
+                              value: value,
+                              onChanged: onChanged,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -502,15 +522,15 @@ class _SpendLimitRow extends StatelessWidget {
         .copyWith(color: bankTheme.onSurfaceVariant)
         .merge(valueStyle);
 
-    return Semantics(
-      label: semanticLabel ?? 'Spend limit: $limitLabel',
-      excludeSemantics: true,
-      child: Padding(
-        padding: resolvedPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return Padding(
+      padding: resolvedPadding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // The heading and the read-out are the slider node's own label and
+          // value, so as separate nodes they would say everything twice.
+          ExcludeSemantics(
+            child: Row(
               children: [
                 SizedBox(
                   width: 40,
@@ -536,22 +556,40 @@ class _SpendLimitRow extends StatelessWidget {
                 ),
               ],
             ),
-            Slider(
-              value: sliderValue,
-              max: maxLimit,
-              divisions: maxLimit > 0 ? maxLimit.toInt() ~/ 100 : null,
-              activeColor: activeColor,
-              inactiveColor: bankTheme.outline,
-              label: sliderValue > 0
-                  ? sliderValue.toStringAsFixed(0)
-                  : noLimitLabel,
-              onChanged: onChanged,
+          ),
+          // Merged, never excluded: excluding the slider takes the framework's
+          // adjustable role, its value, and its increase/decrease actions with
+          // it, which leaves the limit unchangeable by assistive technology.
+          // Merging folds the row's name into that same node instead.
+          MergeSemantics(
+            child: Semantics(
+              label: semanticLabel ?? label,
+              child: SliderTheme(
+                data: BankControlTheme.sliderTheme(
+                  bankTheme,
+                  accent: activeColor,
+                ),
+                child: Slider(
+                  value: sliderValue,
+                  max: maxLimit,
+                  divisions: maxLimit > 0 ? maxLimit.toInt() ~/ 100 : null,
+                  label: _valueLabel(sliderValue),
+                  // Without this the value and both adjustment previews are
+                  // announced as a percentage of the track.
+                  semanticFormatterCallback: _valueLabel,
+                  onChanged: onChanged,
+                ),
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+
+  /// The spend limit at [value], spoken and shown in the drag indicator.
+  String _valueLabel(double value) =>
+      value > 0 ? value.toStringAsFixed(0) : noLimitLabel;
 }
 
 // ---------------------------------------------------------------------------

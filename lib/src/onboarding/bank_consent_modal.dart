@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_control_theme.dart';
+import '../../src/common/bank_sheet.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 
@@ -105,8 +107,8 @@ class BankConsentModal extends StatefulWidget {
     required VoidCallback onDecline,
     Widget? richContent,
   }) =>
-      showDialog<bool>(
-        context: context,
+      BankDialog.show<bool>(
+        context,
         builder: (_) => Dialog(
           child: BankConsentModal(
             title: title,
@@ -395,12 +397,24 @@ class _CheckboxRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Checkbox(
-                value: checked,
-                onChanged: enabled ? onChanged : null,
-                activeColor: accentColor ?? bankTheme.primary,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
+              CheckboxTheme(
+                data: BankControlTheme.checkboxTheme(
+                  bankTheme,
+                  accent: accentColor,
+                ),
+                child: Checkbox(
+                  value: checked,
+                  onChanged: enabled ? onChanged : null,
+                  // The box is independently tappable, so it is a target in
+                  // its own right and has to clear [BankTokens.minTapTarget]
+                  // (44) on both axes. Material's padded tap target is 48;
+                  // both knobs are passed explicitly so an ambient
+                  // `ThemeData.materialTapTargetSize` or a compact
+                  // `VisualDensity` (which is what shrank this box to 32)
+                  // cannot pull a consent control back under the floor.
+                  materialTapTargetSize: MaterialTapTargetSize.padded,
+                  visualDensity: VisualDensity.standard,
+                ),
               ),
               const SizedBox(width: BankTokens.space3),
               Expanded(

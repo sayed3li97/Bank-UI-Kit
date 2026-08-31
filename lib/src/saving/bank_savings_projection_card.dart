@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 
+import '../common/bank_control_theme.dart';
 import '../common/bank_summary_stack.dart';
 import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
@@ -288,14 +289,15 @@ class _BankSavingsProjectionCardState extends State<BankSavingsProjectionCard> {
               slider: true,
               label: '${widget.amountLabel}: $formattedDeposit',
               excludeSemantics: true,
-              child: Slider(
-                value: _amount,
-                min: widget.minAmount,
-                max: widget.maxAmount,
-                divisions: _amountDivisions,
-                activeColor: accent,
-                inactiveColor: theme.surfaceVariant,
-                onChanged: (raw) => setState(() => _amount = _snap(raw)),
+              child: SliderTheme(
+                data: BankControlTheme.sliderTheme(theme, accent: accent),
+                child: Slider(
+                  value: _amount,
+                  min: widget.minAmount,
+                  max: widget.maxAmount,
+                  divisions: _amountDivisions,
+                  onChanged: (raw) => setState(() => _amount = _snap(raw)),
+                ),
               ),
             ),
             const SizedBox(height: BankTokens.space2),
@@ -307,14 +309,15 @@ class _BankSavingsProjectionCardState extends State<BankSavingsProjectionCard> {
               slider: true,
               label: widget.monthsTemplate.replaceAll('{n}', '$_months'),
               excludeSemantics: true,
-              child: Slider(
-                value: _months.toDouble(),
-                min: widget.minMonths.toDouble(),
-                max: widget.maxMonths.toDouble(),
-                divisions: math.max(widget.maxMonths - widget.minMonths, 1),
-                activeColor: accent,
-                inactiveColor: theme.surfaceVariant,
-                onChanged: (raw) => setState(() => _months = raw.round()),
+              child: SliderTheme(
+                data: BankControlTheme.sliderTheme(theme, accent: accent),
+                child: Slider(
+                  value: _months.toDouble(),
+                  min: widget.minMonths.toDouble(),
+                  max: widget.maxMonths.toDouble(),
+                  divisions: math.max(widget.maxMonths - widget.minMonths, 1),
+                  onChanged: (raw) => setState(() => _months = raw.round()),
+                ),
               ),
             ),
             const SizedBox(height: BankTokens.space3),

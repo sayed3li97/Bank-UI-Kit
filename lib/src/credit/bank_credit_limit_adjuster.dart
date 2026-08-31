@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_control_theme.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
@@ -143,7 +144,10 @@ class BankCreditLimitAdjuster extends StatefulWidget {
   /// [BankTokens.curveStandard].
   final Curve? animationCurve;
 
-  /// Overrides the slider semantics label. Defaults to [title].
+  /// Overrides the accessible name of the limit slider. Defaults to [title].
+  ///
+  /// The selected limit is announced as the slider's *value*, in the same
+  /// money formatting the card shows, so it never has to be repeated here.
   final String? semanticLabel;
 
   @override
@@ -334,18 +338,30 @@ class _BankCreditLimitAdjusterState extends State<BankCreditLimitAdjuster> {
             Stack(
               children: [
                 if (_hasRange) _buildCurrentLimitMarker(theme),
-                Semantics(
-                  slider: true,
-                  label: widget.semanticLabel ?? widget.title,
-                  value: formattedSelected,
-                  excludeSemantics: true,
-                  child: Slider(
-                    value: _hasRange ? _selected.clamp(_min, _max) : 0,
-                    min: _hasRange ? _min : 0,
-                    max: _hasRange ? _max : 1,
-                    activeColor: accent,
-                    inactiveColor: theme.surfaceVariant,
-                    onChanged: _busy || !_hasRange ? null : _onSliderChanged,
+                // Merged, never excluded: excluding the slider takes the
+                // framework's adjustable role, its value, and its
+                // increase/decrease actions with it, which leaves the limit
+                // unchangeable by assistive technology. Merging folds the
+                // card's name into that same node instead.
+                MergeSemantics(
+                  child: Semantics(
+                    label: widget.semanticLabel ?? widget.title,
+                    child: SliderTheme(
+                      data: BankControlTheme.sliderTheme(theme, accent: accent),
+                      child: Slider(
+                        value: _hasRange ? _selected.clamp(_min, _max) : 0,
+                        min: _hasRange ? _min : 0,
+                        max: _hasRange ? _max : 1,
+                        // Without this the value and both adjustment previews
+                        // are announced as a percentage of the track instead
+                        // of as money.
+                        semanticFormatterCallback: (value) => _hasRange
+                            ? _format(value, scope)
+                            : formattedSelected,
+                        onChanged:
+                            _busy || !_hasRange ? null : _onSliderChanged,
+                      ),
+                    ),
                   ),
                 ),
               ],

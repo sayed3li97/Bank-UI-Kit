@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../src/common/bank_sheet.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
@@ -64,7 +65,7 @@ class BankTransactionCostSplitSheet extends StatefulWidget {
   /// Overrides the close button glyph. Defaults to [Icons.close].
   final IconData? closeIcon;
 
-  /// Overrides the sheet title. Defaults to 'Split Cost'.
+  /// Overrides the sheet title. Defaults to 'Split cost'.
   final String title;
 
   /// Overrides the total prefix. Defaults to 'Total: '.
@@ -94,7 +95,7 @@ class BankTransactionCostSplitSheet extends StatefulWidget {
     this.titleStyle,
     this.maxHeightFraction,
     this.closeIcon,
-    this.title = 'Split Cost',
+    this.title = 'Split cost',
     this.totalLabel = 'Total: ',
     this.allocatedLabel = 'Allocated',
     this.animationDuration,
@@ -108,10 +109,11 @@ class BankTransactionCostSplitSheet extends StatefulWidget {
     required List<BankSplitParticipant> participants,
     required ValueChanged<Map<String, Money>> onConfirm,
   }) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
+      BankSheet.show<void>(
+        context,
+        // The sheet body paints its own ground and handle.
         backgroundColor: Colors.transparent,
+        showHandle: false,
         builder: (_) => BankTransactionCostSplitSheet(
           transaction: transaction,
           participants: participants,
@@ -213,19 +215,13 @@ class _BankTransactionCostSplitSheetState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle
-            Padding(
-              padding: const EdgeInsets.only(top: BankTokens.space2),
-              child: Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: widget.handleColor ?? bankTheme.outline,
-                    borderRadius: BorderRadius.circular(BankTokens.radiusFull),
-                  ),
-                ),
-              ),
+            // Handle. The body paints its own surface and is presented with
+            // `showHandle: false`, so the handle — and the semantics that
+            // announce it — belong here. The margin keeps the existing rhythm:
+            // the title padding below already supplies the gap underneath.
+            BankSheetHandle(
+              color: widget.handleColor ?? bankTheme.outline,
+              margin: const EdgeInsets.only(top: BankTokens.space2),
             ),
             // Title
             Padding(

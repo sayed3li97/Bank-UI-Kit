@@ -7,6 +7,7 @@ import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 import 'bank_country_flag.dart';
 import 'bank_icon_spec.dart';
+import 'bank_sheet.dart';
 import 'bank_text_field.dart';
 
 /// An immutable country descriptor used by [BankCountryPicker].
@@ -369,6 +370,7 @@ class BankCountryPicker extends StatelessWidget {
     this.backgroundColor,
     this.labelStyle,
     this.valueStyle,
+    this.placeholderStyle,
     this.expandIcon,
     this.searchIcon,
     this.selectedIcon,
@@ -431,6 +433,15 @@ class BankCountryPicker extends StatelessWidget {
   /// [BankTokens.bodyLarge] coloured per the selection state).
   final TextStyle? valueStyle;
 
+  /// Merged over the placeholder style only, on top of [valueStyle]
+  /// (default: [BankTokens.bodyLarge] at regular weight in
+  /// [BankThemeData.onSurfaceVariant]).
+  ///
+  /// A picked country is an *answer*, not a prompt: it carries the field's
+  /// ink and the semibold weight of a committed value, so a filled field is
+  /// distinguishable from an empty one at a glance rather than by reading it.
+  final TextStyle? placeholderStyle;
+
   /// Overrides [BankIcons.expand] as the field's trailing glyph.
   final IconData? expandIcon;
 
@@ -471,28 +482,26 @@ class BankCountryPicker extends StatelessWidget {
     IconData? selectedIcon,
     double? sheetHeightFactor,
   }) =>
-      showModalBottomSheet<BankCountry>(
-        context: context,
+      BankSheet.show<BankCountry>(
+        context,
+        // The picker sheet paints its own ground and drag handle; the branded
+        // surface supplies the scrim, motion, and the keyboard inset the
+        // search field needs.
         backgroundColor: Colors.transparent,
-        isScrollControlled: true,
-        builder: (BuildContext sheetContext) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
-          ),
-          child: _BankCountrySheet(
-            countries: countriesOverride ?? BankCountry.all,
-            selectedIsoCode: selected?.isoCode,
-            recentIsoCodes: recentIsoCodes,
-            showDialCode: showDialCode,
-            searchHint: searchHint,
-            recentLabel: recentLabel,
-            emptyLabel: emptyLabel,
-            searchIcon: searchIcon,
-            selectedIcon: selectedIcon,
-            heightFactor: sheetHeightFactor,
-            onSelected: (BankCountry country) =>
-                Navigator.of(sheetContext).pop(country),
-          ),
+        showHandle: false,
+        builder: (BuildContext sheetContext) => _BankCountrySheet(
+          countries: countriesOverride ?? BankCountry.all,
+          selectedIsoCode: selected?.isoCode,
+          recentIsoCodes: recentIsoCodes,
+          showDialCode: showDialCode,
+          searchHint: searchHint,
+          recentLabel: recentLabel,
+          emptyLabel: emptyLabel,
+          searchIcon: searchIcon,
+          selectedIcon: selectedIcon,
+          heightFactor: sheetHeightFactor,
+          onSelected: (BankCountry country) =>
+              Navigator.of(sheetContext).pop(country),
         ),
       );
 
@@ -526,6 +535,17 @@ class BankCountryPicker extends StatelessWidget {
     final valueColor = enabled
         ? (hasValue ? theme.onSurface : theme.onSurfaceVariant)
         : theme.onSurfaceVariant;
+
+    // Ink *and* weight separate an answer from a prompt: the two shades of
+    // grey alone left a chosen country reading like unfilled placeholder
+    // text, which is the state users scan a form for.
+    final resolvedValueStyle = BankTokens.bodyLarge
+        .copyWith(
+          color: valueColor,
+          fontWeight: hasValue ? FontWeight.w600 : FontWeight.w400,
+        )
+        .merge(valueStyle)
+        .merge(hasValue ? null : placeholderStyle);
 
     final computedSemanticLabel = StringBuffer()
       ..write(label ?? placeholder)
@@ -595,9 +615,7 @@ class BankCountryPicker extends StatelessWidget {
                       Expanded(
                         child: Text(
                           hasValue ? country.name : placeholder,
-                          style: BankTokens.bodyLarge
-                              .copyWith(color: valueColor)
-                              .merge(valueStyle),
+                          style: resolvedValueStyle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -617,7 +635,7 @@ class BankCountryPicker extends StatelessWidget {
                       Icon(
                         expandIcon ?? BankIcons.expand,
                         color: theme.onSurfaceVariant,
-                        size: 20,
+                        size: BankTokens.iconMedium,
                       ),
                     ],
                   ),
@@ -738,20 +756,10 @@ class _BankCountrySheetState extends State<_BankCountrySheet> {
       ),
       child: Column(
         children: [
-          // Drag handle.
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: BankTokens.space3),
-              decoration: BoxDecoration(
-                color: theme.outline,
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(BankTokens.radiusFull),
-                ),
-              ),
-            ),
-          ),
+          // Drag handle. The picker paints its own ground and is presented
+          // with `showHandle: false`, so the handle — and the semantics that
+          // announce it — belong here rather than to the wrapping surface.
+          BankSheetHandle(color: theme.outline),
 
           // Pinned search field.
           Padding(
@@ -843,7 +851,7 @@ class _LetterHeaderDelegate extends SliverPersistentHeaderDelegate {
   final String label;
   final BankThemeData theme;
 
-  static const double _height = 32;
+  static const double _height = BankTokens.space8;
 
   @override
   double get minExtent => _height;
@@ -919,7 +927,7 @@ class _CountryRow extends StatelessWidget {
       button: true,
       selected: isSelected,
       child: SizedBox(
-        height: 48,
+        height: BankTokens.space12,
         child: InkWell(
           onTap: onTap,
           splashColor: theme.primary.withValues(alpha: 0.08),
@@ -943,6 +951,11 @@ class _CountryRow extends StatelessWidget {
                     country.name,
                     style: BankTokens.bodyLarge.copyWith(
                       color: theme.onSurface,
+                      // The selected row carries the same committed weight as
+                      // the field it fills, so selection never rests on the
+                      // checkmark's colour alone.
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -964,7 +977,7 @@ class _CountryRow extends StatelessWidget {
                   Icon(
                     selectedIcon ?? Icons.check_circle,
                     color: theme.primary,
-                    size: 18,
+                    size: BankTokens.iconMedium,
                   ),
                 ],
               ],

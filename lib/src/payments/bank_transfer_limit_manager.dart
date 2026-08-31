@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_control_theme.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
@@ -291,17 +292,39 @@ class _ChannelEditorState extends State<_ChannelEditor> {
               color: nearLimit ? BankTokens.danger : accent,
             ),
           ),
-          Semantics(
-            slider: true,
-            label: '${channel.label}: $formattedValue',
-            excludeSemantics: true,
-            child: Slider(
-              value: _value.clamp(0, _max),
-              max: _max <= 0 ? 1 : _max,
-              activeColor: accent,
-              inactiveColor: track,
-              onChanged: _awaitingSca ? null : _onSliderChanged,
-              onChangeEnd: _onSliderCommit,
+          // Merged, never excluded: excluding the slider takes the framework's
+          // adjustable role, its value, and its increase/decrease actions with
+          // it, which leaves the limit unchangeable by assistive technology.
+          // Merging folds the channel's name into that same node instead.
+          MergeSemantics(
+            child: Semantics(
+              label: channel.label,
+              child: SliderTheme(
+                // The groove sits directly under a progress bar already
+                // painted in [track], so this slider keeps that fill rather
+                // than the kit's default ambient-ink groove.
+                data: BankControlTheme.sliderTheme(
+                  theme,
+                  accent: accent,
+                  inactiveTrackColor: track,
+                ),
+                child: Slider(
+                  value: _value.clamp(0, _max),
+                  max: _max <= 0 ? 1 : _max,
+                  // Without this the value and both adjustment previews are
+                  // announced as a percentage of the track instead of as
+                  // money.
+                  semanticFormatterCallback: (value) => _max <= 0
+                      ? formattedValue
+                      : BankMoneyFormatter.format(
+                          amount: _asMoney(value).amount,
+                          currencyCode: channel.current.currencyCode,
+                          numeralStyle: scope.numeralStyle,
+                        ),
+                  onChanged: _awaitingSca ? null : _onSliderChanged,
+                  onChangeEnd: _onSliderCommit,
+                ),
+              ),
             ),
           ),
           Row(

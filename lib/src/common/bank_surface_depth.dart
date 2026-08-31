@@ -28,7 +28,10 @@ enum BankSurfaceDepthTier {
 ///
 /// - the shadow variant follows the brightness of the **theme background**
 ///   (light-ink shadows disappear on near-black backgrounds, so dark
-///   backgrounds get the pure-black occlusion variants);
+///   backgrounds get the pure-black occlusion variants), and is re-inked with
+///   [BankThemeData.shadowTint] when the brand defines one, so a preset's
+///   shadow colour reaches the kit's own surfaces and not just Material
+///   elevations;
 /// - the hairline follows the brightness of the **painted surface** — dark
 ///   surfaces get a [BankTokens.hairlineWidth] hairline in
 ///   [BankTokens.hairlineColor], light surfaces keep an invisible border of
@@ -61,16 +64,19 @@ class BankSurfaceDepth {
     final backgroundBrightness =
         ThemeData.estimateBrightnessForColor(theme.background);
 
+    // Route through the theme rather than the tokens directly: shadowFor
+    // applies the brand's shadowTint, which is what makes a preset's
+    // documented shadow colour real on kit surfaces.
     final resolvedShadow = shadow ??
-        switch (tier) {
-          BankSurfaceDepthTier.flat => const <BoxShadow>[],
-          BankSurfaceDepthTier.card =>
-            BankTokens.shadowCardFor(backgroundBrightness),
-          BankSurfaceDepthTier.floating =>
-            BankTokens.shadowFloatingFor(backgroundBrightness),
-          BankSurfaceDepthTier.hero =>
-            BankTokens.shadowHeroFor(backgroundBrightness),
-        };
+        theme.shadowFor(
+          switch (tier) {
+            BankSurfaceDepthTier.flat => BankElevationTier.flat,
+            BankSurfaceDepthTier.card => BankElevationTier.card,
+            BankSurfaceDepthTier.floating => BankElevationTier.floating,
+            BankSurfaceDepthTier.hero => BankElevationTier.hero,
+          },
+          brightness: backgroundBrightness,
+        );
 
     final resolvedBorder = border ??
         Border.all(

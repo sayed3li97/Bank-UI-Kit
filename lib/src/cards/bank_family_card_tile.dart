@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../src/common/bank_control_theme.dart';
 import '../../src/common/bank_emblem.dart';
 import '../../src/common/bank_icon_spec.dart';
 import '../../src/common/money_formatter.dart';
@@ -485,11 +486,16 @@ class _BankFamilyCardTileState extends State<BankFamilyCardTile> {
                     color: resolvedAccentColor,
                   ),
                 )
-              : Switch(
+              : SwitchTheme(
                   key: const ValueKey<String>('bank_family_card_switch'),
-                  value: frozen,
-                  onChanged: _toggleFreeze,
-                  activeThumbColor: resolvedAccentColor,
+                  data: BankControlTheme.switchTheme(
+                    theme,
+                    accent: resolvedAccentColor,
+                  ),
+                  child: Switch(
+                    value: frozen,
+                    onChanged: _toggleFreeze,
+                  ),
                 ),
         ),
       ),
