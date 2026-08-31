@@ -39,6 +39,7 @@ class BankTextField extends StatelessWidget {
     this.textInputAction,
     this.focusNode,
     this.readOnly = false,
+    this.textDirection,
     this.radius,
     this.fillColor,
     this.borderColor,
@@ -81,6 +82,16 @@ class BankTextField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
   final bool readOnly;
+
+  /// Pins the direction of the editable paragraph, independent of the
+  /// ambient [Directionality].
+  ///
+  /// Pass [TextDirection.ltr] for a field that holds a machine identifier
+  /// — a phone number, an account number, a reference — whose digit groups
+  /// would otherwise reverse in an RTL locale (UAX #9 rule N1). Editable
+  /// text is pinned this way rather than wrapped in a directional isolate,
+  /// because the buffer is also what the user selects and copies.
+  final TextDirection? textDirection;
 
   /// Overrides the field's border radius. Defaults to
   /// [BankThemeData.buttonRadius].
@@ -180,6 +191,7 @@ class BankTextField extends StatelessWidget {
           maxLines: maxLines,
           textInputAction: textInputAction,
           readOnly: readOnly,
+          textDirection: textDirection,
           style: BankTokens.bodyLarge
               .copyWith(color: theme.onSurface)
               .merge(textStyle),

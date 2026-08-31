@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/bank_strings.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/numeral_style.dart';
@@ -382,7 +383,11 @@ class _BankOtpInputState extends State<BankOtpInput> {
         if (widget.resendCooldown != null)
           Padding(
             padding: const EdgeInsetsDirectional.only(top: BankTokens.space3),
-            child: _buildResendButton(theme, numeralStyle),
+            child: _buildResendButton(
+              theme,
+              numeralStyle,
+              BankStrings.of(context),
+            ),
           ),
       ],
     );
@@ -511,10 +516,14 @@ class _BankOtpInputState extends State<BankOtpInput> {
     );
   }
 
-  Widget _buildResendButton(BankThemeData theme, NumeralStyle numeralStyle) {
+  Widget _buildResendButton(
+    BankThemeData theme,
+    NumeralStyle numeralStyle,
+    BankStrings strings,
+  ) {
     final enabled = _canResend && widget.enabled && widget.onResend != null;
     final label = _canResend
-        ? (widget.resendLabel ?? 'Resend code')
+        ? (widget.resendLabel ?? strings.authResendCode)
         : '${widget.resendCountdownPrefix} '
             '${_formatCountdown(numeralStyle)}';
 

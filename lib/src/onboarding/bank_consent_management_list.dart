@@ -3,9 +3,18 @@ import 'package:flutter/material.dart';
 import '../common/bank_emblem.dart';
 import '../common/bank_sheet.dart';
 import '../common/money_formatter.dart';
+import '../l10n/bank_strings.dart';
 import '../states/bank_empty_state_view.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
+
+/// Resolves a copy parameter whose default is the shipped English.
+///
+/// The card and the revoke dialog both need it, and every label on this
+/// surface goes through it, so a chip never sits in one language beside a
+/// button in another.
+String _resolve(String value, String shipped, String translated) =>
+    BankStrings.override(value, shipped) ?? translated;
 
 /// Lifecycle state of a data-sharing consent.
 enum BankConsentState { active, expiringSoon, expired, revoked }
@@ -59,20 +68,19 @@ class BankConsentManagementList extends StatefulWidget {
     super.key,
     this.onLearnMore,
     this.emptyState,
-    this.revokeLabel = 'Revoke access',
-    this.revokeConfirmTitle = 'Revoke access?',
-    this.revokeConfirmBody = 'This app immediately loses access to your data.',
-    this.cancelLabel = 'Cancel',
-    this.grantedPrefix = 'Granted',
-    this.expiresPrefix = 'expires',
-    this.revokedLabel = 'Revoked',
-    this.expiredLabel = 'Expired',
-    this.expiringSoonLabel = 'Expiring soon',
-    this.activeLabel = 'Active',
+    this.revokeLabel = _kRevokeLabel,
+    this.revokeConfirmTitle = _kRevokeConfirmTitle,
+    this.revokeConfirmBody = _kRevokeConfirmBody,
+    this.cancelLabel = _kCancelLabel,
+    this.grantedPrefix = _kGrantedPrefix,
+    this.expiresPrefix = _kExpiresPrefix,
+    this.revokedLabel = _kRevokedLabel,
+    this.expiredLabel = _kExpiredLabel,
+    this.expiringSoonLabel = _kExpiringSoonLabel,
+    this.activeLabel = _kActiveLabel,
     this.moreScopesSuffix = 'more',
     this.emptyTitle = 'No connected apps',
-    this.emptySubtitle =
-        'Apps you allow to access your account data appear here.',
+    this.emptySubtitle = _kEmptySubtitle,
     this.learnMoreLabel = 'How data sharing works',
     this.itemMargin,
     this.cardPadding,
@@ -84,6 +92,20 @@ class BankConsentManagementList extends StatefulWidget {
     this.animationDuration,
     this.animationCurve,
   });
+
+  static const String _kRevokeLabel = 'Revoke access';
+  static const String _kRevokeConfirmTitle = 'Revoke access?';
+  static const String _kRevokeConfirmBody =
+      'This app immediately loses access to your data.';
+  static const String _kCancelLabel = 'Cancel';
+  static const String _kGrantedPrefix = 'Granted';
+  static const String _kExpiresPrefix = 'expires';
+  static const String _kRevokedLabel = 'Revoked';
+  static const String _kExpiredLabel = 'Expired';
+  static const String _kExpiringSoonLabel = 'Expiring soon';
+  static const String _kActiveLabel = 'Active';
+  static const String _kEmptySubtitle =
+      'Apps you allow to access your account data appear here.';
 
   final List<BankConsent> consents;
 
@@ -160,27 +182,48 @@ class _BankConsentManagementListState extends State<BankConsentManagementList> {
 
   Future<void> _confirmRevoke(BankConsent consent) async {
     final theme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
+    final title = _resolve(
+      widget.revokeConfirmTitle,
+      BankConsentManagementList._kRevokeConfirmTitle,
+      strings.consentRevokeTitle,
+    );
+    final body = _resolve(
+      widget.revokeConfirmBody,
+      BankConsentManagementList._kRevokeConfirmBody,
+      strings.consentRevokeBody,
+    );
+    final cancelLabel = _resolve(
+      widget.cancelLabel,
+      BankConsentManagementList._kCancelLabel,
+      strings.actionCancel,
+    );
+    final revokeLabel = _resolve(
+      widget.revokeLabel,
+      BankConsentManagementList._kRevokeLabel,
+      strings.consentRevoke,
+    );
     final confirmed = await BankDialog.show<bool>(
       context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: theme.surface,
         title: Text(
-          widget.revokeConfirmTitle,
+          title,
           style: BankTokens.headlineSmall.copyWith(color: theme.onSurface),
         ),
         content: Text(
-          widget.revokeConfirmBody,
+          body,
           style: BankTokens.bodyMedium.copyWith(color: theme.onSurfaceVariant),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(widget.cancelLabel),
+            child: Text(cancelLabel),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(
-              widget.revokeLabel,
+              revokeLabel,
               style: const TextStyle(color: BankTokens.danger),
             ),
           ),
@@ -210,12 +253,20 @@ class _BankConsentManagementListState extends State<BankConsentManagementList> {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
 
     if (widget.consents.isEmpty) {
+      // The subtitle arrives as a non-nullable String defaulted to the
+      // shipped English; `override` keeps a host's wording and otherwise
+      // falls back to the ambient language.
       return widget.emptyState ??
           BankEmptyStateView(
             title: widget.emptyTitle,
-            subtitle: widget.emptySubtitle,
+            subtitle: BankStrings.override(
+                  widget.emptySubtitle,
+                  BankConsentManagementList._kEmptySubtitle,
+                ) ??
+                strings.consentEmptyBody,
           );
     }
 
@@ -278,33 +329,71 @@ class _ConsentCard extends StatelessWidget {
   final VoidCallback onToggleScopes;
   final VoidCallback onRevoke;
 
-  (String, Color) get _stateChip => switch (state) {
-        BankConsentState.active => (widget.activeLabel, theme.positiveBalance),
+  /// Takes [strings] rather than reading them: it is a plain getter with
+  /// no [BuildContext] of its own.
+  (String, Color) _stateChip(BankStrings strings) => switch (state) {
+        BankConsentState.active => (
+            _resolve(
+              widget.activeLabel,
+              BankConsentManagementList._kActiveLabel,
+              strings.statusActive,
+            ),
+            theme.positiveBalance
+          ),
         BankConsentState.expiringSoon => (
-            widget.expiringSoonLabel,
+            _resolve(
+              widget.expiringSoonLabel,
+              BankConsentManagementList._kExpiringSoonLabel,
+              strings.consentExpiringSoon,
+            ),
             BankTokens.warning
           ),
         BankConsentState.expired => (
-            widget.expiredLabel,
+            _resolve(
+              widget.expiredLabel,
+              BankConsentManagementList._kExpiredLabel,
+              strings.consentExpired,
+            ),
             theme.onSurfaceVariant
           ),
         BankConsentState.revoked => (
-            widget.revokedLabel,
+            _resolve(
+              widget.revokedLabel,
+              BankConsentManagementList._kRevokedLabel,
+              strings.consentRevoked,
+            ),
             theme.onSurfaceVariant
           ),
       };
 
   @override
   Widget build(BuildContext context) {
+    final strings = BankStrings.of(context);
     final inactive =
         state == BankConsentState.revoked || state == BankConsentState.expired;
-    final (chipLabel, chipColor) = _stateChip;
+    final (chipLabel, chipColor) = _stateChip(strings);
+
+    final expiresPrefix = _resolve(
+      widget.expiresPrefix,
+      BankConsentManagementList._kExpiresPrefix,
+      strings.consentExpiresPrefix,
+    );
+    final grantedPrefix = _resolve(
+      widget.grantedPrefix,
+      BankConsentManagementList._kGrantedPrefix,
+      strings.consentGrantedPrefix,
+    );
+    final revokeLabel = _resolve(
+      widget.revokeLabel,
+      BankConsentManagementList._kRevokeLabel,
+      strings.consentRevoke,
+    );
 
     final expiryText = consent.expiresAt == null
         ? null
-        : '${widget.expiresPrefix} '
+        : '$expiresPrefix '
             '${BankDateFormatter.formatShort(consent.expiresAt!)}';
-    final grantedText = '${widget.grantedPrefix} '
+    final grantedText = '$grantedPrefix '
         '${BankDateFormatter.formatShort(consent.grantedAt)}';
     final grantedLine = [
       grantedText,
@@ -449,7 +538,7 @@ class _ConsentCard extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          widget.revokeLabel,
+                          revokeLabel,
                           style: BankTokens.labelLarge
                               .copyWith(color: BankTokens.danger),
                         ),

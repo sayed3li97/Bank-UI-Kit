@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../common/bank_icon_spec.dart';
 import '../common/money_formatter.dart';
+import '../l10n/bank_strings.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -367,11 +368,12 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
   // Per-status defaults
   // ---------------------------------------------------------------------
 
-  String get _defaultTitle => switch (widget.status) {
-        BankConnectivityStatus.deviceOffline => "You're offline",
-        BankConnectivityStatus.serviceDegraded => 'Some services are affected',
-        BankConnectivityStatus.reconnected =>
-          'Back online. Your accounts are up to date.',
+  String _defaultTitle(BankStrings strings) => switch (widget.status) {
+        BankConnectivityStatus.deviceOffline =>
+          strings.connectivityOfflineTitle,
+        BankConnectivityStatus.serviceDegraded =>
+          strings.connectivityDegradedTitle,
+        BankConnectivityStatus.reconnected => strings.connectivityRestored,
       };
 
   IconData get _defaultIcon => switch (widget.status) {
@@ -401,8 +403,9 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
         theme.surface,
       );
 
-  String _countdownText(int seconds) =>
-      widget.formatRetryCountdown?.call(seconds) ?? 'Retrying in ${seconds}s';
+  String _countdownText(int seconds, BankStrings strings) =>
+      widget.formatRetryCountdown?.call(seconds) ??
+      strings.connectivityRetryingIn('$seconds');
 
   // ---------------------------------------------------------------------
   // Sub-builders
@@ -437,7 +440,11 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
     );
   }
 
-  Widget? _buildRetryLine(Color accent, Color bodyColor) {
+  Widget? _buildRetryLine(
+    Color accent,
+    Color bodyColor,
+    BankStrings strings,
+  ) {
     if (widget.retriesExhausted) {
       return Text(
         widget.retriesExhaustedLabel,
@@ -468,10 +475,10 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
     final bucket = seconds <= 0 ? 0 : ((seconds + 9) ~/ 10) * 10;
 
     return Semantics(
-      label: _countdownText(bucket),
+      label: _countdownText(bucket, strings),
       child: ExcludeSemantics(
         child: Text(
-          _countdownText(seconds),
+          _countdownText(seconds, strings),
           style: BankTokens.bodySmall.copyWith(color: bodyColor),
         ),
       ),
@@ -532,6 +539,7 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
 
     // The painted ground decides which semantic variant reads AA and how
     // strong the hairline has to be.
@@ -557,7 +565,7 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
         .merge(widget.messageStyle);
 
     final stalenessLine = _buildStalenessLine(bodyColor, surfaceBrightness);
-    final retryLine = _buildRetryLine(accent, bodyColor);
+    final retryLine = _buildRetryLine(accent, bodyColor, strings);
 
     final showRetry = widget.onRetry != null;
     final showViewStatus =
@@ -597,7 +605,7 @@ class _BankConnectivityBannerState extends State<BankConnectivityBanner>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    widget.title ?? _defaultTitle,
+                    widget.title ?? _defaultTitle(strings),
                     style: resolvedTitleStyle,
                   ),
                   if (widget.message != null) ...[

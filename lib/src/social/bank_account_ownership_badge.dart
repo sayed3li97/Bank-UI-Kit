@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../common/bank_emblem.dart';
+import '../l10n/bank_strings.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -66,12 +67,6 @@ class BankAccountOwnershipBadge extends StatelessWidget {
     this.semanticLabel,
   });
 
-  static String _defaultLabel(BankOwnershipRole role) => switch (role) {
-        BankOwnershipRole.primary => 'Primary',
-        BankOwnershipRole.joint => 'Joint',
-        BankOwnershipRole.beneficiary => 'Beneficiary',
-      };
-
   static IconData _icon(BankOwnershipRole role) => switch (role) {
         BankOwnershipRole.primary => Icons.star_rounded,
         BankOwnershipRole.joint => Icons.people_rounded,
@@ -94,7 +89,13 @@ class BankAccountOwnershipBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final label = customLabel ?? _defaultLabel(role);
+    final strings = BankStrings.of(context);
+    final label = customLabel ??
+        switch (role) {
+          BankOwnershipRole.primary => strings.ownershipPrimary,
+          BankOwnershipRole.joint => strings.ownershipJoint,
+          BankOwnershipRole.beneficiary => strings.ownershipBeneficiary,
+        };
 
     return BankTintChip(
       label: label,

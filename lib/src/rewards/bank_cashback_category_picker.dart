@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../common/bank_format_context.dart';
 import '../common/money_formatter.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
@@ -346,7 +347,10 @@ class _BankCashbackCategoryPickerState extends State<BankCashbackCategoryPicker>
             widget.lockedUntilTemplate.replaceAll(
               '{date}',
               scope.numeralStyle.convert(
-                BankDateFormatter.formatFull(widget.effectiveUntil!),
+                BankDateFormatter.formatFull(
+                  widget.effectiveUntil!,
+                  locale: context.bankLocale,
+                ),
               ),
             ),
             style: BankTokens.bodySmall.copyWith(

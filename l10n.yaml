@@ -1,0 +1,22 @@
+# Localization config for the Bank UI Kit's own copy.
+#
+# The kit is a package, not an app, so the generated Dart is written into
+# `lib/src/l10n/` and committed. Packages must ship their generated
+# localizations in the published tarball: a host app runs `gen-l10n` for its
+# own ARB files, never for ours.
+arb-dir: lib/l10n
+template-arb-file: bank_ui_kit_en.arb
+output-dir: lib/src/l10n
+output-localization-file: bank_l10n.dart
+output-class: BankL10n
+preferred-supported-locales:
+  - en
+# `BankL10n.of` returns null when the host installed no delegate. The facade
+# in lib/src/l10n/bank_strings.dart depends on that: falling back to English
+# is the documented behaviour, not an error.
+nullable-getter: true
+untranslated-messages-file: l10n_untranslated.json
+# Apostrophes are literal. ICU escaping is off because no message in this
+# catalogue needs a literal brace, and turning it on would make every
+# "we can't" and "you're" an unmatched-quote lexing error for translators.
+use-escaping: false

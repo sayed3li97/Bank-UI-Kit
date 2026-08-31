@@ -42,6 +42,25 @@ jobs:
       - name: Verify design tokens are in sync
         run: dart run tool/generate_tokens.dart --check
 
+      # Three separate gates, in this order for a reason. `gen-l10n` runs
+      # first because it writes `l10n_untranslated.json`, which is a build
+      # artifact and therefore absent from a fresh checkout: checking the
+      # catalogue before generating would silently skip that half of the
+      # check. Then the catalogue itself is judged (descriptions, key parity,
+      # placeholder parity) — a translator can break that without touching
+      # Dart. Then the facade, and finally a clean tree, which is what proves
+      # the committed Dart matches the ARB it was generated from.
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Verify the localisation catalogue
+        run: dart run tool/check_l10n.dart
+
+      - name: Verify the generated localizations are in sync
+        run: |
+          dart run tool/generate_l10n_facade.dart --check
+          git diff --exit-code -- lib/src/l10n lib/l10n
+
       - name: Run tests
         run: flutter test --coverage
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
@@ -546,6 +547,7 @@ class _BankSavingsChallengeCardState extends State<BankSavingsChallengeCard>
                           child: Text(
                             BankDateFormatter.formatShort(
                               widget.nextDepositDate!,
+                              locale: context.bankLocale,
                             ),
                             style: BankTokens.bodySmall
                                 .copyWith(color: theme.onSurfaceVariant),

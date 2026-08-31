@@ -94,6 +94,10 @@ export 'src/insights/bank_spending_breakdown_chart.dart';
 // Islamic banking
 export 'src/islamic/bank_donation_hub_card.dart';
 export 'src/islamic/bank_zakat_calculator.dart';
+// Localisation: the generated catalogue delegate and the resolution
+// facade widgets read copy through.
+export 'src/l10n/bank_l10n.dart' show BankL10n;
+export 'src/l10n/bank_strings.dart';
 export 'src/models/bank_account.dart';
 export 'src/models/bank_currency.dart';
 export 'src/models/bank_insight.dart';

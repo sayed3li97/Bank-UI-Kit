@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_emblem.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_sheet.dart';
 import '../common/bank_text_field.dart';
 import '../common/money_formatter.dart';
@@ -200,7 +201,10 @@ class _BankApprovalRequestTileState extends State<BankApprovalRequestTile> {
         .replaceAll('{required}', '${request.approvalsRequired}');
     final requestedLine = '${widget.requestedByPrefix} '
         '${request.requesterName} · '
-        '${BankDateFormatter.formatRelative(request.requestedAt)}';
+        '${BankDateFormatter.formatRelative(
+      request.requestedAt,
+      locale: context.bankLocale,
+    )}';
 
     final expired = request.state == BankApprovalState.expired;
     final showButtons = widget.canAct &&

@@ -6,6 +6,8 @@ import '../../src/models/money.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../common/bank_format_context.dart';
+import '../l10n/bank_strings.dart';
 
 enum BankChartTimeRange {
   oneDay,
@@ -127,14 +129,19 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
     this.semanticLabel,
   });
 
-  static const _rangeLabels = <BankChartTimeRange, String>{
-    BankChartTimeRange.oneDay: '1D',
-    BankChartTimeRange.oneWeek: '1W',
-    BankChartTimeRange.oneMonth: '1M',
-    BankChartTimeRange.threeMonths: '3M',
-    BankChartTimeRange.oneYear: '1Y',
-    BankChartTimeRange.allTime: 'All',
-  };
+  /// The built-in range chips.
+  ///
+  /// The five duration chips are numeric abbreviations that read the same in
+  /// every language; only `allTime` is a word, so only it is translated.
+  static String _rangeLabel(BankChartTimeRange range, BankStrings strings) =>
+      switch (range) {
+        BankChartTimeRange.oneDay => '1D',
+        BankChartTimeRange.oneWeek => '1W',
+        BankChartTimeRange.oneMonth => '1M',
+        BankChartTimeRange.threeMonths => '3M',
+        BankChartTimeRange.oneYear => '1Y',
+        BankChartTimeRange.allTime => strings.periodAll,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -194,7 +201,11 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
     }
 
     String formatDate(DateTime d) =>
-        dateFormatter?.call(d) ?? BankDateFormatter.formatShort(d);
+        dateFormatter?.call(d) ??
+        BankDateFormatter.formatShort(
+          d,
+          locale: context.bankLocale,
+        );
 
     final axisStyle =
         BankTokens.labelSmall.copyWith(color: theme.onSurfaceVariant);
@@ -368,7 +379,8 @@ class BankPortfolioPerformanceChart extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      rangeLabels?[range] ?? _rangeLabels[range]!,
+                      rangeLabels?[range] ??
+                          _rangeLabel(range, BankStrings.of(context)),
                     ),
                   ),
                 );

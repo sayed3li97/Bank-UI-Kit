@@ -9,6 +9,7 @@ import '../../src/theme/button_text_style.dart';
 import '../../src/theme/tokens.dart';
 import '../common/bank_format_context.dart';
 import '../common/bank_surface_depth.dart';
+import '../l10n/bank_strings.dart';
 
 /// Shareable receipt layout. The package renders the view;
 /// the host app wires up PDF generation or share-sheet logic.
@@ -202,37 +203,11 @@ class BankReceiptView extends StatelessWidget {
     return (hi + 0.05) / (lo + 0.05);
   }
 
-  String _categoryLabel(TransactionCategory cat) => switch (cat) {
-        TransactionCategory.groceries => 'Groceries',
-        TransactionCategory.dining => 'Dining',
-        TransactionCategory.transport => 'Transport',
-        TransactionCategory.entertainment => 'Entertainment',
-        TransactionCategory.utilities => 'Utilities',
-        TransactionCategory.health => 'Health',
-        TransactionCategory.shopping => 'Shopping',
-        TransactionCategory.travel => 'Travel',
-        TransactionCategory.education => 'Education',
-        TransactionCategory.subscription => 'Subscription',
-        TransactionCategory.transfer => 'Transfer',
-        TransactionCategory.income => 'Income',
-        TransactionCategory.investment => 'Investment',
-        TransactionCategory.creditPayment => 'Credit Payment',
-        TransactionCategory.other => 'Other',
-      };
-
-  String _statusLabel(TransactionStatus status, BankUiScopeData scope) =>
-      switch (status) {
-        TransactionStatus.pending => scope.strings.pending,
-        TransactionStatus.cleared => scope.strings.cleared,
-        TransactionStatus.declined => scope.strings.declined,
-        TransactionStatus.refunded => scope.strings.refunded,
-        TransactionStatus.scheduled => scope.strings.scheduled,
-      };
-
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final strings = BankStrings.of(context);
 
     final isCredit = !transaction.amount.isNegative;
     final formattedAmount = BankMoneyFormatter.format(
@@ -275,7 +250,8 @@ class BankReceiptView extends StatelessWidget {
     final sectionPadding = padding ?? const EdgeInsets.all(BankTokens.space6);
     final resolvedDividerColor = dividerColor ?? paperOutline;
     final resolvedCategoryLabel =
-        (categoryLabelBuilder ?? _categoryLabel)(transaction.category);
+        categoryLabelBuilder?.call(transaction.category) ??
+            strings.categoryLabel(transaction.category);
 
     return Semantics(
       label: semanticLabel ??
@@ -380,7 +356,7 @@ class BankReceiptView extends StatelessWidget {
                   ),
                   _ReceiptRow(
                     label: statusRowLabel,
-                    value: _statusLabel(transaction.status, scope),
+                    value: strings.statusLabel(transaction.status),
                     labelStyle: rowLabelStyle,
                     valueStyle: rowValueStyle,
                     labelColor: inkMuted,

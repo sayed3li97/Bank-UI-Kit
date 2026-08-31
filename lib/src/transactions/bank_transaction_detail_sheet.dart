@@ -8,6 +8,7 @@ import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 import '../common/bank_format_context.dart';
+import '../l10n/bank_strings.dart';
 
 /// Full-detail bottom sheet for a single transaction.
 class BankTransactionDetailSheet extends StatelessWidget {
@@ -141,33 +142,6 @@ class BankTransactionDetailSheet extends StatelessWidget {
   // Helpers
   // ---------------------------------------------------------------------------
 
-  String _categoryLabel(TransactionCategory cat) => switch (cat) {
-        TransactionCategory.groceries => 'Groceries',
-        TransactionCategory.dining => 'Dining',
-        TransactionCategory.transport => 'Transport',
-        TransactionCategory.entertainment => 'Entertainment',
-        TransactionCategory.utilities => 'Utilities',
-        TransactionCategory.health => 'Health',
-        TransactionCategory.shopping => 'Shopping',
-        TransactionCategory.travel => 'Travel',
-        TransactionCategory.education => 'Education',
-        TransactionCategory.subscription => 'Subscription',
-        TransactionCategory.transfer => 'Transfer',
-        TransactionCategory.income => 'Income',
-        TransactionCategory.investment => 'Investment',
-        TransactionCategory.creditPayment => 'Credit Payment',
-        TransactionCategory.other => 'Other',
-      };
-
-  String _statusLabel(TransactionStatus status, BankUiScopeData scope) =>
-      switch (status) {
-        TransactionStatus.pending => scope.strings.pending,
-        TransactionStatus.cleared => scope.strings.cleared,
-        TransactionStatus.declined => scope.strings.declined,
-        TransactionStatus.refunded => scope.strings.refunded,
-        TransactionStatus.scheduled => scope.strings.scheduled,
-      };
-
   Color _statusColor(TransactionStatus status, BankThemeData bankTheme) =>
       switch (status) {
         TransactionStatus.pending => BankTokens.pending,
@@ -181,7 +155,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
-    final s = scope.strings;
+    final strings = BankStrings.of(context);
 
     final isCredit = !transaction.amount.isNegative;
     final isDeclined = transaction.status == TransactionStatus.declined;
@@ -203,7 +177,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final maxHeight =
         MediaQuery.of(context).size.height * (maxHeightFraction ?? 0.92);
-    final resolvedCategoryLabel = categoryLabelBuilder ?? _categoryLabel;
+    final resolvedCategoryLabel = categoryLabelBuilder ?? strings.categoryLabel;
     final accent = accentColor ?? bankTheme.primary;
 
     return Container(
@@ -289,7 +263,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                   ),
                   _DetailRow(
                     label: statusRowLabel,
-                    value: _statusLabel(transaction.status, scope),
+                    value: strings.statusLabel(transaction.status),
                     valueColor: _statusColor(transaction.status, bankTheme),
                     bankTheme: bankTheme,
                   ),
@@ -391,7 +365,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                         if (onDispute != null)
                           Semantics(
                             button: true,
-                            label: s.dispute,
+                            label: strings.actionDispute,
                             child: TextButton.icon(
                               onPressed: onDispute,
                               icon: Icon(
@@ -400,7 +374,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                                 size: 18,
                               ),
                               label: Text(
-                                s.dispute,
+                                strings.actionDispute,
                                 style: BankTokens.labelMedium.copyWith(
                                   color: bankTheme.negativeBalance,
                                 ),
@@ -416,7 +390,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                         if (onShare != null)
                           Semantics(
                             button: true,
-                            label: s.share,
+                            label: strings.actionShare,
                             child: TextButton.icon(
                               onPressed: onShare,
                               icon: Icon(
@@ -425,7 +399,7 @@ class BankTransactionDetailSheet extends StatelessWidget {
                                 size: 18,
                               ),
                               label: Text(
-                                s.share,
+                                strings.actionShare,
                                 style: BankTokens.labelMedium.copyWith(
                                   color: accent,
                                 ),

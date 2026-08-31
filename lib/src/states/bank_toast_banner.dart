@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/button_text_style.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 /// Describes the severity and colour of a [BankToastBanner].
 enum BankToastVariant { success, error, info, warning }
@@ -250,6 +251,7 @@ class _BankToastBannerState extends State<BankToastBanner>
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
 
     // Brightness of the painted surface picks the AA-safe semantic variant
     // and the hairline strength.
@@ -266,7 +268,7 @@ class _BankToastBannerState extends State<BankToastBanner>
     final dismissColor = widget.foregroundColor ?? theme.onSurfaceVariant;
     final showAction = widget.actionLabel != null && widget.onAction != null;
     final liveLabel =
-        widget.semanticLabel ?? '${_variantLabel()}: ${widget.message}';
+        widget.semanticLabel ?? '${_variantLabel(strings)}: ${widget.message}';
 
     return Semantics(
       liveRegion: widget.isVisible,
@@ -375,10 +377,10 @@ class _BankToastBannerState extends State<BankToastBanner>
     );
   }
 
-  String _variantLabel() => switch (widget.variant) {
-        BankToastVariant.success => 'Success',
-        BankToastVariant.error => 'Error',
-        BankToastVariant.info => 'Info',
-        BankToastVariant.warning => 'Warning',
+  String _variantLabel(BankStrings strings) => switch (widget.variant) {
+        BankToastVariant.success => strings.toastSuccess,
+        BankToastVariant.error => strings.toastError,
+        BankToastVariant.info => strings.toastInfo,
+        BankToastVariant.warning => strings.toastWarning,
       };
 }

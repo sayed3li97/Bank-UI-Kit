@@ -2,6 +2,7 @@ import 'dart:math' show pi;
 
 import 'package:flutter/material.dart';
 
+import '../l10n/bank_strings.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -86,7 +87,7 @@ class BankNetworkBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = semanticLabel ?? _defaultSemanticLabel;
+    final label = semanticLabel ?? _defaultSemanticLabel(context);
     return Semantics(
       label: label,
       image: true,
@@ -94,11 +95,13 @@ class BankNetworkBadge extends StatelessWidget {
     );
   }
 
-  String get _defaultSemanticLabel => switch (network) {
+  /// Network names are trademarks and stay in Latin script in every
+  /// locale; only the unbranded fallback is translated.
+  String _defaultSemanticLabel(BuildContext context) => switch (network) {
         BankCardNetwork.visa => 'Visa',
         BankCardNetwork.mastercard => 'Mastercard',
         BankCardNetwork.amex => 'American Express',
-        BankCardNetwork.generic => 'Payment card',
+        BankCardNetwork.generic => BankStrings.of(context).cardGenericNetwork,
       };
 
   // Note: the painted marks are wrapped in plain (non-directional) boxes and

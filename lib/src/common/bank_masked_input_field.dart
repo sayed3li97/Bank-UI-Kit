@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/bank_strings.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -132,8 +133,12 @@ sealed class BankInputMask {
   /// Capitalisation behaviour for the soft keyboard.
   TextCapitalization get _textCapitalization => TextCapitalization.none;
 
-  /// English fallback message shown when focus-loss validation fails.
-  String get _defaultErrorMessage;
+  /// Message shown when focus-loss validation fails, in the ambient
+  /// language.
+  ///
+  /// Resolved during `build` rather than stored on the state, so a host that
+  /// swaps locale mid-session sees the message change with it.
+  String _errorMessage(BankStrings strings);
 
   /// Whether [char] is accepted as raw input for this mask.
   bool _isRawChar(String char);
@@ -180,7 +185,7 @@ class _BankIbanMask extends BankInputMask {
   TextCapitalization get _textCapitalization => TextCapitalization.characters;
 
   @override
-  String get _defaultErrorMessage => 'Enter a valid IBAN.';
+  String _errorMessage(BankStrings strings) => strings.validationIban;
 
   @override
   bool _isRawChar(String char) => _alphanumericChar.hasMatch(char);
@@ -214,7 +219,7 @@ class _BankCardPanMask extends BankInputMask {
   TextInputType get _keyboardType => TextInputType.number;
 
   @override
-  String get _defaultErrorMessage => 'Enter a valid card number.';
+  String _errorMessage(BankStrings strings) => strings.validationCardNumber;
 
   @override
   bool _isRawChar(String char) => _digitChar.hasMatch(char);
@@ -250,7 +255,7 @@ class _BankSortCodeMask extends BankInputMask {
   TextInputType get _keyboardType => TextInputType.number;
 
   @override
-  String get _defaultErrorMessage => 'Enter a valid sort code.';
+  String _errorMessage(BankStrings strings) => strings.validationSortCode;
 
   @override
   bool _isRawChar(String char) => _digitChar.hasMatch(char);
@@ -295,7 +300,7 @@ class _BankCustomMask extends BankInputMask {
   TextInputType get _keyboardType => TextInputType.number;
 
   @override
-  String get _defaultErrorMessage => 'Enter a valid value.';
+  String _errorMessage(BankStrings strings) => strings.validationGeneric;
 
   @override
   bool _isRawChar(String char) => _digitChar.hasMatch(char);
@@ -542,7 +547,10 @@ class _BankMaskedInputFieldState extends State<BankMaskedInputField> {
   late _BankMaskFormatter _formatter;
   FocusNode? _ownedFocusNode;
   String _raw = '';
-  String? _validationError;
+
+  /// Whether focus-loss validation last rejected the buffer. The message
+  /// itself is resolved in [build] so it follows the ambient locale.
+  bool _failedValidation = false;
 
   FocusNode get _focusNode =>
       widget.focusNode ?? (_ownedFocusNode ??= FocusNode());
@@ -600,32 +608,33 @@ class _BankMaskedInputFieldState extends State<BankMaskedInputField> {
   }
 
   void _handleTextChanged(String _) {
-    if (_validationError != null) {
-      setState(() => _validationError = null);
+    if (_failedValidation) {
+      setState(() => _failedValidation = false);
     }
     widget.onChanged(_raw);
   }
 
   void _handleFocusChanged() {
     if (_focusNode.hasFocus) {
-      if (_validationError != null) {
-        setState(() => _validationError = null);
+      if (_failedValidation) {
+        setState(() => _failedValidation = false);
       }
       return;
     }
     if (!widget.validateOnUnfocus || _raw.isEmpty) return;
     if (!widget.mask.validate(_raw)) {
-      setState(() {
-        _validationError =
-            widget.validationErrorText ?? widget.mask._defaultErrorMessage;
-      });
+      setState(() => _failedValidation = true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final effectiveError = widget.errorText ?? _validationError;
+    final validationError = _failedValidation
+        ? widget.validationErrorText ??
+            widget.mask._errorMessage(BankStrings.of(context))
+        : null;
+    final effectiveError = widget.errorText ?? validationError;
     final hasError = effectiveError != null;
 
     final borderColor = hasError ? BankTokens.danger : theme.outline;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../common/bank_control_theme.dart';
 import '../common/bank_icon_spec.dart';
+import '../l10n/bank_strings.dart';
 import '../models/bank_notification.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
@@ -61,17 +62,8 @@ class BankAlertPreferencesPanel extends StatelessWidget {
     },
     this.header,
     this.requiredLabel = 'Required',
-    this.sectionLabels = const {
-      BankAlertSection.security: 'Security & fraud',
-      BankAlertSection.payments: 'Payments',
-      BankAlertSection.account: 'Account activity',
-      BankAlertSection.marketing: 'Marketing',
-    },
-    this.channelLabels = const {
-      BankAlertChannel.push: 'Push',
-      BankAlertChannel.email: 'Email',
-      BankAlertChannel.sms: 'SMS',
-    },
+    this.sectionLabels = const {},
+    this.channelLabels = const {},
     this.typeLabels = const {},
     this.footer,
     this.sectionHeaderPadding,
@@ -108,7 +100,13 @@ class BankAlertPreferencesPanel extends StatelessWidget {
   /// Helper shown on locked rows.
   final String requiredLabel;
 
+  /// Overrides section headings. Keys absent from the map fall back to the
+  /// kit's own copy in the ambient language, so a host that renames one
+  /// section keeps the rest translated.
   final Map<BankAlertSection, String> sectionLabels;
+
+  /// Overrides channel column headings, with the same per-key fallback as
+  /// [sectionLabels].
   final Map<BankAlertChannel, String> channelLabels;
 
   /// Overrides the default English labels per notification type.
@@ -184,18 +182,50 @@ class BankAlertPreferencesPanel extends StatelessWidget {
     BankNotificationType.marketing: BankAlertSection.marketing,
   };
 
-  static const Map<BankNotificationType, String> _defaultTypeLabels = {
-    BankNotificationType.security: 'Security alerts',
-    BankNotificationType.fraud: 'Fraud warnings',
-    BankNotificationType.kycUpdate: 'Identity verification',
-    BankNotificationType.payment: 'Payments',
-    BankNotificationType.transfer: 'Transfers',
-    BankNotificationType.cardActivity: 'Card activity',
-    BankNotificationType.savingsGoal: 'Savings goals',
-    BankNotificationType.priceAlert: 'Price alerts',
-    BankNotificationType.system: 'Service updates',
-    BankNotificationType.marketing: 'Offers & news',
-  };
+  /// The shipped heading for [section].
+  static String _defaultSectionLabel(
+    BankStrings strings,
+    BankAlertSection section,
+  ) =>
+      switch (section) {
+        BankAlertSection.security => strings.notifGroupSecurity,
+        BankAlertSection.payments => strings.notifGroupPayments,
+        BankAlertSection.account => strings.notifGroupAccount,
+        BankAlertSection.marketing => strings.notifGroupMarketing,
+      };
+
+  /// The shipped heading for [channel].
+  static String _defaultChannelLabel(
+    BankStrings strings,
+    BankAlertChannel channel,
+  ) =>
+      switch (channel) {
+        BankAlertChannel.push => strings.notifChannelPush,
+        BankAlertChannel.email => strings.notifChannelEmail,
+        BankAlertChannel.sms => strings.notifChannelSms,
+      };
+
+  /// The shipped label for [type], used wherever [typeLabels] carries no
+  /// entry of its own.
+  ///
+  /// Exhaustive over [BankNotificationType], so every row has a name
+  /// without falling back to an enum identifier.
+  static String _defaultTypeLabel(
+    BankStrings strings,
+    BankNotificationType type,
+  ) =>
+      switch (type) {
+        BankNotificationType.security => strings.notifSecurityAlerts,
+        BankNotificationType.fraud => strings.notifFraudWarnings,
+        BankNotificationType.kycUpdate => strings.notifIdentityVerification,
+        BankNotificationType.payment => strings.notifPayments,
+        BankNotificationType.transfer => strings.notifTransfers,
+        BankNotificationType.cardActivity => strings.notifCardActivity,
+        BankNotificationType.savingsGoal => strings.notifSavingsGoals,
+        BankNotificationType.priceAlert => strings.notifPriceAlerts,
+        BankNotificationType.system => strings.notifServiceUpdates,
+        BankNotificationType.marketing => strings.notifOffersAndNews,
+      };
 
   static IconData _iconFor(BankNotificationType type) => switch (type) {
         BankNotificationType.security => BankIcons.shield,
@@ -213,6 +243,7 @@ class BankAlertPreferencesPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
     final channels = BankAlertChannel.values
         .where(availableChannels.contains)
         .toList(growable: false);
@@ -255,7 +286,8 @@ class BankAlertPreferencesPanel extends StatelessWidget {
                   ],
                   Expanded(
                     child: Text(
-                      sectionLabels[section] ?? '',
+                      sectionLabels[section] ??
+                          _defaultSectionLabel(strings, section),
                       style: BankTokens.labelMedium
                           .copyWith(color: theme.onSurfaceVariant)
                           .merge(sectionLabelStyle),
@@ -265,7 +297,8 @@ class BankAlertPreferencesPanel extends StatelessWidget {
                     SizedBox(
                       width: resolvedColumnWidth,
                       child: Text(
-                        channelLabels[channel] ?? '',
+                        channelLabels[channel] ??
+                            _defaultChannelLabel(strings, channel),
                         textAlign: TextAlign.center,
                         style: BankTokens.labelSmall
                             .copyWith(color: theme.onSurfaceVariant)
@@ -280,8 +313,7 @@ class BankAlertPreferencesPanel extends StatelessWidget {
                 pref: pref,
                 channels: channels,
                 label: typeLabels[pref.type] ??
-                    _defaultTypeLabels[pref.type] ??
-                    pref.type.name,
+                    _defaultTypeLabel(strings, pref.type),
                 icon: typeIcons[pref.type] ?? _iconFor(pref.type),
                 requiredLabel: requiredLabel,
                 theme: theme,

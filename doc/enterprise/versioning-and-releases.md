@@ -187,20 +187,22 @@ place (for example `BankOtpInput`, `BankPinKeypad`, and
 | # | Journey (doc/banking-journeys.md) | Controller | Status |
 |---|-----------------------------------|------------|--------|
 | 1 | Onboarding + KYC | `BankKycFlowController` | Shipped, 0.0.1 |
-| 2 | Login / re-auth | `BankAuthFlowController` | Planned, v0.4.0 |
-| 3 | Add money / top-up | `BankTopUpFlowController` | Planned, v0.4.0 |
-| 4 | P2P transfer | `BankP2pFlowController` | Planned, v0.4.0 |
+| 2 | Login / re-auth | `BankAuthFlowController` | Planned, v0.5.0 |
+| 3 | Add money / top-up | `BankTopUpFlowController` | Planned, v0.5.0 |
+| 4 | P2P transfer | `BankP2pFlowController` | Planned, v0.5.0 |
 | 5 | Domestic bank transfer | `BankTransferFlowController` | Shipped, 0.0.1 |
-| 6 | International remittance | `BankRemittanceFlowController` | Planned, v0.4.0 |
-| 7 | Bill payment | `BankBillPayFlowController` | Planned, v0.5.0 |
-| 8 | QR pay | `BankQrPayFlowController` | Planned, v0.5.0 |
-| 9 | QR receive | `BankQrReceiveFlowController` | Planned, v0.5.0 |
-| 10 | Card issuance | `BankCardIssuanceFlowController` | Planned, v0.5.0 |
+| 6 | International remittance | `BankRemittanceFlowController` | Planned, v0.5.0 |
+| 7 | Bill payment | `BankBillPayFlowController` | Planned, v0.6.0 |
+| 8 | QR pay | `BankQrPayFlowController` | Planned, v0.6.0 |
+| 9 | QR receive | `BankQrReceiveFlowController` | Planned, v0.6.0 |
+| 10 | Card issuance | `BankCardIssuanceFlowController` | Planned, v0.6.0 |
 
-The four controllers dated v0.3.0 in the previous edition of this table did
-not land in 0.3.0, which shipped the enterprise trust artifacts and the
-component work instead. They are re-dated above rather than left pointing at a
-released version, and the three that were dated v0.4.0 move behind them.
+The controllers have now slipped twice: the four dated v0.3.0 gave way to the
+enterprise trust artifacts, and the four dated v0.4.0 gave way to the message
+catalogue. They are re-dated above rather than left pointing at a released
+version. The pattern is worth naming rather than hiding — each release so far
+has been pulled toward whatever an adopter would be blocked by first, and
+localization was that for any bank outside an English-speaking market.
 
 Dated milestones, including the enterprise gates from `GOVERNANCE.md`:
 
@@ -208,8 +210,9 @@ Dated milestones, including the enterprise gates from `GOVERNANCE.md`:
 |------|---------|--------------|
 | 2026-07-24 | v0.2.0 | Shipped: the visual and interaction overhaul (interaction states, the dark-mode depth system, per-preset brand voices, real network marks). Controllers #2 and #3 moved on |
 | 2026-08-24 | v0.3.0 | Shipped: the enterprise trust artifacts (ACR and OpenACR, the stability policy, SBOM, provenance, Scorecard), the token architecture finished end to end, branded sheet and dialog presentation, and the audit backlog. Controllers #2, #3, #4, and #6 moved to v0.4.0 |
-| 2026-12-31 | v0.4.0 | Controllers #2, #3, #4, and #6; the accessibility roadmap items the ACR re-targeted from v0.3.0; `.github/CODEOWNERS` with a second named maintainer; first signed tag; pub.dev publication under a verified publisher; second pub.dev uploader; DCO check in CI; branch protection requiring author-distinct human review |
-| 2027-02-28 | v0.5.0 | Controllers #7, #8, #9, and #10; full API review pass with any renames landed as `@Deprecated` forwards under the grace-window policy; removal of the parameters deprecated in 0.3.0 |
+| 2026-08-31 | v0.4.0 | Shipped: the message catalogue (301 messages, English and Arabic, ICU plurals), the three-source resolution layer, three localization CI gates, locale-correct dates, and the bidi fixes for grouped machine identifiers. Controllers #2, #3, #4, and #6 moved to v0.5.0; the accessibility roadmap items the ACR had re-targeted at v0.4.0 moved with them |
+| 2026-12-31 | v0.5.0 | Controllers #2, #3, #4, and #6; the accessibility roadmap items the ACR re-targeted from v0.4.0; the remaining 639 copy defaults routed through the catalogue; `.github/CODEOWNERS` with a second named maintainer; first signed tag; pub.dev publication under a verified publisher; second pub.dev uploader; DCO check in CI; branch protection requiring author-distinct human review |
+| 2027-02-28 | v0.6.0 | Controllers #7, #8, #9, and #10; the remaining tier-1 locales as reviewed ARB files; full API review pass with any renames landed as `@Deprecated` forwards under the grace-window policy; removal of the parameters deprecated in 0.3.0 |
 | 2027-04-30 | v1.0.0-rc.1 | API freeze candidate; migration notes complete; no new API until 1.0 |
 | 2027-06-30 | v1.0.0 | API freeze in force; first LTS-designated line per `GOVERNANCE.md`; three-maintainer bench target |
 

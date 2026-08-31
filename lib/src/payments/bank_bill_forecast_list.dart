@@ -4,6 +4,7 @@ import '../accounts/bank_balance_text.dart';
 import '../common/bank_emblem.dart';
 import '../common/bank_surface_depth.dart';
 import '../common/money_formatter.dart';
+import '../l10n/bank_strings.dart';
 import '../models/money.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
@@ -454,6 +455,7 @@ class _ForecastRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = BankStrings.of(context);
     final shortDate = BankDateFormatter.formatShort(forecast.expectedDate);
     final expectedText = '$expectedPrefix $shortDate';
     final amountColor =
@@ -461,10 +463,17 @@ class _ForecastRow extends StatelessWidget {
     final resolvedAmountStyle =
         theme.numeralSmall.copyWith(color: amountColor).merge(amountStyle);
 
+    // Whole sentences, not glued fragments: the estimate marker is its own
+    // message rather than an English comma spliced onto the summary.
+    final summary = strings.a11yBillForecast(
+      forecast.billerName,
+      expectedText,
+    );
+
     return Semantics(
       button: onTap != null,
-      label: '${forecast.billerName}, $expectedText'
-          '${lowConfidence ? ', estimated' : ''}',
+      label:
+          lowConfidence ? strings.a11yBillForecastEstimated(summary) : summary,
       child: InkWell(
         onTap: onTap,
         child: ConstrainedBox(

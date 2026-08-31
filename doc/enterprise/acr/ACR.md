@@ -100,8 +100,8 @@ the build.
 
 ### 2. Source inspection
 
-All 224 library files were inspected for the mechanisms named in the remarks:
-285 `Semantics` constructors across 140 files, 142 button-role traits, 10 header
+All 229 library files were inspected for the mechanisms named in the remarks:
+286 `Semantics` constructors across 140 files, 142 button-role traits, 10 header
 traits across 8 files, 24 selected/toggled state traits, 12 files using
 `liveRegion`, 4 `SemanticsService.sendAnnouncement` call sites, 62
 `excludeSemantics: true` arguments plus 44 `ExcludeSemantics` widgets across 28
@@ -121,7 +121,7 @@ checkout:
   and `BankDialog` also shipped in 0.3.0 but are static presentation helpers,
   not widgets, so they are outside this count.
 - **Library files (224)** — every `.dart` file under `lib/`.
-- **`Semantics` constructors (285)** — literal `Semantics(` call sites in
+- **`Semantics` constructors (286)** — literal `Semantics(` call sites in
   `lib/`, matched on a word boundary so that `ExcludeSemantics(`,
   `MergeSemantics(` and `BlockSemantics(` are not swept in.
 - **Traits** — named arguments passed to those constructors, counted by
@@ -151,7 +151,7 @@ checkout:
 
 ### 3. Manual review
 
-Manual code review of the mechanisms above across all 224 library files, plus
+Manual code review of the mechanisms above across all 229 library files, plus
 sighted visual review of the example gallery (`example/lib/gallery_main.dart`)
 in all four presets in both light and dark — evidenced by the rendered
 screenshots committed under `doc/screenshots/`. **No assistive technology was
@@ -196,7 +196,7 @@ Reported for the **Software** component.
 | 1.2.1 Audio-only / Video-only | A | Not Applicable | No audio, video, or media player is shipped. Gated: the conformance test fails if a media-player API appears in `lib/`. |
 | 1.2.2 Captions (Prerecorded) | A | Not Applicable | Nothing to caption; see 1.2.1. |
 | 1.2.3 Audio Description or Media Alternative | A | Not Applicable | Nothing to describe; see 1.2.1. |
-| 1.3.1 Info and Relationships | A | Partially Supports | 285 `Semantics` constructors carry role and state traits; composite tiles collapse to one node, so a transaction row reads as one sentence rather than five fragments. New in 0.3.0: every modal surface is presented through `BankSheet`/`BankDialog`, whose `BankSheetHeader` marks the sheet title with the `header` trait and whose `BankSheetHandle` gives the drag affordance a labelled node — gated by *"grab handle renders and carries semantics"* in `test/sheet_presentation_test.dart`. Closed in this edition: the 14 sheet bodies that paint their own ground previously drew a plain 40×4 `Container` and announced no handle; each now routes through `BankSheetHandle`, gated by `test/sheet_handle_semantics_test.dart`, which pumps all 14 standalone and asserts a labelled handle (roadmap item 18). Also closed in this edition: `BankAppBar` and `BankSliverAppBar` both mark the large-title tier as a heading, and `BankSliverAppBar` now suppresses the framework's own header wrapper in **every** large mode rather than only in the non-collapsing one, so the collapsing bar no longer leaves an unlabelled `header` node with an empty `namesRoute` in front of heading navigation while it is expanded. (`BankAppBar` was never affected: its tier sits in the `bottom` slot, outside the title slot the framework wraps.) Gated by *"leaves no anonymous heading behind the large title"* in `test/app_chrome_test.dart`. **Gap**: `BankTextField` renders its label and error as sibling `Text` widgets rather than through `InputDecoration`, so AT associates neither with the field. **Gap**: no widget sets the `textField` trait. |
+| 1.3.1 Info and Relationships | A | Partially Supports | 286 `Semantics` constructors carry role and state traits; composite tiles collapse to one node, so a transaction row reads as one sentence rather than five fragments. New in 0.3.0: every modal surface is presented through `BankSheet`/`BankDialog`, whose `BankSheetHeader` marks the sheet title with the `header` trait and whose `BankSheetHandle` gives the drag affordance a labelled node — gated by *"grab handle renders and carries semantics"* in `test/sheet_presentation_test.dart`. Closed in this edition: the 14 sheet bodies that paint their own ground previously drew a plain 40×4 `Container` and announced no handle; each now routes through `BankSheetHandle`, gated by `test/sheet_handle_semantics_test.dart`, which pumps all 14 standalone and asserts a labelled handle (roadmap item 18). Also closed in this edition: `BankAppBar` and `BankSliverAppBar` both mark the large-title tier as a heading, and `BankSliverAppBar` now suppresses the framework's own header wrapper in **every** large mode rather than only in the non-collapsing one, so the collapsing bar no longer leaves an unlabelled `header` node with an empty `namesRoute` in front of heading navigation while it is expanded. (`BankAppBar` was never affected: its tier sits in the `bottom` slot, outside the title slot the framework wraps.) Gated by *"leaves no anonymous heading behind the large title"* in `test/app_chrome_test.dart`. **Gap**: `BankTextField` renders its label and error as sibling `Text` widgets rather than through `InputDecoration`, so AT associates neither with the field. **Gap**: no widget sets the `textField` trait. |
 | 1.3.2 Meaningful Sequence | A | Partially Supports | Layouts are built in reading order, so the default traversal matches the visual order. **Gap**: zero `FocusTraversalGroup` usages and no test asserting the resulting sequence. |
 | 1.3.3 Sensory Characteristics | A | Supports | No kit-supplied instruction identifies a control by shape, size, colour, or position. **Evidence**: manual review of the `BankUiStrings` table plus a scan of every string literal in `lib/` for positional and sensory wording, which found none. No automated gate keeps it that way. |
 | 1.4.1 Use of Color | A | Partially Supports | Money carries an explicit sign and currency; status carries label text next to colour; chart slices carry a text legend. Three colour-only signals were removed in 0.3.0: `BankOtpInput` keeps its fill constant and encodes focus as an added ring rather than a recolour, and signals error with a thickened border and a shake as well as the danger hue; the insight confidence indicator carries a text level beside its bars; and a chosen value in `BankCountryPicker` and `BankAddressForm` is now typographically distinct from a placeholder (weight 600 against 400). Gated by *"OTP error state is distinguishable without colour"* and *"picker values are typographically distinct from placeholders"* in `test/accessibility_targets_test.dart`. **Gap**: no gate proves colour is never the sole carrier across all 173 widget classes, and host-supplied chart series may rely on hue. |
@@ -221,7 +221,7 @@ Reported for the **Software** component.
 | 3.3.1 Error Identification | A | Partially Supports | `errorText` renders in the danger colour and tints the label and border, so the error is in text, not colour alone. **Gap**: it is a sibling `Text`, not `InputDecoration.errorText` and not a live region, so AT neither ties it to the field nor announces it. |
 | 3.3.2 Labels or Instructions | A | Partially Supports | Persistent labels above fields rather than disappearing placeholders, plus a helper slot. **Gap**: same association gap as 3.3.1. |
 | 4.1.1 Parsing | A | Not Applicable | Flutter composites a widget tree; there is no markup to parse. WCAG 2.2 removed this criterion for the same reason. |
-| 4.1.2 Name, Role, Value | A | Partially Supports | 285 semantics nodes supply name, role, and state — 142 button, 10 header, 24 selected/toggled — and `BankPressable` emits button plus enabled state for every custom surface. Closed in this edition: three of the five slider surfaces used to sit inside `excludeSemantics: true`, which removed the framework's own slider node together with its role, its value, and its increase and decrease actions; `BankCardControlsPanel`, `BankCreditLimitAdjuster` and `BankTransferLimitManager` now merge their heading into that node instead of replacing it, gated by *"kit sliders keep the role, the value, and both adjustments"* in `test/accessibility_targets_test.dart`. **Gap**: the four sliders in `BankLoanCalculatorCard` and `BankSavingsProjectionCard` still exclude it and so report neither an adjustable role nor a value; see roadmap item 19. **Gap**: the ten icon-only buttons in 1.1.1 report a role with no name. **Gap**: no `textField` trait anywhere. **Gap**: nothing has been verified as actually announced by TalkBack or VoiceOver, which is the only evidence that would justify "Supports". |
+| 4.1.2 Name, Role, Value | A | Partially Supports | 286 semantics nodes supply name, role, and state — 142 button, 10 header, 24 selected/toggled — and `BankPressable` emits button plus enabled state for every custom surface. Closed in this edition: three of the five slider surfaces used to sit inside `excludeSemantics: true`, which removed the framework's own slider node together with its role, its value, and its increase and decrease actions; `BankCardControlsPanel`, `BankCreditLimitAdjuster` and `BankTransferLimitManager` now merge their heading into that node instead of replacing it, gated by *"kit sliders keep the role, the value, and both adjustments"* in `test/accessibility_targets_test.dart`. **Gap**: the four sliders in `BankLoanCalculatorCard` and `BankSavingsProjectionCard` still exclude it and so report neither an adjustable role nor a value; see roadmap item 19. **Gap**: the ten icon-only buttons in 1.1.1 report a role with no name. **Gap**: no `textField` trait anywhere. **Gap**: nothing has been verified as actually announced by TalkBack or VoiceOver, which is the only evidence that would justify "Supports". |
 
 ## Table 2: WCAG 2.1 Success Criteria, Level AA
 
@@ -296,7 +296,7 @@ important sentence in this report.
 | Clause | Conformance | Summary |
 |---|---|---|
 | 11.5.1 Closed functionality | Not Applicable | Not closed functionality. |
-| 11.5.2.1 – 11.5.2.4 Services, AT | Partially Supports | Framework-provided bridge fed by 285 semantics nodes across 140 files; not verified on device. |
+| 11.5.2.1 – 11.5.2.4 Services, AT | Partially Supports | Framework-provided bridge fed by 286 semantics nodes across 140 files; not verified on device. |
 | 11.5.2.5 Object information | Partially Supports | 142 button, 10 header, 24 selected/toggled traits. **Gap**: no `textField` trait anywhere. **Gap**: the two slider surfaces named in 11.5.2.7 report no adjustable role. |
 | 11.5.2.6 Row, column, headers | Not Applicable | No data table or grid ships; gated by a `DataTable` scan. |
 | 11.5.2.7 Values | Partially Supports | Values are exposed for balances, gauges, the OTP field, and for the sliders in `BankCardControlsPanel`, `BankCreditLimitAdjuster` and `BankTransferLimitManager`, which keep the framework's own slider node and are gated by *"kit sliders keep the role, the value, and both adjustments"* in `test/accessibility_targets_test.dart`. **Gap**: the four sliders in `BankLoanCalculatorCard` and `BankSavingsProjectionCard` are still wrapped in `excludeSemantics: true`, which removes the node that carries the value, so they announce a label and nothing else (roadmap item 19). **Gap**: no gate proves a value node exists for every value-bearing widget, and value changes are unobserved on device. |
@@ -336,29 +336,30 @@ are **additive** under the package's API rules: new constructor parameters are
 optional with token defaults, and no public member is removed or renamed.
 
 Numbering is stable across editions, so an item keeps its number for its whole
-life. **A target of v0.3.0 was reachable only while 0.3.0 was unreleased. It is
-this release, so every item still open has been re-targeted to v0.4.0 rather
-than left pointing at a version that has already shipped.**
+life. **A target is reachable only while that version is unreleased. 0.4.0 is this
+release and it closes none of these items — it is a localization release — so
+every row still open has been re-targeted to v0.5.0 rather than left pointing
+at a version that has already shipped.**
 
 | # | Gap | Criteria affected | Fix | Target |
 |---|---|---|---|---|
-| 1 | No input widget except `BankOtpInput` can declare an autofill purpose | 1.3.5 (Does Not Support) | Optional `autofillHints` parameter on `BankTextField`, `BankPhoneInputField`, `BankAmountInputField`, `BankAddressForm` | v0.4.0 (was v0.3.0) |
-| 2 | `BankTextField` label and error are unassociated sibling `Text` widgets | 1.3.1, 3.3.1, 3.3.2, 4.1.2, 11.5.2.8 (Does Not Support) | Route label and error through `InputDecoration`, keeping the current visual treatment; announce errors as a live region | v0.4.0 (was v0.3.0) |
-| 3 | **No screen-reader testing has ever been performed** | 4.1.2, 4.1.3, 4.2.1, all of 11.5.2 | Manual TalkBack and VoiceOver passes over the example gallery in all four presets; findings filed as `accessibility` issues | v0.4.0 (was v0.3.0) |
-| 19 | Four sliders in `BankLoanCalculatorCard` and `BankSavingsProjectionCard` sit inside `excludeSemantics: true`, so the limit they set cannot be read or changed by assistive technology | 4.1.2, 11.5.2.5, 11.5.2.7, 11.5.2.11, 11.5.2.12 | Apply the pattern the other three slider surfaces adopted in 0.3.0: merge the heading into the framework's slider node instead of replacing it, and extend the *"kit sliders keep the role, the value, and both adjustments"* gate to both files | v0.4.0 |
-| 5 | Fixed-height keypad cells clip above ~1.5× text scale; no text-scale coverage | 1.4.4, 4.2.2 | Scale-aware minimum heights, verified by goldens at 1.0 / 1.3 / 1.5 / 2.0 | v0.4.0 (was v0.3.0) |
-| 6 | Focus-ring and hairline contrast unmeasured | 1.4.11, 2.4.7 | Measure the composited ring against every preset background; raise `focusRingOpacity` or switch to an opaque ring where it fails; add the measurement to the contrast gate | v0.4.0 (was v0.3.0) |
-| 7 | No explicit focus traversal; zero `FocusTraversalGroup` | 1.3.2, 2.4.3, 11.5.2.13 | Traversal groups for keypads, sheets, and the bottom nav, with keyboard-order assertions | v0.4.0 (was v0.3.0) |
-| 8 | The swipe-actioned row (`Dismissible`, 1 file) has no keyboard or AT equivalent | 2.1.1, 2.5.1, 11.5.2.11, 11.5.2.12 | Expose the same actions as semantics actions and as a visible affordance | v0.4.0 (was v0.3.0) |
-| 20 | Ten icon-only `IconButton`s in `lib/` expose no accessible name | 1.1.1, 2.4.4, 2.4.6, 4.1.2, 11.5.2.5 | A `tooltip` or a themed `semanticLabel` parameter on each, consistent with the labelled icon controls elsewhere in the kit, plus a `labeledTapTargetGuideline` composition that covers the ten surfaces | v0.4.0 |
-| 9 | `MediaQuery.boldText` / `highContrast` / `accessibleNavigation` unread | 11.7 | Read them in the theme resolver; a high-contrast token variant per preset | v0.4.0 |
-| 10 | Section titles lack the `header` trait (9 traits across 8 files, out of 173 widget classes) | 2.4.6 | `header: true` on every widget that renders a section title | v0.4.0 |
-| 11 | Charts: `BankSpendingBreakdownChart` is silent by default | 1.1.1 | Synthesise a default semantic summary, matching `BankCashflowChart` | v0.4.0 |
-| 12 | Contrast is gated on token pairs, not rendered pixels | 1.4.3 | Extend the gate to text drawn over `cardSurfaceGradient` and `BankCardPattern` overlays | v0.4.0 |
-| 13 | No reflow, landscape, or 400%-zoom evaluation | 1.3.4, 1.4.10 | Layout tests at a 320 px equivalent width and in landscape | v0.4.0 |
-| 14 | No voice-control review of merged composite labels | 2.5.3 | Voice-control pass; ensure every accessible name starts with its visible label | v0.4.0 |
-| 15 | **No independent audit** | The whole report | Commission a WCAG 2.1 AA and EN 301 549 assessment of the example gallery across four presets, both brightnesses, iOS and Android; publish the report, the resulting ACR, and the remediation log in this directory | v0.4.0 |
-| 17 | Three widgets start repeating animations without reading reduced motion: `BankVirtualCardWidget`, `BankLivenessCheckOverlay`, `BankAsyncVerificationState` | 2.2.2, 4.2.10, 11.6.2, 11.7 | Apply the `BankSkeletonLoader` pattern — read the preference in `didChangeDependencies` and stop the controller | v0.4.0 |
+| 1 | No input widget except `BankOtpInput` can declare an autofill purpose | 1.3.5 (Does Not Support) | Optional `autofillHints` parameter on `BankTextField`, `BankPhoneInputField`, `BankAmountInputField`, `BankAddressForm` | v0.5.0 (was v0.4.0) |
+| 2 | `BankTextField` label and error are unassociated sibling `Text` widgets | 1.3.1, 3.3.1, 3.3.2, 4.1.2, 11.5.2.8 (Does Not Support) | Route label and error through `InputDecoration`, keeping the current visual treatment; announce errors as a live region | v0.5.0 (was v0.4.0) |
+| 3 | **No screen-reader testing has ever been performed** | 4.1.2, 4.1.3, 4.2.1, all of 11.5.2 | Manual TalkBack and VoiceOver passes over the example gallery in all four presets; findings filed as `accessibility` issues | v0.5.0 (was v0.4.0) |
+| 19 | Four sliders in `BankLoanCalculatorCard` and `BankSavingsProjectionCard` sit inside `excludeSemantics: true`, so the limit they set cannot be read or changed by assistive technology | 4.1.2, 11.5.2.5, 11.5.2.7, 11.5.2.11, 11.5.2.12 | Apply the pattern the other three slider surfaces adopted in 0.3.0: merge the heading into the framework's slider node instead of replacing it, and extend the *"kit sliders keep the role, the value, and both adjustments"* gate to both files | v0.5.0 (was v0.4.0) |
+| 5 | Fixed-height keypad cells clip above ~1.5× text scale; no text-scale coverage | 1.4.4, 4.2.2 | Scale-aware minimum heights, verified by goldens at 1.0 / 1.3 / 1.5 / 2.0 | v0.5.0 (was v0.4.0) |
+| 6 | Focus-ring and hairline contrast unmeasured | 1.4.11, 2.4.7 | Measure the composited ring against every preset background; raise `focusRingOpacity` or switch to an opaque ring where it fails; add the measurement to the contrast gate | v0.5.0 (was v0.4.0) |
+| 7 | No explicit focus traversal; zero `FocusTraversalGroup` | 1.3.2, 2.4.3, 11.5.2.13 | Traversal groups for keypads, sheets, and the bottom nav, with keyboard-order assertions | v0.5.0 (was v0.4.0) |
+| 8 | The swipe-actioned row (`Dismissible`, 1 file) has no keyboard or AT equivalent | 2.1.1, 2.5.1, 11.5.2.11, 11.5.2.12 | Expose the same actions as semantics actions and as a visible affordance | v0.5.0 (was v0.4.0) |
+| 20 | Ten icon-only `IconButton`s in `lib/` expose no accessible name | 1.1.1, 2.4.4, 2.4.6, 4.1.2, 11.5.2.5 | A `tooltip` or a themed `semanticLabel` parameter on each, consistent with the labelled icon controls elsewhere in the kit, plus a `labeledTapTargetGuideline` composition that covers the ten surfaces | v0.5.0 (was v0.4.0) |
+| 9 | `MediaQuery.boldText` / `highContrast` / `accessibleNavigation` unread | 11.7 | Read them in the theme resolver; a high-contrast token variant per preset | v0.5.0 (was v0.4.0) |
+| 10 | Section titles lack the `header` trait (9 traits across 8 files, out of 173 widget classes) | 2.4.6 | `header: true` on every widget that renders a section title | v0.5.0 (was v0.4.0) |
+| 11 | Charts: `BankSpendingBreakdownChart` is silent by default | 1.1.1 | Synthesise a default semantic summary, matching `BankCashflowChart` | v0.5.0 (was v0.4.0) |
+| 12 | Contrast is gated on token pairs, not rendered pixels | 1.4.3 | Extend the gate to text drawn over `cardSurfaceGradient` and `BankCardPattern` overlays | v0.5.0 (was v0.4.0) |
+| 13 | No reflow, landscape, or 400%-zoom evaluation | 1.3.4, 1.4.10 | Layout tests at a 320 px equivalent width and in landscape | v0.5.0 (was v0.4.0) |
+| 14 | No voice-control review of merged composite labels | 2.5.3 | Voice-control pass; ensure every accessible name starts with its visible label | v0.5.0 (was v0.4.0) |
+| 15 | **No independent audit** | The whole report | Commission a WCAG 2.1 AA and EN 301 549 assessment of the example gallery across four presets, both brightnesses, iOS and Android; publish the report, the resulting ACR, and the remediation log in this directory | v0.5.0 (was v0.4.0) |
+| 17 | Three widgets start repeating animations without reading reduced motion: `BankVirtualCardWidget`, `BankLivenessCheckOverlay`, `BankAsyncVerificationState` | 2.2.2, 4.2.10, 11.6.2, 11.7 | Apply the `BankSkeletonLoader` pattern — read the preference in `didChangeDependencies` and stop the controller | v0.5.0 (was v0.4.0) |
 | 16 | Flutter web target unevaluated | EN 301 549 chapter 9 | Evaluate Flutter's web semantics output and issue a web edition, or state permanently that the web target is unsupported for accessibility | Unscheduled |
 
 ### Closed in this edition

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../common/money_formatter.dart';
+import '../l10n/bank_strings.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/numeral_style.dart';
@@ -117,31 +118,31 @@ class BankCreditScoreGauge extends StatefulWidget {
   /// Overrides the whole computed semantics label.
   final String? semanticLabel;
 
-  List<BankScoreBand> _defaultBands() {
+  List<BankScoreBand> _defaultBands(BankStrings strings) {
     final range = maxScore - minScore;
     return [
       BankScoreBand(
-        label: 'Poor',
+        label: strings.creditScorePoor,
         upTo: minScore + (range * 0.25).round(),
         color: BankTokens.danger,
       ),
       BankScoreBand(
-        label: 'Fair',
+        label: strings.creditScoreFair,
         upTo: minScore + (range * 0.45).round(),
         color: BankTokens.warning,
       ),
       BankScoreBand(
-        label: 'Good',
+        label: strings.creditScoreGood,
         upTo: minScore + (range * 0.65).round(),
         color: const Color(0xFFB8C34A),
       ),
       BankScoreBand(
-        label: 'Very good',
+        label: strings.creditScoreVeryGood,
         upTo: minScore + (range * 0.82).round(),
         color: const Color(0xFF6FBF73),
       ),
       BankScoreBand(
-        label: 'Excellent',
+        label: strings.creditScoreExcellent,
         upTo: maxScore,
         color: const Color(0xFF2E9E5B),
       ),
@@ -197,7 +198,8 @@ class _BankCreditScoreGaugeState extends State<BankCreditScoreGauge>
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final numeralStyle = BankUiScope.of(context).numeralStyle;
-    final bands = widget.bands ?? widget._defaultBands();
+    final strings = BankStrings.of(context);
+    final bands = widget.bands ?? widget._defaultBands(strings);
 
     final band = bands.firstWhere(
       (b) => widget.score <= b.upTo,

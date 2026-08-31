@@ -378,6 +378,7 @@ abstract final class BankDateFormatter {
     required DateTime date,
     required String todayLabel,
     required String yesterdayLabel,
+    String? locale,
   }) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -386,17 +387,39 @@ abstract final class BankDateFormatter {
 
     if (diff == 0) return todayLabel;
     if (diff == 1) return yesterdayLabel;
-    return formatDateOnly(date);
+    return formatDateOnly(date, locale: locale);
   }
 
-  static String formatShort(DateTime date) => DateFormat('d MMM').format(date);
+  /// A [DateFormat] for [pattern] in [locale], falling back to the ambient
+  /// default locale when the host has not loaded that locale's date symbols.
+  ///
+  /// Use this instead of constructing `DateFormat(pattern, locale)` directly:
+  /// the raw constructor throws for any locale the host has not initialised.
+  ///
+  /// `DateFormat(pattern, 'ar')` throws `LocaleDataException` unless
+  /// something called `initializeDateFormatting('ar')` first — which
+  /// `GlobalMaterialLocalizations` does, but a host app that installs no
+  /// localisation delegates does not. A month name in the wrong language is
+  /// a cosmetic defect; an exception thrown while painting a balance screen
+  /// is an outage, so this degrades rather than throws.
+  static DateFormat patternFormat(String pattern, {String? locale}) {
+    if (locale == null) return DateFormat(pattern);
+    try {
+      return DateFormat(pattern, locale);
+    } on Exception {
+      return DateFormat(pattern);
+    }
+  }
+
+  static String formatShort(DateTime date, {String? locale}) =>
+      patternFormat('d MMM', locale: locale).format(date);
 
   /// The long date with no time component: `'30 June 2026'`.
-  static String formatDateOnly(DateTime date) =>
-      DateFormat('d MMMM y').format(date);
+  static String formatDateOnly(DateTime date, {String? locale}) =>
+      patternFormat('d MMMM y', locale: locale).format(date);
 
-  static String formatLong(DateTime date) =>
-      DateFormat('d MMMM y, HH:mm').format(date);
+  static String formatLong(DateTime date, {String? locale}) =>
+      patternFormat('d MMMM y, HH:mm', locale: locale).format(date);
 
   /// [formatLong] for values that actually carry a time, [formatDateOnly]
   /// for values that do not.
@@ -408,8 +431,10 @@ abstract final class BankDateFormatter {
   /// "30 June 2026, 00:00" has been told a precise instant that is simply
   /// untrue. Use this wherever the timestamp's precision is the source's
   /// choice rather than yours.
-  static String formatLongOrDate(DateTime date) =>
-      carriesTimeOfDay(date) ? formatLong(date) : formatDateOnly(date);
+  static String formatLongOrDate(DateTime date, {String? locale}) =>
+      carriesTimeOfDay(date)
+          ? formatLong(date, locale: locale)
+          : formatDateOnly(date, locale: locale);
 
   /// Whether [date] carries a time of day, i.e. is anything but exact
   /// local midnight.
@@ -423,10 +448,11 @@ abstract final class BankDateFormatter {
       date.millisecond != 0 ||
       date.microsecond != 0;
 
-  static String formatTime(DateTime date) => DateFormat('HH:mm').format(date);
+  static String formatTime(DateTime date, {String? locale}) =>
+      patternFormat('HH:mm', locale: locale).format(date);
 
-  static String formatFull(DateTime date) =>
-      DateFormat('EEE d MMM y').format(date);
+  static String formatFull(DateTime date, {String? locale}) =>
+      patternFormat('EEE d MMM y', locale: locale).format(date);
 
   /// Dual-calendar date for GCC audiences: the Gregorian short date
   /// followed by the parenthesized Umm al-Qura equivalent, e.g.
@@ -442,8 +468,9 @@ abstract final class BankDateFormatter {
     DateTime date, {
     NumeralStyle numeralStyle = NumeralStyle.western,
     List<String>? hijriMonthNames,
+    String? locale,
   }) {
-    final gregorian = DateFormat('d MMM y').format(date);
+    final gregorian = patternFormat('d MMM y', locale: locale).format(date);
     final hijri = BankHijriDate.fromGregorian(date).format(
       monthNames: hijriMonthNames,
     );
@@ -452,13 +479,34 @@ abstract final class BankDateFormatter {
 
   /// Compact relative time for activity feeds: `just now`, `5m ago`,
   /// `2h ago`, `3d ago`, then [formatShort] beyond a week.
-  static String formatRelative(DateTime date, {DateTime? now}) {
+  ///
+  /// The four labels default to English. Rather than pass them one by one,
+  /// call `BankStrings.of(context).relativeTime(date)`, which supplies the
+  /// translated forms and the ambient locale together.
+  static String formatRelative(
+    DateTime date, {
+    DateTime? now,
+    String? locale,
+    String? justNowLabel,
+    String Function(int minutes)? minutesAgoLabel,
+    String Function(int hours)? hoursAgoLabel,
+    String Function(int days)? daysAgoLabel,
+  }) {
     final reference = now ?? DateTime.now();
     final diff = reference.difference(date);
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return formatShort(date);
+    if (diff.inMinutes < 1) return justNowLabel ?? 'just now';
+    if (diff.inMinutes < 60) {
+      final minutes = diff.inMinutes;
+      return minutesAgoLabel?.call(minutes) ?? '${minutes}m ago';
+    }
+    if (diff.inHours < 24) {
+      final hours = diff.inHours;
+      return hoursAgoLabel?.call(hours) ?? '${hours}h ago';
+    }
+    if (diff.inDays < 7) {
+      final days = diff.inDays;
+      return daysAgoLabel?.call(days) ?? '${days}d ago';
+    }
+    return formatShort(date, locale: locale);
   }
 }

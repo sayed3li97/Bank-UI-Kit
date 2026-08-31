@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../common/bank_format_context.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 import 'bank_icon_spec.dart';
@@ -542,7 +543,10 @@ class _BankStatusTrackerState extends State<BankStatusTracker>
               if (stage.timestamp != null) ...[
                 const SizedBox(width: BankTokens.space2),
                 Text(
-                  BankDateFormatter.formatShort(stage.timestamp!),
+                  BankDateFormatter.formatShort(
+                    stage.timestamp!,
+                    locale: context.bankLocale,
+                  ),
                   style: BankTokens.bodySmall
                       .copyWith(color: theme.onSurfaceVariant)
                       .merge(widget.timestampStyle),

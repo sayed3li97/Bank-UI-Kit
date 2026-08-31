@@ -4,6 +4,7 @@ import '../../src/common/bank_segmented_control.dart';
 import '../../src/common/money_formatter.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 // ---------------------------------------------------------------------------
 // BankTransferTiming
@@ -132,13 +133,6 @@ class BankScheduledTransferToggle extends StatelessWidget {
   /// `'Transfer timing: <selection>'`.
   final String? semanticLabel;
 
-  static const List<String> _recurringOptions = [
-    'Daily',
-    'Weekly',
-    'Biweekly',
-    'Monthly',
-  ];
-
   const BankScheduledTransferToggle({
     required this.selected,
     required this.onChanged,
@@ -172,7 +166,14 @@ class BankScheduledTransferToggle extends StatelessWidget {
     final resolvedAccent = accentColor ?? bankTheme.primary;
     final resolvedRadius = radius ?? bankTheme.chipRadius;
     final resolvedFieldColor = fieldColor ?? bankTheme.surfaceVariant;
-    final resolvedOptions = recurringOptions ?? _recurringOptions;
+    final strings = BankStrings.of(context);
+    final resolvedOptions = recurringOptions ??
+        [
+          strings.frequencyDaily,
+          strings.frequencyWeekly,
+          strings.frequencyBiweekly,
+          strings.frequencyMonthly,
+        ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

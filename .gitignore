@@ -42,3 +42,7 @@ pubspec.lock
 # Node tooling (screenshot generation)
 node_modules/
 node_modules
+
+# Written by `flutter gen-l10n` (see l10n.yaml). It is a report, not a source
+# file: CI regenerates it and `tool/check_l10n.dart` fails if it is non-empty.
+l10n_untranslated.json

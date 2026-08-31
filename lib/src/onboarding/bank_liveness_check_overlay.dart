@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 // ---------------------------------------------------------------------------
 // State enum
@@ -94,7 +95,7 @@ class BankLivenessCheckOverlay extends StatefulWidget {
     this.instruction,
     this.detectionProgress = 0,
     this.onRetry,
-    this.retryLabel = 'Try again',
+    this.retryLabel = _kRetryLabel,
     this.retryIcon,
     this.successIcon,
     this.idleRingColor,
@@ -107,6 +108,8 @@ class BankLivenessCheckOverlay extends StatefulWidget {
     this.animationDuration,
     this.animationCurve,
   });
+
+  static const String _kRetryLabel = 'Try again';
 
   @override
   State<BankLivenessCheckOverlay> createState() =>
@@ -215,13 +218,13 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
   // Default instruction text
   // ---------------------------------------------------------------------------
 
-  String get _effectiveInstruction {
+  String _effectiveInstruction(BankStrings strings) {
     if (widget.instruction != null) return widget.instruction!;
     return switch (widget.state) {
-      BankLivenessState.idle => 'Position your face in the oval',
-      BankLivenessState.detecting => 'Look straight at the camera',
-      BankLivenessState.success => 'Liveness verified',
-      BankLivenessState.retry => 'Could not verify: please try again',
+      BankLivenessState.idle => strings.livenessPositionFace,
+      BankLivenessState.detecting => strings.livenessLookStraight,
+      BankLivenessState.success => strings.livenessVerified,
+      BankLivenessState.retry => strings.livenessFailed,
     };
   }
 
@@ -239,7 +242,16 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
+    final strings = BankStrings.of(context);
     final ringColor = _ringColor(bankTheme);
+    // The label arrives as a non-nullable String defaulted to the shipped
+    // English; `override` keeps a host's wording and otherwise falls back to
+    // the ambient language.
+    final retryLabel = BankStrings.override(
+          widget.retryLabel,
+          BankLivenessCheckOverlay._kRetryLabel,
+        ) ??
+        strings.actionTryAgain;
 
     return Stack(
       fit: StackFit.expand,
@@ -308,7 +320,7 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
                 child: Semantics(
                   liveRegion: true,
                   child: Text(
-                    _effectiveInstruction,
+                    _effectiveInstruction(strings),
                     style: BankTokens.bodyMedium.copyWith(
                       color: Colors.white,
                       shadows: [
@@ -328,7 +340,7 @@ class _BankLivenessCheckOverlayState extends State<BankLivenessCheckOverlay>
                 FilledButton.icon(
                   onPressed: widget.onRetry,
                   icon: Icon(widget.retryIcon ?? Icons.refresh),
-                  label: Text(widget.retryLabel),
+                  label: Text(retryLabel),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size(
                       BankTokens.minTapTarget * 2,

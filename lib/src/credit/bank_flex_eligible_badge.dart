@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 /// Inline chip indicating a transaction is eligible for flexible installments.
 class BankFlexEligibleBadge extends StatelessWidget {
@@ -56,7 +57,7 @@ class BankFlexEligibleBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final badgeLabel = label ?? 'Flex eligible';
+    final badgeLabel = label ?? BankStrings.of(context).creditFlexEligible;
     final accent = accentColor ?? theme.primary;
 
     return Semantics(

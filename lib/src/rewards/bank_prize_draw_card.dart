@@ -758,12 +758,18 @@ class _DrawRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final drawDate = numeralStyle.convert(
-      BankDateFormatter.formatShort(draw.drawDate),
+      BankDateFormatter.formatShort(
+        draw.drawDate,
+        locale: context.bankLocale,
+      ),
     );
     final cutoff = cutoffTemplate.replaceFirst(
       '{date}',
       numeralStyle.convert(
-        BankDateFormatter.formatShort(draw.lastDepositDate),
+        BankDateFormatter.formatShort(
+          draw.lastDepositDate,
+          locale: context.bankLocale,
+        ),
       ),
     );
     final prize = draw.prizeAmount == null

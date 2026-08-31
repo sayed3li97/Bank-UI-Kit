@@ -9,6 +9,7 @@ import '../../src/models/transaction.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 /// A category name + money pair for the spending breakdown.
 class BankSpendingCategory {
@@ -72,7 +73,7 @@ class BankSpendingBreakdownChart extends StatefulWidget {
   /// Merged over the legend amount style (bodySmall, onSurfaceVariant).
   final TextStyle? legendAmountStyle;
 
-  /// Overrides the built-in English category names in the legend.
+  /// Overrides the localised category names in the legend.
   final String Function(TransactionCategory category)? categoryNameBuilder;
 
   /// Wraps the chart in a [Semantics] node when provided; no semantics
@@ -144,6 +145,7 @@ class _BankSpendingBreakdownChartState
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final strings = BankStrings.of(context);
 
     if (widget.categories.isEmpty) {
       return Center(
@@ -298,7 +300,7 @@ class _BankSpendingBreakdownChartState
                       Expanded(
                         child: Text(
                           widget.categoryNameBuilder?.call(cat.category) ??
-                              _categoryName(cat.category),
+                              strings.categoryLabel(cat.category, short: true),
                           style: BankTokens.labelSmall
                               .copyWith(color: theme.onSurface)
                               .merge(widget.legendLabelStyle),
@@ -327,22 +329,4 @@ class _BankSpendingBreakdownChartState
     if (widget.semanticLabel == null) return chart;
     return Semantics(label: widget.semanticLabel, child: chart);
   }
-
-  String _categoryName(TransactionCategory cat) => switch (cat) {
-        TransactionCategory.groceries => 'Groceries',
-        TransactionCategory.dining => 'Dining',
-        TransactionCategory.transport => 'Transport',
-        TransactionCategory.entertainment => 'Entertainment',
-        TransactionCategory.utilities => 'Utilities',
-        TransactionCategory.health => 'Health',
-        TransactionCategory.shopping => 'Shopping',
-        TransactionCategory.travel => 'Travel',
-        TransactionCategory.education => 'Education',
-        TransactionCategory.subscription => 'Subscription',
-        TransactionCategory.transfer => 'Transfer',
-        TransactionCategory.income => 'Income',
-        TransactionCategory.investment => 'Investment',
-        TransactionCategory.creditPayment => 'Credit',
-        TransactionCategory.other => 'Other',
-      };
 }

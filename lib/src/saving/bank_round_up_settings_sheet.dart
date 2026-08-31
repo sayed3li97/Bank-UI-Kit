@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 
 import '../../src/common/bank_control_theme.dart';
@@ -7,7 +8,9 @@ import '../../src/common/money_formatter.dart';
 import '../../src/models/models.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
+import '../../src/theme/numeral_style.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 // ---------------------------------------------------------------------------
 // Sheet handle bar helper
@@ -162,10 +165,17 @@ class BankRoundUpSettingsSheet extends StatefulWidget {
   /// 'Round up disabled'.
   final String disabledSemanticLabel;
 
-  /// Explanation shown at the bottom; `{multiplier}` is substituted
-  /// with the multiplied-by suffix (empty at 1x). Defaults to the
-  /// built-in English copy.
-  final String explanationTemplate;
+  /// Explanation shown at the bottom.
+  ///
+  /// `{unit}` is substituted with one whole unit of the destination pot's
+  /// currency (`£1`, `€1`, `﷼1`) and `{multiplier}` with the multiplied-by
+  /// suffix, which is empty at 1x. Leave it `null` for the kit's own copy in
+  /// the ambient language.
+  ///
+  /// Before 0.4.0 this was a non-null `String` whose default hard-coded
+  /// `£1` — and which the sheet never read. Supplying it now actually
+  /// changes what renders.
+  final String? explanationTemplate;
 
   /// Overrides the sheet corner radius. Defaults to the theme
   /// sheetRadius.
@@ -224,8 +234,7 @@ class BankRoundUpSettingsSheet extends StatefulWidget {
     this.multiplierSemanticTemplate = '{n}x multiplier',
     this.enabledSemanticLabel = 'Round up enabled',
     this.disabledSemanticLabel = 'Round up disabled',
-    this.explanationTemplate = 'We\'ll round up every purchase to the '
-        'nearest £1 and save the difference{multiplier} automatically.',
+    this.explanationTemplate,
     this.radius,
     this.backgroundColor,
     this.accentColor,
@@ -314,10 +323,50 @@ class _BankRoundUpSettingsSheetState extends State<BankRoundUpSettingsSheet> {
     widget.onPotSelected(potId);
   }
 
+  /// The bottom explanation, with the rounding unit in the pot's currency.
+  ///
+  /// Round-up is a currency-relative promise: a sterling pot rounds to £1, a
+  /// riyal pot to ﷼1. Naming one whole unit of the destination pot's own
+  /// currency is the only phrasing that is true for every bank shipping this
+  /// sheet.
+  String _explanation(BankStrings strings, NumeralStyle numeralStyle) {
+    final currencyCode = _destinationCurrencyCode;
+    final unit = currencyCode == null
+        ? '1'
+        : BankMoneyFormatter.format(
+            amount: Decimal.one,
+            currencyCode: currencyCode,
+            numeralStyle: numeralStyle,
+            trimZeroCents: true,
+          );
+    final multiplier = _multiplier > 1 ? '× $_multiplier' : '';
+
+    final template = widget.explanationTemplate;
+    if (template != null) {
+      return template
+          .replaceAll('{unit}', unit)
+          .replaceAll('{multiplier}', multiplier);
+    }
+    return multiplier.isEmpty
+        ? strings.roundUpExplainer(unit)
+        : strings.roundUpExplainerMultiplied(unit, multiplier);
+  }
+
+  /// The currency the round-ups land in: the selected pot's, else the first
+  /// pot offered, else `null` when the host passed no pots at all.
+  String? get _destinationCurrencyCode {
+    if (widget.availablePots.isEmpty) return null;
+    final selected = widget.availablePots
+        .where((pot) => pot.id == _selectedPotId)
+        .firstOrNull;
+    return (selected ?? widget.availablePots.first).target.currencyCode;
+  }
+
   @override
   Widget build(BuildContext context) {
     final bankTheme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final strings = BankStrings.of(context);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final accent = widget.accentColor ?? bankTheme.primary;
 
@@ -568,10 +617,7 @@ class _BankRoundUpSettingsSheetState extends State<BankRoundUpSettingsSheet> {
                               const SizedBox(width: BankTokens.space2),
                               Expanded(
                                 child: Text(
-                                  'We\'ll round up every purchase to the '
-                                  'nearest £1 and save the difference'
-                                  '${_multiplier > 1 ? ' × $_multiplier' : ''} '
-                                  'automatically.',
+                                  _explanation(strings, scope.numeralStyle),
                                   style: BankTokens.bodySmall.copyWith(
                                     color: bankTheme.onSurfaceVariant,
                                   ),

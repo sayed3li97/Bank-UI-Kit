@@ -1,0 +1,1429 @@
+{
+  "@@locale": "en",
+  "today": "Today",
+  "@today": {
+    "description": "Relative day label for something dated today."
+  },
+  "yesterday": "Yesterday",
+  "@yesterday": {
+    "description": "Relative day label for something dated yesterday."
+  },
+  "justNow": "just now",
+  "@justNow": {
+    "description": "Relative timestamp for an event less than a minute old. Lower case: it sits inline after a merchant name, not at the head of a sentence."
+  },
+  "minutesAgo": "{count, plural, one{1 minute ago} other{{count} minutes ago}}",
+  "@minutesAgo": {
+    "description": "Relative timestamp in whole minutes.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "{count, plural, one{1 hour ago} other{{count} hours ago}}",
+  "@hoursAgo": {
+    "description": "Relative timestamp in whole hours.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "{count, plural, one{1 day ago} other{{count} days ago}}",
+  "@daysAgo": {
+    "description": "Relative timestamp in whole days.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "minutesAgoShort": "{count}m ago",
+  "@minutesAgoShort": {
+    "description": "Abbreviated relative timestamp in minutes, for dense rows.",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "hoursAgoShort": "{count}h ago",
+  "@hoursAgoShort": {
+    "description": "Abbreviated relative timestamp in hours, for dense rows.",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "daysAgoShort": "{count}d ago",
+  "@daysAgoShort": {
+    "description": "Abbreviated relative timestamp in days, for dense rows.",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "statusPending": "Pending",
+  "@statusPending": {
+    "description": "Transaction status: authorised but not yet settled."
+  },
+  "statusCleared": "Cleared",
+  "@statusCleared": {
+    "description": "Transaction status: settled."
+  },
+  "statusDeclined": "Declined",
+  "@statusDeclined": {
+    "description": "Transaction status: refused by the issuer."
+  },
+  "statusRefunded": "Refunded",
+  "@statusRefunded": {
+    "description": "Transaction status: money returned to the customer."
+  },
+  "statusScheduled": "Scheduled",
+  "@statusScheduled": {
+    "description": "Transaction status: queued for a future date."
+  },
+  "statusFrozen": "Frozen",
+  "@statusFrozen": {
+    "description": "Card or account status: temporarily blocked by the customer."
+  },
+  "statusRestricted": "Restricted",
+  "@statusRestricted": {
+    "description": "Card or account status: limited by the bank."
+  },
+  "statusActive": "Active",
+  "@statusActive": {
+    "description": "Card or account status: usable as normal."
+  },
+  "actionDone": "Done",
+  "@actionDone": {
+    "description": "Button that closes a finished flow."
+  },
+  "actionCancel": "Cancel",
+  "@actionCancel": {
+    "description": "Button that abandons the current action."
+  },
+  "actionConfirm": "Confirm",
+  "@actionConfirm": {
+    "description": "Button that commits the current action."
+  },
+  "actionNext": "Next",
+  "@actionNext": {
+    "description": "Button that advances to the next step."
+  },
+  "actionBack": "Back",
+  "@actionBack": {
+    "description": "Button that returns to the previous step."
+  },
+  "actionSkip": "Skip",
+  "@actionSkip": {
+    "description": "Button that passes over an optional step."
+  },
+  "actionAccept": "Accept",
+  "@actionAccept": {
+    "description": "Button that agrees to a request."
+  },
+  "actionDecline": "Decline",
+  "@actionDecline": {
+    "description": "Button that refuses a request."
+  },
+  "actionShare": "Share",
+  "@actionShare": {
+    "description": "Button that opens the platform share sheet."
+  },
+  "actionDispute": "Dispute",
+  "@actionDispute": {
+    "description": "Button that starts a transaction dispute."
+  },
+  "actionReport": "Report",
+  "@actionReport": {
+    "description": "Button that reports a transaction as suspicious."
+  },
+  "actionRetry": "Retry",
+  "@actionRetry": {
+    "description": "Button that repeats a failed operation."
+  },
+  "actionClose": "Close",
+  "@actionClose": {
+    "description": "Button or icon that dismisses an overlay."
+  },
+  "actionCopy": "Copy",
+  "@actionCopy": {
+    "description": "Button that copies a value to the clipboard."
+  },
+  "actionCopied": "Copied",
+  "@actionCopied": {
+    "description": "Confirmation shown after a value is copied."
+  },
+  "actionViewDetails": "View details",
+  "@actionViewDetails": {
+    "description": "Button that opens a fuller view of the current item."
+  },
+  "actionContactSupport": "Contact support",
+  "@actionContactSupport": {
+    "description": "Button that opens a support channel."
+  },
+  "actionCustom": "Custom",
+  "@actionCustom": {
+    "description": "Option that lets the customer enter their own value."
+  },
+  "sendMoney": "Send money",
+  "@sendMoney": {
+    "description": "Primary action: start an outbound payment."
+  },
+  "requestMoney": "Request money",
+  "@requestMoney": {
+    "description": "Primary action: ask someone to pay you."
+  },
+  "addMoney": "Add money",
+  "@addMoney": {
+    "description": "Primary action: top up an account or pot."
+  },
+  "withdraw": "Withdraw",
+  "@withdraw": {
+    "description": "Primary action: take money out."
+  },
+  "balanceHidden": "••••",
+  "@balanceHidden": {
+    "description": "Placeholder glyphs shown in place of a balance in privacy mode. Usually left as dots in every locale."
+  },
+  "balanceHiddenSpoken": "Balance hidden",
+  "@balanceHiddenSpoken": {
+    "description": "Screen-reader text replacing a balance in privacy mode."
+  },
+  "pointsBalanceHiddenSpoken": "Points balance hidden",
+  "@pointsBalanceHiddenSpoken": {
+    "description": "Screen-reader text replacing a loyalty-points balance in privacy mode."
+  },
+  "labelAvailable": "Available",
+  "@labelAvailable": {
+    "description": "Label for the spendable portion of a limit or balance."
+  },
+  "labelUsed": "Used",
+  "@labelUsed": {
+    "description": "Label for the consumed portion of a limit."
+  },
+  "labelGoal": "Goal",
+  "@labelGoal": {
+    "description": "Label for a savings target."
+  },
+  "labelProgress": "Progress",
+  "@labelProgress": {
+    "description": "Label for how far along a goal is."
+  },
+  "labelAmount": "Amount",
+  "@labelAmount": {
+    "description": "Label for a monetary value field."
+  },
+  "labelCurrency": "Currency",
+  "@labelCurrency": {
+    "description": "Label for an account's currency."
+  },
+  "labelVersion": "Version",
+  "@labelVersion": {
+    "description": "Label for an app version number."
+  },
+  "labelLastUpdated": "Last updated",
+  "@labelLastUpdated": {
+    "description": "Label for the time data was last refreshed."
+  },
+  "interestRate": "Interest rate",
+  "@interestRate": {
+    "description": "Conventional-finance rate label."
+  },
+  "profitRate": "Profit rate",
+  "@profitRate": {
+    "description": "Islamic-finance equivalent of an interest rate."
+  },
+  "annualPercentageRate": "APR",
+  "@annualPercentageRate": {
+    "description": "Abbreviation for annual percentage rate."
+  },
+  "interestFree": "Interest free",
+  "@interestFree": {
+    "description": "Badge for a plan that charges no interest."
+  },
+  "perMonth": "/month",
+  "@perMonth": {
+    "description": "Suffix appended to a monthly amount, e.g. 25.00/month."
+  },
+  "perMonthShort": "/mo",
+  "@perMonthShort": {
+    "description": "Short suffix appended to a monthly price in tight layouts."
+  },
+  "installmentMonths": "{count, plural, one{1 month} other{{count} months}}",
+  "@installmentMonths": {
+    "description": "Length of an instalment plan in whole months.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addToPot": "Add to pot",
+  "@addToPot": {
+    "description": "Action that moves money into a savings pot."
+  },
+  "withdrawFromPot": "Withdraw from pot",
+  "@withdrawFromPot": {
+    "description": "Action that moves money out of a savings pot."
+  },
+  "splitEqually": "Split equally",
+  "@splitEqually": {
+    "description": "Action that divides a bill into equal shares."
+  },
+  "confirmPin": "Enter PIN to confirm",
+  "@confirmPin": {
+    "description": "Prompt asking the customer to authenticate with their PIN."
+  },
+  "sessionTimeout": "Session expired",
+  "@sessionTimeout": {
+    "description": "Title shown when a session has already ended."
+  },
+  "sessionTimeoutBody": "Your session has expired for security. Please log in again.",
+  "@sessionTimeoutBody": {
+    "description": "Body shown when a session has already ended."
+  },
+  "noTransactions": "No transactions yet",
+  "@noTransactions": {
+    "description": "Empty state for a transaction list."
+  },
+  "loadingTransactions": "Loading transactions…",
+  "@loadingTransactions": {
+    "description": "Loading state for a transaction list."
+  },
+  "transferSuccess": "Transfer sent",
+  "@transferSuccess": {
+    "description": "Confirmation that a transfer succeeded."
+  },
+  "transferFailure": "Transfer failed",
+  "@transferFailure": {
+    "description": "Notice that a transfer did not go through."
+  },
+  "newDevice": "New device detected",
+  "@newDevice": {
+    "description": "Title of the new-device security notice."
+  },
+  "newDeviceBody": "We noticed a login from a new device. If this was you, no action is needed.",
+  "@newDeviceBody": {
+    "description": "Body of the new-device security notice."
+  },
+  "compromisedDevice": "Security warning",
+  "@compromisedDevice": {
+    "description": "Title of the compromised-device security notice."
+  },
+  "compromisedDeviceBody": "This device may be compromised. For your safety, some features have been limited.",
+  "@compromisedDeviceBody": {
+    "description": "Body of the compromised-device security notice."
+  },
+  "verificationUnderReview": "Verification under review",
+  "@verificationUnderReview": {
+    "description": "Title shown while identity documents are being checked."
+  },
+  "verificationUnderReviewBody": "We're reviewing your documents. This usually takes 1–2 business days.",
+  "@verificationUnderReviewBody": {
+    "description": "Body shown while identity documents are being checked."
+  },
+  "categoryGroceries": "Groceries",
+  "@categoryGroceries": {
+    "description": "Spending category: supermarkets and food shops."
+  },
+  "categoryDining": "Dining",
+  "@categoryDining": {
+    "description": "Spending category: restaurants, cafés, takeaway."
+  },
+  "categoryTransport": "Transport",
+  "@categoryTransport": {
+    "description": "Spending category: fuel, transit, taxis."
+  },
+  "categoryEntertainment": "Entertainment",
+  "@categoryEntertainment": {
+    "description": "Spending category: cinema, events, games."
+  },
+  "categoryUtilities": "Utilities",
+  "@categoryUtilities": {
+    "description": "Spending category: electricity, water, internet."
+  },
+  "categoryHealth": "Health",
+  "@categoryHealth": {
+    "description": "Spending category: pharmacy, clinics, insurance."
+  },
+  "categoryShopping": "Shopping",
+  "@categoryShopping": {
+    "description": "Spending category: retail and online purchases."
+  },
+  "categoryTravel": "Travel",
+  "@categoryTravel": {
+    "description": "Spending category: flights, hotels, holidays."
+  },
+  "categoryEducation": "Education",
+  "@categoryEducation": {
+    "description": "Spending category: tuition, courses, books."
+  },
+  "categorySubscription": "Subscription",
+  "@categorySubscription": {
+    "description": "Spending category: recurring services."
+  },
+  "categoryTransfer": "Transfer",
+  "@categoryTransfer": {
+    "description": "Spending category: money moved between accounts."
+  },
+  "categoryIncome": "Income",
+  "@categoryIncome": {
+    "description": "Spending category: salary and other money in."
+  },
+  "categoryInvestment": "Investment",
+  "@categoryInvestment": {
+    "description": "Spending category: brokerage and fund activity."
+  },
+  "categoryCredit": "Credit",
+  "@categoryCredit": {
+    "description": "Spending category: credit-card activity, shown where space is tight."
+  },
+  "categoryCreditPayment": "Credit Payment",
+  "@categoryCreditPayment": {
+    "description": "Spending category: a payment made towards a credit card."
+  },
+  "categoryOther": "Other",
+  "@categoryOther": {
+    "description": "Spending category: anything uncategorised."
+  },
+  "categoryAdd": "Add category",
+  "@categoryAdd": {
+    "description": "Action that adds another category to a split."
+  },
+  "frequencyDaily": "Daily",
+  "@frequencyDaily": {
+    "description": "Recurring payment frequency: every day."
+  },
+  "frequencyWeekly": "Weekly",
+  "@frequencyWeekly": {
+    "description": "Recurring payment frequency: every week."
+  },
+  "frequencyBiweekly": "Biweekly",
+  "@frequencyBiweekly": {
+    "description": "Recurring payment frequency: every two weeks."
+  },
+  "frequencyMonthly": "Monthly",
+  "@frequencyMonthly": {
+    "description": "Recurring payment frequency: every month."
+  },
+  "notifGroupSecurity": "Security & fraud",
+  "@notifGroupSecurity": {
+    "description": "Alert-preferences group covering security and fraud messages."
+  },
+  "notifGroupPayments": "Payments",
+  "@notifGroupPayments": {
+    "description": "Alert-preferences group covering payment messages."
+  },
+  "notifGroupAccount": "Account activity",
+  "@notifGroupAccount": {
+    "description": "Alert-preferences group covering account activity."
+  },
+  "notifGroupMarketing": "Marketing",
+  "@notifGroupMarketing": {
+    "description": "Alert-preferences group covering promotional messages."
+  },
+  "notifChannelPush": "Push",
+  "@notifChannelPush": {
+    "description": "Delivery channel: a device push notification."
+  },
+  "notifChannelEmail": "Email",
+  "@notifChannelEmail": {
+    "description": "Delivery channel: email."
+  },
+  "notifSecurityAlerts": "Security alerts",
+  "@notifSecurityAlerts": {
+    "description": "Alert type: sign-ins and security events."
+  },
+  "notifFraudWarnings": "Fraud warnings",
+  "@notifFraudWarnings": {
+    "description": "Alert type: suspected fraud."
+  },
+  "notifIdentityVerification": "Identity verification",
+  "@notifIdentityVerification": {
+    "description": "Alert type: identity checks."
+  },
+  "notifPayments": "Payments",
+  "@notifPayments": {
+    "description": "Alert type: payments leaving the account."
+  },
+  "notifTransfers": "Transfers",
+  "@notifTransfers": {
+    "description": "Alert type: transfers between accounts."
+  },
+  "notifCardActivity": "Card activity",
+  "@notifCardActivity": {
+    "description": "Alert type: card use."
+  },
+  "notifSavingsGoals": "Savings goals",
+  "@notifSavingsGoals": {
+    "description": "Alert type: progress towards savings goals."
+  },
+  "notifPriceAlerts": "Price alerts",
+  "@notifPriceAlerts": {
+    "description": "Alert type: investment price movements."
+  },
+  "notifServiceUpdates": "Service updates",
+  "@notifServiceUpdates": {
+    "description": "Alert type: planned maintenance and service news."
+  },
+  "notifOffersAndNews": "Offers & news",
+  "@notifOffersAndNews": {
+    "description": "Alert type: promotions and product news."
+  },
+  "toastSuccess": "Success",
+  "@toastSuccess": {
+    "description": "Screen-reader prefix for a success toast."
+  },
+  "toastError": "Error",
+  "@toastError": {
+    "description": "Screen-reader prefix for an error toast."
+  },
+  "toastInfo": "Info",
+  "@toastInfo": {
+    "description": "Screen-reader prefix for an informational toast."
+  },
+  "toastWarning": "Warning",
+  "@toastWarning": {
+    "description": "Screen-reader prefix for a warning toast."
+  },
+  "connectivityOfflineTitle": "You're offline",
+  "@connectivityOfflineTitle": {
+    "description": "Banner title shown when the device loses connectivity."
+  },
+  "connectivityDegradedTitle": "Some services are affected",
+  "@connectivityDegradedTitle": {
+    "description": "Banner title shown when the bank is partially unavailable."
+  },
+  "connectivityRestored": "Back online. Your accounts are up to date.",
+  "@connectivityRestored": {
+    "description": "Banner shown briefly once connectivity returns."
+  },
+  "gateMaintenanceTitle": "Maintenance in progress",
+  "@gateMaintenanceTitle": {
+    "description": "Blocking-gate title: planned maintenance."
+  },
+  "gateMaintenanceBody": "We are making some important updates. We will be back as soon as we can.",
+  "@gateMaintenanceBody": {
+    "description": "Blocking-gate body: planned maintenance."
+  },
+  "gateOfflineTitle": "No internet connection",
+  "@gateOfflineTitle": {
+    "description": "Blocking-gate title: the device is offline."
+  },
+  "gateOfflineBody": "Your device seems to be offline. Check your Wi-Fi or mobile data, then try again.",
+  "@gateOfflineBody": {
+    "description": "Blocking-gate body: the device is offline."
+  },
+  "gateForceUpdateTitle": "Time to update",
+  "@gateForceUpdateTitle": {
+    "description": "Blocking-gate title: the app version is no longer supported."
+  },
+  "gateForceUpdateBody": "Update needed to keep your money safe. This version of the app is no longer supported.",
+  "@gateForceUpdateBody": {
+    "description": "Blocking-gate body: the app version is no longer supported."
+  },
+  "gateDeviceBlockedTitle": "We can't open the app",
+  "@gateDeviceBlockedTitle": {
+    "description": "Blocking-gate title for security blocks. Deliberately vague so an attacker learns nothing."
+  },
+  "gateDeviceBlockedBody": "We can't open the app on this device right now.",
+  "@gateDeviceBlockedBody": {
+    "description": "Blocking-gate body for security blocks. Deliberately vague."
+  },
+  "gateSignInBlockedTitle": "We can't log you in",
+  "@gateSignInBlockedTitle": {
+    "description": "Blocking-gate title when sign-in is refused. Deliberately vague."
+  },
+  "gateSignInBlockedBody": "We can't log you in right now, please try again later.",
+  "@gateSignInBlockedBody": {
+    "description": "Blocking-gate body when sign-in is refused. Deliberately vague."
+  },
+  "gateClockSkewTitle": "Check your date and time",
+  "@gateClockSkewTitle": {
+    "description": "Blocking-gate title: the device clock is wrong."
+  },
+  "gateClockSkewBody": "Your device's clock looks wrong, so we can't connect securely. Setting it back to automatic usually fixes this.",
+  "@gateClockSkewBody": {
+    "description": "Blocking-gate body: the device clock is wrong."
+  },
+  "gateDeveloperModeTitle": "Developer mode is on",
+  "@gateDeveloperModeTitle": {
+    "description": "Blocking-gate title: developer mode is enabled."
+  },
+  "gateDeveloperModeBody": "For your security the app cannot run while developer mode is switched on. Turning it off fixes this.",
+  "@gateDeveloperModeBody": {
+    "description": "Blocking-gate body: developer mode is enabled."
+  },
+  "gateQueueTitle": "You are in the queue",
+  "@gateQueueTitle": {
+    "description": "Blocking-gate title: the customer is waiting in a sign-in queue."
+  },
+  "gateQueueBody": "A lot of people are signing in right now, so we are letting everyone in gradually.",
+  "@gateQueueBody": {
+    "description": "Blocking-gate body: the customer is waiting in a sign-in queue."
+  },
+  "gateClockStep1": "Open your device Settings",
+  "@gateClockStep1": {
+    "description": "Clock-fix step 1."
+  },
+  "gateClockStep2": "Go to Date and Time",
+  "@gateClockStep2": {
+    "description": "Clock-fix step 2."
+  },
+  "gateClockStep3": "Turn on Set automatically",
+  "@gateClockStep3": {
+    "description": "Clock-fix step 3."
+  },
+  "gateClockStep4": "Come back to the app",
+  "@gateClockStep4": {
+    "description": "Clock-fix step 4."
+  },
+  "gateDeveloperStep1": "Open your device Settings",
+  "@gateDeveloperStep1": {
+    "description": "Developer-mode-fix step 1."
+  },
+  "gateDeveloperStep2": "Go to Developer options",
+  "@gateDeveloperStep2": {
+    "description": "Developer-mode-fix step 2."
+  },
+  "gateDeveloperStep3": "Switch developer mode off",
+  "@gateDeveloperStep3": {
+    "description": "Developer-mode-fix step 3."
+  },
+  "gateDeveloperStep4": "Come back to the app",
+  "@gateDeveloperStep4": {
+    "description": "Developer-mode-fix step 4."
+  },
+  "gateStillWorking": "Still working",
+  "@gateStillWorking": {
+    "description": "Status shown while the gate retries in the background."
+  },
+  "gateReferenceHint": "Quote this code if you contact us",
+  "@gateReferenceHint": {
+    "description": "Hint under the support reference code on a blocking gate."
+  },
+  "gateBackByAround": "Back by around",
+  "@gateBackByAround": {
+    "description": "Label before an estimated time that service returns."
+  },
+  "gateTakingLonger": "Taking a little longer than expected",
+  "@gateTakingLonger": {
+    "description": "Shown when the estimated return time has passed."
+  },
+  "gateQueueReassurance": "We'll bring you in automatically. Your place is saved.",
+  "@gateQueueReassurance": {
+    "description": "Reassurance shown to a customer waiting in the sign-in queue."
+  },
+  "gateUpdateHelp": "Get help with updating",
+  "@gateUpdateHelp": {
+    "description": "Secondary action on the force-update gate."
+  },
+  "gateMoneyIsSafe": "Your money is safe.",
+  "@gateMoneyIsSafe": {
+    "description": "Reassurance line shown on security-related blocking gates."
+  },
+  "gateAlternativeCardPayments": "Card payments",
+  "@gateAlternativeCardPayments": {
+    "description": "Channel that still works while the app is blocked."
+  },
+  "gateAlternativeAtm": "ATM withdrawals",
+  "@gateAlternativeAtm": {
+    "description": "Channel that still works while the app is blocked."
+  },
+  "gateAlternativePhone": "Phone banking",
+  "@gateAlternativePhone": {
+    "description": "Channel that still works while the app is blocked."
+  },
+  "gateEtaLessThanMinute": "less than a minute",
+  "@gateEtaLessThanMinute": {
+    "description": "Estimated wait shorter than one minute."
+  },
+  "gateEtaMinutes": "{count, plural, one{1 minute} other{{count} minutes}}",
+  "@gateEtaMinutes": {
+    "description": "Estimated wait in whole minutes.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "updateTitle": "A new version is ready",
+  "@updateTitle": {
+    "description": "Title of the optional-update sheet."
+  },
+  "updateBody": "This update includes fixes and improvements to keep the app fast and secure.",
+  "@updateBody": {
+    "description": "Body of the optional-update sheet."
+  },
+  "updateNow": "Update now",
+  "@updateNow": {
+    "description": "Primary action on the update sheet."
+  },
+  "updateNotNow": "Not now",
+  "@updateNotNow": {
+    "description": "Dismissal action on the update sheet."
+  },
+  "updateSunset": "This version stops working on {date}",
+  "@updateSunset": {
+    "description": "Warning naming the date the current version stops working.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "updateVersion": "Version {version}",
+  "@updateVersion": {
+    "description": "The version being offered.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateCurrentVersion": "you have {version}",
+  "@updateCurrentVersion": {
+    "description": "Trailing clause naming the version installed today.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "authResendCode": "Resend code",
+  "@authResendCode": {
+    "description": "Action that sends a fresh one-time passcode."
+  },
+  "authUseBiometrics": "Use biometrics",
+  "@authUseBiometrics": {
+    "description": "PIN-keypad action that switches to fingerprint or face unlock."
+  },
+  "authDeleteDigit": "Delete",
+  "@authDeleteDigit": {
+    "description": "PIN-keypad key that removes the last digit."
+  },
+  "authShowBalances": "Show balances",
+  "@authShowBalances": {
+    "description": "Privacy toggle: reveal balances."
+  },
+  "authHideBalances": "Hide balances",
+  "@authHideBalances": {
+    "description": "Privacy toggle: hide balances."
+  },
+  "authSessionExpiringTitle": "Session expiring",
+  "@authSessionExpiringTitle": {
+    "description": "Dialog title warning that the session is about to end."
+  },
+  "authSessionExpiringBody": "Your session will expire soon. Stay logged in?",
+  "@authSessionExpiringBody": {
+    "description": "Dialog body warning that the session is about to end."
+  },
+  "authStayLoggedIn": "Stay logged in",
+  "@authStayLoggedIn": {
+    "description": "Action that extends the session."
+  },
+  "authLogOut": "Log out",
+  "@authLogOut": {
+    "description": "Action that ends the session immediately."
+  },
+  "authSignOutDeviceBody": "The device will need to sign in again to access the account.",
+  "@authSignOutDeviceBody": {
+    "description": "Explanation shown before revoking a device session."
+  },
+  "scaConfirmPayment": "Confirm payment",
+  "@scaConfirmPayment": {
+    "description": "Strong-authentication action approving a payment."
+  },
+  "scaRejectPayment": "Reject payment",
+  "@scaRejectPayment": {
+    "description": "Strong-authentication action refusing a payment."
+  },
+  "scaUsePinInstead": "Use PIN instead",
+  "@scaUsePinInstead": {
+    "description": "Strong-authentication fallback to a PIN."
+  },
+  "scaUseBiometricsInstead": "Use biometrics instead",
+  "@scaUseBiometricsInstead": {
+    "description": "Strong-authentication fallback to biometrics."
+  },
+  "scaAuthenticatorPrompt": "Approve this payment in your authenticator",
+  "@scaAuthenticatorPrompt": {
+    "description": "Instruction to approve in a separate authenticator app."
+  },
+  "scaExpiresIn": "Expires in",
+  "@scaExpiresIn": {
+    "description": "Label before a countdown until the approval lapses."
+  },
+  "callVerifyUnverifiedWarning": "If the person on the phone right now says they are calling from {bank}, hang up: they are a scammer. Genuine staff will never pressure you to move money or share security codes.",
+  "@callVerifyUnverifiedWarning": {
+    "description": "Anti-vishing warning shown when no verified call is in progress.",
+    "placeholders": {
+      "bank": {
+        "type": "String"
+      }
+    }
+  },
+  "callVerifyVerifiedReassurance": "This call has been verified. Our team member will never ask for your PIN, your password, or a one time passcode.",
+  "@callVerifyVerifiedReassurance": {
+    "description": "Reassurance shown when a caller has been verified."
+  },
+  "callVerifyIdleSummary": "No call is in progress right now. Below is a summary of your most recent verified call with {bank}.",
+  "@callVerifyIdleSummary": {
+    "description": "Shown when no call is active, above the recent-contact summary.",
+    "placeholders": {
+      "bank": {
+        "type": "String"
+      }
+    }
+  },
+  "panicUnfreezeConfirmBody": "Your cards and outgoing payments will start working again.",
+  "@panicUnfreezeConfirmBody": {
+    "description": "Confirmation body before lifting a panic freeze."
+  },
+  "panicHoldHint": "Press and hold for {seconds} seconds to freeze all cards and outgoing payments",
+  "@panicHoldHint": {
+    "description": "Screen-reader hint on the press-and-hold freeze control.",
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "cardBack": "Card back",
+  "@cardBack": {
+    "description": "Screen-reader name for the reverse face of a payment card."
+  },
+  "cardFront": "Card front",
+  "@cardFront": {
+    "description": "Screen-reader name for the front face of a payment card."
+  },
+  "cardShowDetails": "Show card details",
+  "@cardShowDetails": {
+    "description": "Action revealing the full card number and CVV."
+  },
+  "cardFlip": "Flip card",
+  "@cardFlip": {
+    "description": "Action turning a card over."
+  },
+  "cardGenericNetwork": "Payment card",
+  "@cardGenericNetwork": {
+    "description": "Screen-reader fallback when the card network is unknown. Network names themselves (Visa, Mastercard) are trademarks and stay untranslated."
+  },
+  "cardIbanOrAccount": "IBAN / Account",
+  "@cardIbanOrAccount": {
+    "description": "Label for the field holding either an IBAN or a local account number."
+  },
+  "cardSortCodeOrBic": "Sort Code / BIC",
+  "@cardSortCodeOrBic": {
+    "description": "Label for the field holding either a sort code or a BIC."
+  },
+  "cardTapToCopyHint": "Tap values to copy",
+  "@cardTapToCopyHint": {
+    "description": "Hint explaining that account details can be copied by tapping."
+  },
+  "cardBlockDelayNotice": "For your protection this change is delayed. {label} payments stay blocked for {hours} more hours after you confirm.",
+  "@cardBlockDelayNotice": {
+    "description": "Cool-off notice before a merchant block is lifted.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "validationIban": "Enter a valid IBAN.",
+  "@validationIban": {
+    "description": "Field error for a malformed IBAN."
+  },
+  "validationCardNumber": "Enter a valid card number.",
+  "@validationCardNumber": {
+    "description": "Field error for a malformed card number."
+  },
+  "validationSortCode": "Enter a valid sort code.",
+  "@validationSortCode": {
+    "description": "Field error for a malformed sort code."
+  },
+  "validationGeneric": "Enter a valid value.",
+  "@validationGeneric": {
+    "description": "Field error for a value that fails an unnamed mask."
+  },
+  "periodPreviousMonth": "Previous month",
+  "@periodPreviousMonth": {
+    "description": "Steps the period selector back by one month."
+  },
+  "periodPreviousQuarter": "Previous quarter",
+  "@periodPreviousQuarter": {
+    "description": "Steps the period selector back by one quarter."
+  },
+  "periodPreviousYear": "Previous year",
+  "@periodPreviousYear": {
+    "description": "Steps the period selector back by one year."
+  },
+  "periodNextMonth": "Next month",
+  "@periodNextMonth": {
+    "description": "Steps the period selector forward by one month."
+  },
+  "periodNextQuarter": "Next quarter",
+  "@periodNextQuarter": {
+    "description": "Steps the period selector forward by one quarter."
+  },
+  "periodNextYear": "Next year",
+  "@periodNextYear": {
+    "description": "Steps the period selector forward by one year."
+  },
+  "periodAll": "All",
+  "@periodAll": {
+    "description": "Chart range covering the whole available history."
+  },
+  "sheetDragHandle": "Drag handle",
+  "@sheetDragHandle": {
+    "description": "Screen-reader name for the grab bar at the top of a bottom sheet."
+  },
+  "creditLimit": "Credit limit",
+  "@creditLimit": {
+    "description": "Label for a card's total spending limit."
+  },
+  "creditScorePoor": "Poor",
+  "@creditScorePoor": {
+    "description": "Credit-score band, lowest."
+  },
+  "creditScoreFair": "Fair",
+  "@creditScoreFair": {
+    "description": "Credit-score band, below average."
+  },
+  "creditScoreGood": "Good",
+  "@creditScoreGood": {
+    "description": "Credit-score band, average."
+  },
+  "creditScoreVeryGood": "Very good",
+  "@creditScoreVeryGood": {
+    "description": "Credit-score band, above average."
+  },
+  "creditScoreExcellent": "Excellent",
+  "@creditScoreExcellent": {
+    "description": "Credit-score band, highest."
+  },
+  "creditFlexEligible": "Flex eligible",
+  "@creditFlexEligible": {
+    "description": "Badge marking a transaction that can be split into instalments."
+  },
+  "insightConfidenceHigh": "High confidence",
+  "@insightConfidenceHigh": {
+    "description": "How sure the bank is about a generated insight."
+  },
+  "insightConfidenceMedium": "Medium confidence",
+  "@insightConfidenceMedium": {
+    "description": "How sure the bank is about a generated insight."
+  },
+  "insightConfidenceLow": "Low confidence",
+  "@insightConfidenceLow": {
+    "description": "How sure the bank is about a generated insight."
+  },
+  "merchantBlockNotice": "Future charges from this merchant will be declined.",
+  "@merchantBlockNotice": {
+    "description": "Explains what blocking a recurring merchant does."
+  },
+  "captureFrameDocument": "Position your document in the frame",
+  "@captureFrameDocument": {
+    "description": "Document-capture guidance: align the document."
+  },
+  "captureKeepInFrame": "Keep the document in frame",
+  "@captureKeepInFrame": {
+    "description": "Document-capture guidance: the document drifted out of view."
+  },
+  "captureHoldStill": "Hold still…",
+  "@captureHoldStill": {
+    "description": "Document-capture guidance: stop moving while the shot is taken."
+  },
+  "captureMoveFurther": "Move further away",
+  "@captureMoveFurther": {
+    "description": "Document-capture guidance: the document fills too much of the frame."
+  },
+  "captureMoveCloser": "Move closer",
+  "@captureMoveCloser": {
+    "description": "Document-capture guidance: the document is too small in the frame."
+  },
+  "captureImproveLighting": "Improve lighting conditions",
+  "@captureImproveLighting": {
+    "description": "Document-capture guidance: the scene is too dark."
+  },
+  "captureHoldSteady": "Hold the camera steady",
+  "@captureHoldSteady": {
+    "description": "Document-capture guidance: the camera is shaking."
+  },
+  "captureTakePhoto": "Capture document",
+  "@captureTakePhoto": {
+    "description": "Shutter action on the document-capture overlay."
+  },
+  "livenessPositionFace": "Position your face in the oval",
+  "@livenessPositionFace": {
+    "description": "Liveness-check guidance: align the face."
+  },
+  "livenessLookStraight": "Look straight at the camera",
+  "@livenessLookStraight": {
+    "description": "Liveness-check guidance: face the lens."
+  },
+  "livenessVerified": "Liveness verified",
+  "@livenessVerified": {
+    "description": "Liveness check succeeded."
+  },
+  "livenessFailed": "Could not verify: please try again",
+  "@livenessFailed": {
+    "description": "Liveness check failed."
+  },
+  "consentEmptyBody": "Apps you allow to access your account data appear here.",
+  "@consentEmptyBody": {
+    "description": "Empty state for the open-banking consent list."
+  },
+  "standingOrderSkipBody": "The next scheduled payment will be skipped. Later payments stay on schedule.",
+  "@standingOrderSkipBody": {
+    "description": "Explains skipping one instance of a standing order."
+  },
+  "standingOrderCancelBody": "This permanently stops all future payments to this payee.",
+  "@standingOrderCancelBody": {
+    "description": "Explains cancelling a standing order outright."
+  },
+  "disclosureReviewAndAgree": "Review and agree",
+  "@disclosureReviewAndAgree": {
+    "description": "Action prompting the customer to read a disclosure first."
+  },
+  "disclosureAgreeAndContinue": "Agree and continue",
+  "@disclosureAgreeAndContinue": {
+    "description": "Action accepting a disclosure once read."
+  },
+  "offerEndsToday": "Ends today",
+  "@offerEndsToday": {
+    "description": "Urgency label for an offer expiring today."
+  },
+  "offerDaysLeft": "{count, plural, one{1 day left} other{{count} days left}}",
+  "@offerDaysLeft": {
+    "description": "Urgency label counting down to an offer's expiry.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "offerExpired": "Offer expired",
+  "@offerExpired": {
+    "description": "Label for an offer past its end date."
+  },
+  "potMaxContribution": "Maximum contribution is {amount} to reach your goal",
+  "@potMaxContribution": {
+    "description": "Caps the amount that can usefully be added to a pot.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "roundUpExplainer": "We'll round up every purchase to the nearest {unit} and save the difference automatically.",
+  "@roundUpExplainer": {
+    "description": "Explains round-up saving. {unit} is one whole unit of the pot's currency, e.g. £1 or ﷼1.",
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "roundUpExplainerMultiplied": "We'll round up every purchase to the nearest {unit} and save the difference {multiplier} automatically.",
+  "@roundUpExplainerMultiplied": {
+    "description": "Explains round-up saving with a multiplier, e.g. 'the difference ×2'.",
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      },
+      "multiplier": {
+        "type": "String"
+      }
+    }
+  },
+  "ownershipPrimary": "Primary",
+  "@ownershipPrimary": {
+    "description": "Account ownership: held by this customer alone."
+  },
+  "ownershipJoint": "Joint",
+  "@ownershipJoint": {
+    "description": "Account ownership: shared with someone else."
+  },
+  "ownershipBeneficiary": "Beneficiary",
+  "@ownershipBeneficiary": {
+    "description": "Account ownership: this customer is a named beneficiary."
+  },
+  "paywallUpgradeTo": "Upgrade to access {feature}",
+  "@paywallUpgradeTo": {
+    "description": "Paywall headline naming the locked feature.",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallMaybeLater": "Maybe later",
+  "@paywallMaybeLater": {
+    "description": "Paywall dismissal action."
+  },
+  "paywallUpgrade": "Upgrade",
+  "@paywallUpgrade": {
+    "description": "Paywall primary action."
+  },
+  "paywallCurrentPlan": "Current plan",
+  "@paywallCurrentPlan": {
+    "description": "Marks the plan the customer already has."
+  },
+  "paywallDismiss": "Dismiss upgrade prompt",
+  "@paywallDismiss": {
+    "description": "Screen-reader name for the paywall close control."
+  },
+  "perkActivated": "Perk activated",
+  "@perkActivated": {
+    "description": "Confirmation that a membership perk is now active."
+  },
+  "perkActivatedSpoken": "Activated.",
+  "@perkActivatedSpoken": {
+    "description": "Screen-reader state for an active perk."
+  },
+  "perkNotActivatedSpoken": "Not activated.",
+  "@perkNotActivatedSpoken": {
+    "description": "Screen-reader state for an inactive perk."
+  },
+  "referralShareCode": "Share referral code",
+  "@referralShareCode": {
+    "description": "Action that shares a referral code."
+  },
+  "disputeUnauthorized": "I did not authorize this",
+  "@disputeUnauthorized": {
+    "description": "Dispute reason: the customer did not make the transaction."
+  },
+  "disputeDuplicate": "I was charged twice",
+  "@disputeDuplicate": {
+    "description": "Dispute reason: duplicate charge."
+  },
+  "disputeWrongAmount": "The amount is wrong",
+  "@disputeWrongAmount": {
+    "description": "Dispute reason: incorrect amount."
+  },
+  "disputeNotReceived": "Goods or services not received",
+  "@disputeNotReceived": {
+    "description": "Dispute reason: paid but nothing arrived."
+  },
+  "disputeCancelledSubscription": "I cancelled this subscription",
+  "@disputeCancelledSubscription": {
+    "description": "Dispute reason: charged after cancelling."
+  },
+  "disputeOther": "Something else",
+  "@disputeOther": {
+    "description": "Dispute reason: none of the listed options."
+  },
+  "disputeStageSubmitted": "Submitted",
+  "@disputeStageSubmitted": {
+    "description": "Dispute progress: filed with the bank."
+  },
+  "disputeStageUnderReview": "Under review",
+  "@disputeStageUnderReview": {
+    "description": "Dispute progress: being investigated."
+  },
+  "disputeStageResolved": "Resolved",
+  "@disputeStageResolved": {
+    "description": "Dispute progress: closed."
+  },
+  "a11yAccountSummary": "Account: {name}, {number}, {balance}",
+  "@a11yAccountSummary": {
+    "description": "Screen-reader summary of an account row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "number": {
+        "type": "String"
+      },
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "a11ySelectedSuffix": "{label}, selected",
+  "@a11ySelectedSuffix": {
+    "description": "Marks the currently chosen item for a screen reader.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yBalanceIs": "Balance: {amount}",
+  "@a11yBalanceIs": {
+    "description": "Screen-reader phrasing of an account balance.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yBudgetSummary": "{name} budget: {spent} of {limit}",
+  "@a11yBudgetSummary": {
+    "description": "Screen-reader summary of a budget gauge.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "spent": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yBudgetOverspent": "{summary}, over budget",
+  "@a11yBudgetOverspent": {
+    "description": "Appended when a budget has been exceeded.",
+    "placeholders": {
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yBalanceRange": "Balance ranged from {low} to {high}",
+  "@a11yBalanceRange": {
+    "description": "Screen-reader summary of a cashflow chart's history.",
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yBalanceRangeProjected": "{summary}, projected {projection}",
+  "@a11yBalanceRangeProjected": {
+    "description": "Appended when a cashflow chart also shows a forecast.",
+    "placeholders": {
+      "summary": {
+        "type": "String"
+      },
+      "projection": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yBillForecast": "{biller}, {amount}",
+  "@a11yBillForecast": {
+    "description": "Screen-reader summary of a forecast bill row.",
+    "placeholders": {
+      "biller": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yBillForecastEstimated": "{summary}, estimated",
+  "@a11yBillForecastEstimated": {
+    "description": "Appended when a forecast bill amount is only an estimate.",
+    "placeholders": {
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+  "gateQueuePosition": "You are number {position} in line",
+  "@gateQueuePosition": {
+    "description": "The customer's place in the sign-in queue.",
+    "placeholders": {
+      "position": {
+        "type": "String"
+      }
+    }
+  },
+  "gateQueuePositionWithEta": "{position}, about {wait}",
+  "@gateQueuePositionWithEta": {
+    "description": "Queue position followed by the estimated wait.",
+    "placeholders": {
+      "position": {
+        "type": "String"
+      },
+      "wait": {
+        "type": "String"
+      }
+    }
+  },
+  "actionTryAgain": "Try again",
+  "@actionTryAgain": {
+    "description": "Button that repeats a failed operation. Distinct from Retry, which is the terser form used in dense rows."
+  },
+  "connectivityRetryingIn": "Retrying in {seconds}s",
+  "@connectivityRetryingIn": {
+    "description": "Countdown until the app retries a failed connection.",
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "notifChannelSms": "SMS",
+  "@notifChannelSms": {
+    "description": "Delivery channel: a text message."
+  },
+  "a11yCreditLimit": "{label}: {used} used of {limit}, {available} available",
+  "@a11yCreditLimit": {
+    "description": "Screen-reader summary of a credit-limit gauge.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      },
+      "available": {
+        "type": "String"
+      }
+    }
+  },
+  "labelAvailableLower": "available",
+  "@labelAvailableLower": {
+    "description": "Caption under an available amount, in running text rather than as a heading, so lower case in English."
+  },
+  "referralFriendsInvited": "{count, plural, one{1 friend invited} other{{count} friends invited}}",
+  "@referralFriendsInvited": {
+    "description": "How many people have accepted a referral.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "referralProgress": "{invited} of {max}",
+  "@referralProgress": {
+    "description": "Referral progress against the reward cap.",
+    "placeholders": {
+      "invited": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "callVerifyActiveHeadline": "You are speaking with {bank}",
+  "@callVerifyActiveHeadline": {
+    "description": "Headline confirming the caller is genuine.",
+    "placeholders": {
+      "bank": {
+        "type": "String"
+      }
+    }
+  },
+  "labelLimit": "Limit",
+  "@labelLimit": {
+    "description": "Label for the ceiling of a limit gauge."
+  },
+  "actionGoBack": "Go back",
+  "@actionGoBack": {
+    "description": "Button that dismisses a confirmation without acting."
+  },
+  "actionMoreActions": "More actions",
+  "@actionMoreActions": {
+    "description": "Screen-reader name for an overflow menu."
+  },
+  "standingOrderSkipTitle": "Skip next payment?",
+  "@standingOrderSkipTitle": {
+    "description": "Confirmation title for skipping one instance of a standing order."
+  },
+  "standingOrderCancelTitle": "Cancel standing order?",
+  "@standingOrderCancelTitle": {
+    "description": "Confirmation title for cancelling a standing order outright."
+  },
+  "standingOrderSkipAction": "Skip next payment",
+  "@standingOrderSkipAction": {
+    "description": "Menu item that skips the next instance."
+  },
+  "standingOrderCancelAction": "Cancel standing order",
+  "@standingOrderCancelAction": {
+    "description": "Menu item that stops all future payments."
+  },
+  "standingOrderPause": "Pause",
+  "@standingOrderPause": {
+    "description": "Menu item that suspends a standing order."
+  },
+  "standingOrderResume": "Resume",
+  "@standingOrderResume": {
+    "description": "Menu item that restarts a paused standing order."
+  },
+  "standingOrderPaused": "Paused",
+  "@standingOrderPaused": {
+    "description": "Standing-order state: suspended."
+  },
+  "standingOrderFailed": "Failed",
+  "@standingOrderFailed": {
+    "description": "Standing-order state: the last attempt did not go through."
+  },
+  "standingOrderRetry": "Retry payment",
+  "@standingOrderRetry": {
+    "description": "Action that re-attempts a failed standing-order payment."
+  },
+  "merchantNextPrefix": "next",
+  "@merchantNextPrefix": {
+    "description": "Prefix before the date of a recurring merchant’s next charge, as in “next 1 Jul”."
+  },
+  "merchantPriceRise": "Price rise",
+  "@merchantPriceRise": {
+    "description": "Badge marking a subscription that costs more than it used to."
+  },
+  "merchantHowToCancel": "How to cancel",
+  "@merchantHowToCancel": {
+    "description": "Action that explains how to end a subscription."
+  },
+  "merchantBlockAction": "Block future payments",
+  "@merchantBlockAction": {
+    "description": "Action that refuses further charges from a merchant."
+  },
+  "merchantBlockTitle": "Block this merchant?",
+  "@merchantBlockTitle": {
+    "description": "Confirmation title before blocking a merchant."
+  },
+  "consentRevoke": "Revoke access",
+  "@consentRevoke": {
+    "description": "Action that withdraws an app’s access to account data."
+  },
+  "consentRevokeTitle": "Revoke access?",
+  "@consentRevokeTitle": {
+    "description": "Confirmation title before revoking an app’s access."
+  },
+  "consentRevokeBody": "This app immediately loses access to your data.",
+  "@consentRevokeBody": {
+    "description": "Confirmation body before revoking an app’s access."
+  },
+  "consentGrantedPrefix": "Granted",
+  "@consentGrantedPrefix": {
+    "description": "Prefix before the date access was granted."
+  },
+  "consentExpiresPrefix": "expires",
+  "@consentExpiresPrefix": {
+    "description": "Prefix before the date access lapses, in running text."
+  },
+  "consentRevoked": "Revoked",
+  "@consentRevoked": {
+    "description": "Consent state: withdrawn by the customer."
+  },
+  "consentExpired": "Expired",
+  "@consentExpired": {
+    "description": "Consent state: lapsed."
+  },
+  "consentExpiringSoon": "Expiring soon",
+  "@consentExpiringSoon": {
+    "description": "Consent state: close to lapsing."
+  }
+}

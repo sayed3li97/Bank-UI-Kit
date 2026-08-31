@@ -1,6 +1,6 @@
 name: bank_ui_kit
 description: A themeable Flutter UI component library for mobile banking and fintech apps. RTL-aware, privacy-aware, accessible widgets that compose into any host app.
-version: 0.3.0
+version: 0.4.0
 homepage: https://github.com/sayed3li97/bank-ui-kit
 repository: https://github.com/sayed3li97/bank-ui-kit
 issue_tracker: https://github.com/sayed3li97/bank-ui-kit/issues
@@ -31,6 +31,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Pulled in by the generated localizations: `BankL10n.localizationsDelegates`
+  # bundles the Global*Localizations delegates so a host can install one list.
+  flutter_localizations:
+    sdk: flutter
   decimal: ^3.0.0
   intl: ^0.20.1
   fl_chart: ^1.2.0
@@ -44,6 +48,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Enables `flutter gen-l10n`, which compiles lib/l10n/*.arb into the
+  # committed Dart under lib/src/l10n/. Host apps are unaffected: this flag
+  # governs code generation for this package's own sources only.
+  generate: true
   fonts:
     - family: SpaceGrotesk
       fonts:

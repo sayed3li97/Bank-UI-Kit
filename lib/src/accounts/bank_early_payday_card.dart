@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../common/bank_control_theme.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_gradient_surface.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/bank_surface_depth.dart';
@@ -229,10 +230,18 @@ class BankEarlyPaydayCard extends StatelessWidget {
 
   Widget _buildDateComparison(BuildContext context, BankThemeData theme) {
     final scope = BankUiScope.of(context);
-    final normalLabel =
-        scope.numeralStyle.convert(BankDateFormatter.formatFull(normalPayday));
-    final earlyLabel =
-        scope.numeralStyle.convert(BankDateFormatter.formatFull(earlyPayday));
+    final normalLabel = scope.numeralStyle.convert(
+      BankDateFormatter.formatFull(
+        normalPayday,
+        locale: context.bankLocale,
+      ),
+    );
+    final earlyLabel = scope.numeralStyle.convert(
+      BankDateFormatter.formatFull(
+        earlyPayday,
+        locale: context.bankLocale,
+      ),
+    );
 
     return Semantics(
       label: dateSemanticTemplate

@@ -3,6 +3,7 @@ import 'dart:math' show min, pi;
 import 'package:flutter/material.dart';
 
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 // ---------------------------------------------------------------------------
 // Enums
@@ -379,9 +380,10 @@ class _BankFlipCardState extends State<BankFlipCard>
         break;
     }
 
+    final strings = BankStrings.of(context);
     final resolvedLabel = _isFlipped
-        ? (widget.backSemanticLabel ?? 'Card back')
-        : (widget.frontSemanticLabel ?? 'Card front');
+        ? (widget.backSemanticLabel ?? strings.cardBack)
+        : (widget.frontSemanticLabel ?? strings.cardFront);
 
     return Semantics(
       label: resolvedLabel,

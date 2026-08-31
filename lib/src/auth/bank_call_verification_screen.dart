@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../common/bank_emblem.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/money_formatter.dart';
+import '../l10n/bank_strings.dart';
 import '../theme/bank_theme_data.dart';
 import '../theme/tokens.dart';
 
@@ -288,7 +290,7 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
   // Copy resolution
   // ---------------------------------------------------------------------------
 
-  _CallStatusContent _resolveContent() {
+  _CallStatusContent _resolveContent(BankStrings strings) {
     switch (widget.status) {
       case BankCallStatus.noActiveCall:
         return _CallStatusContent(
@@ -296,20 +298,15 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
           accent: widget.accentColor ?? BankTokens.danger,
           headline: widget.noCallHeadline,
           body: widget.noCallBody ??
-              'If the person on the phone right now says they are calling '
-                  'from ${widget.bankName}, hang up: they are a scammer. '
-                  'Genuine staff will never pressure you to move money or '
-                  'share security codes.',
+              strings.callVerifyUnverifiedWarning(widget.bankName),
         );
       case BankCallStatus.activeCall:
         return _CallStatusContent(
           icon: widget.activeCallIcon ?? Icons.verified_user_outlined,
           accent: widget.accentColor ?? BankTokens.success,
           headline: widget.activeCallHeadline ??
-              'You are speaking with ${widget.bankName}',
-          body: widget.activeCallBody ??
-              'This call has been verified. Our team member will never ask '
-                  'for your PIN, your password, or a one time passcode.',
+              strings.callVerifyActiveHeadline(widget.bankName),
+          body: widget.activeCallBody ?? strings.callVerifyVerifiedReassurance,
         );
       case BankCallStatus.recentCall:
         return _CallStatusContent(
@@ -317,8 +314,7 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
           accent: widget.accentColor ?? BankTokens.frozen,
           headline: widget.recentCallHeadline,
           body: widget.recentCallBody ??
-              'No call is in progress right now. Below is a summary of your '
-                  'most recent verified call with ${widget.bankName}.',
+              strings.callVerifyIdleSummary(widget.bankName),
         );
     }
   }
@@ -330,7 +326,8 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
   @override
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
-    final content = _resolveContent();
+    final strings = BankStrings.of(context);
+    final content = _resolveContent(strings);
 
     final hasAgentDetails = widget.agentName != null ||
         widget.agentId != null ||
@@ -459,8 +456,14 @@ class _BankCallVerificationScreenState extends State<BankCallVerificationScreen>
       timeText = null;
     } else {
       final formatted = widget.status == BankCallStatus.activeCall
-          ? BankDateFormatter.formatTime(startedAt)
-          : BankDateFormatter.formatLong(startedAt);
+          ? BankDateFormatter.formatTime(
+              startedAt,
+              locale: context.bankLocale,
+            )
+          : BankDateFormatter.formatLong(
+              startedAt,
+              locale: context.bankLocale,
+            );
       timeText = '${widget.callStartedLabel} $formatted';
     }
 

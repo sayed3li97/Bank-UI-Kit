@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../accounts/bank_balance_text.dart';
 import '../common/bank_emblem.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_icon_spec.dart';
 import '../common/money_formatter.dart';
 import '../models/money.dart';
@@ -199,8 +200,14 @@ class BankBillPayTile extends StatelessWidget {
       _ => theme.onSurfaceVariant,
     };
     final dueText = bill.status == BankBillStatus.overdue
-        ? '$overdueLabel · ${BankDateFormatter.formatShort(bill.dueDate)}'
-        : '$duePrefix ${BankDateFormatter.formatShort(bill.dueDate)}';
+        ? '$overdueLabel · ${BankDateFormatter.formatShort(
+            bill.dueDate,
+            locale: context.bankLocale,
+          )}'
+        : '$duePrefix ${BankDateFormatter.formatShort(
+            bill.dueDate,
+            locale: context.bankLocale,
+          )}';
 
     final accent = accentColor ?? theme.primary;
     // An opaque brand fill is what makes the pill read as the row's action;
@@ -528,7 +535,10 @@ class BankBillCalendarStrip extends StatelessWidget {
 
           return Semantics(
             button: onDayTap != null,
-            label: '${BankDateFormatter.formatShort(day)}'
+            label: '${BankDateFormatter.formatShort(
+              day,
+              locale: context.bankLocale,
+            )}'
                 '${hasDue ? ', ${due.length} $billsDueLabel' : ''}',
             excludeSemantics: true,
             child: InkWell(
@@ -547,7 +557,10 @@ class BankBillCalendarStrip extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        BankDateFormatter.formatShort(day).split(' ').first,
+                        BankDateFormatter.formatShort(
+                          day,
+                          locale: context.bankLocale,
+                        ).split(' ').first,
                         style: BankTokens.labelMedium
                             .copyWith(
                               color: hasDue ? accent : theme.onSurface,

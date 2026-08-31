@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../common/money_formatter.dart';
+import '../l10n/bank_strings.dart';
 import '../models/money.dart';
 import '../scope/bank_ui_scope.dart';
 import '../theme/bank_theme_data.dart';
@@ -134,6 +135,7 @@ class BankCashflowChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final strings = BankStrings.of(context);
 
     if (history.isEmpty) {
       return SizedBox(
@@ -189,12 +191,19 @@ class BankCashflowChart extends StatelessWidget {
         ? history[index]
         : forecast![index - history.length];
 
-    final semanticSummary = 'Balance ranged from '
-        '${formatCompact(values.reduce(math.min))} to '
-        '${formatCompact(values.reduce(math.max))}'
-        '${forecastSpots.isEmpty ? '' : ', projected'}'
-        '${forecastSpots.isEmpty ? '' : ' '}'
-        '${forecastSpots.isEmpty ? '' : formatCompact(forecastSpots.last.y)}';
+    // Whole sentences, not glued fragments: the projection clause is its
+    // own message, so a translator can place it rather than have English
+    // punctuation and word order baked in by concatenation.
+    final rangeSummary = strings.a11yBalanceRange(
+      formatCompact(values.reduce(math.min)),
+      formatCompact(values.reduce(math.max)),
+    );
+    final semanticSummary = forecastSpots.isEmpty
+        ? rangeSummary
+        : strings.a11yBalanceRangeProjected(
+            rangeSummary,
+            formatCompact(forecastSpots.last.y),
+          );
 
     final resolvedLineColor = lineColor ?? theme.primary;
     final resolvedSafeColor = safeToSpendColor ?? theme.positiveBalance;
@@ -329,7 +338,7 @@ class BankCashflowChart extends StatelessWidget {
                     for (final spot in spots)
                       LineTooltipItem(
                         scope.privacyEnabled
-                            ? '••••'
+                            ? strings.balanceHidden
                             : '${BankDateFormatter.formatShort(
                                 pointAt(spot.x.round()).date,
                               )}\n${formatCompact(spot.y)}',

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../common/bank_bidi.dart';
 import '../common/bank_country_flag.dart';
 import '../common/bank_country_picker.dart';
+import '../common/bank_format_context.dart';
 import '../common/bank_gradient_surface.dart';
 import '../common/bank_text_field.dart';
 import '../common/money_formatter.dart';
@@ -554,7 +556,10 @@ class _CardChip extends StatelessWidget {
                   color: ink,
                 ),
                 Text(
-                  account.maskedNumber,
+                  // Host-supplied: `•••• 4242` for one bank, `SA44 ••••
+                  // 9021` for the next. Isolated rather than pinned to
+                  // LTR so the chip keeps the ambient alignment.
+                  BankBidi.isolate(account.maskedNumber),
                   style: BankTokens.labelSmall.copyWith(color: ink),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -591,7 +596,10 @@ class _DateField extends StatelessWidget {
       button: true,
       label: value == null
           ? label
-          : '$label: ${BankDateFormatter.formatFull(value!)}',
+          : '$label: ${BankDateFormatter.formatFull(
+              value!,
+              locale: context.bankLocale,
+            )}',
       child: InkWell(
         onTap: onTap,
         borderRadius: radius,
@@ -614,7 +622,10 @@ class _DateField extends StatelessWidget {
                   child: Text(
                     value == null
                         ? label
-                        : BankDateFormatter.formatShort(value!),
+                        : BankDateFormatter.formatShort(
+                            value!,
+                            locale: context.bankLocale,
+                          ),
                     style: BankTokens.bodyMedium.copyWith(
                       color: value == null
                           ? theme.onSurfaceVariant

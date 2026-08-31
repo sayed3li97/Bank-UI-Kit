@@ -5,6 +5,7 @@ import '../../src/models/budget.dart';
 import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
+import '../l10n/bank_strings.dart';
 
 /// Shows a budget's progress with an animated bar and over-budget warning.
 class BankBudgetGaugeWidget extends StatelessWidget {
@@ -84,6 +85,7 @@ class BankBudgetGaugeWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BankThemeData.of(context);
     final scope = BankUiScope.of(context);
+    final strings = BankStrings.of(context);
 
     // Only the painted fill is clamped; the printed percentage stays
     // truthful (e.g. '105%' beside the over-budget chip, never a
@@ -119,10 +121,13 @@ class BankBudgetGaugeWidget extends StatelessWidget {
           vertical: BankTokens.space3,
         );
 
+    // Whole sentences, not glued fragments: the over-budget clause is its
+    // own message so a translator can move it, not just append it.
+    final summary = strings.a11yBudgetSummary(budget.name, spentStr, limitStr);
+
     return Semantics(
       label: semanticLabel ??
-          '${budget.name} budget: $spentStr of $limitStr'
-              '${isOverBudget ? ', over budget' : ''}',
+          (isOverBudget ? strings.a11yBudgetOverspent(summary) : summary),
       button: onTap != null,
       child: InkWell(
         onTap: onTap,

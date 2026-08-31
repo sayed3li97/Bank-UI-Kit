@@ -4,6 +4,162 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/) and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## 0.4.0
+
+The kit speaks a second language. An ARB message catalogue, an Arabic
+translation, and the resolution layer that lets a host override a word
+without losing the rest of the translation — plus the correctness bugs that
+only surface once you actually run the thing in another language.
+
+### Added
+
+- **`BankL10n`, a generated message catalogue: 301 messages, English and
+  Arabic.** Authored as ARB (`lib/l10n/bank_ui_kit_en.arb`,
+  `bank_ui_kit_ar.arb`) and compiled by `flutter gen-l10n` into
+  `lib/src/l10n/`, which is committed because a package ships its generated
+  localizations rather than asking hosts to run a codegen step. Install it
+  the way you install any delegate:
+
+  ```dart
+  MaterialApp(
+    localizationsDelegates: BankL10n.localizationsDelegates,
+    supportedLocales: BankL10n.supportedLocales,
+  )
+  ```
+
+  Install nothing and the kit renders exactly the English it rendered in
+  0.3.0. Adopting localisation is opt-in, and English is never a fallback
+  that can fail to load.
+
+- **`BankStrings`, the resolution facade widgets read copy through.** `BankStrings.of(context)` resolves three sources in order: a
+  `BankUiStrings` field the host changed from its shipped default, then the
+  translation for the ambient locale, then the built-in English. It never
+  throws and never returns null. The precedence matters: a bank that
+  insists on "Profit rate" keeps it in every language, while the strings it
+  did not touch still translate — the two are no longer the same decision.
+
+- **`BankStrings.override(value, shipped)`.** Returns `value` when the
+  caller changed it from `shipped`, `null` when they left the default
+  alone. This is what let widgets whose copy arrives through a non-nullable
+  `String` parameter start speaking the device's language without a single
+  signature changing type.
+
+- **Real plurals.** Count-bearing messages are ICU `plural` in the
+  catalogue, so Arabic gets all six CLDR categories — zero, one, two, few,
+  many, other. `BankUiStrings.installmentMonths` is a `{n}` template and
+  structurally cannot express that; the catalogue can, and the override
+  still works for hosts that supply one.
+
+- **`BankStrings` helpers that collapse duplicated switches**:
+  `categoryLabel`, `statusLabel`, `frequencyLabel`, `rateLabel`, and
+  `relativeTime`. The 15 spending-category names had been hand-written in
+  four separate files, one of which had already drifted.
+
+- **`BankUiScope.maybeOf`**, the non-throwing counterpart to
+  `BankUiScope.of`.
+
+- **`locale:` on every `BankDateFormatter` entry point**, plus
+  `BankDateFormatter.patternFormat` for widgets that need a pattern of
+  their own.
+
+- **Three CI gates.** `tool/check_l10n.dart` fails on an undescribed
+  message, a key missing from a locale, or a placeholder a translation
+  dropped; re-running `gen-l10n` with a clean tree proves the committed
+  Dart matches the ARB; `tool/generate_l10n_facade.dart --check` proves the
+  facade was regenerated. A translator can break the first without touching
+  Dart, which is exactly why it is separate.
+
+- **A language switch in the showcase.** The sidebar control was
+  `Direction: LTR / RTL`, which flipped the layout and left the text in
+  English — the demo everyone has seen and learned nothing from. It is now
+  `Language: English / العربية`, and picking Arabic changes both.
+
+### Fixed
+
+- **Dates rendered in the `intl` default locale regardless of the app
+  locale.** `MaterialApp(locale: Locale('ar'))` does not set
+  `Intl.defaultLocale`, so `DateFormat('d MMMM y')` printed `30 June 2026`
+  inside an otherwise Arabic screen. Every kit call site now passes the
+  ambient locale.
+
+  Threading it exposed a second hazard: `DateFormat(pattern, locale)`
+  throws `LocaleDataException` unless something has already called
+  `initializeDateFormatting(locale)`, which a host with no localisation
+  delegates never has. `BankDateFormatter` now degrades to the default
+  locale instead. A month name in the wrong language is a cosmetic defect;
+  an exception thrown while painting a balance screen is an outage.
+
+- **`BankRoundUpSettingsSheet` hard-coded `£1`.** The explanation promised
+  every customer of every bank that spare change rounds up to the nearest
+  pound. It now names one whole unit of the destination pot's own currency,
+  so a riyal pot rounds to a riyal.
+
+  The same fix closed a second defect in the same widget: the sheet built
+  its explanation inline and never read `explanationTemplate`, so the
+  parameter was documented, defaulted, and dead. It is wired now.
+
+- **Screen-reader sentences assembled from English fragments.** Labels
+  built as `'$name budget: $spent of $limit' + ', over budget'` cannot be
+  translated: the grammar is in the `+`. The budget gauge, cashflow chart,
+  bill forecast, account switcher and beneficiary picker now compose whole
+  ICU messages a translator can reorder.
+
+- **A support phone number reversed its groups in Arabic.**
+  `BankAppGateScreen`'s support row rendered `+973 1758 3300` as
+  `3300 1758 973+` — a number that dials nothing — because a grouped
+  identifier in a right-to-left paragraph resolves its separators RTL under
+  UAX #9 rule N1. It is isolated now, and the spoken label keeps the clean
+  string so a screen reader never meets the control characters. Found by
+  looking at an Arabic screenshot rather than by a test, which is the
+  argument for capturing them.
+
+- **A half-translated queue line.** Localising the blocking gate's ETA left
+  `'You are number 214 in line, about 2 minutes'` with a translated tail on
+  an English sentence. Both halves are messages now.
+
+### Changed
+
+- **`flutter_localizations` is now a dependency.** The generated catalogue
+  imports it for the `Global*Localizations` delegates it bundles into
+  `BankL10n.localizationsDelegates`. It pins `intl` to the version the
+  Flutter SDK ships; hosts already using `flutter_localizations` are
+  unaffected.
+
+- **`BankRoundUpSettingsSheet.explanationTemplate` is now `String?`,
+  default `null`,** and takes a `{unit}` placeholder alongside
+  `{multiplier}`. The old non-null default hard-coded `£1` and was never
+  read, so no rendering changes for anyone; a host that was passing the
+  parameter now finds that it works.
+
+- **`BankAlertPreferencesPanel.sectionLabels` and `channelLabels` default
+  to empty maps** and fall back per key. Overriding one section heading no
+  longer forces the other three back to English.
+
+- **`BankPaymentRequestCard` renders `just now` rather than `Just now`.**
+  It carried a fourth hand-rolled copy of the relative-time ladder, and it
+  was the only one of the four that capitalised.
+
+### Known gaps
+
+Stated rather than discovered:
+
+- 639 copy parameters still default to English literals
+  (`this.<field> = '<literal>'` across 117 files, measured under `lib/src/`
+  outside `scope/`). Overriding them works exactly as before; they simply do not
+  consult the catalogue yet. `BankStrings.override` is the pattern for
+  closing them — `BankUpdatePromptSheet`, `BankAppGateScreen` and
+  `BankScaApprovalSheet` show it applied — and it needs no API change.
+- Two locales. The ten-locale table in
+  `doc/enterprise/localization-and-rtl.md` is a plan, not a claim.
+- **The Arabic is machine-assisted and has not been reviewed by a native
+  speaker or a banking-terminology reviewer.** It is committed so the
+  mechanism is exercised by a real second language with six plural
+  categories and right-to-left script, not because it is ready to put in
+  front of customers. Treat it as a starting point for a translation
+  vendor, not a finished asset.
+- Country, currency, and Hijri month names stay English. Those belong to
+  CLDR, and shipping our own copies would be worse than not shipping them.
+
 ## 0.3.0
 
 Four themes: the trust artifacts an enterprise intake process asks for, the
@@ -77,7 +233,7 @@ remaining audit backlog cleared.
   split, the SBOM and provenance chain, the published Scorecard, and the
   stability contract, each linked to the document that carries the proof. The
   component catalogue, screenshots, and quick start are unchanged in
-  substance. Counts corrected to 173 exported widget classes and 487 test
+  substance. Counts corrected to 173 exported widget classes and 543 test
   cases, and the badges row gains Scorecard and pub.dev.
 - `doc/enterprise/versioning-and-releases.md` now describes the release
   pipeline as implemented rather than as planned, and corrects the Flutter

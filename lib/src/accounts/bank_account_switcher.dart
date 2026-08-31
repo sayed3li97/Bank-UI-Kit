@@ -8,6 +8,7 @@ import '../../src/scope/bank_ui_scope.dart';
 import '../../src/theme/bank_theme_data.dart';
 import '../../src/theme/tokens.dart';
 import '../common/bank_format_context.dart';
+import '../l10n/bank_strings.dart';
 
 /// Bottom-sheet or inline widget for selecting among multiple bank accounts.
 ///
@@ -263,10 +264,16 @@ class _AccountRow extends StatelessWidget {
             numeralStyle: scopeData.numeralStyle,
           );
 
-    final semanticLabel = 'Account: ${account.name}, '
-        '${account.maskedNumber}, '
-        '${privacyEnabled ? "Balance hidden" : "Balance: $balanceText"}'
-        '${isSelected ? ", selected" : ""}';
+    final strings = BankStrings.of(context);
+    final summary = strings.a11yAccountSummary(
+      account.name,
+      account.maskedNumber,
+      privacyEnabled
+          ? strings.balanceHiddenSpoken
+          : strings.a11yBalanceIs(balanceText),
+    );
+    final semanticLabel =
+        isSelected ? strings.a11ySelectedSuffix(summary) : summary;
 
     final accent = accentColor ?? bankTheme.primary;
 
